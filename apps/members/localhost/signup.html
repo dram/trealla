@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MyWebApp - Signup</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+</head>
+
+<body>
+<table align="center" width="50%">
+	<tr><td>
+    <h1>MyWebApp</h1>
+    <h2>Signup</h2>
+    <form method="POST" action="/signup">
+        <input type="text" name="username" placeholder="username (email-address)" required /> (*) Note this is your login!<br/><br/>
+        <input type="password" name="password" placeholder="password" required /><br/><br/>
+        <input type="password" name="password2" placeholder="retype password" required /><br/><br/>
+        <input type="checkbox" name="keep">Keep me logged-in!<br/><br/>
+        <input type="submit" value="Signup"/>
+    </form><br/><br/>
+    </td></tr>
+    <tr><td>
+    <div>
+		By signing up for an account you agree to accept a login "cookie" that will only be
+		used to authenticate your online session. This will be deleted after 7 days. You may
+		however, be forced to re-login at any time.
+    </div>
+	</td></tr>
+</table>
+</body>
+</html>

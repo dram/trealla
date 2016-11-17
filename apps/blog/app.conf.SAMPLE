@@ -1,0 +1,19 @@
+{
+  "AdminUser":        "admin",
+  "AdminPass":        "secret",
+  "Title":            "This is a blog",
+  "Heading":          "This is a description of the blog",
+  "Footer":           "Blog software by <a href=\"https://github.com/trealla-lang/webapps/\">Trealla Webapps</a>",
+  "BlogPath":         "/",
+  "PageSize":         30,
+  "VerifyByEmail":    false,
+  "VerifySubject":    "Verify your email address",
+  "VerifyMessage":    "Complete your registration: ",
+  "ReversePosts":     "true",
+  "ReverseComments":  "false",
+  "Style":            "<style>body {font-family:helvetica,arial,sans-serif} a:link {text-decoration:none}</style>",
+  "Color1":           "#C0C0C0",
+  "Color2":           "#707070",
+  "ViewPort":         "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>",
+  "More":             "More >>>"
+}

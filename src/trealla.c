@@ -1,0 +1,3004 @@
+#include <stdlib.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <limits.h>
+#include <time.h>
+#include <math.h>
+#include <float.h>
+#include <errno.h>
+#include <sys/stat.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <io.h>
+#define snprintf _snprintf
+#define isatty _isatty
+#else
+#include <unistd.h>
+#include <sys/time.h>
+#endif
+
+#include "trealla.h"
+#include "internal.h"
+#include "bifs.h"
+#include "jela.h"
+#include "history.h"
+
+#ifndef ISO_ONLY
+#include "base64.h"
+#include "uuid.h"
+#include "jsonq.h"
+#include "thread.h"
+#endif
+
+#ifndef ISO_ONLY
+extern int g_dbs_merge;
+#endif
+
+int g_trealla_memlimit_mb = 256;
+volatile int g_abort = 0;
+const char *g_trealla_version = "0.1alpha";
+const char *g_list_cons = ".";
+
+#if (__STDC_VERSION__ >= 201112L) && !defined(ISO_ONLY)
+_Atomic
+#else
+volatile
+#endif
+uint64_t g_allocs = 0;
+
+uint64_t g_enqueues = 0, g_rescheds = 0, g_busy = 0,
+	g_allocates = 0, g_deallocates = 0, g_reallocates = 0,
+	g_choicepoints = 0, g_heap_used = 0, g_backtracks = 0,
+	g_executes = 0, g_reexecutes = 0, g_cuts = 0, g_match_ok = 0,
+	g_match_try = 0, g_u_resolves = 0, g_s_resolves = 0;
+
+static size_t g_instances = 0;
+const char *g_escapes = "\a\f\b\t\v\r\n\0";
+const char *g_anti_escapes = "afbtvrn0";
+
+size_t strlen_utf8(const char *s)
+{
+	size_t cnt = 0;
+
+	while (*s)
+	{
+		unsigned char ch = *(unsigned char*)s++;
+
+		if ((ch < 0x80) || (ch > 0xBF))
+			cnt++;
+	}
+
+	return cnt;
+}
+
+static ops g_ops[] =
+ {
+	{":-", "xfx", 1200},
+	{"?-", "fx", 1200},
+	{":-", "fx", 1200},
+	{";", "xfy", 1100},
+	{"->", "xfy", 1050},
+	{",", "xfy", 1000},
+#ifndef ISO_ONLY
+	{"receive", "fy", 900},
+	{"undo", "fy", 900},
+	{"enter", "fy", 900},
+#endif
+	{"\\+", "fy", 900},
+#ifndef ISO_ONLY
+	{":=", "xfx", 700},
+#endif
+	{"is", "xfx", 700},
+	{"=", "xfx", 700},
+	{"\\=", "xfx", 700},
+	{"==", "xfx", 700},
+	{"\\==", "xfx", 700},
+	{"=:=", "xfx", 700},
+	{"=\\=", "xfx", 700},
+	{"<", "xfx", 700},
+	{"=<", "xfx", 700},
+	{">", "xfx", 700},
+	{">=", "xfx", 700},
+	{"@<", "xfx", 700},
+	{"@=<", "xfx", 700},
+	{"@>", "xfx", 700},
+	{"@>=", "xfx", 700},
+	{"=..", "xfx", 700},
+	{":", "xfy", 650},
+#ifndef ISO_ONLY
+	//{".", "xfy", 600},
+#endif
+	{"+", "yfx", 500},
+	{"-", "yfx", 500},
+	{"*", "yfx", 400},
+	{"/", "yfx", 400},
+	{"//", "yfx", 400},
+	{"div", "yfx", 400},
+	{"\\", "yfx", 400},
+	{"\\/", "yfx", 400},
+	{"/\\", "yfx", 400},
+	{"xor", "yfx", 400},
+	{"rem", "yfx", 400},
+	{"mod", "yfx", 400},
+	{"<<", "yfx", 400},
+	{">>", "yfx", 400},
+	{"**", "xfx", 200},
+	{"^", "xfx", 200},
+	{"--", "fy", 200},
+	{"\\", "fy", 200},
+
+	{0}
+ };
+
+const ops *get_op(module *db, const char *functor, int hint_prefix)
+{
+	const ops *optr;
+	int i;
+
+	for (i = 0, optr = db->uops; (i < db->uops_cnt) && optr->op; i++, optr++)
+	{
+		if (hint_prefix && !OP_PREFIX(optr->spec))
+			continue;
+
+		if (!strcmp(optr->op, functor))
+			return optr;
+	}
+
+	for (optr = g_ops; optr->op; optr++)
+	{
+		if (hint_prefix && !OP_PREFIX(optr->spec))
+			continue;
+
+		if (!strcmp(optr->op, functor))
+			return optr;
+	}
+
+	return optr;
+}
+
+int float_eq(flt_t f1, flt_t f2)
+{
+	return f1 == f2; // FIXME
+}
+
+static void stream_close(stream *sp)
+{
+	if (sp->filename) free(sp->filename);
+	if (sp->mode) free(sp->mode);
+	if (sp->type) free(sp->type);
+	if (sp->fptr) fclose(sp->fptr);
+	if (sp->subqptr) query_destroy(sp->subqptr);
+	if (sp->subqgoal) term_heapcheck(sp->subqgoal);
+#ifndef ISO_ONLY
+	if (sp->sptr) session_close((session*)sp->sptr);
+#endif
+}
+
+static void term_destroy(node *n)
+{
+	while (n)
+	{
+		node *save = n;
+		n = NLIST_NEXT(n);
+		term_heapcheck(save);
+	}
+}
+
+void term_heapcheck(node *n)
+{
+	if (!(n->flags & FLAG_HEAP))
+		return;
+
+	if (--n->refcnt > 0)
+		return;
+
+	if (is_compound(n))
+	{
+		node *n2 = NLIST_FRONT(&n->val_l);
+
+		while (n2)
+		{
+			node *save = n2;
+			n2 = NLIST_NEXT(n2);
+			term_heapcheck(save);
+		}
+	}
+	else if (!(n->flags & FLAG_CONST))
+	{
+		if (is_atom(n))
+			free(n->val_s);
+		else if (is_var(n))
+			free(n->val_s);
+		else if (is_stream(n))
+		{
+			stream_close(n->val_str);
+			FREE(n->val_str);
+		}
+	}
+
+	FREE(n);
+}
+
+const char *make_key(trealla *pl, char *dstbuf, node *term)
+{
+	if (is_atom(term))
+		return term->val_s;
+
+	if (is_compound(term))
+		snprintf(dstbuf, KEY_SIZE, "%s/%d", NLIST_FRONT(&term->val_l)->val_s, (int)NLIST_COUNT(&term->val_l)-1);
+	else
+		sprint_term(dstbuf, KEY_SIZE, pl, NULL, term, 0);
+
+	return dstbuf;
+}
+
+static char *dict(module *db, const char *key)
+{
+	char *value = NULL;
+
+	if (sl_get(&db->dict, key, (void**)&value))
+		return value;
+
+	value = strdup(key);
+	sl_set(&db->dict, value, value);
+	return value;
+}
+
+#ifndef ISO_ONLY
+static int get_ns(lexer *l, const char *name)
+{
+	int ok = sl_get(&l->ns, name, NULL);
+	if (!ok) ok = sl_get(&l->pl->mods, name, NULL);
+	return ok;
+}
+
+static void add_function(lexer *l, node *n)
+{
+	node *n2 = NLIST_NEXT(NLIST_FRONT(&n->val_l));
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, KEY_SIZE, "%s%c%d", n2->val_s, ARITY_CHAR, (int)(NLIST_NEXT(n2)->val_i));
+	sl_set(&l->funs, strdup(tmpbuf), NULL);
+}
+
+static int get_function(lexer *l, node *n)
+{
+	if (!sl_count(&l->funs))
+		return 0;
+
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, KEY_SIZE, "%s%c%d", NLIST_FRONT(&n->val_l)->val_s, ARITY_CHAR, (int)(NLIST_COUNT(&n->val_l)-1));
+	int ok = sl_get(&l->funs, tmpbuf, NULL);
+	return ok;
+}
+
+static void add_define(lexer *l, const char *name, const char *value)
+{
+	void *tmp_value;
+
+	if (sl_get(&l->defines, name, &tmp_value))
+		;
+
+	sl_set(&l->defines, strdup(name), strdup(value));
+}
+
+static const char *get_define(lexer *l, const char *name)
+{
+	void *tmp_value = NULL;
+
+	if (sl_get(&l->defines, name, &tmp_value))
+		return (char*)tmp_value;
+
+	return NULL;
+}
+#endif
+
+// Should be called with DBLOCK in effect
+
+static void assert_index(lexer *l, node *n, int manual, int *persist, int append_mode)
+{
+	module *db = l->db;
+	node *tmp = NLIST_FRONT(&n->val_l);
+	node *head = tmp = NLIST_NEXT(tmp), *idx = NULL;
+	int arity = 0;
+
+	if (is_compound(head))
+	{
+		arity = NLIST_COUNT(&head->val_l)-1;
+		tmp = NLIST_FRONT(&head->val_l);
+		idx = NLIST_NEXT(tmp);
+	}
+
+	const char *functor = tmp->val_s;
+	char tmpbuf[FUNCTOR_SIZE+10];
+
+	if (!strchr(functor, ARITY_CHAR))		// FIXME
+	{
+		snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+
+		if (!(tmp->flags & FLAG_CONST))
+			free(tmp->val_s);
+
+		tmp->flags |= FLAG_CONST;
+		tmp->val_s = dict(db, tmpbuf);
+	}
+	else
+		strcpy(tmpbuf, functor);
+
+	rule *r = NULL;
+
+	if (!sl_get(&db->rules, tmpbuf, (void**)&r))
+	{
+		r = CALLOC(rule);
+		r->name = db->name;
+		r->dynamic = r->manual = manual;
+		sl_init(&r->idx, 1, &strcmp, NULL);
+		sl_set(&db->rules, strdup(tmpbuf), r);
+	}
+
+	*persist = r->persist;
+
+	if (append_mode)
+		NLIST_PUSH_BACK(&r->clauses, n);
+	else
+		NLIST_PUSH_FRONT(&r->clauses, n);
+
+	if (idx)
+	{
+		char tmpbuf[KEY_SIZE];
+		const char *key = make_key(l->pl, tmpbuf, idx);
+
+		if (append_mode)
+			sl_app(&r->idx, strdup(key), n);
+		else
+			sl_set(&r->idx, strdup(key), n);
+	}
+}
+
+void asserta_index(lexer *l, node *n, int manual, int *persist)
+{
+	assert_index(l, n, manual, persist, 0);
+}
+
+void assertz_index(lexer *l, node *n, int manual, int *persist)
+{
+	assert_index(l, n, manual, persist, 1);
+}
+
+// Should be called with DBLOCK in effect
+
+void retract_index(lexer *l, node *n, int *persist)
+{
+	module *db = l->db;
+	node *tmp = NLIST_FRONT(&n->val_l);
+	node *head = tmp = NLIST_NEXT(tmp), *idx = NULL;
+
+	if (is_compound(head))
+	{
+		tmp = NLIST_FRONT(&head->val_l);
+		idx = NLIST_NEXT(tmp);
+	}
+
+	const char *functor = tmp->val_s;
+	rule *r = NULL;
+
+	if (!sl_get(&db->rules, functor, (void**)&r))
+	{
+		*persist = 0;
+		return;
+	}
+
+	if (idx)
+	{
+		char tmpbuf[KEY_SIZE];
+		const char *key = make_key(l->pl, tmpbuf, idx);
+		sl_del(&r->idx, key, NULL);
+	}
+
+	*persist = r->persist;
+	NLIST_REMOVE(&r->clauses, n);
+}
+
+char *trealla_readline(FILE *fp)
+{
+	if ((fp == stdin) && isatty(0))
+		return history_readline_eol("|: ", '.');
+
+	size_t maxlen = 0, blocksize = 1024;
+	char *line = NULL;
+
+	while (!feof(fp))
+	{
+		maxlen += blocksize;
+		char *newline;
+
+		if ((newline = (char*)realloc(line, maxlen+1)) == NULL)
+			break;
+
+		line = newline;
+		char *block = (line + maxlen) - blocksize;
+
+		if (fgets(block, blocksize+1, fp) == NULL)
+		{
+			if (block == line)
+			{
+				free(line);
+				line = NULL;
+			}
+
+			break;
+		}
+
+		if (strchr(block, '\n') != NULL)	// FIXME
+		{
+			size_t len = strlen(block);
+
+			if (block[len-1] == '\n')
+				block[--len] = '\0';
+
+			break;
+		}
+
+		blocksize *= 2;
+	}
+
+	return line;
+}
+
+uint64_t gettimeofday_usec(void)
+#ifdef _WIN32
+{
+	static const uint64_t epoch = 116444736000000000ULL;
+	FILETIME file_time;
+	SYSTEMTIME system_time;
+	ULARGE_INTEGER u;
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	u.LowPart = file_time.dwLowDateTime;
+	u.HighPart = file_time.dwHighDateTime;
+	return (u.QuadPart-epoch)/10 + (1000ULL*system_time.wMilliseconds);
+}
+#else
+{
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	return ((uint64_t)tp.tv_sec*1000*1000)+tp.tv_usec;
+}
+#endif
+
+void attach_vars(lexer *l, node *var)
+{
+	void *v;
+
+	if (sl_get(&l->symtab, var->val_s, &v))
+	{
+		var->slot = (uint16_t)(size_t)v;
+		return;
+	}
+
+	var->slot = l->vars++;
+	sl_set(&l->symtab, var->val_s, (void*)(size_t)var->slot);
+}
+
+static node *flatten(node *term, node *n)
+{
+	if (NLIST_COUNT(&term->val_l) != 1)
+		return n;
+
+	NLIST_REMOVE(&term->val_l, n);
+	NLIST_CONCAT(&term->val_l, &n->val_l);
+	term->flags |= FLAG_ATTACHED;
+
+	if (is_builtin(n))
+	{
+		term->flags |= FLAG_BUILTIN;
+		term->bifptr = n->bifptr;
+	}
+
+	term_heapcheck(n);
+	return NULL;
+}
+
+static node *make_cut(void)
+{
+	node *n = new_node();
+	n->flags |= TYPE_ATOM|FLAG_BUILTIN|FLAG_CUT|FLAG_CONST;
+	n->bifptr = bif_iso_cut;
+	n->val_s = "!";
+	return n;
+}
+
+static node *make_fail(void)
+{
+	node *n = new_node();
+	n->flags |= TYPE_ATOM|FLAG_BUILTIN|FLAG_CUT|FLAG_CONST;
+	n->bifptr = bif_iso_fail;
+	n->val_s = "fail";
+	return n;
+}
+
+static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor)
+{
+	node *tmp = make_structure();
+	tmp->flags |= FLAG_ATTACHED;
+
+	if (is_builtin(n))
+	{
+		tmp->flags |= FLAG_BUILTIN;
+		tmp->bifptr = n->bifptr;
+	}
+
+	node *n_prev = NLIST_PREV(n);
+	node *n_next = NLIST_NEXT(n);
+	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
+	NLIST_REMOVE(&term->val_l, n);
+	NLIST_REMOVE(&term->val_l, n_prev);
+	NLIST_PUSH_BACK(&tmp->val_l, n);
+	NLIST_PUSH_BACK(&tmp->val_l, n_prev);
+
+	if (!strcmp(functor, "->"))
+	{
+		node *n2 = make_cut();
+		n2->flags |= FLAG_HIDDEN;
+		NLIST_PUSH_BACK(&tmp->val_l, n2);
+	}
+	else if (!strcmp(functor, ";"))		// Part1
+	{
+		node *n2 = make_cut();
+		n2->flags |= FLAG_HIDDEN|FLAG_NOFOLLOW;
+		NLIST_PUSH_BACK(&tmp->val_l, n2);
+	}
+
+	const funcs *fptr = get_bif(l, functor);
+
+	if (fptr->arity == -1)
+	{
+		while (n_next)
+		{
+			node *save = n_next;
+			n_next = NLIST_NEXT(save);
+			NLIST_REMOVE(&term->val_l, save);
+			NLIST_PUSH_BACK(&tmp->val_l, save);
+		}
+	}
+	else
+	{
+		NLIST_REMOVE(&term->val_l, n_next);
+		NLIST_PUSH_BACK(&tmp->val_l, n_next);
+	}
+
+	if (!strcmp(functor, ";"))			// Part2
+	{
+		node *n2 = make_cut();
+		n2->flags |= FLAG_HIDDEN|FLAG_NOFOLLOW;
+		NLIST_PUSH_BACK(&tmp->val_l, n2);
+	}
+
+	if (strcmp(functor, ":-"))
+		tmp = flatten(term, tmp);
+
+	return tmp;
+}
+
+static node *attach_op_prefix_n(lexer *l, node *term, node *n)
+{
+	node *tmp = make_structure();
+	tmp->flags |= FLAG_ATTACHED;
+
+	if (is_builtin(n))
+	{
+		tmp->flags |= FLAG_BUILTIN;
+		tmp->bifptr = n->bifptr;
+	}
+
+	node *n_next = NLIST_NEXT(n);
+	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
+	NLIST_REMOVE(&term->val_l, n);
+	NLIST_PUSH_BACK(&tmp->val_l, n);
+
+	while (n_next)
+	{
+		node *save = n_next;
+		n_next = NLIST_NEXT(save);
+		NLIST_REMOVE(&term->val_l, save);
+		NLIST_PUSH_BACK(&tmp->val_l, save);
+	}
+
+	return tmp;
+}
+
+static node *attach_op_prefix(lexer *l, node *term, node *n)
+{
+	node *tmp = make_structure();
+	tmp->flags |= FLAG_ATTACHED;
+
+	if (is_builtin(n))
+	{
+		tmp->flags |= FLAG_BUILTIN;
+		tmp->bifptr = n->bifptr;
+	}
+
+	node *n_next = NLIST_NEXT(n);
+	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
+	NLIST_REMOVE(&term->val_l, n);
+	NLIST_REMOVE(&term->val_l, n_next);
+	NLIST_PUSH_BACK(&tmp->val_l, n);
+	NLIST_PUSH_BACK(&tmp->val_l, n_next);
+
+	const char *functor = n->val_s;
+
+	if (!strcmp(functor, "\\+"))
+	{
+		node *n2 = make_cut();
+		n2->flags |= FLAG_HIDDEN;
+		NLIST_PUSH_BACK(&tmp->val_l, n2);
+		n2 = make_fail();
+		n2->flags |= FLAG_HIDDEN;
+		NLIST_PUSH_BACK(&tmp->val_l, n2);
+	}
+
+	tmp = flatten(term, tmp);
+	return tmp;
+}
+
+static node *attach_op_postfix(lexer *l, node *term, node *n)
+{
+	node *tmp = make_structure();
+	tmp->flags |= FLAG_ATTACHED;
+
+	if (is_builtin(n))
+	{
+		tmp->flags |= FLAG_BUILTIN;
+		tmp->bifptr = n->bifptr;
+	}
+
+	node *n_prev = NLIST_PREV(n);
+	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
+	NLIST_REMOVE(&term->val_l, n);
+	NLIST_REMOVE(&term->val_l, n_prev);
+	NLIST_PUSH_BACK(&tmp->val_l, n);
+	NLIST_PUSH_BACK(&tmp->val_l, n_prev);
+	tmp = flatten(term, tmp);
+	return tmp;
+}
+
+static int attach_ops(lexer *l, node *term)
+{
+	if (!is_compound(term) || (term->flags & FLAG_ATTACHED))
+		return 0;
+
+	unsigned priority = UINT_MAX;
+	int was_operator = 1;
+	int xfy = 0;
+
+	for (node *n = NLIST_FRONT(&term->val_l); n; n = NLIST_NEXT(n))
+	{
+		while (attach_ops(l, n));
+
+		if (!is_atom(n))
+		{
+			was_operator = 0;
+			continue;
+		}
+
+		const char *functor = n->val_s;
+
+		if (!strcmp(functor, g_list_cons))
+		{
+			was_operator = 1;
+			continue;
+		}
+
+		const ops *optr = get_op(&l->pl->db, functor, !NLIST_PREV(n)?1:0);
+		if (!optr->op)
+		{
+			was_operator = 0;
+			continue;
+		}
+
+		if (was_operator && !strcmp(functor, "-"))
+		{
+			node *tmp = NLIST_NEXT(n);
+
+			if (is_number(tmp))
+			{
+				if (is_float(tmp))
+					tmp->val_f = -tmp->val_f;
+				else
+					tmp->val_i = -tmp->val_i;
+
+				NLIST_REMOVE(&term->val_l, n);
+				term_heapcheck(n);
+				n = tmp;
+				continue;
+			}
+
+			free(n->val_s);
+			functor = n->val_s = "--";
+			n->flags |= FLAG_CONST;
+			n->bifptr = bif_iso_reverse;
+		}
+		else if (was_operator && !strcmp(functor, "+"))
+		{
+			node *tmp = NLIST_NEXT(n);
+			NLIST_REMOVE(&term->val_l, n);
+			term_heapcheck(n);
+			n = tmp;
+			continue;
+		}
+
+		was_operator = 0;
+
+		if (!optr->op)
+			continue;
+
+		//term->flags &= ~FLAG_TUPLE;
+		was_operator = 1;
+
+		if (optr->priority < priority)
+		{
+			xfy = !strcmp(optr->spec, "xfy");
+			priority = optr->priority;
+		}
+	}
+
+	int did_something = 0;
+
+	for (node *n = xfy?NLIST_BACK(&term->val_l):NLIST_FRONT(&term->val_l);
+			n; n = xfy?NLIST_PREV(n):NLIST_NEXT(n))
+	{
+		if (!is_atom(n) || (n->flags & FLAG_QUOTED))
+			continue;
+
+		const char *functor = n->val_s;
+		const ops *optr = get_op(&l->pl->db, functor, !NLIST_PREV(n)?1:0);
+
+		if (!strcmp(functor, "once"))
+		{
+			node *n2 = make_cut();
+			n2->flags |= FLAG_HIDDEN;
+			NLIST_PUSH_BACK(&term->val_l, n2);
+		}
+
+		if (!optr->op)
+			continue;
+
+		if (optr->priority != priority)
+			continue;
+
+		//printf("### attach_ops FUNCTOR = '%s' / '%s' arity=%d\n", functor, optr->spec, (int)NLIST_COUNT(&term->val_l));
+
+		if (OP_PREFIX(optr->spec))
+		{
+			const funcs *fptr = get_bif(l, functor);
+
+			if (fptr->arity == -1)
+				n = attach_op_prefix_n(l, term, n);
+			else
+				n = attach_op_prefix(l, term, n);
+		}
+		else if (OP_POSTFIX(optr->spec))
+			n = attach_op_postfix(l, term, n);
+		else if (OP_INFIX(optr->spec))
+			n = attach_op_infix(l, term, n, functor);
+		else
+			return 0;
+
+		did_something = 1;
+		if (!n) break;
+	}
+
+	if (did_something)
+		return 1;
+
+	term->flags |= FLAG_ATTACHED;
+
+	for (node *n = NLIST_FRONT(&term->val_l); n; n = NLIST_NEXT(n))
+	{
+		while (attach_ops(l, n))
+			;
+	}
+
+	if (is_builtin(term))
+	{
+		const char *functor = NLIST_FRONT(&term->val_l)->val_s;
+		int arity = NLIST_COUNT(&term->val_l)-1;
+		term->bifptr = get_bifarity(l, functor, arity)->bifptr;
+	}
+
+	return 0;
+}
+
+static void rule_done(void *p)
+{
+	rule *r = (rule*)p;
+	term_destroy(NLIST_FRONT(&r->clauses));
+	sl_done(&r->idx, NULL);
+	FREE(r);
+}
+
+static void db_init(module *self, trealla *pl, const char *name)
+{
+	self->pl = pl;
+	self->name = strdup(name);
+	sl_init(&self->dict, 0, &strcmp, &free);
+	sl_init(&self->rules, 0, &strcmp, NULL);
+	sl_init(&self->exports, 0, &strcmp, &free);
+#ifndef ISO_ONLY
+	self->guard = lock_create();
+#endif
+}
+
+static void db_done(module *self)
+{
+	sl_done(&self->rules, &rule_done);
+	sl_done(&self->dict, NULL);
+	sl_done(&self->exports, NULL);
+#ifndef ISO_ONLY
+	lock_destroy(self->guard);
+#endif
+	free(self->name);
+}
+
+static void db_free(void *p)
+{
+	if (!p) return;
+	db_done((module*)p);
+	free(p);
+}
+
+static void dir_optimize(lexer *l, node *n)
+{
+	node *term1 = n;
+	if (!is_atom(term1)) return;
+
+	if (!strcmp(term1->val_s, "none"))
+		l->pl->noopt = 2;
+	else if (!strcmp(term1->val_s, "partial"))
+		l->pl->noopt = 1;
+	else if (!strcmp(term1->val_s, "full"))
+		l->pl->noopt = 0;
+}
+
+static void dir_set_prolog_flag(lexer *l, node *n)
+{
+	node *term1 = n;
+	node *term2 = NLIST_NEXT(term1);
+	if (!term2) return;
+	if (!is_atom(term1)) return;
+	if (!is_atom(term2)) return;
+	const char *flag = n->val_s;
+	if (!strcmp(flag, "char_conversion")) l->pl->flag_char_conversion = !strcmp(term2->val_s,"true")?1:0;
+	else if (!strcmp(flag, "debug")) l->pl->flag_debug = !strcmp(term2->val_s,"true")?1:0;
+	else if (!strcmp(flag, "unknown")) l->pl->flag_unknown = !strcmp(term2->val_s,"true")?1:0;
+	else if (!strcmp(flag, "double_quotes")) l->pl->flag_double_quotes = !strcmp(term2->val_s,"true")?1:0;
+	else if (!strcmp(flag, "character_escapes")) l->pl->flag_character_escapes = !strcmp(term2->val_s,"true")?1:0;
+}
+
+static void make_dynamic(module *db, const char *functarity)
+{
+	char *key = dict(db, functarity);
+	rule *r = CALLOC(rule);
+	r->dynamic = 1;
+	sl_init(&r->idx, 1, &strcmp, NULL);
+	sl_set(&db->rules, key, r);
+}
+
+static void dir_dynamic(lexer *l, node *n)
+{
+	node *term1 = n;
+	if (!is_compound(term1)) return;
+	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+	if (!is_integer(NLIST_NEXT(head))) return;
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
+	make_dynamic(l->db, tmpbuf);
+}
+
+static void dir_op(lexer *l, node *n)
+{
+	node *term1 = n;
+	node *term2 = NLIST_NEXT(term1);
+	if (!term2) return;
+	if (!is_integer(term1)) return;
+	if (!is_atom(term2)) return;
+	if (!OP_VALID(term2->val_s)) return;
+	node *term3 = NLIST_NEXT(term2);
+	if (!is_atom(term3)) return;
+
+	if (!strcmp(term3->val_s, ",") ||
+		!strcmp(term3->val_s, "[]") ||
+		!strcmp(term3->val_s, "|"))
+		return;
+
+	DBLOCK(l->db);
+
+	if (term1->val_i > 0)
+	{
+		int idx = l->db->uops_cnt++;
+		l->db->uops[idx].priority = term1->val_i;
+		l->db->uops[idx].spec = dict(l->db, term2->val_s);
+		l->db->uops[idx].op = dict(l->db, term3->val_s);
+		DBUNLOCK(l->db);
+		return;
+	}
+
+	for (int i = 0; i < l->db->uops_cnt; i++)
+	{
+		if (!strcmp(term3->val_s, l->db->uops[i].op))
+			l->db->uops[i] = l->db->uops[--l->db->uops_cnt];
+	}
+
+	DBUNLOCK(l->db);
+}
+
+static void dir_initialization(lexer *l, node *n)
+{
+	char tmpbuf[1024];
+	sprint_term(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 1);
+	l->init = strdup(tmpbuf);
+}
+
+#ifndef ISO_ONLY
+static void make_persist(module *db, const char *functarity)
+{
+	char *key = dict(db, functarity);
+	rule *r = CALLOC(rule);
+	r->dynamic = r->persist = 1;
+	sl_init(&r->idx, 1, &strcmp, NULL);
+	sl_set(&db->rules, key, r);
+}
+
+static void dir_persist(lexer *l, node *n)
+{
+	node *term1 = n;
+	if (!is_compound(term1)) return;
+	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+	if (!is_integer(NLIST_NEXT(head))) return;
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
+	make_persist(l->db, tmpbuf);
+}
+
+static void dir_export(lexer *l, node *n)
+{
+	node *term1 = n;
+	char tmpbuf[FUNCTOR_SIZE+10];
+
+	if (!is_list(term1))
+		return;
+
+	node *n2 = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+
+	while (n2)
+	{
+		if (is_atom(n2))
+		{
+			if (!strcmp(n2->val_s, "[]"))
+				break;
+		}
+		else if (is_compound(n2))
+		{
+			node *n3 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", n3->val_s, ARITY_CHAR, (int)NLIST_NEXT(n3)->val_i);
+			sl_set(&l->db->exports, strdup(tmpbuf), NULL);
+			//printf("DEBUG: export %s\n", tmpbuf);
+		}
+
+		n2 = NLIST_NEXT(n2);
+
+		if (is_list(n2))
+			n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+	}
+}
+
+static void dir_module(lexer *l, node *n)
+{
+	node *term1 = n;
+	node *term2 = NLIST_NEXT(term1);
+	if (!is_atom(term1)) return;
+	char *name = term1->val_s;
+
+	DBSLOCK(l->pl);
+
+	if (sl_get(&l->pl->mods, name, NULL))
+	{
+		DBSUNLOCK(l->pl);
+		l->error = 1;
+		return;
+	}
+
+	l->db = (module*)calloc(1, sizeof(module));
+	db_init(l->db, l->pl, name);
+	sl_set(&l->pl->mods, strdup(name), l->db);
+	DBSUNLOCK(l->pl);
+
+	//printf("DEBUG Module '%s'\n", name);
+	sl_set(&l->ns, strdup(name), NULL);
+	add_define(l, "MODULE", name);
+
+	if (term2 && is_list(term2))
+	{
+		node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
+
+		while (n2)
+		{
+			if (is_atom(n2))
+			{
+				if (!strcmp(n2->val_s, "[]"))
+					break;
+			}
+			else if (is_compound(n2))
+			{
+				node *n3 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+				char tmpbuf[FUNCTOR_SIZE+10];
+				snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", n3->val_s, ARITY_CHAR, (int)NLIST_NEXT(n3)->val_i);
+				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
+				//printf("DEBUG: export %s\n", tmpbuf);
+			}
+
+			n2 = NLIST_NEXT(n2);
+
+			if (is_list(n2))
+				n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+		}
+	}
+
+	char filename[1024];
+	snprintf(filename, sizeof(filename), "%s.conf", name);
+	struct stat st = {0};
+	if (stat(filename, &st) != 0) return;
+	FILE *fp = fopen(filename, "rb");
+	if (fp == NULL) return;
+	char *dstbuf = (char*)malloc(st.st_size+1);
+	size_t len = fread(dstbuf, 1, st.st_size, fp);
+	dstbuf[len] = '\0';
+	fclose(fp);
+	char nambuf[256], tmpbuf[1024*4];
+	char *dstbuf2 = (char*)malloc(st.st_size+1);
+	char *dst = dstbuf2;
+	const char *src = dstbuf;
+
+	while (*src)
+	{
+		char ch = *src++;
+
+		if ((ch == '\t') || (ch == '\r') || (ch == '\n'))
+			continue;
+
+		*dst++ = ch;
+	}
+
+	*dst = '\0';
+	int i = 0;
+
+	while (jsonqi(dstbuf2, i++, nambuf, sizeof(nambuf), tmpbuf, sizeof(tmpbuf)) != NULL)
+	{
+		if (!isdigit(tmpbuf[0]))
+		{
+			char tmpbuf2[sizeof(tmpbuf)*2+20];
+			char *dst = tmpbuf2;
+			*dst++ = '\'';
+			deescape(dst, tmpbuf, '\'');
+			dst += strlen(dst);
+			*dst++ = '\'';
+			*dst = '\0';
+			add_define(l, nambuf, tmpbuf2);
+		}
+		else
+			add_define(l, nambuf, tmpbuf);
+	}
+
+	free(dstbuf);
+}
+
+static void dir_using(lexer *l, node *n)
+{
+	node *term1 = n;
+
+	if (is_atom(term1))
+	{
+		sl_set(&l->ns, strdup(term1->val_s), NULL);
+		return;
+	}
+
+	if (!is_list(term1))
+		return;
+
+	node *n2 = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+
+	while (n2)
+	{
+		if (is_atom(n2))
+		{
+			if (!strcmp(n2->val_s, "[]"))
+				break;
+
+			sl_set(&l->ns, strdup(n2->val_s), NULL);
+		}
+
+		n2 = NLIST_NEXT(n2);
+
+		if (is_list(n2))
+			n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+	}
+}
+
+static void dir_define(lexer *l, node *n)
+{
+	node *term1 = n;
+	node *term2 = NLIST_NEXT(term1);
+	if (!is_atom(term1) && !is_var(term1)) return;
+	if (!term2) return;
+	if (!is_atomic(term2)) return;
+	char tmpbuf[KEY_SIZE];
+	sprint_term(tmpbuf, sizeof(tmpbuf), l->pl, NULL, term2, 1);
+	add_define(l, term1->val_s, tmpbuf);
+}
+
+static void dir_use_module(lexer *l, node *n)
+{
+	node *term1 = n;
+	if (!is_atom(term1)) return;
+	const char *name = term1->val_s;
+	sl_set(&l->ns, strdup(name), NULL);
+
+	DBSLOCK(l->pl);
+
+	if (sl_get(&l->pl->mods, name, NULL))
+	{
+		DBSUNLOCK(l->pl);
+		return;
+	}
+
+	DBSUNLOCK(l->pl);
+	trealla_consult_file(l->pl, name);
+}
+
+static void dir_unload_file(lexer *l, node *n)
+{
+	node *term1 = n;
+	if (!is_atom(term1)) return;
+	trealla_deconsult(l->pl, term1->val_s);
+}
+
+static void dir_function(lexer *l, node *n)
+{
+	node *term1 = n;
+
+	if (is_structure(term1))
+	{
+		add_function(l, term1);
+	}
+	else if (is_list(term1))
+	{
+		node *n2 = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+
+		while (n2)
+		{
+			if (is_atom(n2))
+			{
+				if (!strcmp(n2->val_s, "[]"))
+					break;
+			}
+			else if (is_structure(n2))
+			{
+				add_function(l, n2);
+			}
+
+			n2 = NLIST_NEXT(n2);
+
+			if (is_list(n2))
+				n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+		}
+	}
+}
+#endif
+
+static void dir_include(lexer *l, node *n)
+{
+	node *term1 = n;
+	if (!is_atom(term1)) return;
+	lexer_consult(l, term1->val_s);
+}
+
+static void directive(lexer *l, node *n)
+{
+	if (NLIST_COUNT(&n->val_l) < 2)
+		return;
+
+	if (!is_compound(n)) return;
+	node *head = NLIST_FRONT(&n->val_l);
+	if (!is_atom(head)) return;
+	const char *functor = head->val_s;
+	node *n3 = NLIST_NEXT(head);
+
+	if (!strcmp(functor, "include"))
+		dir_include(l, n3);
+	else if (!strcmp(functor, "initialization"))
+		dir_initialization(l, n3);
+	else if (!strcmp(functor, "set_prolog_flag"))
+		dir_set_prolog_flag(l, n3);
+	else if (!strcmp(functor, "dynamic"))
+		dir_dynamic(l, n3);
+	else if (!strcmp(functor, "op"))
+		dir_op(l, n3);
+#ifndef ISO_ONLY
+	else if (!strcmp(functor, "persist"))
+		dir_persist(l, n3);
+	else if (!strcmp(functor, "module"))
+		dir_module(l, n3);
+	else if (!strcmp(functor, "using"))
+		dir_using(l, n3);
+	else if (!strcmp(functor, "export"))
+		dir_export(l, n3);
+	else if (!strcmp(functor, "define"))
+		dir_define(l, n3);
+	else if (!strcmp(functor, "function"))
+		dir_function(l, n3);
+	else if (!strcmp(functor, "ensure_loaded"))
+		dir_use_module(l, n3);
+	else if (!strcmp(functor, "use_module"))
+		dir_use_module(l, n3);
+	else if (!strcmp(functor, "unload_file"))
+		dir_unload_file(l, n3);
+#endif
+	else if (!strcmp(functor, "optimize"))
+		dir_optimize(l, n3);
+}
+
+typedef struct
+{
+	char *buf, *dst;
+	size_t maxlen;
+}
+ token;
+
+static void token_init(token *t)
+{
+	t->dst = t->buf = (char*)malloc((t->maxlen=15)+1);
+	*t->dst = '\0';
+}
+
+static void token_put(token *t, char ch)
+{
+	size_t len = t->dst - t->buf;
+
+	if ((len+1) == t->maxlen)
+	{
+		t->buf = (char*)realloc(t->buf, (t->maxlen*=2)+1);
+		t->dst = t->buf + len;
+	}
+
+	*t->dst++ = ch;
+	*t->dst = '\0';
+}
+
+static char *token_take(token *t)
+{
+	return t->buf;
+}
+
+const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
+{
+#ifndef ISO_ONLY
+	if ((ch == '0') && (*s == 'b'))
+	{
+		unbr_t v = 0;
+		s++;
+
+		while ((*s == '0') || (*s == '1'))
+		{
+			v <<= 1;
+
+			if (*s == '1')
+				v |= 1;
+
+			s++;
+		}
+
+		*numeric = 3;
+		*value = v;
+		return s;
+	}
+#endif
+
+	if ((ch == '0') && (*s == 'o'))
+	{
+		unbr_t v = 0;
+		s++;
+
+		while ((*s >= '0') && (*s <= '7'))
+		{
+			v *= 8;
+			v += *s - '0';
+			s++;
+		}
+
+		*numeric = 4;
+		*value = v;
+		return s;
+	}
+
+	if ((ch == '0') && (*s == 'x'))
+	{
+		unbr_t v = 0;
+		s++;
+
+		while (((*s >= '0') && (*s <= '9')) ||
+			((toupper(*s) >= 'A') && (toupper(*s) <= 'F')))
+		{
+			v *= 16;
+
+			if ((toupper(*s) >= 'A') && (toupper(*s) <= 'F'))
+				v += 10 + (toupper(*s) - 'A');
+			else
+				v += *s - '0';
+
+			s++;
+		}
+
+		*numeric = 5;
+		*value = v;
+		return s;
+	}
+
+	int neg = 0;
+
+	if (ch == '-')
+	{
+		neg = 1;
+		ch = '0';
+	}
+
+	nbr_t v = ch - '0';
+	int real = 0, exp = 0;
+
+	while ((ch = *s++) != '\0')
+	{
+		if (ch == '_')
+			;
+		else if ((ch == '.') && isdigit(*s))
+			real = 1;
+		else if (!exp && ((ch == 'e') || (ch == 'E')))
+			real = exp = 1;
+		else if (exp && ((ch == '-') || (ch == '+')))
+			exp = 0;
+		else if (!isdigit(ch))
+			{ s--; break; }
+		else
+		{
+			v *= 10;
+			v += ch - '0';
+		}
+	}
+
+	*numeric = real ? 1 : 2;
+	*value = neg ? -v : v;
+	return s;
+}
+
+static const char *get_token(lexer *l, const char *s, char **line)
+{
+	while (isspace(*s))
+		s++;
+
+	if (*s == '%')
+	{
+		char ch;
+
+		while ((ch = *s++) != 0)
+		{
+			if (ch == '\n')
+				break;
+		}
+
+		return NULL;
+	}
+
+	if (!*s || (*s == '\n'))
+		return NULL;
+
+	token t;
+	token_init(&t);
+	l->numeric = l->quoted = 0;
+	char ch, quote;
+#ifndef ISO_ONLY
+	int is_def = 0;
+#endif
+
+	while ((ch = *s++) != 0)
+	{
+		if ((t.dst != t.buf) && (ch == '?') && (isupper(*s)))
+		{
+			s--;
+			break;
+		}
+
+		if ((ch == '?') && isupper(*s))
+		{
+			token_put(&t, '?');
+#ifndef ISO_ONLY
+			is_def = 1;
+#endif
+			continue;
+		}
+
+		if ((ch == '\'') || (ch == '"') || (ch == '`'))
+		{
+			quote = ch;
+			l->quoted = quote == '`' ? 3 : quote == '"' ? 2 : 1;
+
+			while (l->quoted)
+			{
+				while ((ch = *s++) != 0)
+				{
+					if (ch == quote)
+						break;
+
+					if (l->pl->flag_character_escapes &&
+						(l->quoted <= 2) && (ch == '\\'))
+					{
+						const char *ptr = strchr(g_anti_escapes, ch = *s++);
+						if (ptr) token_put(&t, g_escapes[ptr-g_anti_escapes]);
+						else token_put(&t, ch);
+					}
+					else
+						token_put(&t, ch);
+				}
+
+				if (!ch && l->fp)
+				{
+					char *newline = trealla_readline(l->fp);
+
+					if (newline)
+					{
+						free(*line);
+						*line = newline;
+						s = newline;
+						continue;
+					}
+				}
+
+				break;
+			}
+
+			break;
+		}
+
+		if (isalpha(ch) || (ch == '_'))
+		{
+			token_put(&t, ch);
+
+			while ((ch = *s++) != 0)
+			{
+				if (!isalnum(ch) && (ch != '_'))
+				{
+#ifndef ISO_ONLY
+					if ((ch == ':') && get_ns(l, t.buf))
+						;
+					else
+#endif
+					{
+						s--;
+						break;
+					}
+				}
+
+				token_put(&t, ch);
+			}
+
+			break;
+		}
+
+		if (isdigit(ch))
+		{
+			const char *save_s = s;
+			nbr_t v = 0;
+			s = parse_number(ch, s, &v, &l->numeric);
+
+			if (l->numeric > 1)
+			{
+				t.dst = t.buf = (char*)realloc(t.buf, (t.maxlen=255)+1);
+				t.dst += sprint_int(t.buf, t.maxlen, v, 10);
+				break;
+			}
+			else
+			{
+				token_put(&t, ch);
+				int exp = 0;
+
+				while ((ch = *save_s++) != 0)
+				{
+					if (ch == '_')
+						;
+					else if ((ch == '.') && isdigit(*save_s))
+						;
+					else if (!exp && ((ch == 'e') || (ch == 'E')))
+						exp = 1;
+					else if (exp && ((ch == '-') || (ch == '+')))
+						exp = 1;
+					else if (!isdigit(ch))
+						{ save_s--; break; }
+
+					token_put(&t, ch);
+				}
+
+				break;
+			}
+		}
+
+		token_put(&t, ch);
+
+		if ((ch == '[') && (*s == ']'))		// Hack
+			token_put(&t, ch = *s++);
+
+
+		if ((ch == '{') && (*s == '}'))		// Hack
+			token_put(&t, ch = *s++);
+
+		static const char seps[] = ".!()[]{}_\"'` \t\r\n";
+
+		if (strchr(seps, ch) || strchr(seps, *s) || isalnum(*s))
+			break;
+	}
+
+	while (isspace(*s))
+		s++;
+
+	if (*s == '%')
+	{
+		char ch;
+
+		while ((ch = *s++) != 0)
+		{
+			if (ch == '\n')
+				break;
+		}
+	}
+
+	l->tok = token_take(&t);
+
+#ifndef ISO_ONLY
+	if (l->tok && is_def)
+	{
+		const char *key = l->tok+1;					// skip the '?'
+
+		if (!strcmp(key, "RANDOM"))
+		{
+			free(l->tok);
+			char tmpbuf[80];
+			sprintf(tmpbuf, "%d", (int)rand());
+			get_token(l, tmpbuf, line);
+			return s;
+		}
+		else if (!strcmp(key, "RANDOMSTR"))
+		{
+			free(l->tok);
+			char tmpbuf[80];
+			sprintf(tmpbuf, "'%d'", (int)rand());
+			get_token(l, tmpbuf, line);
+			return s;
+		}
+		else if (!strcmp(key, "TIME"))
+		{
+			free(l->tok);
+			char tmpbuf[80];
+			sprintf(tmpbuf, "%lld", (long long)time(NULL));
+			get_token(l, tmpbuf, line);
+			return s;
+		}
+		else if (!strcmp(key, "TIMESTR"))
+		{
+			free(l->tok);
+			char tmpbuf[80];
+			sprintf(tmpbuf, "'%lld'", (long long)time(NULL));
+			get_token(l, tmpbuf, line);
+			return s;
+		}
+
+		const char *value = get_define(l, key);
+
+		if (value != NULL)
+		{
+			free(l->tok);
+			get_token(l, value, line);
+			return s;
+		}
+
+		printf("Warning: undefined constant '%s'\n", key);
+		get_token(l, key, line);
+		l->error = 1;
+	}
+#endif
+
+	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\"\n", l->tok, l->numeric, l->quoted, s);
+	return s;
+}
+
+void lexer_init(lexer *self, trealla *pl)
+{
+	memset(self, 0, sizeof(lexer));
+	sl_init(&self->symtab, 0, &strcmp, NULL);
+	sl_init(&self->ns, 0, &strcmp, &free);
+	sl_init(&self->defines, 0, &strcmp, &free);
+	sl_init(&self->funs, 0, &strcmp, &free);
+	self->pl = pl;
+	self->db = &pl->db;
+}
+
+void lexer_done(lexer *self)
+{
+	sl_done(&self->funs, NULL);
+	sl_done(&self->defines, &free);
+	sl_done(&self->ns, NULL);
+	sl_done(&self->symtab, NULL);
+	memset(self, 0, sizeof(lexer));
+}
+
+static void lexer_finalize(lexer *self)
+{
+	if (self->fact)
+	{
+		node *tmp = new_node();
+		tmp->flags |= TYPE_ATOM|FLAG_CONST|FLAG_BUILTIN;
+		tmp->val_s = ":-";
+		NLIST_PUSH_BACK(&self->r->val_l, tmp);
+		tmp = new_node();
+		tmp->flags |= TYPE_ATOM|FLAG_CONST|FLAG_BUILTIN;
+		tmp->val_s = "true";
+		tmp->bifptr = bif_iso_true;
+		NLIST_PUSH_BACK(&self->r->val_l, tmp);
+	}
+
+	//{ printf("### parse b4 "); dump_term(NULL, self->r); printf("\n"); }
+
+	while (attach_ops(self, self->r))
+		;
+
+	node *r = NLIST_FRONT(&self->r->val_l);
+	r->frame_size = self->vars;
+	r->flags |= FLAG_RULE;
+	if (self->fact) r->flags |= FLAG_FACT;
+
+	//{ printf("### parse a4 "); dump_term(NULL, r); printf("\n"); }
+
+	const char *functor = NLIST_FRONT(&r->val_l)->val_s;
+	int arity = NLIST_COUNT(&r->val_l)-1;
+
+	if (self->consult && !self->fact && (arity == 1) && !strcmp(functor, ":-"))
+		directive(self, NLIST_NEXT(NLIST_FRONT(&r->val_l)));
+	else if (self->consult && !strcmp(functor, "?-"))
+		;
+	else
+	{
+		NLIST_REMOVE(&self->r->val_l, r);
+		NLIST_PUSH_BACK(&self->clauses, r);
+	}
+
+	term_heapcheck(self->r);
+	self->r = NULL;
+	sl_clear(&self->symtab, NULL);
+}
+
+// Common keywords to optimize facts
+
+static const char *get_keyword(const char *s)
+{
+	static const char *keywords[] =
+		{"true","false","fail","repeat",":-","->"};
+
+	int i;
+
+	for (i = 0; i < (sizeof(keywords)/sizeof(char*)); i++)
+	{
+		if (!strcmp(s, keywords[i]))
+			return keywords[i];
+	}
+
+	return NULL;
+}
+
+const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
+{
+	self->depth++;
+
+	while ((src = get_token(self, src, line)) != NULL)
+	{
+		if (!self->r)
+		{
+			self->r = term = make_structure();
+			self->term = NULL;
+			self->vars = self->anons = 0;
+			self->fact = 1;
+		}
+
+		if (!self->quoted && !*self->tok)
+		{
+			free(self->tok);
+			continue;
+		}
+
+		if (!self->quoted && !strcmp(self->tok, ".") /*&& !*src*/)
+		{
+			free(self->tok);
+			lexer_finalize(self);
+
+			if (self->error)
+				return src;
+
+			continue;
+		}
+
+		if (!self->quoted &&
+			(!strcmp(self->tok, "]") || !strcmp(self->tok, ")")))
+		{
+			if (term->flags & FLAG_CONSING)
+			{
+				node *tmp = new_node();
+				tmp->flags |= TYPE_ATOM|FLAG_CONST;
+				tmp->val_s = "[]";
+				NLIST_PUSH_BACK(&term->val_l, tmp);
+			}
+
+			free(self->tok);
+
+			if (!--self->depth)
+			{
+				self->error = 1;
+				return NULL;
+			}
+
+			if (NLIST_COUNT(&term->val_l) == 1)
+			{
+				node *save = term;
+				*term = *NLIST_FRONT(&term->val_l);
+				term_heapcheck(save);
+			}
+
+			return src;
+		}
+
+		if (!self->quoted && !strcmp(self->tok, "}"))
+		{
+			free(self->tok);
+
+			if (!--self->depth)
+			{
+				self->error = 1;
+				return NULL;
+			}
+
+			return src;
+		}
+
+		if (!self->quoted && !strcmp(self->tok, ",") &&
+			!is_tuple(term) && !(term->flags & FLAG_BARE))
+		{
+			free(self->tok);
+
+			if (!(term->flags & FLAG_CONSING))
+				continue;
+
+			node *tmp = make_list();
+			tmp->flags |= FLAG_CONSING;
+			NLIST_PUSH_BACK(&term->val_l, tmp);
+			term = tmp;
+			continue;
+		}
+
+		if (!self->quoted && !strcmp(self->tok, "|"))
+		{
+			free(self->tok);
+			term->flags &= ~FLAG_CONSING;
+			continue;
+		}
+
+		if (!self->quoted && (!strcmp(self->tok, ":-") || !strcmp(self->tok, "?-")))
+			self->fact = 0;
+
+		node *n = new_node();
+
+		if (!self->quoted && !strcmp(self->tok, "{}"))
+		{
+			free(self->tok);
+			n->flags |= TYPE_ATOM|FLAG_CONST;
+			n->val_s = "{}";
+		}
+		else if (!self->quoted && !strcmp(self->tok, "[]"))
+		{
+			free(self->tok);
+			n->flags |= TYPE_ATOM|FLAG_CONST;
+			n->val_s = "[]";
+		}
+		else if (!self->quoted && !strcmp(self->tok, "["))
+		{
+			free(self->tok);
+			n->flags |= TYPE_COMPOUND|FLAG_LIST|FLAG_CONSING;
+			NLIST_INIT(&n->val_l);
+			node *tmp = new_node();
+			tmp->flags |= TYPE_ATOM|FLAG_CONST|FLAG_QUOTED;
+			tmp->val_s = (char*)g_list_cons;
+			NLIST_PUSH_BACK(&n->val_l, tmp);
+			src = lexer_parse(self, n, src, line);
+			if (self->error) return src;
+		}
+		else if (!self->quoted && !strcmp(self->tok, "{"))
+		{
+			free(self->tok);
+			n->flags |= TYPE_COMPOUND|FLAG_TUPLE;
+			NLIST_INIT(&n->val_l);
+			node *tmp = new_node();
+			tmp->flags |= TYPE_ATOM|FLAG_CONST;
+			tmp->val_s = "{}";
+			NLIST_PUSH_BACK(&n->val_l, tmp);
+			src = lexer_parse(self, n, src, line);
+			if (self->error) return src;
+		}
+		else if (!self->quoted && !strcmp(self->tok, "("))
+		{
+			free(self->tok);
+			n->flags |= TYPE_COMPOUND|FLAG_BARE;
+			NLIST_INIT(&n->val_l);
+
+			if ((NLIST_COUNT(&term->val_l) != 0) /*&&
+				!(term->flags & FLAG_CONSING)*/)
+			{
+				node *tmp = NLIST_BACK(&term->val_l);
+
+				if (is_atom(tmp))
+				{
+					const char *functor = tmp->val_s;
+					const ops *optr = get_op(&self->pl->db, functor, 0);
+					int doit = !strcmp(functor, ",") && !self->quoted && is_tuple(term);
+
+					if ((!optr->op &&
+						strcmp(functor, g_list_cons) &&
+						strcmp(functor, "!")) || doit)
+					{
+						NLIST_REMOVE(&term->val_l, tmp);
+						NLIST_PUSH_BACK(&n->val_l, tmp);
+						n->flags &= ~FLAG_BARE;
+
+						if (!strcmp(functor, "call") ||
+							!strcmp(functor, "write_file") ||
+							!strcmp(functor, "sys:write_file") ||
+							!strcmp(functor, "put_file") ||
+							!strcmp(functor, "http:put_file") ||
+							!strcmp(functor, "findnsols") ||
+							!strcmp(functor, "sys:findnsols"))
+						{
+							node *tmp = new_node();
+							tmp->flags |= TYPE_VAR|FLAG_ANON|FLAG_HIDDEN;
+							char tmpbuf[40];
+							snprintf(tmpbuf, sizeof(tmpbuf), "_%d", self->anons++);
+							tmp->val_s = strdup(tmpbuf);
+							attach_vars(self, tmp);
+							NLIST_PUSH_BACK(&n->val_l, tmp);
+						}
+
+						if (!strcmp(functor, g_list_cons) && (tmp->flags&FLAG_QUOTED))
+							n->flags |= FLAG_LIST;
+
+						if (is_builtin(tmp))
+						{
+							n->flags |= FLAG_BUILTIN;
+							n->bifptr = tmp->bifptr;
+						}
+					}
+				}
+			}
+
+			src = lexer_parse(self, n, src, line);
+
+#ifndef ISO_ONLY
+			if (get_function(self, n))
+			{
+				node *tmp = new_node();
+				tmp->flags |= TYPE_VAR|FLAG_ANON|FLAG_HIDDEN;
+				char tmpbuf[40];
+				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", self->anons++);
+				tmp->val_s = strdup(tmpbuf);
+				attach_vars(self, tmp);
+				NLIST_PUSH_BACK(&n->val_l, tmp);
+			}
+#endif
+
+			if (self->error) return src;
+		}
+		else if (self->numeric >= 2)
+		{
+			n->flags |= TYPE_INTEGER;
+			if (self->numeric == 3) n->flags |= FLAG_BINARY;
+			else if (self->numeric == 4) n->flags |= FLAG_OCTAL;
+			else if (self->numeric == 5) n->flags |= FLAG_HEX;
+			n->val_i = dec_to_int(self->tok);
+			free(self->tok);
+		}
+		else if (self->numeric == 1)
+		{
+			n->flags |= TYPE_FLOAT;
+			n->val_f = (flt_t)strtod(self->tok, NULL);
+			free(self->tok);
+		}
+		else if (!self->quoted && !strcmp(self->tok, "pi"))
+		{
+			free(self->tok);
+			n->flags |= TYPE_FLOAT|FLAG_PI;
+			n->val_f = PI;
+		}
+		else if (!self->quoted &&
+			((self->tok[0] == '_') || isupper(self->tok[0])))
+		{
+			n->flags |= TYPE_VAR;
+
+			if (!strcmp(self->tok, "_"))
+			{
+				n->flags |= FLAG_ANON;
+				char tmpbuf[40];
+				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", self->anons++);
+				n->val_s = strdup(tmpbuf);
+			}
+			else
+			{
+				n->flags |= FLAG_CONST;
+				n->val_s = dict(&self->pl->db, self->tok);
+			}
+
+			free(self->tok);
+			attach_vars(self, n);
+		}
+		else
+		{
+			n->flags |= TYPE_ATOM;
+
+			if (self->quoted)
+				n->flags |= FLAG_QUOTED;
+
+			if (self->quoted == 2)
+				n->flags |= FLAG_DOUBLE_QUOTE;
+
+			if ((n->bifptr = get_bif(self, self->tok)->bifptr) != NULL)
+				n->flags |= FLAG_BUILTIN;
+
+			if (self->quoted && !*self->tok)
+			{
+				free(self->tok);
+				n->flags |= FLAG_CONST;
+				self->tok = "";
+			}
+			else if (!self->quoted)
+			{
+				const char *src = get_keyword(self->tok);
+
+				if (src)
+				{
+					free(self->tok);
+					n->flags |= FLAG_CONST;
+					self->tok = (char*)src;
+				}
+			}
+#ifndef ISO_ONLY
+			else if (self->quoted == 3)
+			{
+				n->flags |= FLAG_BLOB;
+				char *dstbuf = (char*)malloc(strlen(self->tok)+1);
+				size_t len = b64_decode(self->tok, strlen(self->tok), &dstbuf);
+				n->val_len = len;
+				free(self->tok);
+				self->tok = dstbuf;
+			}
+#endif
+
+			n->val_s = self->tok;
+		}
+
+		NLIST_PUSH_BACK(&term->val_l, n);
+	}
+
+	self->depth--;
+
+	if (self->depth && self->fp && line)
+	{
+		free(*line);
+		*line = trealla_readline(self->fp);
+		if (!*line) return NULL;
+		src = lexer_parse(self, term, *line, line);
+		if (self->error) return src;
+		if (!src) free(*line);
+	}
+	else if (self->depth)
+		self->error = 1;
+
+	return src;
+}
+
+static const char *exts[] = {".prolog",".pro",".pl",".P"};
+
+int lexer_consult(lexer *self, const char *filename)
+{
+	FILE *fp = fopen(filename, "rb");
+	size_t i = 0;
+
+	while (!fp && (i < (sizeof(exts)/sizeof(char*))))
+	{
+		char tmpbuf[1024];
+		strncpy(tmpbuf, filename, sizeof(tmpbuf)-10);
+		strcat(tmpbuf, exts[i++]);
+		fp = fopen(tmpbuf, "rb");
+	}
+
+	if (!fp)
+	{
+		printf("ERROR: consult '%s': %s\n", filename, strerror(errno));
+		return 0;
+	}
+
+	FILE *save_fp = self->fp;
+	node *save_rule = self->r;
+	self->name = strdup(filename);		// FIXME: memory leak
+	self->r = NULL;
+	self->fp = fp;
+	char *line;
+	int nbr = 1;
+
+	while ((line = trealla_readline(fp)) != NULL)
+	{
+		const char *src = lexer_parse(self, self->r, line, &line);
+		free(line);
+
+		if (self->error)
+		{
+			printf("ERROR: consult '%s'\n>>> "
+				"Mismatched parenthesis or brackets,"
+				"line=%d\n>>> %s\n", filename, nbr, src);
+			fclose(fp);
+			return 0;
+		}
+
+		nbr++;
+	}
+
+	fclose(fp);
+	self->fp = save_fp;
+	self->r = save_rule;
+	return 1;
+}
+
+static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, int arity)
+{
+	if (!strcmp(functor, "[]") || !strcmp(functor, g_list_cons) || (term->flags&FLAG_QUOTED))
+		return NULL;
+
+	char tmpbuf[FUNCTOR_SIZE+10];
+	const char *functarity;
+
+	if (!strchr(functor, ARITY_CHAR))
+	{
+		snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+		functarity = tmpbuf;
+	}
+	else
+		functarity = functor;
+
+	rule *r = NULL;
+
+	if (!sl_get(&db->rules, functarity, (void**)&r))
+		return NULL;
+
+	if (!(term->flags & FLAG_CONST))
+		free(term->val_s);
+
+	term->flags |= FLAG_CONST;
+	term->val_s = dict(l->db, functarity);
+	return r;
+}
+
+rule *xref_term(lexer *l, node *term, int arity)
+{
+	const char *functor = term->val_s;
+	const char *src = strchr(functor, ':');
+	rule *r = NULL;
+
+	if (src)
+	{
+		char tmpbuf[FUNCTOR_SIZE+10];
+		memcpy(tmpbuf, functor, src-functor);
+		tmpbuf[src-functor] = '\0';
+		functor = src+1;
+		module *db = NULL;
+
+		if (sl_get(&l->pl->mods, tmpbuf, (void**)&db))
+		{
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+
+			if (!sl_get(&db->exports, tmpbuf, NULL))
+				return NULL;
+
+			r = xref_term2(l, db, functor, term, arity);
+		}
+	}
+
+	if (r != NULL) return r;
+	r = xref_term2(l, l->db, functor, term, arity);
+	if (r != NULL) return r;
+	r = xref_term2(l, &l->pl->db, functor, term, arity);
+	if (r != NULL) return r;
+
+	sl_start(&l->ns);
+	const char *key;
+
+	while ((key = sl_next(&l->ns, NULL)) != NULL)
+	{
+		module *db = NULL;
+
+		if (!sl_get(&l->pl->mods, key, (void**)&db))
+			continue;
+
+		if (db == NULL)
+			continue;
+
+		r = xref_term2(l, db, functor, term, arity);
+
+		if (r != NULL)
+			break;
+	}
+
+	return r;
+}
+
+void xref_rule(lexer *l, node *n)
+{
+	// Cross-reference all body functors with the index, and
+	// point to the actual index rule to allow for assert etc.
+
+	node *tmp = NLIST_FRONT(&n->val_l);
+	node *head = NLIST_NEXT(tmp);
+	node *body = NLIST_NEXT(head);
+	const char *head_functor = "";
+
+	if (is_compound(head))
+		head_functor = NLIST_FRONT(&head->val_l)->val_s;
+	else if (is_atom(head))
+		head_functor = head->val_s;
+
+#ifndef ISO_ONLY
+	if (sl_get(&l->db->exports, head_functor, NULL))
+	{
+		node *s = make_structure();
+		s->flags |= FLAG_BUILTIN|FLAG_HIDDEN;
+		s->bifptr = &bif_dbs_enter;
+		node *tmp = make_const_atom("enter", 0);
+		tmp->flags |= FLAG_BUILTIN;
+		tmp->bifptr = &bif_dbs_enter;
+		NLIST_PUSH_BACK(&s->val_l, tmp);
+		tmp = make_atom(strdup(l->db->name), 0);
+		NLIST_PUSH_BACK(&s->val_l, tmp);
+		NLIST_INSERT_AFTER(&n->val_l, head, s);
+	}
+#endif
+
+	for (n = body; n; n = NLIST_NEXT(n))
+	{
+		const char *functor = NULL;
+
+		if (is_compound(n))
+		{
+			//xref_rule(l, n);
+			node *tmp = NLIST_FRONT(&n->val_l);
+
+			if (is_atom(tmp) && !(tmp->flags & FLAG_BUILTIN))
+			{
+				n->match = xref_term(l, tmp, NLIST_COUNT(&n->val_l)-1);
+				functor = tmp->val_s;
+			}
+			else
+				continue;
+		}
+		else if (is_atom(n) && !(n->flags & FLAG_BUILTIN))
+		{
+			n->match = xref_term(l, n, 0);
+			functor = n->val_s;
+		}
+		else
+			continue;
+
+		if (!NLIST_NEXT(n) && (n != head) && !l->pl->noopt)
+		{
+			if (!strcmp(functor, head_functor))
+				n->flags |= FLAG_LASTCALL;
+		}
+	}
+}
+
+static void add_clauses(lexer *l, int internal)
+{
+	list tmp_l;
+	list_init(&tmp_l);
+	node *n;
+
+	while ((n = NLIST_POP_FRONT(&l->clauses)) != NULL)
+	{
+		if (!is_rule(n))
+			continue;
+
+		int persist;
+		assertz_index(l, n, 0, &persist);
+		node *tmp_n = CALLOC(node);
+		tmp_n->orig = n;
+		NLIST_PUSH_BACK(&tmp_l, tmp_n);
+
+		if (internal)
+			n->flags |= FLAG_HIDDEN;
+	}
+
+	while ((n = NLIST_POP_FRONT(&tmp_l)) != NULL)
+	{
+		xref_rule(l, n->orig);
+		FREE(n);
+	}
+}
+
+static int trealla_make_rule(trealla *self, const char *src)
+{
+	lexer l;
+	lexer_init(&l, self);
+	int ok;
+
+	if (lexer_parse(&l, l.r, src, NULL) != NULL)
+	{
+		term_heapcheck(NLIST_FRONT(&l.clauses));
+		printf("WARN: error make_rule\n");
+		ok = 0;
+	}
+	else
+	{
+		add_clauses(&l, 1);
+		ok = 1;
+	}
+
+	lexer_done(&l);
+	return ok;
+}
+
+int query_parse(tpl_query *self, const char *src)
+{
+	lexer_init(self->lex, self->pl);
+
+	if (self->lex->clauses.cnt)
+	{
+		term_heapcheck(NLIST_FRONT(&self->lex->clauses));
+		NLIST_INIT(&self->lex->clauses);
+	}
+
+	char *line = (char*)malloc(strlen(src)+10);
+	sprintf(line, "?- %s", src);
+	if (src[strlen(src)-1] != '.') strcat(line, ".");
+	lexer_parse(self->lex, self->lex->r, line, NULL);
+	free(line);
+
+	if (self->lex->error)
+	{
+		printf("ERROR: parse -> %s\n", src);
+		lexer_done(self->lex);
+		return 0;
+	}
+
+	xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses));
+	begin_query(self, NLIST_FRONT(&self->lex->clauses));
+	return 1;
+}
+
+void trace(tpl_query *q, int fail, int leave)
+{
+	//if (q->curr_term->flags & FLAG_HIDDEN) return;
+	const int save_context = q->latest_context;
+	q->latest_context = q->curr_frame;
+	size_t dstlen = PRINTBUF_SIZE;
+	char *dstbuf = (char*)malloc(dstlen+1);
+	char *dst = dstbuf;
+	dst += sprintf(dst, "%s", fail?"Fail:":q->retry?"Redo:":leave?"Exit:":"Call:");
+	dst += sprintf(dst, "%s", q->parent?" ... ":" ");
+	sprint2_term(&dstbuf, &dstlen, &dst, q->pl, q, q->curr_term, 1);
+
+#if 1
+	dst = dstbuf+1024;
+	*dst++ = '.';
+	*dst++ = '.';
+	*dst++ = '.';
+	*dst = '\0';
+#endif
+
+	fprintf(stdout, "%s\n", dstbuf);
+	fflush(stdout);
+	free(dstbuf);
+	q->latest_context = save_context;
+}
+
+int query_run(tpl_query *self)
+{
+	self->ok = 1;
+	self->started = gettimeofday_usec();
+	self->is_running++;
+	allocate_frame(self);
+
+	if (!self->parent)
+		execute_term(self, self->curr_term, self->curr_term->frame_size);
+
+	while (!g_abort && !self->pl->abort)
+	{
+		if (self->trace) trace(self, 0, 0);
+
+		if (!call(self))
+		{
+			if (self->trace && !self->is_yielded) trace(self, 1, 0);
+
+			if (self->is_yielded || self->halt)
+				break;
+
+			if (!retry_me(self))
+				break;
+
+			continue;
+		}
+
+		if (self->trace) trace(self, 0, 1);				// Exit
+		if (!follow(self)) break;
+	}
+
+	self->is_running--;
+	self->elapsed = gettimeofday_usec() - self->started;
+
+	if (!self->is_yielded && self->halt)
+	{
+		if (!self->pl->abort && (self->halt > ABORT_ABORT))
+			printf("ERROR: ERROR %s\n", self->halt_s?self->halt_s:"ABORT");
+
+		self->ok = 0;
+	}
+
+	return self->ok;
+}
+
+void query_reset(tpl_query *self)
+{
+	env *e = &self->envs[0];
+
+	for (size_t i = 0; i < self->envs_used; i++, e++)
+	{
+		if (e->term)
+			term_heapcheck(e->term);
+
+		e->term = NULL;
+		e->binding = 0;
+	}
+
+	term_heapcheck(NLIST_FRONT(&self->lex->clauses));
+	NLIST_INIT(&self->lex->clauses);
+	lexer_done(self->lex);
+}
+
+int query_continue(tpl_query *self)
+{
+	self->ok = 1;
+	if (self->halt) return 0;
+	if (!retry_me(self)) return 0;
+	self->started = gettimeofday_usec();
+	self->is_running++;
+
+	while (!g_abort && !self->pl->abort)
+	{
+		if (self->trace) trace(self, 0, 0);
+
+		if (!call(self))
+		{
+			if (self->trace && !self->is_yielded) trace(self, 1, 0);
+
+			if (self->is_yielded || self->halt)
+				break;
+
+			if (!retry_me(self))
+				break;
+
+			continue;
+		}
+
+		if (self->trace) trace(self, 0, 1);				// Exit
+		if (!follow(self)) break;
+	}
+
+	self->is_running--;
+	self->elapsed = gettimeofday_usec() - self->started;
+
+	if (!self->is_yielded && self->halt)
+	{
+		if (!self->pl->abort && (self->halt > ABORT_ABORT))
+			printf("ERROR: %s\n", self->halt_s?self->halt_s:"ABORT");
+
+		self->ok = 0;
+	}
+
+	return self->ok;
+}
+
+int query_inline(tpl_query *self)
+{
+	self->ok = 1;
+
+	while (!g_abort && !self->pl->abort)
+	{
+		if (self->trace) trace(self, 0, 0);
+
+		if (!call(self))
+		{
+			if (self->trace && !self->is_yielded) trace(self, 1, 0);
+
+			if (self->is_yielded || self->halt)
+				break;
+
+			if (!retry_me(self))
+				break;
+
+			continue;
+		}
+
+		if (self->trace) trace(self, 0, 1);				// Exit
+		if (!follow(self)) break;
+	}
+
+	return self->ok;
+}
+
+double query_elapsed(tpl_query *self) { if (self) return (double)self->elapsed / 1000.0 / 1000.0; else return 0.0; }
+void query_abort(tpl_query *self) { if (self) { self->halt_s = "ABORT_INTERRUPTED"; self->halt = 1; }; }
+
+double query_get_float(tpl_query *self, unsigned idx)
+{
+	env *e = get_env(self, idx);
+	if (!e->term) return 0.0;
+	return e->term->val_f;
+}
+
+long long query_get_integer(tpl_query *self, unsigned idx)
+{
+	env *e = get_env(self, idx);
+	if (!e->term) return 0;
+	return e->term->val_i;
+}
+
+char *query_get_text(tpl_query *self, unsigned idx)
+{
+	if (idx >= self->frame_size) return strdup("ERROR");
+	env *e = get_env(self, idx);
+	if (!e->term) return strdup("_");
+	char tmpbuf[PRINTBUF_SIZE];
+	sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, e->term, 0);
+	return strdup(tmpbuf);
+}
+
+void query_trace(tpl_query *self)
+{
+	self->trace = !self->trace;
+}
+
+int query_choices(tpl_query *self)
+{
+	return self->choice_point > 1;
+}
+
+static int collect_vars(tpl_query *q, node *n)
+{
+	int cnt = 0;
+
+	if (is_compound(n))
+	{
+		for (n = NLIST_FRONT(&n->val_l); n; n = NLIST_NEXT(n))
+			cnt += collect_vars(q, n);
+	}
+	else if (is_var(n))
+	{
+		env *e = get_env(q, q->latest_context+n->slot);
+
+		if (!sl_get(q->d, (char*)e, NULL))
+		{
+			sl_set(q->d, (char*)e, n);
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
+void query_dump(tpl_query *self)
+{
+	skiplist vars;
+	sl_init(&vars, 0, NULL, NULL);
+	self->d = &vars;
+	collect_vars(self, NLIST_FRONT(&self->lex->clauses));
+	self->d = NULL;
+	int any = 0;
+
+	for (int i = 0; i < self->frame_size; i++)
+	{
+		env *e = get_env(self, i);
+		if (!e->term) continue;
+		if (any) printf(", ");
+
+		char tmpbuf[PRINTBUF_SIZE];
+		sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, e->term, 1);
+		node *n = NULL;
+
+		if (sl_get(&vars, (char*)e, (void**)&n))
+			printf("%s: %s", n->val_s, tmpbuf);
+
+		any++;
+	}
+
+	if (any)
+		putchar(' ');
+
+	sl_clear(&vars, NULL);
+}
+
+static tpl_query *trealla_create_query2(trealla *pl, tpl_query *q);
+
+tpl_query *query_create_subquery(tpl_query *self, int is_proc)
+{
+	tpl_query *q = trealla_create_query2(self->pl, self);
+	if (!q) return NULL;
+	q->noopt = self->noopt;
+	q->trace = self->trace;
+
+#ifndef ISO_ONLY
+	q->is_proc = is_proc;
+
+	if (self->curr_pid)
+	{
+		if (!--self->curr_pid->refcnt)
+			query_destroy(self->curr_pid);
+	}
+
+	self->curr_pid = q;
+	q->refcnt++;
+#endif
+
+	for (size_t i = 0; i < self->frame_size; i++)
+	{
+		env *e = get_env(self, self->curr_frame+i);
+		node *n = e->term;
+
+		if (n == NULL)
+			continue;
+
+		if ((is_compound(n) || is_heap(n)) && is_proc)
+			q->envs[i].term = clone_term(self, n);
+		else
+		{
+			q->envs[i].term = n;
+			n->refcnt++;
+		}
+
+		q->envs[i].binding = -1;
+	}
+
+	q->env_point = q->frame_size = self->frame_size;
+	q->envs_used = q->env_point;
+	q->curr_context = q->curr_frame = 0;
+	allocate_frame(q);
+	return q;
+}
+
+void query_stats(tpl_query *self)
+{
+	if (!g_enqueues)
+	{
+		printf("Heap-used: %llu, Backtracks: %llu, Executes: %llu, Reexecutes: %llu\n",
+			(long long unsigned)g_heap_used, (long long unsigned)g_backtracks, (long long unsigned)g_executes, (long long unsigned)g_reexecutes);
+		printf("Allocates: %llu, Reallocates: %llu, Deallocates: %llu\n",
+			(long long unsigned)g_allocates, (long long unsigned)g_reallocates, (long long unsigned)g_deallocates);
+		printf("Cuts: %llu, Choicepoints: %llu\n",
+			(long long unsigned)g_cuts, (long long unsigned)g_choicepoints);
+		printf("Match Try: %llu, ok: %llu (%.0lf%%)\n",
+			(long long unsigned)g_match_try, (long long unsigned)g_match_ok, g_match_try?100.0*(double)g_match_ok/g_match_try:0.0);
+		printf("Max Env depth: %llu, Choice depth: %llu\n",
+			(long long unsigned)self->envs_used, (long long unsigned)self->choices_used);
+		printf("System calls: %llu, User: %llu\n",
+			(long long unsigned)g_s_resolves, (long long unsigned)g_u_resolves);
+	}
+#ifndef ISO_ONLY
+	else
+	{
+		printf("System calls: %llu, User: %llu\n",
+			(long long unsigned)g_s_resolves, (long long unsigned)g_u_resolves);
+		if (g_enqueues) printf("Process msgs: %llu, Busy: %.1f%%, Reschedules: %.1f%%\n",
+			(long long unsigned)g_enqueues, (100.0*g_busy)/g_enqueues, (100.0*g_rescheds)/g_enqueues);
+	}
+#endif
+}
+
+void query_destroy(tpl_query *self)
+{
+#ifndef ISO_ONLY
+	if (self->is_running)
+	{
+		printf("*** abort: running\n");
+		//abort();
+		return;
+	}
+
+	if (self->is_dead)
+	{
+		FREE(self);
+		return;
+	}
+
+	if (self->kvs)
+	{
+		kvs_done(self->kvs);
+		FREE(self->kvs);
+	}
+
+	if (self->name)
+	{
+		PIDLOCK(self->pl);
+		sl_del(&self->pl->names, (char*)self->name, NULL);
+		PIDUNLOCK(self->pl);
+	}
+
+	if (self->linked && self->halt)
+		process_error(self);
+
+	if (self->curr_pid)
+	{
+		if (!--self->curr_pid->refcnt)
+			query_destroy(self->curr_pid);
+	}
+
+	node *tmp = NLIST_FRONT(&self->kvs_queue);
+
+	if (tmp)
+		term_heapcheck(tmp);
+
+	if (self->name)
+		free(self->name);
+#endif
+
+	env *e = &self->envs[0];
+
+	for (size_t i = 0; i < self->envs_used; i++, e++)
+	{
+		if (e->term)
+			term_heapcheck(e->term);
+	}
+
+	if (!self->parent)
+	{
+		node *n = NLIST_FRONT(&self->lex->clauses);
+		if (n != NULL) term_heapcheck(n);
+		NLIST_INIT(&self->lex->clauses);
+		lexer_done(self->lex);
+	}
+
+	if (self->halt_s)
+		free(self->halt_s);
+
+	if (!self->def_choice)
+		free(self->choices);
+
+	if (!self->def_env)
+		free(self->envs);
+
+#ifndef ISO_ONLY
+	if (--self->refcnt > 0)
+	{
+		self->is_dead = 1;
+		return;
+	}
+#endif
+
+	FREE(self);
+}
+
+int trealla_consult_file(trealla *self, const char *name)
+{
+	if (!name) return 0;
+	if (!*name) return 0;
+
+	lexer l;
+	lexer_init(&l, self);
+	l.consult = 1;
+
+	if (!lexer_consult(&l, name))
+	{
+		if (l.init) free (l.init);
+		l.init = NULL;
+		lexer_done(&l);
+		return 0;
+	}
+
+	add_clauses(&l, 0);
+
+	if (l.init)
+	{
+		trealla_run_query(self, l.init);
+		free(l.init);
+	}
+
+	lexer_done(&l);
+	return 1;
+}
+
+int trealla_consult_text(trealla *self, const char *src, const char *name)
+{
+	if (!src || !name) return 0;
+	if (!*src || !*name) return 0;
+	if (strlen_utf8(name) >= FUNCTOR_LEN) return 0;
+	char *line = strdup(src);
+	char *dst = line;
+
+	lexer l;
+	lexer_init(&l, self);
+	l.consult = 1;
+	int nbr = 1;
+
+	while (*src)
+	{
+		if (*src == '%')
+		{
+			while (*src != '\n')
+				src++;
+		}
+
+		if (*src != '\n')
+		{
+			*dst++ = *src++;
+			continue;
+		}
+
+		src++;
+		*dst = '\0';
+		lexer_parse(&l, l.r, line, &line);
+
+		if (l.error)
+		{
+			printf("ERROR: consult '%s'\n>>> Near line=%d\n>>> %s\n", name, nbr, line);
+			return 0;
+		}
+
+		dst = line;
+		nbr++;
+	}
+
+	free(line);
+	add_clauses(&l, 0);
+
+	if (l.init)
+	{
+		trealla_run_query(self, l.init);
+		free(l.init);
+	}
+
+	lexer_done(&l);
+	return 1;
+}
+
+int trealla_deconsult(trealla *self, const char *name)
+{
+	if (!name) return 0;
+
+	sl_start(&self->db.rules);
+	const char *key;
+	rule *r;
+
+	while ((key = sl_next(&self->db.rules, (void**)&r)) != NULL)
+	{
+		if (!r->name)
+			continue;
+
+		if (strcmp(r->name, name) != 0)
+			continue;
+
+		sl_del(&self->db.rules, key, NULL);
+		rule_done(r);
+	}
+
+	return 1;
+}
+
+int trealla_run_query(trealla *self, const char *src)
+{
+	if (!src) return 0;
+	tpl_query *q = trealla_create_query(self);
+	if (!q) return 0;
+	lexer l;
+	q->lex = &l;
+	int ok = query_parse(q, src);
+
+	if (!q->lex->error)
+		ok = query_run(q);
+
+	query_destroy(q);
+	return ok;
+}
+
+static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
+{
+	tpl_query *q = CALLOC(tpl_query);
+	if (!q) return NULL;
+	q->parent = parent;
+	q->pl = self;
+	q->tmo_msecs = -1;
+	q->noopt = self->noopt;
+	q->trace = self->trace;
+	q->lex = parent ? parent->lex : &self->lex;
+	q->curr_db = &self->db;
+
+#ifndef ISO_ONLY
+	if (!q->parent)
+		q->name = strdup("default");
+
+	q->refcnt = 1;
+	q->curr_pid = parent;
+	if (parent) parent->refcnt++;
+#endif
+
+	q->def_choice = q->def_env = 1;
+	q->choices_possible = DEF_CHOICES_BYTES/sizeof(choice);
+	q->envs_possible = DEF_ENVS_BYTES/sizeof(env);
+	q->choices = q->choice_stack;
+	q->envs = q->env_stack;
+	return q;
+}
+
+tpl_query *trealla_create_query(trealla *self) { return trealla_create_query2(self, NULL); }
+void trealla_trace(trealla *self, int mode) { self->trace = mode; }
+void trealla_noopt(trealla *self, int mode) { self->noopt = mode; }
+
+#ifndef ISO_ONLY
+static int tmocmp(const char *k1, const char *k2)
+{
+	const tpl_query *q1 = (const tpl_query*)k1;
+	const tpl_query *q2 = (const tpl_query*)k2;
+
+	if (q1->tmo_when_msecs < q2->tmo_when_msecs)
+		return -1;
+	else if (q1->tmo_when_msecs > q2->tmo_when_msecs)
+		return 1;
+	else
+		return 0;
+}
+#endif
+
+// FIXME: go thru the BIFs table and set as keywords...
+
+static const char *key_words[] =
+{
+	"repeat","true","false","fail","halt","call","once","is",
+	"asserta","assertz","retract","retractall","listing",
+	"consult","reconsult","deconsult", "read","write","writeq",
+	"write_canonical","nl", "module","use_module", "export","define",
+	"using","include","open","close","var","nonvar","atomic",
+	NULL
+};
+
+trealla *trealla_create(const char *name)
+{
+	if (!name) name = "default";
+	if (!name[0]||(strlen_utf8(name) >= FUNCTOR_LEN)) name = "default";
+	trealla *pl = CALLOC(trealla);
+	if (!pl) return NULL;
+	g_instances++;
+	static int first_time = 1;
+	pl->tty = isatty(0);
+	db_init(&pl->db, pl, name);
+	sl_init(&pl->mods, 0, &strcmp, NULL);
+	history_keywords(key_words);
+
+	if (first_time)
+	{
+		first_time = 0;
+		bifs_load_iso();
+
+#ifndef ISO_ONLY
+		bifs_load_sys();
+		bifs_load_proc();
+		bifs_load_net();
+		bifs_load_dbs();
+		bifs_load_kvs();
+		bifs_load_http();
+		bifs_load_ws();
+		bifs_load_stomp();
+		uuid_seed(time(NULL));
+#endif
+	}
+
+#ifndef ISO_ONLY
+	sl_init(&pl->kvs, 0, &strcmp, &free);
+	sl_init(&pl->idle, 0, &tmocmp, NULL);
+	sl_init(&pl->names, 0, &strcmp, &free);
+	sl_set(&pl->mods, strdup("sys"), NULL);
+	sl_set(&pl->mods, strdup("proc"), NULL);
+	sl_set(&pl->mods, strdup("dbs"), NULL);
+	sl_set(&pl->mods, strdup("kvs"), NULL);
+	sl_set(&pl->mods, strdup("net"), NULL);
+	sl_set(&pl->mods, strdup("http"), NULL);
+	sl_set(&pl->mods, strdup("ws"), NULL);
+
+	pl->pid_guard = lock_create();
+	pl->kvs_guard = lock_create();
+	pl->dbs_guard = lock_create();
+#endif
+
+	pl->flag_unknown = 1;
+	pl->flag_char_conversion = 1;
+	pl->flag_double_quotes = 1;
+	pl->flag_character_escapes = 1;
+
+	//trealla_make_rule(pl, "once(G) :- call(G),!.");
+	//trealla_make_rule(pl, "A -> B :- call(A),!,call(B).");
+	//trealla_make_rule(pl, "\\+ G :- call(G),!,fail.");
+	//trealla_make_rule(pl, "\\+ _.");
+	//trealla_make_rule(pl, "A ; _B :- call(A), !.");
+	//trealla_make_rule(pl, "_A ; B :- call(B), !.");
+
+	trealla_make_rule(pl, "stream_property(S,type(P)) :- stream_property_type(S,P).");
+	trealla_make_rule(pl, "stream_property(S,mode(P)) :- stream_property_mode(S,P).");
+	trealla_make_rule(pl, "stream_property(S,position(P)) :- stream_property_position(S,P).");
+	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
+
+#ifndef ISO_ONLY
+	trealla_make_rule(pl, "maplist(P,[]).");
+	trealla_make_rule(pl, "maplist(P,[X|Xs]) :- call(P,X),maplist(P,Xs).");
+	trealla_make_rule(pl, "maplist(P,[],[]).");
+	trealla_make_rule(pl, "maplist(P,[X1|X1s],[X2|X2s]) :- call(P,X1,X2),maplist(P,X1s,X2s).");
+	trealla_make_rule(pl, "member(X,[X|_]).");
+	trealla_make_rule(pl, "member(X,[_|Y]) :- member(X,Y).");
+	trealla_make_rule(pl, "select(X,[X|Tail],Tail).");
+	trealla_make_rule(pl, "select(X,[Head|Tail],[Head|Rest]) :- select(X,Tail,Rest).");
+	trealla_make_rule(pl, "efface([],L,L) :- !.");
+	trealla_make_rule(pl, "efface([H|T],L,L2) :- selectall(H,L,L1),efface(T,L1,L2).");
+	trealla_make_rule(pl, "revzap([X|L],L2,L3) :- revzap(L,[X|L2],L3).");
+	trealla_make_rule(pl, "revzap([],L,L).");
+	trealla_make_rule(pl, "reverse(L1,L2) :- revzap(L1,[],L2).");
+	trealla_make_rule(pl, "append([],L,L).");
+	trealla_make_rule(pl, "append([User|Rest],L,L2) :- append(Rest,[User|L],L2).");
+#endif
+
+	return pl;
+}
+
+void trealla_destroy(trealla *self)
+{
+	if (!self) return;
+	sl_done(&self->mods, &db_free);
+
+#ifndef ISO_ONLY
+	kvs_save(self);
+	kvs_done(&self->kvs);
+	sl_done(&self->idle, NULL);
+	sl_done(&self->names, NULL);
+	lock_destroy(self->kvs_guard);
+	lock_destroy(self->pid_guard);
+	lock_destroy(self->dbs_guard);
+
+	if (self->tp)
+		tpool_destroy(self->tp);
+
+	if (self->h)
+	{
+		handler_shutdown(self->h);
+		handler_destroy(self->h);
+	}
+
+#endif
+
+	db_done(&self->db);
+	FREE(self);
+	g_instances--;
+
+	if (!g_instances && (g_allocs > 0))
+		printf("WARN: orphaned=%u\n", (unsigned)g_allocs);
+}

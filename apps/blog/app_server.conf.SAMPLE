@@ -1,0 +1,10 @@
+{
+  "DirRoot":          ".",
+  "FileDefault":      "index.html",
+  "BindHttp":         ":80",
+  "BindHttps":        ":443;+tls",
+  "PreferHttps":      false,
+  "KeyFile":          "key.pem",
+  "CertFile":         "cert.pem",
+  "MaxAge":           300
+}

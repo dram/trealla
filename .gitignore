@@ -1,0 +1,12 @@
+.tpl_history
+samples/test.pro
+tpl
+*.a
+*.o
+*.exe
+*.lib
+*.obj
+*.log
+*.out
+*.kvs
+*.dbs
