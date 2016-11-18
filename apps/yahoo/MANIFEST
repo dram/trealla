@@ -1,14 +1,2 @@
-app.pro
-app_server.pro
-app_server.conf.SAMPLE
-app.conf.SAMPLE
-+letsencrypt-renew.sh
-+letsencrypt-standalone.sh
-+letsencrypt-webroot.sh
-smtp_client.conf.SAMPLE
-localhost/login.html
-localhost/post.html
-localhost/signup.html
-localhost/account.html
-+key.pem
-+cert.pem
+updater.pro
+updater.conf.SAMPLE

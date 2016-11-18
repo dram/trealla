@@ -1,5 +1,8 @@
 app.pro
+app.conf.SAMPLE
 app_server.pro
+app_server.conf.SAMPLE
+smtp_client.conf.SAMPLE
 +letsencrypt-renew.sh
 +letsencrypt-standalone.sh
 +letsencrypt-webroot.sh
