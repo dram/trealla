@@ -235,6 +235,7 @@ standard but are commonly found in Prolog implementations:
 	efface(+List,+L1,-L2)       - remove all of list (maplist on select)
 	reverse(+L1,-L2)            - reverse a list
 	append(+L1,+L2,-List)       - make a joined list
+	find(+N,+L,-Term)           - find nth arg of list
 	time(:Goal,-Float)          - run goal and return elapsed time (seconds)
 	time(:Goal)                 - run goal and print elapsed time
 	assert(+Clause)             - same as assertz

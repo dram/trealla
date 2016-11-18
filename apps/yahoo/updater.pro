@@ -1,15 +1,21 @@
+:-module(yahoo,[test1/0,test2/0]).
 :-use_module(http_client).
+:-use_module(dict).
 :-using([sys]).
+
+:-persist(quote/2).
 
 :-define(HOST_CHART,'ichart.finance.yahoo.com:80').
 :-define(HOST_QUOTE,'download.finance.yahoo.com:80').
 
 test1 :-
+	dbs:load,
 	get_quote('GOOG',L),
 	writeln(L),
 	true.
 
 test2 :-
+	dbs:load,
 	get_chart('GOOG',L),
 	writeln(L),
 	true.
@@ -23,7 +29,25 @@ get_quote(Symbol,L) :-
 	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
 	http_client:get11_data(?HOST_QUOTE,Path,Data),
 	%writeln(Data),
-	parse_csv(Data,L).
+	parse_csv(Data,L),
+	find(1,L,Sym),
+	find(2,L,Prev),
+	find(3,L,Open),
+	find(4,L,Last),
+	find(5,L,Vol),
+	find(6,L,Bid),
+	find(7,L,Ask),
+	find(8,L,Date),
+	find(9,L,Time),
+	dict:set([],'prev',Prev,D1),
+	dict:set(D1,'open',Open,D2),
+	dict:set(D2,'last',Last,D3),
+	dict:set(D3,'vol',Vol,D4),
+	dict:set(D4,'bid',Bid,D5),
+	dict:set(D5,'ask',Ask,D6),
+	dict:set(D6,'date',Date,D7),
+	dict:set(D7,'time',Time,D),
+	assertz(quote(Symbol,D)).
 
 
 % Return a list of daily values, each of

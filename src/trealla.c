@@ -2965,6 +2965,10 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "reverse(L1,L2) :- revzap(L1,[],L2).");
 	trealla_make_rule(pl, "append([],L,L).");
 	trealla_make_rule(pl, "append([User|Rest],L,L2) :- append(Rest,[User|L],L2).");
+	trealla_make_rule(pl, "find(N,[],X).");
+	trealla_make_rule(pl, "find(1,[H|T],H).");
+	trealla_make_rule(pl, "find(N,[H|T],X) :- N1 is N-1, find(N1,T,X).");
+
 #endif
 
 	return pl;
