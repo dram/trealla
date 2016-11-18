@@ -649,7 +649,7 @@ int call(tpl_query *q)
 				return 0;
 			}
 
-			if (!r->dynamic && !strchr(tmpbuf, ':'))
+			if (0 && !r->dynamic && !strchr(tmpbuf, ':'))
 			{
 				printf("ERROR: NOT DYNAMIC '%s'\n", tmpbuf);
 				QABORT(ABORT_NOTDYNAMIC);
