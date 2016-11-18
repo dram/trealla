@@ -9,6 +9,7 @@
 
 :-define(HOST_CHART,'ichart.finance.yahoo.com:80').
 :-define(HOST_QUOTE,'download.finance.yahoo.com:80').
+:-define(SYMBOLS,'forbes.txt').
 
 start :-
 	dbs:load,

@@ -1,5 +1,3 @@
-# Fortune 500 (may not be current)
-#
 A
 AA
 AAPL
