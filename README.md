@@ -302,6 +302,7 @@ These are a random assortment of utilities:
 	parse_rfcdate(+Atom,-Int)   - parse RFC datetime to C-epoch
 	exit(+Atom)                 - exit with reason string
 	parse_csv(+Atom,-List)      - parse CSV into list of elements
+	parse_tab(+Atom,-List)      - parse TAB into list of elements
 
 BLOBs and atoms can often be used interchangeably, as the code checks
 the type. While BLOBs can contain embedded NULs etc, atoms can't. Atoms

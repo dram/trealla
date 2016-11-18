@@ -1340,6 +1340,12 @@ static int bif_sys_parse_csv(tpl_query *q)
 	{
 		char ch = *src++;
 
+		if (!quoted && (ch == '\t'))
+			continue;
+
+		if (!quoted && (ch == ' '))
+			continue;
+
 		if (!quoted && (ch == '"'))
 		{
 			was_quoted = quoted = 1;
@@ -1362,15 +1368,131 @@ static int bif_sys_parse_csv(tpl_query *q)
 		}
 
 		*dst = '\0';
-		node *tmp;
-		nbr_t v = 0;
-		int numeric = 0;
-		parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
 
-		if (was_quoted || (numeric < 1))
+		// We allow for simple [+/-]integers and decimals,
+		// the rest are treated as quoted atoms.
+
+		node *tmp;
+		const char *tmp_src = dstbuf;
+		int dots = 0, bad = 0;
+
+		if ((*tmp_src == '-') || (*tmp_src == '+'))
+			tmp_src++;
+
+		while (*tmp_src)
+		{
+			if (*tmp_src == '.')
+				dots++;
+			else if (!isdigit(*tmp_src))
+				bad++;
+
+			tmp_src++;
+		}
+
+		if (was_quoted || bad || (dots > 1))
 			tmp = make_atom(strdup(dstbuf), 1);
 		else
 		{
+			nbr_t v = 0;
+			int numeric = 0;
+			parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
+
+			if (numeric > 1)
+				tmp = make_quick_int(v);
+			else
+				tmp = make_float(strtod(dstbuf, NULL));
+		}
+
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+		if (!*src) break;
+		tmp = make_list();
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+		l = tmp;
+		dst = dstbuf;
+		was_quoted = 0;
+	}
+
+	free(dstbuf);
+	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
+	put_env(q, q->curr_frame+term2->slot, save_l, q->curr_frame);
+	save_l->refcnt--;
+	return 1;
+}
+
+static int bif_sys_parse_tab(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_var(term2);
+	const char *src = term1->val_s;
+	node *l = make_list();
+	node *save_l = l;
+	char *dstbuf = (char*)malloc(LEN(term1)+1);
+
+	while (isspace(*src))
+		src++;
+
+	int quoted = 0, was_quoted = 0;
+	char *dst = dstbuf;
+
+	while (*src)
+	{
+		char ch = *src++;
+
+		if (!quoted && (ch == ' '))
+			continue;
+
+		if (!quoted && (ch == '"'))
+		{
+			was_quoted = quoted = 1;
+			continue;
+		}
+
+		if (quoted && (ch == '"'))
+		{
+			quoted = 0;
+			continue;
+		}
+
+		if (ch != '\t')
+		{
+			if ((ch != '\r') && (ch != '\n'))
+				*dst++ = ch;
+
+			if ((*src != '\0') && ((ch != '\r') && (ch != '\n')))
+				continue;
+		}
+
+		*dst = '\0';
+
+		// We allow for simple [+/-]integers and decimals,
+		// the rest are treated as quoted atoms.
+
+		node *tmp;
+		const char *tmp_src = dstbuf;
+		int dots = 0, bad = 0;
+
+		if ((*tmp_src == '-') || (*tmp_src == '+'))
+			tmp_src++;
+
+		while (*tmp_src)
+		{
+			if (*tmp_src == '.')
+				dots++;
+			else if (!isdigit(*tmp_src))
+				bad++;
+
+			tmp_src++;
+		}
+
+		if (was_quoted || bad || (dots > 1))
+			tmp = make_atom(strdup(dstbuf), 1);
+		else
+		{
+			nbr_t v = 0;
+			int numeric = 0;
+			parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
+
 			if (numeric > 1)
 				tmp = make_quick_int(v);
 			else
@@ -1455,5 +1577,6 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:b64_encode", 2, bif_sys_b64_encode2);
 	DEFINE_BIF("sys:b64_decode", 2, bif_sys_b64_decode2);
 	DEFINE_BIF("sys:parse_csv", 2, bif_sys_parse_csv);
+	DEFINE_BIF("sys:parse_tab", 2, bif_sys_parse_tab);
 }
 
