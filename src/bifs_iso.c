@@ -4413,6 +4413,10 @@ void bifs_load_iso(void)
 	// about every Prolog so they are included here...
 
 #ifndef ISO_ONLY
+	DEFINE_BIF("_a", 1, bif_iso_asserta);
+	DEFINE_BIF("_z", 1, bif_iso_assertz);
+	DEFINE_BIF("_r", 1, bif_iso_retract);
+
 	DEFINE_BIF("div", 2, bif_iso_div);
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 	DEFINE_BIF("consult", 1, bif_sys_consult);

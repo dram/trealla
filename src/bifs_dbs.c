@@ -208,19 +208,19 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 
 	if (n->flags & FLAG_DBS_RETRACT)
 	{
-		dst += snprintf(dst, *buflen, "retract(");
+		dst += snprintf(dst, *buflen, "_r(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
 	else if (n->flags & FLAG_DBS_ASSERTZ)
 	{
-		dst += snprintf(dst, *buflen, "assertz(");
+		dst += snprintf(dst, *buflen, "_z(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
 	else if (n->flags & FLAG_DBS_ASSERTA)
 	{
-		dst += snprintf(dst, *buflen, "asserta(");
+		dst += snprintf(dst, *buflen, "_a(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
