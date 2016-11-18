@@ -807,9 +807,9 @@ static int bif_sys_atom_number2(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_nbr_or_var(term2);
 	const char *src = term1->val_s;
-	int numeric;
 	char ch = *src++;
-	nbr_t v;
+	nbr_t v = 0;
+	int numeric = 0;
 	parse_number(ch, src, &v, &numeric);
 	node *n;
 
@@ -1320,6 +1320,80 @@ static int bif_sys_b64_decode2(tpl_query *q)
 	return 1;
 }
 
+static int bif_sys_parse_csv(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_var(term2);
+	const char *src = term1->val_s;
+	node *l = make_list();
+	node *save_l = l;
+	char *dstbuf = (char*)malloc(LEN(term1)+1);
+
+	while (isspace(*src))
+		src++;
+
+	int quoted = 0, was_quoted = 0;
+	char *dst = dstbuf;
+
+	while (*src)
+	{
+		char ch = *src++;
+
+		if (!quoted && (ch == '"'))
+		{
+			was_quoted = quoted = 1;
+			continue;
+		}
+
+		if (quoted && (ch == '"'))
+		{
+			quoted = 0;
+			continue;
+		}
+
+		if (ch != ',')
+		{
+			if ((ch != '\r') && (ch != '\n'))
+				*dst++ = ch;
+
+			if ((*src != '\0') && ((ch != '\r') && (ch != '\n')))
+				continue;
+		}
+
+		*dst = '\0';
+		node *tmp;
+
+		if (was_quoted)
+			tmp = make_atom(strdup(dstbuf), 1);
+		else
+		{
+			nbr_t v = 0;
+			int numeric = 0;
+			parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
+
+			if (numeric > 1)
+				tmp = make_quick_int(v);
+			else
+				tmp = make_float(strtod(dstbuf, NULL));
+		}
+
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+		if (!*src) break;
+		tmp = make_list();
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+		l = tmp;
+		dst = dstbuf;
+		was_quoted = 0;
+	}
+
+	free(dstbuf);
+	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
+	put_env(q, q->curr_frame+term2->slot, save_l, q->curr_frame);
+	save_l->refcnt--;
+	return 1;
+}
+
 void bifs_load_sys(void)
 {
 	DEFINE_BIF("sys:concat", -1, bif_sys_concat);
@@ -1381,5 +1455,6 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:url_decode", 2, bif_sys_url_decode2);
 	DEFINE_BIF("sys:b64_encode", 2, bif_sys_b64_encode2);
 	DEFINE_BIF("sys:b64_decode", 2, bif_sys_b64_decode2);
+	DEFINE_BIF("sys:parse_csv", 2, bif_sys_parse_csv);
 }
 

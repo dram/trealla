@@ -5,15 +5,16 @@
 :-define(HOST_QUOTE,'download.finance.yahoo.com:80').
 
 test1 :-
-	quote('BHP.AX').
+	quote('GOOG').
 
 test2 :-
-	chart('BHP.AX').
+	chart('GOOG').
 
 quote(Symbol) :-
 	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vd1t1',Path),
 	http_client:get11_data(?HOST_QUOTE,Path,Data),
-	writeln(Data),
+	parse_csv(Data,L),
+	writeln(L),
 	true.
 
 chart(Symbol) :-
