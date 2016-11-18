@@ -160,21 +160,22 @@ Each module specifies a separate and self-contained database for both
 its static rules and dynamic assertions. It also represents a unit of
 locking for updates.
 
-	:-module(+Module,[Functor/Arity,...]).	% Specify public list
+	:-module(+Module,+PublicList).			% Specify public list
 	:-module(+Module).
-	:-export([Functor/Arity,...]).			% Specify public list
+	:-export(+PublicList).					% Specify public list
 
 The *module* directive can specify a list of exported public predicates,
-or they can be specified with the dedicated *export* directive.
+or they can be specified with the dedicated *export* directive. The
+public list elements take the form Functor/Arity.
 
 The *module* directive will also look for a NAME.conf JSON file in the
-current directory where 'NAME' is the module Name. This config file
-defines name/value pairs in the module namespace. Also:
+current directory where 'NAME' is the module name. This config file
+defines name/value pairs in the module namespace that will override
+any explicit defines (that can set default values) thus:
 
 	:-define(Name,Value).
 
-defines a name/value pair in the module namespace, but will not overwrite
-an existing value.
+defines a name/value pair in the module namespace.
 
 	?Name
 

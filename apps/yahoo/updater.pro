@@ -1,4 +1,5 @@
-:-module(updater,[start_quotes/0,start_charts/0]).
+:-module(updater).
+:-export([start_quotes/0,start_charts/0]).
 :-use_module(http_client).
 :-use_module(dict).
 :-using([sys]).
