@@ -36,7 +36,8 @@ get_chart(Symbol,L) :-
 	%writeln(Data),
 	split(Data,'\n',L1),
 	L1 = [_|L2],
-	line(L2,[],L).
+	line(L2,[],L3),
+	reverse(L3,L).
 
 line([],Old,Old).
 line([Data|T],Old,New) :-

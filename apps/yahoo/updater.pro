@@ -38,7 +38,6 @@ get_quote(Symbol,L) :-
 	parse_csv(Data,L1),
 	L1 = [_|L].
 
-
 % Return a list of daily values, each of
 % which is a list of values...
 %
@@ -50,7 +49,8 @@ get_chart(Symbol,L) :-
 	%writeln(Data),
 	split(Data,'\n',L1),
 	L1 = [_|L2],
-	line(L2,[],L).
+	line(L2,[],L3),
+	reverse(L3,L).
 
 line([],Old,Old).
 line([Data|T],Old,New) :-
