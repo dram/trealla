@@ -1,4 +1,4 @@
-:-module(yahoo,[test1/0,test2/0]).
+:-module(updater,[test1/0,test2/0,start/0]).
 :-use_module(http_client).
 :-use_module(dict).
 :-using([sys]).
@@ -12,7 +12,7 @@ test1 :-
 	dbs:load,
 	get_quote('GOOG',L),
 	writeln(L),
-	true.
+	update(L).
 
 test2 :-
 	dbs:load,
@@ -20,16 +20,7 @@ test2 :-
 	writeln(L),
 	true.
 
-% Return a list of current values:
-%
-%	 [SYMBOL,PREV-CLOSE,OPEN,LAST-PRICE,VOLUME,BID,ASK,DATE,TIME]
-%
-
-get_quote(Symbol,L) :-
-	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
-	http_client:get11_data(?HOST_QUOTE,Path,Data),
-	%writeln(Data),
-	parse_csv(Data,L),
+update_quote(L) :-
 	find(1,L,Sym),
 	find(2,L,Prev),
 	find(3,L,Open),
@@ -48,6 +39,18 @@ get_quote(Symbol,L) :-
 	dict:set(D6,'date',Date,D7),
 	dict:set(D7,'time',Time,D),
 	assertz(quote(Symbol,D)).
+	true.
+
+% Return a list of current values:
+%
+%	 [SYMBOL,PREV-CLOSE,OPEN,LAST-PRICE,VOLUME,BID,ASK,DATE,TIME]
+%
+
+get_quote(Symbol,L) :-
+	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
+	http_client:get11_data(?HOST_QUOTE,Path,Data),
+	%writeln(Data),
+	parse_csv(Data,L).
 
 
 % Return a list of daily values, each of
