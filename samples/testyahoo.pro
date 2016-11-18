@@ -29,4 +29,5 @@ chart(Symbol) :-
 line([],Old,New) :-
 	reverse(Old,New).
 line([H|T],Old,New) :-
-	line(T,[H|Old],New).
+	parse_csv(H,H2),
+	line(T,[H2|Old],New).
