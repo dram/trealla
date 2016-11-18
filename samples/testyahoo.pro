@@ -25,7 +25,6 @@ get_quote(Symbol,L) :-
 	%writeln(Data),
 	parse_csv(Data,L).
 
-
 % Return a list of daily values, each of
 % which is a list of values...
 %
