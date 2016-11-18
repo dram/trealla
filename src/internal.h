@@ -435,7 +435,6 @@ extern char *trealla_readline(FILE *fp);
 extern void kvs_done(skiplist *d);
 extern int kvs_save(trealla *pl);
 extern void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n);
-extern void dbs_load(module *db);
 #endif
 
 extern int grow_env_stack(tpl_query *q);

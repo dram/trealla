@@ -84,7 +84,7 @@ static int dbs_merge(module *db)
 	return 1;
 }
 
-static void dbs_load_file(module *db, const char *filename)
+static void dbs_load_file(module *db, const char *filename, int tail)
 {
 	printf("INFO: Loading '%s' ... ", filename);
 	fflush(stdout);
@@ -100,31 +100,41 @@ static void dbs_load_file(module *db, const char *filename)
 	char *line;
 	db->loading = 1;
 
-	while ((line = trealla_readline(db->fp)) != NULL)
+	do
 	{
-		line_nbr++;
-
-		if (!isalpha(line[0]))
-			continue;
-
-		if (!query_parse(q, line))
-			printf("ERROR: '%s'\n", filename);
-		else
+		while ((line = trealla_readline(db->fp)) != NULL)
 		{
-			query_run(q);
-			if (q->ok) any++;
+			line_nbr++;
+
+			if (!isalpha(line[0]))
+				continue;
+
+			if (!query_parse(q, line))
+				printf("ERROR: '%s'\n", filename);
+			else
+			{
+				query_run(q);
+				if (q->ok) any++;
+			}
+
+			query_reset(q);
+			free(line);
 		}
 
-		query_reset(q);
-		free(line);
+		if (tail)
+		{
+			clearerr(db->fp);
+			sleep(1);
+		}
 	}
+	 while (tail);
 
 	query_destroy(q);
 	db->loading = 0;
 	printf(" Loaded %llu updates\n", (unsigned long long)any);
 }
 
-void dbs_load(module *db)
+static void dbs_load(module *db, int tail)
 {
 	char filename[1024];
 	snprintf(filename, sizeof(filename), "%s.tmp.dbs", db->name);
@@ -159,7 +169,7 @@ void dbs_load(module *db)
 
 	if (db->fp != NULL)
 	{
-		dbs_load_file(db, filename);
+		dbs_load_file(db, filename, 0);
 		fclose(db->fp);
 		db->fp = NULL;
 	}
@@ -171,7 +181,7 @@ void dbs_load(module *db)
 
 	if (db->fp != NULL)
 	{
-		dbs_load_file(db, filename);
+		dbs_load_file(db, filename, tail);
 		fclose(db->fp);
 		db->fp = NULL;
 	}
@@ -319,13 +329,20 @@ int bif_dbs_begin(tpl_query *q)
 
 int bif_dbs_load(tpl_query *q)
 {
-	dbs_load(q->curr_db);
+	dbs_load(q->curr_db, 0);
+	return 1;
+}
+
+int bif_dbs_tail(tpl_query *q)
+{
+	dbs_load(q->curr_db, 1);
 	return 1;
 }
 
 void bifs_load_dbs(void)
 {
 	DEFINE_BIF("dbs:load", 0, bif_dbs_load);
+	DEFINE_BIF("dbs:tail", 0, bif_dbs_tail);
 	DEFINE_BIF("dbs:begin", 0, bif_dbs_begin);
 	DEFINE_BIF("dbs:end", 0, bif_dbs_end0);
 	DEFINE_BIF("dbs:end", 1, bif_dbs_end1);
