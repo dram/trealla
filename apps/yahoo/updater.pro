@@ -11,14 +11,16 @@
 test1 :-
 	dbs:load,
 	get_quote('GOOG',L),
-	writeln(L),
-	update(L).
+	%writeln(L),
+	update_quote(L).
 
 test2 :-
 	dbs:load,
 	get_chart('GOOG',L),
-	writeln(L),
-	true.
+	%writeln(L),
+	update_chart(L).
+
+%
 
 update_quote(L) :-
 	find(1,L,Sym),
@@ -38,8 +40,17 @@ update_quote(L) :-
 	dict:set(D5,'ask',Ask,D6),
 	dict:set(D6,'date',Date,D7),
 	dict:set(D7,'time',Time,D),
+	dbs:begin,
+	retract(quote(Symbol,_)).
 	assertz(quote(Symbol,D)).
+	dbs:end,
 	true.
+update_quote(L).
+
+%
+
+update_chart(L) :-
+	fail.
 
 % Return a list of current values:
 %
