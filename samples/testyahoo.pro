@@ -21,4 +21,12 @@ chart(Symbol) :-
 	concat('/table.csv?s=',Symbol,'',Path),
 	http_client:get11_data(?HOST_CHART,Path,Data),
 	writeln(Data),
+	split(Data,'\n',L),
+	line(L,[],L2),
+	writeln(L2),
 	true.
+
+line([],Old,New) :-
+	reverse(Old,New).
+line([H|T],Old,New) :-
+	line(T,[H|Old],New).

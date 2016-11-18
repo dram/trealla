@@ -1363,15 +1363,14 @@ static int bif_sys_parse_csv(tpl_query *q)
 
 		*dst = '\0';
 		node *tmp;
+		nbr_t v = 0;
+		int numeric = 0;
+		parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
 
-		if (was_quoted)
+		if (was_quoted || (numeric < 1))
 			tmp = make_atom(strdup(dstbuf), 1);
 		else
 		{
-			nbr_t v = 0;
-			int numeric = 0;
-			parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
-
 			if (numeric > 1)
 				tmp = make_quick_int(v);
 			else
