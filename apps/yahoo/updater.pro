@@ -1,30 +1,27 @@
 :-module(updater).
-:-export([start_quotes/0,start_charts/0]).
+:-export([start/0]).
 :-use_module(http_client).
 :-use_module(dict).
 :-using([sys]).
 
 :-persist(quote/2).
-:-persist(chart/2).
+:-persist(daily/2).
 
 :-define(HOST_CHART,'ichart.finance.yahoo.com:80').
 :-define(HOST_QUOTE,'download.finance.yahoo.com:80').
 
-start_quotes :-
+start :-
 	dbs:load,
-	update_quote('GOOG').
+	update_quote('GOOG'),
+	update_chart('GOOG').
 
 update_quote(Symbol) :-
 	get_quote(Symbol,L),
 	assertz(quote(Symbol,L)).
 
-start_charts :-
-	dbs:load,
-	update_chart('GOOG').
-
 update_chart(Symbol),
 	get_chart(Symbol,L),
-	assertz(chart(Symbol,L)).
+	assertz(daily(Symbol,L)).
 
 
 % Return a list of current values:
