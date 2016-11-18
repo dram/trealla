@@ -180,19 +180,19 @@ defines a name/value pair in the module namespace.
 	?Name
 
 Will substitute during module load a defined value from the module
-namespace. The *?MODULE* will give the module name. This is a lexical
+namespace. The *?MODULE* name will give the module name. This is a lexical
 pasting of the value.
 
-Other pre-defined values are *?RANDOM*, *?RANDOMSTR*, *?TIME* and *?TIMESTR*.
+Other pre-defined names are *?RANDOM*, *?RANDOMSTR*, *?TIME* and *?TIMESTR*.
+
+Use the lexical namespace(s):
 
 	:-using([+Module,...]).
-
-Use the lexical namespace(s).
 
 The *include/1* directive loads a file that is lexically pasted into the
 source.
 
-Use *unload_file/1* to remove a module from the system.
+Use the *unload_file/1* directive to remove a module from the system.
 
 User-defined Functions
 ----------------------
