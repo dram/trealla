@@ -7,8 +7,8 @@
 :-persist(quote/2).
 :-persist(daily/2).
 
-:-define(HOST_CHART,'ichart.finance.yahoo.com:80').
-:-define(HOST_QUOTE,'download.finance.yahoo.com:80').
+:-define(HOST_CHART,'http://ichart.finance.yahoo.com').
+:-define(HOST_QUOTE,'http://download.finance.yahoo.com').
 :-define(SYMBOLS,'forbes.txt').
 
 start :-
