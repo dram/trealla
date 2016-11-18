@@ -869,7 +869,7 @@ static int bif_sys_split4(tpl_query *q)
 	while (isspace(*src))
 		src++;
 
-	while (*src && !isspace(*src) && strncmp(src, term2->val_s, LEN(term2)))
+	while (*src && strncmp(src, term2->val_s, LEN(term2)))
 		*dst++ = *src++;
 
 	while (isspace(*src))
@@ -889,7 +889,7 @@ static int bif_sys_split4(tpl_query *q)
 	while (isspace(*src))
 		src++;
 
-	while (*src && !isspace(*src) && (*src != '\r') && (*src != '\n'))
+	while (*src && (*src != '\r') && (*src != '\n'))
 		*dst++ = *src++;
 
 	*dst = '\0';
@@ -917,12 +917,8 @@ static int bif_sys_split3(tpl_query *q)
 	while (*src)
 	{
 		char *dst = dstbuf;
-		char quote = 0;
 
-		if ((*src == '\'') || (*src == '"'))
-			quote = *src++;
-
-		while (*src && !isspace(*src) && strncmp(src, term2->val_s, LEN(term2)))
+		while (*src && strncmp(src, term2->val_s, LEN(term2)))
 			*dst++ = *src++;
 
 		if (*src)
@@ -932,9 +928,6 @@ static int bif_sys_split3(tpl_query *q)
 			while (isspace(*src))
 				src++;
 		}
-
-		if (quote && (dst != dstbuf) && (dst[-1] == quote))
-			dst--;
 
 		*dst = '\0';
 		node *tmp = make_atom(strdup(dstbuf), 1);
@@ -1341,9 +1334,6 @@ static int bif_sys_parse_csv(tpl_query *q)
 		char ch = *src++;
 
 		if (!quoted && (ch == '\t'))
-			continue;
-
-		if (!quoted && (ch == ' '))
 			continue;
 
 		if (!quoted && (ch == '"'))

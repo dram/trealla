@@ -16,11 +16,12 @@ test2 :-
 
 % Return a list of current values:
 %
-%	 [SYMBOL,PREV-CLOSE,OPEN,LAST-PRICE,VOLUME,DATE,TIME]
+%	 [SYMBOL,PREV-CLOSE,OPEN,LAST-PRICE,VOLUME,BID,ASK,DATE,TIME]
+%
 
 
 quote(Symbol,L) :-
-	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vd1t1',Path),
+	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
 	http_client:get11_data(?HOST_QUOTE,Path,Data),
 	%writeln(Data),
 	parse_csv(Data,L).
@@ -35,10 +36,14 @@ chart(Symbol,L) :-
 	http_client:get11_data(?HOST_CHART,Path,Data),
 	%writeln(Data),
 	split(Data,'\n',L2),
-	line(L2,[],L).
+	line(0,L2,[],L).
 
-line([],Old,New) :-
+line(Line,[],Old,New) :-
 	reverse(Old,New).
-line([H|T],Old,New) :-
+line(0,[H|T],Old,New) :-
+	Line2 is 1,
+	line(Line2,T,Old,New).
+line(Line,[H|T],Old,New) :-
 	parse_csv(H,H2),
-	line(T,[H2|Old],New).
+	Line2 is Line+1,
+	line(Line2,T,[H2|Old],New).
