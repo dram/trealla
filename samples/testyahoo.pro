@@ -35,15 +35,6 @@ get_chart(Symbol,L) :-
 	http_client:get11_data(?HOST_CHART,Path,Data),
 	%writeln(Data),
 	split(Data,'\n',L1),
-	line(0,L1,[],L2),
+	L1 = [H|L2],
 	reverse(L2,L),
 	true.
-
-line(Line,[],Old,Old).
-line(0,[H|T],Old,New) :-
-	Line2 is 1,
-	line(Line2,T,Old,New).
-line(Line,[H|T],Old,New) :-
-	parse_csv(H,H2),
-	Line2 is Line+1,
-	line(Line2,T,[H2|Old],New).
