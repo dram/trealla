@@ -1,8 +1,8 @@
 :-use_module(http_client).
 :-using([sys]).
 
-:-define(HOST_CHART,'ichart.finance.yahoo.com:80').
-:-define(HOST_QUOTE,'download.finance.yahoo.com:80').
+:-define(HOST_CHART,'http://ichart.finance.yahoo.com').
+:-define(HOST_QUOTE,'http://download.finance.yahoo.com').
 
 test1 :-
 	get_quote('GOOG',L),
