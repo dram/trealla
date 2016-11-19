@@ -22,7 +22,7 @@ database uses first argument indexing on dynamic clauses which, along
 with the persistence option, allows for developing fast safe in-memory
 data stores that can be *logic'd over*.
 
-Writen in plain-old C with a permissive BSD 2-clause license.
+Writen in plain-old C with a permissive license.
 
 This is early alpha-stage software and is subject to change. This is
 experimental software that itself is an ongoing experiment.

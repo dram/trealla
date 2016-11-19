@@ -2047,6 +2047,11 @@ int lexer_consult(lexer *self, const char *filename)
 
 	while ((line = trealla_readline(fp)) != NULL)
 	{
+		if ((nbr == 1) &&
+			(line[0] == '#') &&
+			(line[1] == '!'))
+			continue;
+
 		const char *src = lexer_parse(self, self->r, line, &line);
 		free(line);
 
