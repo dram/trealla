@@ -42,7 +42,7 @@ support 128-bit integers or atomics (so no procs).
 Compiler should be C11 if using procs (to use atomics) otherwise
 C99 should be adequate, eg:
 
-	make OPT=-std=c11
+	make OPT=-std=c11       # or -std=gnu11
 
 if not the default.
 
