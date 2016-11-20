@@ -372,7 +372,7 @@ int main(int ac, char *av[])
 		if (p1) free(p1);
 		status = !ok;
 	}
-	else if (!noquery)
+	else if (!noquery && !pl->abort)
 	{
 		history_load(histfile);
 		char *line;
@@ -393,6 +393,9 @@ int main(int ac, char *av[])
 			int ok = query_parse(q, line);
 			if (ok) ok = query_run(q);
 			if (ok) query_dump(q);
+
+			if (pl->abort)
+				break;
 
 			while (ok && query_choices(q))
 			{
