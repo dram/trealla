@@ -22,7 +22,7 @@ quotes :-
 charts :-
 	load_file(?SYMBOLS,Data),
 	split(Data,'\n',Symbols),
-	maplist(save_quote,Symbols).
+	maplist(save_chart,Symbols).
 
 save_quote(Symbol) :-
 	writeln(Symbol),
