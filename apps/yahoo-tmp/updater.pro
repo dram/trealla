@@ -33,7 +33,6 @@ batch_quotes(Nbr,[Symbol|Rest],Batch) :-
 	batch_quotes(N,Rest,[Symbol|Batch]).
 
 save_quotes(Symbols) :-
-	%writeln(Symbols),
 	csv_format(Symbols,'',Symbols2),
 	yahoo_quote(Symbols2,L),
 	maplist(save_quote,L),
@@ -60,7 +59,9 @@ load_charts :-
 save_chart(Symbol) :-
 	writeln(Symbol),
 	yahoo_chart(Symbol,L),
+	nonvar(L),
 	dbs:log(assertz(daily(Symbol,L))).
+	true.
 
 yahoo_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
