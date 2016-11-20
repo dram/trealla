@@ -55,7 +55,7 @@ get10_internal(S,Path,Data) :-
 	true.
 
 get10_block(S,Running,Data) :-
-	bread(S,_,Block),
+	bread(S,_,Block), !,
 	concat(Running,Block,Running2),
 	get10_block(S,Running2,Data).
 
@@ -71,7 +71,7 @@ get11_internal(S,Path,Data) :-
 
 get11_chunk(S,Running,Data) :-
 	http:get_chunk(S,Chunk,Len),
-	Len > 0,
+	Len > 0, !,
 	concat(Running,Chunk,Running2),
 	get11_chunk(S,Running2,Data).
 

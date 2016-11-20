@@ -66,7 +66,7 @@ save_chart(Symbol).
 
 yahoo_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
-	http_client:get10_data(?CHART_SERVER,Path,Data),
+	http_client:get11_data(?CHART_SERVER,Path,Data),
 	%writeln(Data),
 	split(Data,'\n',L1),
 	L1 = [_|L2],
@@ -82,7 +82,7 @@ csv_format([H|Rest],Old,New) :-
 	concat(Old,',',H,Old2),
 	csv_format(Rest,Old2,New).
 
-line([],Old,Old).
+line([],Old,Old) :- !.
 line([Data|T],Old,New) :-
 	parse_csv(Data,V),
 	line(T,[V|Old],New).
