@@ -227,7 +227,6 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 	else
 	{
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
-		*dst++ = ')';
 	}
 
 	*dst++ = db->in_tran ?',':'.';
@@ -327,6 +326,17 @@ int bif_dbs_begin(tpl_query *q)
 	return 1;
 }
 
+static int bif_dbs_log(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_callable(term1);
+	size_t buflen = 1024*64;					// expandable
+	char *dstbuf = (char*)malloc(buflen+1);
+	dbs_save_node(q->curr_db, &dstbuf, &buflen, term1);
+	free(dstbuf);
+	return 1;
+}
+
 int bif_dbs_load(tpl_query *q)
 {
 	dbs_load(q->curr_db, 0);
@@ -343,6 +353,7 @@ void bifs_load_dbs(void)
 {
 	DEFINE_BIF("dbs:load", 0, bif_dbs_load);
 	DEFINE_BIF("dbs:tail", 0, bif_dbs_tail);
+	DEFINE_BIF("dbs:log", 0, bif_dbs_log);
 	DEFINE_BIF("dbs:begin", 0, bif_dbs_begin);
 	DEFINE_BIF("dbs:end", 0, bif_dbs_end0);
 	DEFINE_BIF("dbs:end", 1, bif_dbs_end1);

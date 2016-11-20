@@ -737,6 +737,15 @@ out any other *dbs* transactions for the duration. The *begin/0* call
 creates a choicepoint and backtracking will cause it to rollback the
 transaction. Inside a transaction changes to the database are not visible.
 
+To write to the log only, without updating the database:
+
+	log(+Term)
+
+where *Term* is an asserta/assertz/retract (or other) database
+operation. This can be useful for external adapters that need to write
+to the log what to do, without actually doing it itself. Another
+program will then tail the log and update the real database.
+
 Periodically the log and the master are merged and a new master is
 created, discarding old files. This normally happens when the '--merge'
 option is specified.

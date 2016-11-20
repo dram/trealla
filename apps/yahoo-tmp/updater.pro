@@ -20,7 +20,7 @@ start :-
 update_quote(Symbol) :-
 	writeln(Symbol),
 	yahoo_quote(Symbol,L),
-	assertz(quote(Symbol,L)).
+	dbs:log(quote(Symbol,L)).
 
 update_chart(Symbol),
 	writeln(Symbol),
