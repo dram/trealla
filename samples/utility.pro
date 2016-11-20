@@ -18,9 +18,6 @@ maplist(P,[],[],[],[],[],[],[]).
 maplist(P,[X1|X1s],[X2|X2s],[X3|X3s],[X4|X4s],[X5|X5s],[X6|X6s],[X7|X7s]) :-
 	call(P,X1,X2,X3,X4,X5,X6,X7),maplist(P,X1s,X2s,X3,X4s,X5s,X6s,X7s).
 
-append([X|L1],L2,[X|L3]) :- append(L1,L2,L3).
-append([],L,L).
-
 prefix([],_).
 prefix([X|L],[X|M]) :- prefix(L,M).
 

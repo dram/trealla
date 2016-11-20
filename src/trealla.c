@@ -1861,8 +1861,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 							!strcmp(functor, "sys:write_file") ||
 							!strcmp(functor, "put_file") ||
 							!strcmp(functor, "http:put_file") ||
-							!strcmp(functor, "findnsols") ||
-							!strcmp(functor, "sys:findnsols"))
+							!strcmp(functor, "findnsols"))
 						{
 							node *tmp = new_node();
 							tmp->flags |= TYPE_VAR|FLAG_ANON|FLAG_HIDDEN;

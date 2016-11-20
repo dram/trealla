@@ -229,7 +229,7 @@ standard but are commonly found in Prolog implementations:
 	term_to_blob(+Term,-Blob)   - convert term to BLOB
 	is_list(+Term)              - is the arg a list?
 	findnsols(+N,@Term,:G,-L)   - as per SWI-Prolog
-	maplist(:Goal,+List)        - call goal with every element of list
+	maplist(:Goal,+L)           - call goal with every element of list L
 	maplist(:Goal,+L1,+L2)      - call goal with every element of L1 & L2
 	member(?Term,+List)         - does atom occur in the list?
 	select(+Term,+L1,-L2)       - one occurrance of term is removed

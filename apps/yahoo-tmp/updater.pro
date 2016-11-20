@@ -13,10 +13,12 @@
 
 start :-
 	dbs:load,
-	update_quote('GOOG'),
-	update_chart('GOOG').
+	load_file(?SYMBOLS,Data),
+	split(Data,'\n',Symbols),
+	maplist(writeln,Symbols).
 
 update_quote(Symbol) :-
+	writeln(Symbol),
 	get_quote(Symbol,L),
 	assertz(quote(Symbol,L)).
 
