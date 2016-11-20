@@ -30,7 +30,7 @@ experimental software that itself is an ongoing experiment.
 Getting / Building
 ------------------
 
-	git clone https://github.com/infradig/trealla
+	git clone https://github.com/trealla-lang/trealla
 	cd trealla
 	make [CC=gcc|clang|tcc] [iso]
 
