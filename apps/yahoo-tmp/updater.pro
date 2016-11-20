@@ -15,15 +15,16 @@ start :-
 	dbs:load,
 	load_file(?SYMBOLS,Data),
 	split(Data,'\n',Symbols),
-	maplist(writeln,Symbols).
+	maplist(update_quote,Symbols).
 
 update_quote(Symbol) :-
 	writeln(Symbol),
-	get_quote(Symbol,L),
+	yahoo_quote(Symbol,L),
 	assertz(quote(Symbol,L)).
 
 update_chart(Symbol),
-	get_chart(Symbol,L),
+	writeln(Symbol),
+	yahoo_chart(Symbol,L),
 	assertz(daily(Symbol,L)).
 
 
@@ -32,7 +33,7 @@ update_chart(Symbol),
 %	 [SYMBOL,PREV-CLOSE,OPEN,LAST-PRICE,VOLUME,BID,ASK,DATE,TIME]
 %
 
-get_quote(Symbol,L) :-
+yahoo_quote(Symbol,L) :-
 	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
 	http_client:get11_data(?HOST_QUOTE,Path,Data),
 	%writeln(Data),
@@ -44,7 +45,7 @@ get_quote(Symbol,L) :-
 %
 %	 [DATE,OPEN,HIGH,LOW,CLOSE,VOLUME,ADJ-CLOSE]
 
-get_chart(Symbol,L) :-
+yahoo_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
 	http_client:get11_data(?HOST_CHART,Path,Data),
 	%writeln(Data),
