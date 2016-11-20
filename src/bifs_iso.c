@@ -169,6 +169,14 @@ static node *make_true(void)
 	return n;
 }
 
+node *make_fail(void)
+{
+	node *n = make_const_atom("fail", 0);
+	n->flags |= FLAG_BUILTIN;
+	n->bifptr = bif_iso_fail;
+	return n;
+}
+
 node *make_cut(void)
 {
 	node *n = make_const_atom("!", 0);

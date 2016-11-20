@@ -229,6 +229,8 @@ int main(int ac, char *av[])
 #endif
 	}
 
+	trealla_trace(pl, trace);
+
 #ifndef ISO_ONLY
 	char *p2 = NULL;
 	char *branch = (char*)"master";
@@ -254,8 +256,6 @@ int main(int ac, char *av[])
 				p2 = strdup(av[i]);
 		}
 	}
-
-	trealla_trace(pl, trace);
 
 	if (appget)
 	{
