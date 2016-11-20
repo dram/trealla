@@ -1,8 +1,8 @@
 :-use_module(http_client).
 :-using([sys]).
 
-:-define(HOST_CHART,'http://ichart.finance.yahoo.com').
-:-define(HOST_QUOTE,'http://download.finance.yahoo.com').
+:-define(CHART_SERVER,'http://ichart.finance.yahoo.com').
+:-define(QUOTE_SERVER,'http://download.finance.yahoo.com').
 
 test1 :-
 	yahoo_quote('GOOG',L),
@@ -21,7 +21,7 @@ test2 :-
 
 yahoo_quote(Symbol,L) :-
 	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
-	http_client:get11_data(?HOST_QUOTE,Path,Data),
+	http_client:get11_data(?QUOTE_SERVER,Path,Data),
 	%writeln(Data),
 	split(Data,'\n',L1),	% one line per symbol
 	line(L1,[],L).			% parse each line
@@ -33,7 +33,7 @@ yahoo_quote(Symbol,L) :-
 
 yahoo_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
-	http_client:get11_data(?HOST_CHART,Path,Data),
+	http_client:get11_data(?CHART_SERVER,Path,Data),
 	%writeln(Data),
 	split(Data,'\n',L1),	% one line per day
 	L1 = [_|L2],			% skip CSV header

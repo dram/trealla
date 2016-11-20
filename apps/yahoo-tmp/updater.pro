@@ -7,8 +7,8 @@
 :-persist(quote/2).
 :-persist(daily/2).
 
-:-define(HOST_CHART,'http://ichart.finance.yahoo.com').
-:-define(HOST_QUOTE,'http://download.finance.yahoo.com').
+:-define(CHART_SERVER,'http://ichart.finance.yahoo.com').
+:-define(QUOTE_SERVER,'http://download.finance.yahoo.com').
 :-define(SYMBOL_FILE,'forbes.txt').
 :-define(BATCH_SIZE,100).
 
@@ -60,14 +60,14 @@ save_chart(Symbol),
 
 yahoo_quote(Symbol,L) :-
 	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
-	http_client:get11_data(?HOST_QUOTE,Path,Data),
+	http_client:get11_data(?QUOTE_SERVER,Path,Data),
 	%writeln(Data),
 	split(Data,'\n',L1),
 	line(L1,[],L).
 
 yahoo_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
-	http_client:get11_data(?HOST_CHART,Path,Data),
+	http_client:get11_data(?CHART_SERVER,Path,Data),
 	%writeln(Data),
 	split(Data,'\n',L1),
 	L1 = [_|L2],

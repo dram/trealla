@@ -1,6 +1,6 @@
 {
-  "HOST_CHART":		"http://ichart.finance.yahoo.com",
-  "HOST_QUOTE":		"http://download.finance.yahoo.com",
+  "CHART_SERVER":		"http://ichart.finance.yahoo.com",
+  "QUOTE_SERVER":		"http://download.finance.yahoo.com",
   "SYMBOL_FILE":	"forbes.txt",
   "BATCH_SIZE":		100
 }
