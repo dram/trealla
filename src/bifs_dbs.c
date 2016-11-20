@@ -332,7 +332,9 @@ static int bif_dbs_log(tpl_query *q)
 	node *term1 = get_callable(term1);
 	size_t buflen = 1024*64;					// expandable
 	char *dstbuf = (char*)malloc(buflen+1);
-	dbs_save_node(q->curr_db, &dstbuf, &buflen, term1);
+	node *n = clone_term(q,term1);
+	dbs_save_node(q->curr_db, &dstbuf, &buflen, n);
+	term_heapcheck(n);
 	free(dstbuf);
 	return 1;
 }
@@ -353,7 +355,7 @@ void bifs_load_dbs(void)
 {
 	DEFINE_BIF("dbs:load", 0, bif_dbs_load);
 	DEFINE_BIF("dbs:tail", 0, bif_dbs_tail);
-	DEFINE_BIF("dbs:log", 0, bif_dbs_log);
+	DEFINE_BIF("dbs:log", 1, bif_dbs_log);
 	DEFINE_BIF("dbs:begin", 0, bif_dbs_begin);
 	DEFINE_BIF("dbs:end", 0, bif_dbs_end0);
 	DEFINE_BIF("dbs:end", 1, bif_dbs_end1);
