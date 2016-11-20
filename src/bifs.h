@@ -59,7 +59,7 @@ typedef struct
 
 #define DEFINE_BIF(f,a,p) \
 	if (g_bifs_idx == MAX_BIFS) abort(); \
-	g_bifs[g_bifs_idx].functor = f; \
+	g_bifs[g_bifs_idx].functor = (char*)f; \
 	g_bifs[g_bifs_idx].arity = a; \
 	g_bifs[g_bifs_idx].bifptr = p; \
 	g_bifs_idx++;

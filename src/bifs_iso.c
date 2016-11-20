@@ -156,7 +156,7 @@ node *make_var(tpl_query *q)
 {
 	node *n = new_node();
 	n->flags |= TYPE_VAR|FLAG_ANON|FLAG_CONST;
-	n->val_s = "_";
+	n->val_s = (char*)"_";
 	n->slot = q->frame_size++;
 	return n;
 }

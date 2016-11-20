@@ -208,7 +208,7 @@ int main(int ac, char *av[])
 
 #ifndef ISO_ONLY
 	char *p2 = NULL;
-	char *branch = "master";
+	char *branch = (char*)"master";
 	int install = 0, appget = 0;
 	srand(time(NULL));
 

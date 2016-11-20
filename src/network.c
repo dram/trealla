@@ -673,7 +673,7 @@ const char *session_del_stash(session *s, const char *key)
 const char *session_get_stash(session *s, const char *key)
 {
 	if (!s->stash) return "";
-	void *value = "";
+	void *value = (char*)"";
 	sl_get(s->stash, key, &value);
 	return (char*)value;
 }
@@ -681,7 +681,7 @@ const char *session_get_stash(session *s, const char *key)
 long long session_get_stash_int(session *s, const char *key)
 {
 	if (!s->stash) return 0;
-	void *value = "";
+	void *value = (char*)"";
 	sl_get(s->stash, key, &value);
 	return atoll((char*)value);
 }

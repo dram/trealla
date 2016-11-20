@@ -191,7 +191,7 @@ struct node_
 
 typedef struct
 {
-	char *op, *spec;
+	const char *op, *spec;
 	unsigned priority;
 }
  ops;

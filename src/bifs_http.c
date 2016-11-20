@@ -1586,7 +1586,7 @@ static int bif_ws_parse3(tpl_query *q)
 	else
 		n = make_atom(dstbuf, 1);
 
-	char *op = "";
+	const char *op = "";
 
 	if (opcode == WS_OP_CLOSE)
 		op = "close";

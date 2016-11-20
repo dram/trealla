@@ -507,7 +507,7 @@ static node *make_cut(void)
 	node *n = new_node();
 	n->flags |= TYPE_ATOM|FLAG_BUILTIN|FLAG_CUT|FLAG_CONST;
 	n->bifptr = bif_iso_cut;
-	n->val_s = "!";
+	n->val_s = (char*)"!";
 	return n;
 }
 
@@ -629,7 +629,7 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 		n2 = new_node();
 		n2->flags |= TYPE_ATOM|FLAG_BUILTIN|FLAG_CONST|FLAG_HIDDEN;
 		n2->bifptr = bif_iso_fail;
-		n2->val_s = "fail";
+		n2->val_s = (char*)"fail";
 		NLIST_PUSH_BACK(&tmp->val_l, n2);
 	}
 
@@ -710,7 +710,7 @@ static int attach_ops(lexer *l, node *term)
 			}
 
 			free(n->val_s);
-			functor = n->val_s = "--";
+			functor = n->val_s = (char*)"--";
 			n->flags |= FLAG_CONST;
 			n->bifptr = bif_iso_reverse;
 		}
@@ -1638,11 +1638,11 @@ static void lexer_finalize(lexer *self)
 	{
 		node *tmp = new_node();
 		tmp->flags |= TYPE_ATOM|FLAG_CONST|FLAG_BUILTIN;
-		tmp->val_s = ":-";
+		tmp->val_s = (char*)":-";
 		NLIST_PUSH_BACK(&self->r->val_l, tmp);
 		tmp = new_node();
 		tmp->flags |= TYPE_ATOM|FLAG_CONST|FLAG_BUILTIN;
-		tmp->val_s = "true";
+		tmp->val_s = (char*)"true";
 		tmp->bifptr = bif_iso_true;
 		NLIST_PUSH_BACK(&self->r->val_l, tmp);
 	}
@@ -1733,7 +1733,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			{
 				node *tmp = new_node();
 				tmp->flags |= TYPE_ATOM|FLAG_CONST;
-				tmp->val_s = "[]";
+				tmp->val_s = (char*)"[]";
 				NLIST_PUSH_BACK(&term->val_l, tmp);
 			}
 
@@ -1799,13 +1799,13 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		{
 			free(self->tok);
 			n->flags |= TYPE_ATOM|FLAG_CONST;
-			n->val_s = "{}";
+			n->val_s = (char*)"{}";
 		}
 		else if (!self->quoted && !strcmp(self->tok, "[]"))
 		{
 			free(self->tok);
 			n->flags |= TYPE_ATOM|FLAG_CONST;
-			n->val_s = "[]";
+			n->val_s = (char*)"[]";
 		}
 		else if (!self->quoted && !strcmp(self->tok, "["))
 		{
@@ -1826,7 +1826,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			NLIST_INIT(&n->val_l);
 			node *tmp = new_node();
 			tmp->flags |= TYPE_ATOM|FLAG_CONST;
-			tmp->val_s = "{}";
+			tmp->val_s = (char*)"{}";
 			NLIST_PUSH_BACK(&n->val_l, tmp);
 			src = lexer_parse(self, n, src, line);
 			if (self->error) return src;
@@ -1960,7 +1960,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			{
 				free(self->tok);
 				n->flags |= FLAG_CONST;
-				self->tok = "";
+				self->tok = (char*)"";
 			}
 			else if (!self->quoted)
 			{
@@ -2450,7 +2450,7 @@ int query_inline(tpl_query *self)
 }
 
 double query_elapsed(tpl_query *self) { if (self) return (double)self->elapsed / 1000.0 / 1000.0; else return 0.0; }
-void query_abort(tpl_query *self) { if (self) { self->halt_s = "ABORT_INTERRUPTED"; self->halt = 1; }; }
+void query_abort(tpl_query *self) { if (self) { self->halt_s = (char*)"ABORT_INTERRUPTED"; self->halt = 1; }; }
 
 double query_get_float(tpl_query *self, unsigned idx)
 {
