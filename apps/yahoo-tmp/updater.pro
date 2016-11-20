@@ -30,18 +30,18 @@ batch_quotes(Nbr,[Symbol|Rest],Batch) :-
 	N is Nbr-1,
 	batch_quotes(N,Rest,[Symbol|Batch]).
 
-load_charts :-
-	load_file(?SYMBOLS,Data),
-	split(Data,'\n',Symbols),
-	maplist(save_chart,Symbols).
-
 save_quotes(Symbols) :-
 	writeln(Symbols),
 	yahoo_quote(Symbols,L),
 	maplist(save_quote,L).
 
 save_quote([Symbol|Result]) :-
-	dbs:log(assertz(quote(Symbol,L))).
+	dbs:log(assertz(quote(Symbol,Result))).
+
+load_charts :-
+	load_file(?SYMBOLS,Data),
+	split(Data,'\n',Symbols),
+	maplist(save_chart,Symbols).
 
 save_chart(Symbol),
 	writeln(Symbol),
