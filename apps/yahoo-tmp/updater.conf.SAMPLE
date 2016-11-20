@@ -1,5 +1,6 @@
 {
   "HOST_CHART":		"http://ichart.finance.yahoo.com",
   "HOST_QUOTE":		"http://download.finance.yahoo.com",
-  "SYMBOLS":		"forbes.txt"
+  "SYMBOLS":		"forbes.txt",
+  "NBR":			100
 }

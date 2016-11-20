@@ -20,15 +20,15 @@ load_quotes :-
 	split(Data,'\n',Symbols),
 	batch_quotes(?NBR,Symbols,[]).
 
+batch_quotes(_,[],[]).
 batch_quotes(_,[],Batch).
-batch_quotes(0,Symbols,Batch) :-
+	save_quotes(Batch).
+batch_quotes(0,Rest,Batch) :-
 	save_quotes(Batch),
-	batch_quotes(?NBR,Symbols,[]).
-batch_quotes(Nbr,[H|Symbols],Batch) :-
+	batch_quotes(?NBR,Rest,[]).
+batch_quotes(Nbr,[Symbol|Rest],Batch) :-
 	N is Nbr-1,
-	batch_quotes(N,Symbols,[H|Batch]).
-
-	%maplist(save_quote,Symbols).
+	batch_quotes(N,Rest,[Symbol|Batch]).
 
 load_charts :-
 	load_file(?SYMBOLS,Data),
