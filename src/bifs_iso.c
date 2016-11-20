@@ -529,10 +529,11 @@ static int bif_iso_calln(tpl_query *q)
 	if (q->retry) return 0;
 	node *args = get_args(q);
 	node *var = get_var(var);				// FLAG_HIDDEN
-	node *term1 = get_callable(term1);
+	node *term1 = get_atom(term1);
 	node *param = get_next_arg(q, &args);
 
 	node *tmp = make_structure();
+	tmp->hdr.next = NULL;
 	NLIST_PUSH_BACK(&tmp->val_l, clone_term(q, term1));
 
 	while (param)
@@ -541,7 +542,7 @@ static int bif_iso_calln(tpl_query *q)
 		param = get_next_arg(q, &args);
 	}
 
-	const char *functor = NLIST_FRONT(&tmp->val_l)->val_s;
+	const char *functor = term1->val_s;
 	int arity = NLIST_COUNT(&tmp->val_l)-1;
 	tmp->bifptr = get_bifarity(&q->pl->lex, functor, arity)->bifptr;
 
