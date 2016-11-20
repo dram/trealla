@@ -71,5 +71,5 @@ solve(Board_size,Initial,Final) :-
 	newsquare(Initial,Next),
 	solve(Board_size,[Next|Initial],Final).
 
-inform([]) :- ,,,.
-inform([M|L]) :- write(M),,,inform(L).
+inform([]) :- nl,nl.
+inform([M|L]) :- write(M),nl,inform(L).
