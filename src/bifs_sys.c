@@ -1343,10 +1343,7 @@ static int bif_sys_parse_csv(tpl_query *q)
 		}
 
 		if (quoted && (ch == '"'))
-		{
 			quoted = 0;
-			continue;
-		}
 
 		if (ch != ',')
 		{
@@ -1439,10 +1436,7 @@ static int bif_sys_parse_tab(tpl_query *q)
 		}
 
 		if (quoted && (ch == '"'))
-		{
 			quoted = 0;
-			continue;
-		}
 
 		if (ch != '\t')
 		{
