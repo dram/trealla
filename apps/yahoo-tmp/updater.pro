@@ -9,23 +9,23 @@
 
 :-define(HOST_CHART,'http://ichart.finance.yahoo.com').
 :-define(HOST_QUOTE,'http://download.finance.yahoo.com').
-:-define(SYMBOLS,'forbes.txt').
-:-define(NBR,100).
+:-define(SYMBOL_FILE,'forbes.txt').
+:-define(BATCH_SIZE,100).
 
 start :-
 	fail.
 
 load_quotes :-
-	load_file(?SYMBOLS,Data),
+	load_file(?SYMBOL_FILE,Data),
 	split(Data,'\n',Symbols),
-	batch_quotes(?NBR,Symbols,[]).
+	batch_quotes(?BATCH_SIZE,Symbols,[]).
 
 batch_quotes(_,[],[]).
 batch_quotes(_,[],Batch) :-
 	save_quotes(Batch).
 batch_quotes(0,Rest,Batch) :-
 	save_quotes(Batch),
-	batch_quotes(?NBR,Rest,[]).
+	batch_quotes(?BATCH_SIZE,Rest,[]).
 batch_quotes(Nbr,[Symbol|Rest],Batch) :-
 	N is Nbr-1,
 	batch_quotes(N,Rest,[Symbol|Batch]).
@@ -49,7 +49,7 @@ save_quote([Symbol|Result]) :-
 	dbs:log(assertz(quote(Symbol,Result))).
 
 load_charts :-
-	load_file(?SYMBOLS,Data),
+	load_file(?SYMBOL_FILE,Data),
 	split(Data,'\n',Symbols),
 	maplist(save_chart,Symbols).
 
