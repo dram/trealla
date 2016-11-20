@@ -25,7 +25,7 @@ update_quote(Symbol) :-
 update_chart(Symbol),
 	writeln(Symbol),
 	yahoo_chart(Symbol,L),
-	assertz(daily(Symbol,L)).
+	dbs:log(assertz(daily(Symbol,L))).
 
 
 % Return a list of current values:
