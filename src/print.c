@@ -323,6 +323,10 @@ size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tp
 	{
 		size_t offset = dst - *dstbuf;
 		*bufsize *= 2;
+
+		if (*bufsize < xlen)
+			*bufsize += xlen;
+
 		*dstbuf = (char*)realloc(*dstbuf, *bufsize);
 		*_dst = *dstbuf + offset;
 		dst = *_dst;
