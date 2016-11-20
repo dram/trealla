@@ -2361,7 +2361,7 @@ int query_run(tpl_query *self)
 
 	if (!self->is_yielded && self->halt)
 	{
-		if (!self->pl->abort && (self->halt > ABORT_ABORT))
+		if (!self->pl->abort && (self->halt > ABORT_HALT))
 			printf("ERROR: ERROR %s\n", self->halt_s?self->halt_s:"ABORT");
 
 		self->ok = 0;

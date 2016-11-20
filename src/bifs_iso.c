@@ -395,7 +395,7 @@ int bif_iso_fail(tpl_query *q)
 
 static int bif_iso_halt(tpl_query *q)
 {
-	QABORT(ABORT_HALT);
+	q->halt = ABORT_HALT;
 	return 0;
 }
 
