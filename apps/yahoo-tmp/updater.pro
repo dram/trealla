@@ -1,5 +1,5 @@
 :-module(updater,[start/0]).
-:-export([quotes/0,charts/0]).
+:-export([load_quotes/0,load_charts/0]).
 :-use_module(http_client).
 :-use_module(dict).
 :-using([sys]).
@@ -10,23 +10,37 @@
 :-define(HOST_CHART,'http://ichart.finance.yahoo.com').
 :-define(HOST_QUOTE,'http://download.finance.yahoo.com').
 :-define(SYMBOLS,'forbes.txt').
+:-define(NBR,100).
 
 start :-
 	fail.
 
-quotes :-
+load_quotes :-
 	load_file(?SYMBOLS,Data),
 	split(Data,'\n',Symbols),
-	maplist(save_quote,Symbols).
+	batch_quotes(?NBR,Symbols,[]).
 
-charts :-
+batch_quotes(_,[],Batch).
+batch_quotes(0,Symbols,Batch) :-
+	save_quotes(Batch),
+	batch_quotes(?NBR,Symbols,[]).
+batch_quotes(Nbr,[H|Symbols],Batch) :-
+	N is Nbr-1,
+	batch_quotes(N,Symbols,[H|Batch]).
+
+	%maplist(save_quote,Symbols).
+
+load_charts :-
 	load_file(?SYMBOLS,Data),
 	split(Data,'\n',Symbols),
 	maplist(save_chart,Symbols).
 
-save_quote(Symbol) :-
-	writeln(Symbol),
-	yahoo_quote(Symbol,L),
+save_quotes(Symbols) :-
+	writeln(Symbols),
+	yahoo_quote(Symbols,L),
+	maplist(save_quote,L).
+
+save_quote([Symbol|Result]) :-
 	dbs:log(assertz(quote(Symbol,L))).
 
 save_chart(Symbol),
