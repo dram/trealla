@@ -21,7 +21,7 @@ load_quotes :-
 	batch_quotes(?NBR,Symbols,[]).
 
 batch_quotes(_,[],[]).
-batch_quotes(_,[],Batch).
+batch_quotes(_,[],Batch) :-
 	save_quotes(Batch).
 batch_quotes(0,Rest,Batch) :-
 	save_quotes(Batch),
@@ -31,11 +31,21 @@ batch_quotes(Nbr,[Symbol|Rest],Batch) :-
 	batch_quotes(N,Rest,[Symbol|Batch]).
 
 save_quotes(Symbols) :-
-	writeln(Symbols),
-	yahoo_quote(Symbols,L),
-	maplist(save_quote,L).
+	%writeln(Symbols),
+	csv_format(Symbols,'',Symbols2),
+	yahoo_quote(Symbols2,L),
+	maplist(save_quote,L),
+	true.
+
+csv_format([],Old,Old).
+csv_format([H|Rest],'',New) :-
+	csv_format(Rest,H,New).
+csv_format([H|Rest],Old,New) :-
+	concat(Old,',',H,Old2),
+	csv_format(Rest,Old2,New).
 
 save_quote([Symbol|Result]) :-
+	writeln(Symbol),
 	dbs:log(assertz(quote(Symbol,Result))).
 
 load_charts :-
