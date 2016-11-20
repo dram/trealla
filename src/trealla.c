@@ -511,15 +511,6 @@ static node *make_cut(void)
 	return n;
 }
 
-static node *make_fail(void)
-{
-	node *n = new_node();
-	n->flags |= TYPE_ATOM|FLAG_BUILTIN|FLAG_CUT|FLAG_CONST;
-	n->bifptr = bif_iso_fail;
-	n->val_s = "fail";
-	return n;
-}
-
 static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor)
 {
 	node *tmp = make_structure();
@@ -635,8 +626,10 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 		node *n2 = make_cut();
 		n2->flags |= FLAG_HIDDEN;
 		NLIST_PUSH_BACK(&tmp->val_l, n2);
-		n2 = make_fail();
-		n2->flags |= FLAG_HIDDEN;
+		n2 = new_node();
+		n2->flags |= TYPE_ATOM|FLAG_BUILTIN|FLAG_CONST|FLAG_HIDDEN;
+		n2->bifptr = bif_iso_fail;
+		n2->val_s = "fail";
 		NLIST_PUSH_BACK(&tmp->val_l, n2);
 	}
 
