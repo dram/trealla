@@ -1388,7 +1388,7 @@ static int bif_sys_parse_csv(tpl_query *q)
 			parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
 
 			if (numeric > 1)
-				tmp = make_quick_int(v);
+				tmp = make_int(v);
 			else
 				tmp = make_float(strtod(dstbuf, NULL));
 		}
@@ -1484,7 +1484,7 @@ static int bif_sys_parse_tab(tpl_query *q)
 			parse_number(ch=dstbuf[0], dstbuf+1, &v, &numeric);
 
 			if (numeric > 1)
-				tmp = make_quick_int(v);
+				tmp = make_int(v);
 			else
 				tmp = make_float(strtod(dstbuf, NULL));
 		}
