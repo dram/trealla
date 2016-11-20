@@ -1,5 +1,5 @@
-:-module(updater).
-:-export([start/0]).
+:-module(updater,[start/0]).
+:-export([quotes/0,charts/0]).
 :-use_module(http_client).
 :-use_module(dict).
 :-using([sys]).
@@ -12,17 +12,24 @@
 :-define(SYMBOLS,'forbes.txt').
 
 start :-
-	dbs:load,
+	fail.
+
+quotes :-
 	load_file(?SYMBOLS,Data),
 	split(Data,'\n',Symbols),
-	maplist(update_quote,Symbols).
+	maplist(save_quote,Symbols).
 
-update_quote(Symbol) :-
+charts :-
+	load_file(?SYMBOLS,Data),
+	split(Data,'\n',Symbols),
+	maplist(save_quote,Symbols).
+
+save_quote(Symbol) :-
 	writeln(Symbol),
 	yahoo_quote(Symbol,L),
-	assertz(quote(Symbol,L)).
+	dbs:log(assertz(quote(Symbol,L))).
 
-update_chart(Symbol),
+save_chart(Symbol),
 	writeln(Symbol),
 	yahoo_chart(Symbol,L),
 	dbs:log(assertz(daily(Symbol,L))).
