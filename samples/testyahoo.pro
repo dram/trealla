@@ -34,10 +34,9 @@ get_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
 	http_client:get11_data(?HOST_CHART,Path,Data),
 	%writeln(Data),
-	split(Data,'\n',L1),
-	L1 = [_|L2],
-	line(L2,[],L3),
-	reverse(L3,L).
+	split(Data,'\n',L1),	% one line per day
+	L1 = [_|L2],			% skip CSV header
+	line(L2,[],L).			% parse each line
 
 line([],Old,Old).
 line([Data|T],Old,New) :-
