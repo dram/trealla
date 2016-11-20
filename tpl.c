@@ -206,6 +206,31 @@ int main(int ac, char *av[])
 	char *init = NULL, *p1 = NULL;
 	int trace = 0, stats = 0, noquery = 0, get = 0;
 
+	for (int i = 1; i < ac; i++)
+	{
+		if (!strcmp(av[i], "--trace"))
+			trace = 1;
+		else if (!strcmp(av[i], "--stats"))
+			stats = 1;
+		else if (!strcmp(av[i], "--noopt") || !strcmp(av[i], "-O0"))
+			trealla_noopt(pl, 1);
+		else if (!strncmp(av[i], "--memM=",7))
+			sscanf(av[i], "%*[^=]=%d", &g_trealla_memlimit_mb);
+		else if (!strncmp(av[i], "--memG=",7))
+		{
+			sscanf(av[i], "%*[^=]=%d", &g_trealla_memlimit_mb);
+			g_trealla_memlimit_mb *= 1024;
+		}
+#ifndef ISO_ONLY
+		else if (!strcmp(av[i], "--merge"))
+			g_kvs_merge = g_dbs_merge = 1;
+		else if (!strncmp(av[i], "--tpool",7))
+			sscanf(av[i], "--tpool=%d", &g_tpool_size);
+#endif
+	}
+
+	trealla_trace(pl, trace);
+
 #ifndef ISO_ONLY
 	char *p2 = NULL;
 	char *branch = (char*)"master";
@@ -335,28 +360,8 @@ int main(int ac, char *av[])
 			init = strdup("test");
 		else if (!strcmp(av[i], "--listing"))
 			init = strdup("listing");
-		else if (!strcmp(av[i], "--trace"))
-			trace = 1;
-		else if (!strcmp(av[i], "--stats"))
-			stats = 1;
-#ifndef ISO_ONLY
-		else if (!strcmp(av[i], "--merge"))
-			g_kvs_merge = g_dbs_merge = 1;
-		else if (!strncmp(av[i], "--tpool",7))
-			sscanf(av[i], "--tpool=%d", &g_tpool_size);
-#endif
-		else if (!strcmp(av[i], "--noopt") || !strcmp(av[i], "-O0"))
-			trealla_noopt(pl, 1);
-		else if (!strncmp(av[i], "--memM=",7))
-			sscanf(av[i], "%*[^=]=%d", &g_trealla_memlimit_mb);
-		else if (!strncmp(av[i], "--memG=",7))
-		{
-			sscanf(av[i], "%*[^=]=%d", &g_trealla_memlimit_mb);
-			g_trealla_memlimit_mb *= 1024;
-		}
 	}
 
-	trealla_trace(pl, trace);
 	int status = 0;
 
 	if (init)
