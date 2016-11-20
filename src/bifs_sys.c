@@ -14,7 +14,6 @@
 #include <winsock2.h>
 #include <io.h>
 #define msleep Sleep
-#define sleep _sleep
 #define snprintf _snprintf
 #define fseeko _fseeki64
 #else

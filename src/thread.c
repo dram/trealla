@@ -15,12 +15,6 @@
 #include "thread.h"
 #include "list.h"
 
-#ifdef _WIN32
-#define msleep Sleep
-#else
-#define msleep(ms) usleep((ms)*1000)
-#endif
-
 extern volatile int g_abort;
 
 typedef struct node_
@@ -206,7 +200,7 @@ static void thread_destroy(thread *t)
 	pthread_mutex_destroy(&t->mutex);
 #endif
 
-	msleep(1);
+	sleep(0);
 }
 
 void tpool_queue(tpool *tp, thread_function *f, void *data)
@@ -260,7 +254,7 @@ tpool *tpool_create(int threads)
 		thread_create(tp);
 
 	while (list_count(&tp->idle) != threads)
-		msleep(0);
+		sleep(0);
 
 	return tp;
 }

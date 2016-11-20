@@ -13,10 +13,8 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
-#define msleep Sleep
 #else
 #include <unistd.h>
-#define msleep(ms) usleep((ms)*1000)
 #endif
 
 static const int g_debug = 0;
@@ -322,7 +320,7 @@ uncle *uncle_create(const char *binding, unsigned port, const char *scope, const
 	handler *h = handler_create(0);
 	uncle *u = uncle_create2(h, binding, port, scope, maddr6, maddr4);
 	thread_run(&uncle_wait, u);
-	msleep(100);
+	sleep(1);
 	return u;
 }
 

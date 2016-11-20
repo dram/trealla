@@ -11,15 +11,12 @@
 
 #ifdef _WIN32
 #include <io.h>
-#define msleep Sleep
-#define sleep _sleep
 #define snprintf _snprintf
 #define fseeko _fseeki64
 #define ftello _ftelli64
 #else
 #include <unistd.h>
 #include <sys/time.h>
-#define msleep(ms) usleep((ms)*1000)
 #endif
 
 #include "trealla.h"
