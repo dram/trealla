@@ -404,10 +404,13 @@ size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tp
 	return dst - *_dst;
 }
 
-size_t sprint_term(char *dstbuf, size_t size, trealla *pl, tpl_query *q, node *n, int listing)
+size_t sprint_term(char *_dstbuf, size_t _size, trealla *pl, tpl_query *q, node *n, int listing)
 {
+	size_t size = PRINTBUF_SIZE;
+	char *dstbuf = (char*)malloc(size+1);
 	char *dst = dstbuf;
 	dst += sprint2_term(&dstbuf, &size, &dst, pl, q, n, listing);
+	strcpy(_dstbuf, dstbuf);
 	return dst - dstbuf;
 }
 
