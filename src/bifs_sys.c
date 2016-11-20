@@ -278,7 +278,7 @@ static int bif_sys_concat(tpl_query *q)
 
 	args = save_args;
 	term = term1;
-	size_t max_len = PRINTBUF_SIZE;
+	size_t max_len = 1024*1024;
 	char *tmpbuf = (char*)malloc(max_len+1);
 	char *dst = tmpbuf;
 	node *var = NULL;

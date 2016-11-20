@@ -57,15 +57,17 @@ load_charts :-
 	maplist(save_chart,Symbols).
 
 save_chart(Symbol) :-
-	writeln(Symbol),
+	%writeln(Symbol),
 	yahoo_chart(Symbol,L),
-	nonvar(L),
-	dbs:log(assertz(daily(Symbol,L))).
+	%dbs:log(assertz(daily(Symbol,L))),
 	true.
+
+save_chart(Symbol).
 
 yahoo_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
-	http_client:get11_data(?CHART_SERVER,Path,Data),
+	http_client:get10_data(?CHART_SERVER,Path,Data),
+	atom_length(Data,Len),write(Len),write(' --> '),writeln(Symbol),
 	%writeln(Data),
 	split(Data,'\n',L1),
 	L1 = [_|L2],

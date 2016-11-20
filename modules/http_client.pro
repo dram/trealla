@@ -59,8 +59,7 @@ get10_block(S,Running,Data) :-
 	concat(Running,Block,Running2),
 	get10_block(S,Running2,Data).
 
-get10_block(S,Running,Data) :-
-	Data = Running.
+get10_block(S,Data,Data).
 
 get11_internal(S,Path,Data) :-
 	http:get11(S,Path,Status),
@@ -76,5 +75,4 @@ get11_chunk(S,Running,Data) :-
 	concat(Running,Chunk,Running2),
 	get11_chunk(S,Running2,Data).
 
-get11_chunk(S,Running,Data) :-
-	Data = Running.
+get11_chunk(S,Data,Data).
