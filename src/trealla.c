@@ -2147,14 +2147,16 @@ rule *xref_term(lexer *l, node *term, int arity)
 	return r;
 }
 
-void xref_rule(lexer *l, node *n)
+int xref_rule(lexer *l, node *n)
 {
 	// Cross-reference all body functors with the index, and
 	// point to the actual index rule to allow for assert etc.
 
 	node *tmp = NLIST_FRONT(&n->val_l);
 	node *head = NLIST_NEXT(tmp);
+	if (!head) return 0;
 	node *body = NLIST_NEXT(head);
+
 	const char *head_functor = "";
 
 	if (is_compound(head))
@@ -2209,6 +2211,8 @@ void xref_rule(lexer *l, node *n)
 				n->flags |= FLAG_LASTCALL;
 		}
 	}
+
+	return 1;
 }
 
 static void add_clauses(lexer *l, int internal)
@@ -2284,7 +2288,13 @@ int query_parse(tpl_query *self, const char *src)
 		return 0;
 	}
 
-	xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses));
+
+	if (!xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses)))
+	{
+		self->halt = 0; self->halt_s = strdup("NOTHING TO DO"); self->line_nbr = __LINE__;
+		return 0;
+	}
+
 	begin_query(self, NLIST_FRONT(&self->lex->clauses));
 	return 1;
 }
