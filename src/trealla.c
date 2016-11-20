@@ -2730,10 +2730,9 @@ int trealla_consult_file(trealla *self, const char *name)
 
 	if (l.init)
 	{
-		if (!trealla_run_query(self, l.init))
-			self->abort = 1;
-
+		trealla_run_query(self, l.init);
 		free(l.init);
+		self->abort = 1;
 	}
 
 	lexer_done(&l);
