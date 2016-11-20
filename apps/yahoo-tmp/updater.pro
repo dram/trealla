@@ -15,6 +15,8 @@
 start :-
 	fail.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 load_quotes :-
 	load_file(?SYMBOL_FILE,Data),
 	split(Data,'\n',Symbols),
@@ -37,26 +39,9 @@ save_quotes(Symbols) :-
 	maplist(save_quote,L),
 	true.
 
-csv_format([],Old,Old).
-csv_format([H|Rest],'',New) :-
-	csv_format(Rest,H,New).
-csv_format([H|Rest],Old,New) :-
-	concat(Old,',',H,Old2),
-	csv_format(Rest,Old2,New).
-
 save_quote([Symbol|Result]) :-
 	writeln(Symbol),
 	dbs:log(assertz(quote(Symbol,Result))).
-
-load_charts :-
-	load_file(?SYMBOL_FILE,Data),
-	split(Data,'\n',Symbols),
-	maplist(save_chart,Symbols).
-
-save_chart(Symbol),
-	writeln(Symbol),
-	yahoo_chart(Symbol,L),
-	dbs:log(assertz(daily(Symbol,L))).
 
 yahoo_quote(Symbol,L) :-
 	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
@@ -64,6 +49,18 @@ yahoo_quote(Symbol,L) :-
 	%writeln(Data),
 	split(Data,'\n',L1),
 	line(L1,[],L).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+load_charts :-
+	load_file(?SYMBOL_FILE,Data),
+	split(Data,'\n',Symbols),
+	maplist(save_chart,Symbols).
+
+save_chart(Symbol) :-
+	writeln(Symbol),
+	yahoo_chart(Symbol,L),
+	dbs:log(assertz(daily(Symbol,L))).
 
 yahoo_chart(Symbol,L) :-
 	concat('/table.csv?s=',Symbol,'',Path),
@@ -73,6 +70,15 @@ yahoo_chart(Symbol,L) :-
 	L1 = [_|L2],
 	line(L2,[],L3),
 	reverse(L3,L).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+csv_format([],Old,Old).
+csv_format([H|Rest],'',New) :-
+	csv_format(Rest,H,New).
+csv_format([H|Rest],Old,New) :-
+	concat(Old,',',H,Old2),
+	csv_format(Rest,Old2,New).
 
 line([],Old,Old).
 line([Data|T],Old,New) :-

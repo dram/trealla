@@ -204,7 +204,7 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 	}
 
 	char *dst = *dstbuf;
-	*buflen -= 10;						// a bit of leeway
+	*buflen -= 20;						// a bit of leeway
 
 	if (n->flags & FLAG_DBS_RETRACT)
 	{
@@ -233,6 +233,7 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 	if (!db->in_tran) *dst++ = '\n';
 	*dst = '\0';
 	fwrite(*dstbuf, 1, dst-*dstbuf, db->fp);
+	//if (!db->in_tran) fflush(db->fp);
 }
 
 static int dbs_end(tpl_query *q, int do_sync)
@@ -330,7 +331,7 @@ static int bif_dbs_log(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	size_t buflen = 1024*64;					// expandable
+	size_t buflen = PRINTBUF_SIZE;					// expandable
 	char *dstbuf = (char*)malloc(buflen+1);
 	node *n = clone_term(q,term1);
 	dbs_save_node(q->curr_db, &dstbuf, &buflen, n);
