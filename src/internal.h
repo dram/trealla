@@ -205,6 +205,7 @@ typedef struct
 	int uops_cnt, in_tran;
 
 #ifndef ISO_ONLY
+	list tran_queue;
 	int loading;
 	FILE *fp;
 	lock *guard;
@@ -296,10 +297,10 @@ struct tpl_query_
 #ifndef ISO_ONLY
 	char linked, is_forked, is_proc, is_dead, is_busy, is_idle;
 	char kvs_tran;
+	list queue;								// process queue
 	tpl_query *curr_pid;
 	skiplist *kvs;							// allocate if needed
 	char *name;
-	list tran_queue;
 
 #if (__STDC_VERSION__ >= 201112L) && !defined(ISO_ONLY)
 	_Atomic
@@ -320,11 +321,12 @@ struct trealla_
 
 #ifndef ISO_ONLY
 	handler *h;
-	skiplist kvs;							// should use skipbuck
-	skiplist idle, names;
 	FILE *kvsfp;
 	tpool *tp;
 	lock *pid_guard, *kvs_guard, *dbs_guard;
+	skiplist kvs;							// should use skipbuck
+	skiplist idle, names;
+	list kvs_queue;
 	int kvs_loaded, kvs_dirty;
 	int kvs_loading;
 #endif

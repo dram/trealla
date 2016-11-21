@@ -820,6 +820,11 @@ static void db_done(module *self)
 	sl_done(&self->dict, NULL);
 	sl_done(&self->exports, NULL);
 #ifndef ISO_ONLY
+	node *tmp = NLIST_FRONT(&self->tran_queue);
+
+	if (tmp)
+		term_heapcheck(tmp);
+
 	lock_destroy(self->guard);
 #endif
 	free(self->name);
@@ -2636,6 +2641,11 @@ void query_destroy(tpl_query *self)
 		FREE(self->kvs);
 	}
 
+	node *tmp = NLIST_FRONT(&self->queue);
+
+	if (tmp)
+		term_heapcheck(tmp);
+
 	if (self->name)
 	{
 		PIDLOCK(self->pl);
@@ -2651,11 +2661,6 @@ void query_destroy(tpl_query *self)
 		if (!--self->curr_pid->refcnt)
 			query_destroy(self->curr_pid);
 	}
-
-	node *tmp = NLIST_FRONT(&self->tran_queue);
-
-	if (tmp)
-		term_heapcheck(tmp);
 
 	if (self->name)
 		free(self->name);
@@ -2979,6 +2984,11 @@ void trealla_destroy(trealla *self)
 	sl_done(&self->mods, &db_free);
 
 #ifndef ISO_ONLY
+	node *tmp = NLIST_FRONT(&self->kvs_queue);
+
+	if (tmp)
+		term_heapcheck(tmp);
+
 	kvs_save(self);
 	kvs_done(&self->kvs);
 	sl_done(&self->idle, NULL);

@@ -290,7 +290,7 @@ static int bif_kvs_lpush(tpl_query *q)
 		node *tmp = clone_term(q, term2);
 		tmp->flags |= FLAG_KVS_LPUSH;
 		tmp->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, tmp);
 		return 1;
 	}
 
@@ -366,7 +366,7 @@ static int bif_kvs_lpop2(tpl_query *q)
 		node *tmp = make_const_atom("dummy", 1);
 		tmp->flags |= FLAG_KVS_LPOP;
 		tmp->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, tmp);
 		return 1;
 	}
 
@@ -417,7 +417,7 @@ static int bif_kvs_lpop1(tpl_query *q)
 		node *tmp = make_const_atom("dummy", 1);
 		tmp->flags |= FLAG_KVS_LPOP;
 		tmp->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, tmp);
 		return 1;
 	}
 
@@ -479,7 +479,7 @@ static int bif_kvs_lput(tpl_query *q)
 	{
 		KVSUNLOCK(q);
 		n->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, n);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, n);
 		return 1;
 	}
 
@@ -579,7 +579,7 @@ static int bif_kvs_lerase(tpl_query *q)
 		node *tmp = clone_term(q, term2);
 		tmp->flags |= FLAG_KVS_LERASE;
 		tmp->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, tmp);
 		return 1;
 	}
 
@@ -661,7 +661,7 @@ static int bif_kvs_put3(tpl_query *q)
 	{
 		KVSUNLOCK(q);
 		n->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, n);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, n);
 		return 1;
 	}
 
@@ -701,7 +701,7 @@ static int bif_kvs_put2(tpl_query *q)
 	if (q->kvs_tran)
 	{
 		n->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, n);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, n);
 		return 1;
 	}
 
@@ -766,7 +766,7 @@ static int bif_kvs_inc(tpl_query *q)
 		node *tmp = clone_term(q, term3);
 		tmp->flags |= FLAG_KVS_INC;
 		tmp->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, tmp);
 		return 1;
 	}
 
@@ -837,7 +837,7 @@ static int bif_kvs_erase2(tpl_query *q)
 	{
 		KVSUNLOCK(q);
 		n->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, n);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, n);
 		return 1;
 	}
 
@@ -892,7 +892,7 @@ static int bif_kvs_erase1(tpl_query *q)
 	{
 		KVSUNLOCK(q);
 		n->key = strdup(key);
-		NLIST_PUSH_BACK(&q->tran_queue, n);
+		NLIST_PUSH_BACK(&q->pl->kvs_queue, n);
 		return 1;
 	}
 
@@ -929,7 +929,7 @@ static void kvs_bail(tpl_query *q)
 
 	node *n = NULL;
 
-	while ((n = NLIST_POP_FRONT(&q->tran_queue)) != NULL)
+	while ((n = NLIST_POP_FRONT(&q->pl->kvs_queue)) != NULL)
 	{
 		free(n->key);
 		term_heapcheck(n);
@@ -973,7 +973,7 @@ static void kvs_end(tpl_query *q, int do_sync)
 	node *n = NULL;
 	int any = 0;
 
-	while ((n = NLIST_POP_FRONT(&q->tran_queue)) != NULL)
+	while ((n = NLIST_POP_FRONT(&q->pl->kvs_queue)) != NULL)
 	{
 		const char *key = n->key;
 

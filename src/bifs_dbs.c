@@ -246,7 +246,7 @@ static int dbs_end(tpl_query *q, int do_sync)
 	node *n = NULL;
 	int any = 0;
 
-	while ((n = NLIST_POP_FRONT(&q->tran_queue)) != NULL)
+	while ((n = NLIST_POP_FRONT(&q->curr_db->tran_queue)) != NULL)
 	{
 		node *tmp = n->orig;
 
@@ -301,7 +301,7 @@ static void dbs_bail(tpl_query *q)
 {
 	node *n = NULL;
 
-	while ((n = NLIST_POP_FRONT(&q->tran_queue)) != NULL)
+	while ((n = NLIST_POP_FRONT(&q->curr_db->tran_queue)) != NULL)
 	{
 		node *tmp = n->orig;
 		term_heapcheck(tmp);
