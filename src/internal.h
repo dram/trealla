@@ -170,7 +170,7 @@ struct node_
 		rule *match;					// index
 		node *orig;
 #ifndef ISO_ONLY
-		char *key;						// kvs transactions
+		char *kvs_key;					// kvs transactions
 		tpl_query *pid;					// sender
 #endif
 	};
@@ -300,7 +300,7 @@ struct tpl_query_
 	list queue;								// process queue
 	tpl_query *curr_pid;
 	skiplist *kvs;							// allocate if needed
-	char *name;
+	char *name;								// named procs
 
 #if (__STDC_VERSION__ >= 201112L) && !defined(ISO_ONLY)
 	_Atomic
@@ -327,8 +327,7 @@ struct trealla_
 	skiplist kvs;							// should use skipbuck
 	skiplist idle, names;
 	list kvs_queue;
-	int kvs_loaded, kvs_dirty;
-	int kvs_loading;
+	int kvs_loaded, kvs_dirty, kvs_loading;
 #endif
 };
 
