@@ -274,6 +274,7 @@ struct tpl_query_
 	tpl_query *parent;
 	char *halt_s;
 	lexer *lex;
+	module *curr_db;
 
 	union
 	{
@@ -291,14 +292,13 @@ struct tpl_query_
 	char retry, halt, ok, def_choice, def_env;
 	char is_det, timed_out, trace, noopt;
 	char is_running, is_yielded;
-	module *curr_db;
 
 #ifndef ISO_ONLY
 	char linked, is_forked, is_proc, is_dead, is_busy, is_idle;
 	tpl_query *curr_pid;
 	skiplist *kvs;							// allocate if needed
 	char *name;
-	list kvs_queue, dbs_queue;
+	list tran_queue;
 
 #if (__STDC_VERSION__ >= 201112L) && !defined(ISO_ONLY)
 	_Atomic
@@ -321,7 +321,7 @@ struct trealla_
 	handler *h;
 	skiplist kvs;							// should use skipbuck
 	skiplist idle, names;
-	list kvs_queue;
+	list tran_queue;
 	FILE *kvsfp;
 	tpool *tp;
 	lock *pid_guard, *kvs_guard, *dbs_guard;

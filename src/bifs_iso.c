@@ -1978,7 +1978,7 @@ static int bif_sys_asserta(tpl_query *q)
 	{
 		node *tmp = CALLOC(node);
 		tmp->orig = n;
-		NLIST_PUSH_BACK(&q->dbs_queue, tmp);
+		NLIST_PUSH_BACK(&q->tran_queue, tmp);
 	}
 	else
 #endif
@@ -2028,7 +2028,7 @@ static int bif_iso_asserta(tpl_query *q)
 	{
 		node *tmp = CALLOC(node);
 		tmp->orig = n;
-		NLIST_PUSH_BACK(&q->dbs_queue, tmp);
+		NLIST_PUSH_BACK(&q->tran_queue, tmp);
 	}
 	else
 #endif
@@ -2100,7 +2100,7 @@ static int bif_sys_assertz(tpl_query *q)
 	{
 		node *tmp = CALLOC(node);
 		tmp->orig = n;
-		NLIST_PUSH_BACK(&q->dbs_queue, tmp);
+		NLIST_PUSH_BACK(&q->tran_queue, tmp);
 	}
 	else
 #endif
@@ -2150,7 +2150,7 @@ static int bif_iso_assertz(tpl_query *q)
 	{
 		node *tmp = CALLOC(node);
 		tmp->orig = n;
-		NLIST_PUSH_BACK(&q->dbs_queue, tmp);
+		NLIST_PUSH_BACK(&q->tran_queue, tmp);
 		return 1;
 	}
 #endif
@@ -2296,7 +2296,7 @@ static int bif_iso_retract(tpl_query *q)
 			printf("*** retract %s -> %s\n", tmp->val_s, functor);
 			node *tmp = CALLOC(node);
 			tmp->orig = match;
-			NLIST_PUSH_BACK(&q->dbs_queue, tmp);
+			NLIST_PUSH_BACK(&q->tran_queue, tmp);
 		}
 		else
 #endif
@@ -2421,7 +2421,7 @@ static int bif_iso_retractall(tpl_query *q)
 			{
 				node *tmp = CALLOC(node);
 				tmp->orig = match;
-				NLIST_PUSH_BACK(&q->dbs_queue, tmp);
+				NLIST_PUSH_BACK(&q->tran_queue, tmp);
 			}
 			else
 #endif
@@ -4419,9 +4419,9 @@ void bifs_load_iso(void)
 	// about every Prolog so they are included here...
 
 #ifndef ISO_ONLY
-	DEFINE_BIF("_a", 1, bif_iso_asserta);
-	DEFINE_BIF("_z", 1, bif_iso_assertz);
-	DEFINE_BIF("_r", 1, bif_iso_retract);
+	DEFINE_BIF("a_", 1, bif_iso_asserta);
+	DEFINE_BIF("z_", 1, bif_iso_assertz);
+	DEFINE_BIF("r_", 1, bif_iso_retract);
 
 	DEFINE_BIF("div", 2, bif_iso_div);
 	DEFINE_BIF("assert", 1, bif_iso_assertz);

@@ -128,7 +128,7 @@ static int process_enqueue(tpl_query *q, tpl_query *who, node *term, int noerror
 	g_enqueues++;
 
 	if (term != NULL)
-		NLIST_PUSH_BACK(&who->kvs_queue, term);
+		NLIST_PUSH_BACK(&who->tran_queue, term);
 
 	if (who->is_busy || !who->is_forked)
 	{
@@ -153,7 +153,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 	if (q->pl->abort || q->halt)
 		return 0;
 
-	if (!NLIST_COUNT(&q->kvs_queue) && (q->tmo_msecs < 0))
+	if (!NLIST_COUNT(&q->tran_queue) && (q->tmo_msecs < 0))
 	{
 		process_yield_unlocked(q);
 		return 0;
@@ -161,7 +161,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 
 	PIDLOCK(q->pl);
 
-	for (node *n = NLIST_FRONT(&q->kvs_queue); n; n = NLIST_NEXT(n))
+	for (node *n = NLIST_FRONT(&q->tran_queue); n; n = NLIST_NEXT(n))
 	{
 		if (who)
 		{
@@ -179,7 +179,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 		}
 
 		q->timed_out = 0;
-		NLIST_REMOVE(&q->kvs_queue, n);
+		NLIST_REMOVE(&q->tran_queue, n);
 		PIDUNLOCK(q->pl);
 		q->refcnt--;
 		n->pid->refcnt--;
@@ -190,7 +190,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 
 	if (!q->tmo_msecs || q->timed_out)
 	{
-		for (node *n = NLIST_FRONT(&q->kvs_queue); n; n = NLIST_NEXT(n))
+		for (node *n = NLIST_FRONT(&q->tran_queue); n; n = NLIST_NEXT(n))
 			n->flags &= ~FLAG_SKIPPED;
 
 		q->timed_out = 1;
@@ -276,7 +276,7 @@ static int bif_proc_procinfo2(tpl_query *q)
 	else if (!strcmp(term1->val_s,"names"))
 		cnt = sl_count(&q->pl->names);
 	else if (!strcmp(term1->val_s,"msgs"))
-		cnt = NLIST_COUNT(&q->kvs_queue);
+		cnt = NLIST_COUNT(&q->tran_queue);
 
 	put_int(q, q->curr_frame+term2->slot, cnt);
 	return 1;
@@ -298,7 +298,7 @@ static int bif_proc_procinfo3(tpl_query *q)
 		else if (!strcmp(term2->val_s,"busy"))
 			cnt = who->is_busy;
 		else if (!strcmp(term2->val_s,"msgs"))
-			cnt = NLIST_COUNT(&who->kvs_queue);
+			cnt = NLIST_COUNT(&who->tran_queue);
 	}
 
 	put_int(q, q->curr_frame+term3->slot, cnt);
@@ -970,7 +970,7 @@ static int bif_proc_undo1(tpl_query *q)
 	tmp->flags |= FLAG_SKIPPED;
 	tmp->pid = q->curr_pid;
 	PIDLOCK(q->pl);
-	NLIST_PUSH_BACK(&q->kvs_queue, tmp);
+	NLIST_PUSH_BACK(&q->tran_queue, tmp);
 	PIDUNLOCK(q->pl);
 	return 1;
 }
@@ -1364,7 +1364,7 @@ static int bif_proc_wait(tpl_query *q)
 				continue;
 			}
 
-			for (node *n = NLIST_FRONT(&who->kvs_queue); n; n = NLIST_NEXT(n))
+			for (node *n = NLIST_FRONT(&who->tran_queue); n; n = NLIST_NEXT(n))
 				n->flags &= ~FLAG_SKIPPED;
 
 			who->timed_out = 1;
