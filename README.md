@@ -69,7 +69,6 @@ Usage
 	--traditional  - use *'.'* as the list constructor (default)
 	--quiet        - no banner (or -q)
 	--load         - load file (or -l, actually does nothing)
-	--preload      - loads compiled-in Prolog modules
 	--merge        - merge KVS transaction log into main data file
 
 Files can be filename[.ext] where '.ext' if not specified can be one

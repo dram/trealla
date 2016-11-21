@@ -134,6 +134,29 @@ static ops g_ops[] =
 	{0}
  };
 
+#include "dict.h"
+#include "auth.h"
+#include "blog.h"
+#include "smtp_client.h"
+#include "http_client.h"
+
+struct library
+{
+	const char *name;
+	const unsigned char *code;
+	const unsigned int *len;
+}
+ library[] =
+ {
+	 { "dict",			modules_dict_pro,			&modules_dict_pro_len },
+	 { "auth", 			modules_auth_pro,			&modules_auth_pro_len },
+	 { "blog", 			modules_blog_pro,			&modules_blog_pro_len },
+	 { "smtp_client",	modules_smtp_client_pro,	&modules_smtp_client_pro_len },
+	 { "http_client",	modules_http_client_pro,	&modules_http_client_pro_len },
+	 {0}
+ };
+
+
 const ops *get_op(module *db, const char *functor, int hint_prefix)
 {
 	const ops *optr;
@@ -1142,6 +1165,22 @@ static void dir_use_module(lexer *l, node *n)
 	}
 
 	DBSUNLOCK(l->pl);
+
+	struct library *lib = &library[0];
+
+	while (lib != NULL)
+	{
+		if (!strcmp(name, lib->name))
+		{
+			char *src = strndup((const char*)lib->code, *lib->len);
+			trealla_consult_text(l->pl, src, name);
+			free(src);
+			return;
+		}
+
+		lib++;
+	}
+
 	trealla_consult_file(l->pl, name);
 }
 

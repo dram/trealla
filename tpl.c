@@ -22,11 +22,6 @@
 #include "bifs.h"
 #include "daemon.h"
 #include "history.h"
-#include "dict.h"
-#include "auth.h"
-#include "blog.h"
-#include "smtp_client.h"
-#include "http_client.h"
 
 #ifndef ISO_ONLY
 extern int g_dbs_merge;
@@ -154,7 +149,7 @@ int main(int ac, char *av[])
 	int daemon = 0, quiet = 0;
 
 #ifndef ISO_ONLY
-	int preload = 0, startapp = 0, testapp = 0;
+	int startapp = 0, testapp = 0;
 #endif
 
 	for (int i = 1; i < ac; i++)
@@ -163,11 +158,9 @@ int main(int ac, char *av[])
 			daemon = 1;
 #ifndef ISO_ONLY
 		else if (!strcmp(av[i], "--startapp"))
-			startapp = preload = 1;
+			startapp = 1;
 		else if (!strcmp(av[i], "--testapp"))
-			testapp = preload = 1;
-		else if (!strcmp(av[i], "--preload"))
-			preload = 1;
+			testapp = 1;
 #endif
 		else if (!strcmp(av[i], "-q") || !strcmp(av[i], "--quiet"))
 			quiet = 1;
@@ -287,9 +280,6 @@ int main(int ac, char *av[])
 
 	if (get)
 	{
-		char *src = strndup((const char*)modules_http_client_pro, modules_http_client_pro_len);
-		trealla_consult_text(pl, src, "modules/http_client.pro");
-		free(src);
 		char scheme[10], tmpbuf1[256], tmpbuf2[256];
 		tmpbuf1[0] = tmpbuf2[0] = '\0';
 		strcpy(scheme, "http");
@@ -310,25 +300,6 @@ int main(int ac, char *av[])
 		snprintf(tmpbuf, sizeof(tmpbuf), "http_client:get10_file('%s://%s','%s','%s')",
 			scheme, tmpbuf1, tmpbuf2, p2);
 		init = strdup(tmpbuf);
-	}
-
-	else if (preload)
-	{
-		char *src = strndup((const char*)modules_dict_pro, modules_dict_pro_len);
-		trealla_consult_text(pl, src, "modules/dict.pro");
-		free(src);
-		src = strndup((const char*)modules_auth_pro, modules_auth_pro_len);
-		trealla_consult_text(pl, src, "modules/auth.pro");
-		free(src);
-		src = strndup((const char*)modules_blog_pro, modules_blog_pro_len);
-		trealla_consult_text(pl, src, "modules/blog.pro");
-		free(src);
-		src = strndup((const char*)modules_smtp_client_pro, modules_smtp_client_pro_len);
-		trealla_consult_text(pl, src, "modules/smtpclient.pro");
-		free(src);
-		src = strndup((const char*)modules_http_client_pro, modules_http_client_pro_len);
-		trealla_consult_text(pl, src, "modules/http_client.pro");
-		free(src);
 	}
 
 	if (startapp)
