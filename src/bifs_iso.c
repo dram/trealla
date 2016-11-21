@@ -1670,9 +1670,9 @@ static int bif_iso_get_char(tpl_query *q)
 	node *term1 = get_var(term1);
 	int ch = getc(stdin);
 
-	if (!ch || (ch == EOF) || (ch == '\n'))
+	if (ch == EOF)
 	{
-		node *n = make_int(-1);
+		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
 		term_heapcheck(n);
 		return ok;
@@ -1694,9 +1694,9 @@ static int bif_iso_get_char2(tpl_query *q)
 	stream *sp = term1->val_str;
 	int ch = getc(sp->fptr);
 
-	if (!ch || (ch == EOF) || (ch == '\n'))
+	if (ch == EOF)
 	{
-		node *n = make_int(-1);
+		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
 		term_heapcheck(n);
 		return ok;
@@ -1771,9 +1771,9 @@ static int bif_iso_peek_byte2(tpl_query *q)
 	if (ch == EOF)
 		return 0;
 
-	ungetc(ch, sp->fptr);
+	ungetc(ch, stdin);
 	node *n = make_quick_int(ch);
-	int ok = unify_term(q, term2, n, q->curr_frame);
+	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -1785,12 +1785,17 @@ static int bif_iso_peek_char(tpl_query *q)
 	int ch = getc(stdin);
 
 	if (ch == EOF)
-		return 0;
+	{
+		node *n = make_const_atom(END_OF_FILE, 0);
+		int ok = unify_term(q, term1, n, q->curr_frame);
+		term_heapcheck(n);
+		return ok;
+	}
 
 	ungetc(ch, stdin);
-	char str[2];
-	str[0] = (char)ch; str[1] = '\0';
-	node *n = make_atom(strdup(str), 1);
+	char tmpbuf[20];
+	sprintf(tmpbuf, "%c", ch);
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -1805,13 +1810,18 @@ static int bif_iso_peek_char2(tpl_query *q)
 	int ch = getc(sp->fptr);
 
 	if (ch == EOF)
-		return 0;
+	{
+		node *n = make_const_atom(END_OF_FILE, 0);
+		int ok = unify_term(q, term1, n, q->curr_frame);
+		term_heapcheck(n);
+		return ok;
+	}
 
-	ungetc(ch, sp->fptr);
-	char str[2];
-	str[0] = (char)ch; str[1] = '\0';
-	node *n = make_atom(strdup(str), 1);
-	int ok = unify_term(q, term2, n, q->curr_frame);
+	ungetc(ch, stdin);
+	char tmpbuf[20];
+	sprintf(tmpbuf, "%c", ch);
+	node *n = make_atom(strdup(tmpbuf), 0);
+	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
