@@ -1590,21 +1590,16 @@ static int bif_iso_get_code(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	int ch = getc(stdin);
+	char *line = trealla_readstring(stdin);
 
-	if (!ch || (ch == EOF) || (ch == '\n'))
-	{
-		node *n = make_int(-1);
-		int ok = unify_term(q, term1, n, q->curr_frame);
-		term_heapcheck(n);
-		return ok;
-	}
+	if (line == NULL)
+		line[0] = -1;
 
-	char tmpbuf[20];
-	sprintf(tmpbuf, "%c", ch);
-	node *n = make_atom(strdup(tmpbuf), 0);
+	line[1] = '\0';
+	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
+	free(line);
 	return ok;
 }
 
@@ -1614,21 +1609,16 @@ static int bif_iso_get_code2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	int ch = getc(sp->fptr);
+	char *line = trealla_readstring(sp->fptr);
 
-	if (!ch || (ch == EOF) || (ch == '\n'))
-	{
-		node *n = make_int(-1);
-		int ok = unify_term(q, term1, n, q->curr_frame);
-		term_heapcheck(n);
-		return ok;
-	}
+	if (line == NULL)
+		line[0] = -1;
 
-	char tmpbuf[20];
-	sprintf(tmpbuf, "%c", ch);
-	node *n = make_atom(strdup(tmpbuf), 0);
+	line[1] = '\0';
+	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
+	free(line);
 	return ok;
 }
 
@@ -1636,14 +1626,15 @@ static int bif_iso_get_byte(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	int ch = getc(stdin);
+	char *line = trealla_readstring(stdin);
 
-	if (ch == EOF)
-		return 0;
+	if (line == NULL)
+		line[0] = -1;
 
-	node *n = make_quick_int(ch);
+	node *n = make_quick_int(line[0]);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
+	free(line);
 	return ok;
 }
 
@@ -1653,14 +1644,15 @@ static int bif_iso_get_byte2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	int ch = getc(sp->fptr);
+	char *line = trealla_readstring(sp->fptr);
 
-	if (ch == EOF)
-		return 0;
+	if (line == NULL)
+		line[0] = -1;
 
-	node *n = make_quick_int(ch);
-	int ok = unify_term(q, term2, n, q->curr_frame);
+	node *n = make_quick_int(line[0]);
+	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
+	free(line);
 	return ok;
 }
 
@@ -1668,9 +1660,9 @@ static int bif_iso_get_char(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	int ch = getc(stdin);
+	char *line = trealla_readstring(stdin);
 
-	if (ch == EOF)
+	if (line == NULL)
 	{
 		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1678,11 +1670,11 @@ static int bif_iso_get_char(tpl_query *q)
 		return ok;
 	}
 
-	char tmpbuf[20];
-	sprintf(tmpbuf, "%c", ch);
-	node *n = make_atom(strdup(tmpbuf), 0);
+	line[1] = 0;
+	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
+	free(line);
 	return ok;
 }
 
@@ -1692,9 +1684,9 @@ static int bif_iso_get_char2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	int ch = getc(sp->fptr);
+	char *line = trealla_readstring(sp->fptr);
 
-	if (ch == EOF)
+	if (line == NULL)
 	{
 		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1702,11 +1694,11 @@ static int bif_iso_get_char2(tpl_query *q)
 		return ok;
 	}
 
-	char tmpbuf[20];
-	sprintf(tmpbuf, "%c", ch);
-	node *n = make_atom(strdup(tmpbuf), 0);
+	line[1] = 0;
+	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
+	free(line);
 	return ok;
 }
 
