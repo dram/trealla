@@ -824,11 +824,11 @@ option is specified.
 Dictionary module: namespace  'dict'
 ------------------------------------
 
-This is a compiled-in Prolog module that must be imported:
+This is a compiled-in module that must be imported:
 
 	:-use_module(dict).
 
-Provides control over name-value pairs in a dictionary:
+Provides control over name-value pairs in a list:
 
 	get(+Dict,+Name,-Value)
 	lget(+Dict,+Name,-Value)
@@ -840,7 +840,7 @@ If name not found 'get' returns 0, 'lget' returns [].
 Auth module: namespace 'auth'
 -----------------------------
 
-This is a compiled-in Prolog module that must be imported:
+This is a compiled-in module that must be imported:
 
 	:-use_module(auth).
 
@@ -856,8 +856,6 @@ The following provide user control:
 	getuser_locked(+User,-Code)
 	setuser_pass(+User,+Passwd)
 
-A non-zero lock-code locks an account, a lock-code of 0 unlocks it.
-
 The following provide session control:
 
 	login(+User,+Passwd,-SessId,+Keep,-Expires)
@@ -867,33 +865,33 @@ The following provide session control:
 Blog module: namespace 'blog'
 -----------------------------
 
-This is a compiled-in Prolog module that must be imported:
+This is a compiled-in module that must be imported:
 
 	:-use_module(blog).
 
-The following provide for blog posting:
+The following provide for posting:
 
 	addpost(+BlogName,-Id,+User,+Head,+Body)
 	lockpost(+Id)
 	unlockpost(+Id)
 	delpost(+Id)
 	undelpost(+Id)
-	getpost(+Id,?Deleted,?Locked,-Created,-Modified,-User,-Head,-Body)
-	getposts(+BlogName,-L)
+	getpost(+Id,-Deleted,-Locked,-Created,-Modified,-User,-Head,-Body)
+	getposts(+BlogName,-List)
 
-The following provide for blog commenting:
+The following provide for commenting:
 
 	addcomment(+PostId,-Id,+User,+Body)
 	replycomment(+ReplyId,+Id)
 	delcomment(+Id)
 	undelcomment(+Id)
 	getcomment(+Id,-Created,-Modified,-User,-Body,-ReplyTo,-ReplyList)
-	getcomments(+PostId,-L)
+	getcomments(+PostId,-List)
 
 SMTP client module: namespace 'smtp_client'
 -------------------------------------------
 
-This is a compiled-in Prolog module that must be imported:
+This is a compiled-in module that must be imported:
 
 	:-use_module(smtp_client).
 
@@ -908,11 +906,11 @@ More functionality to added, eg. attachments and inline HTML objects.
 HTTP client module: namespace 'http_client'
 -------------------------------------------
 
-This is a compiled-in Prolog module that must be imported:
+This is a compiled-in module that must be imported:
 
 	:-use_module(http_client).
 
-Provides basic HTTP client functionality:
+Provides basic HTTP/1.0 & HTTP/1.1 client functionality:
 
 	get10_data(+Host,+Path,-Data)
 	get10_file(+Host,+Path,+Filename)
