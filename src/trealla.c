@@ -147,14 +147,14 @@ struct library
 	const unsigned int *len;
 }
  library[] =
- {
-	 { "dict",			modules_dict_pro,			&modules_dict_pro_len },
-	 { "auth", 			modules_auth_pro,			&modules_auth_pro_len },
-	 { "blog", 			modules_blog_pro,			&modules_blog_pro_len },
-	 { "smtp_client",	modules_smtp_client_pro,	&modules_smtp_client_pro_len },
-	 { "http_client",	modules_http_client_pro,	&modules_http_client_pro_len },
-	 {0}
- };
+{
+  { "dict",			modules_dict_pro,			&modules_dict_pro_len },
+  { "auth", 		modules_auth_pro,			&modules_auth_pro_len },
+  { "blog", 		modules_blog_pro,			&modules_blog_pro_len },
+  { "smtp_client",	modules_smtp_client_pro,	&modules_smtp_client_pro_len },
+  { "http_client",	modules_http_client_pro,	&modules_http_client_pro_len },
+  {0}
+};
 
 
 const ops *get_op(module *db, const char *functor, int hint_prefix)
