@@ -170,7 +170,7 @@ struct node_
 		rule *match;					// index
 		node *orig;
 #ifndef ISO_ONLY
-		char *kvs_key;					// kvs transactions
+		char *kvs_key;					// proc kv dict
 		tpl_query *pid;					// sender
 #endif
 	};
@@ -296,7 +296,6 @@ struct tpl_query_
 
 #ifndef ISO_ONLY
 	char linked, is_forked, is_proc, is_dead, is_busy, is_idle;
-	char kvs_tran;
 	list queue;								// process queue
 	tpl_query *curr_pid;
 	skiplist *kvs;							// allocate if needed
@@ -321,13 +320,9 @@ struct trealla_
 
 #ifndef ISO_ONLY
 	handler *h;
-	FILE *kvsfp;
 	tpool *tp;
-	lock *pid_guard, *kvs_guard, *dbs_guard;
-	skiplist kvs;							// should use skipbuck
+	lock *pid_guard, *dbs_guard;
 	skiplist idle, names;
-	list kvs_queue;
-	int kvs_loaded, kvs_dirty, kvs_loading;
 #endif
 };
 
@@ -388,8 +383,6 @@ inline static node *new_node(void)
 #define PIDUNLOCK(pl) lock_unlock(pl->pid_guard)
 #define DBSLOCK(pl) lock_lock(pl->pid_guard)
 #define DBSUNLOCK(pl) lock_unlock(pl->pid_guard)
-#define KVSLOCK(q) if (!q->pl->kvs_loading && !q->kvs_tran) lock_lock(q->pl->kvs_guard)
-#define KVSUNLOCK(q) if (!q->pl->kvs_loading && !q->kvs_tran) lock_unlock(q->pl->kvs_guard)
 #endif
 
 #ifndef ISO_ONLY
@@ -433,8 +426,6 @@ extern void term_heapcheck(node *n);
 extern char *trealla_readline(FILE *fp);
 
 #ifndef ISO_ONLY
-extern void kvs_done(skiplist *d);
-extern int kvs_save(trealla *pl);
 extern void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n);
 #endif
 

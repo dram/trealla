@@ -14,7 +14,7 @@ OBJECTS_ISO = src/trealla.obj src/history.obj src/jela.obj \
 OBJECTS_ALL = $(OBJECTS_ISO) src/base64.obj src/skipbuck.obj \
 			src/thread.obj src/uncle.obj src/uuid.obj src/xmlq.obj \
 			src/jsonq.obj src/network.obj  src/bifs_dbs.obj \
-			src/bifs_kvs.obj src/bifs_net.obj src/bifs_proc.obj \
+			src/bifs_net.obj src/bifs_proc.obj \
 			src/bifs_sys.obj src/bifs_http.obj
 
 !ifndef USE_SSL
@@ -98,9 +98,6 @@ src/uuid.obj: $*.c $*.h
         cl $(CFLAGS) /c /Tp $*.c /Fo$*.obj
 
 src/xmlq.obj: $*.c $*.h
-        cl $(CFLAGS) /c /Tp $*.c /Fo$*.obj
-
-src/bifs_kvs.obj: $*.c src/bifs.h src/internal.h src/list.h src/skiplist.h src/trealla.h src/jela.h src/network.h
         cl $(CFLAGS) /c /Tp $*.c /Fo$*.obj
 
 src/bifs_dbs.obj: $*.c src/bifs.h src/internal.h src/list.h src/skiplist.h src/trealla.h src/jela.h src/network.h

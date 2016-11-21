@@ -2658,6 +2658,17 @@ void query_stats(tpl_query *self)
 #endif
 }
 
+static void kvs_done(skiplist *d)
+{
+	sl_start(d);
+	node *n = NULL;
+
+	while ((sl_next(d, (void**)&n)) != NULL)
+		term_heapcheck(n);
+
+	sl_done(d, NULL);
+}
+
 void query_destroy(tpl_query *self)
 {
 #ifndef ISO_ONLY
@@ -2950,7 +2961,6 @@ trealla *trealla_create(const char *name)
 		bifs_load_proc();
 		bifs_load_net();
 		bifs_load_dbs();
-		bifs_load_kvs();
 		bifs_load_http();
 		bifs_load_ws();
 		bifs_load_stomp();
@@ -2959,19 +2969,16 @@ trealla *trealla_create(const char *name)
 	}
 
 #ifndef ISO_ONLY
-	sl_init(&pl->kvs, 0, &strcmp, &free);
 	sl_init(&pl->idle, 0, &tmocmp, NULL);
 	sl_init(&pl->names, 0, &strcmp, &free);
 	sl_set(&pl->mods, strdup("sys"), NULL);
 	sl_set(&pl->mods, strdup("proc"), NULL);
 	sl_set(&pl->mods, strdup("dbs"), NULL);
-	sl_set(&pl->mods, strdup("kvs"), NULL);
 	sl_set(&pl->mods, strdup("net"), NULL);
 	sl_set(&pl->mods, strdup("http"), NULL);
 	sl_set(&pl->mods, strdup("ws"), NULL);
 
 	pl->pid_guard = lock_create();
-	pl->kvs_guard = lock_create();
 	pl->dbs_guard = lock_create();
 #endif
 
@@ -3023,16 +3030,8 @@ void trealla_destroy(trealla *self)
 	sl_done(&self->mods, &db_free);
 
 #ifndef ISO_ONLY
-	node *tmp = NLIST_FRONT(&self->kvs_queue);
-
-	if (tmp)
-		term_heapcheck(tmp);
-
-	kvs_save(self);
-	kvs_done(&self->kvs);
 	sl_done(&self->idle, NULL);
 	sl_done(&self->names, NULL);
-	lock_destroy(self->kvs_guard);
 	lock_destroy(self->pid_guard);
 	lock_destroy(self->dbs_guard);
 

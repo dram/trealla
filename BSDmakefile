@@ -6,7 +6,7 @@ OBJECTS_ISO = src/trealla.o src/bifs_iso.o src/history.o src/jela.o \
 			src/list.o src/print.o src/skiplist.o src/daemon.o
 
 OBJECTS_ALL = $(OBJECTS_ISO) src/base64.o src/bifs_sys.o src/bifs_http.o \
-			src/jsonq.o src/bifs_kvs.o src/bifs_net.o src/bifs_proc.o \
+			src/jsonq.o src/bifs_net.o src/bifs_proc.o \
 			src/network.o src/skipbuck.o src/thread.o src/uncle.o \
 			src/uuid.o src/xmlq.o src/bifs_dbs.o
 
@@ -72,7 +72,6 @@ src/base64.o: src/base64.h
 src/bifs_iso.o: src/bifs.h src/history.h src/internal.h src/jela.h src/trealla.h
 src/bifs_sys.o: src/base64.h src/bifs.h src/internal.h src/jela.h src/network.h src/xmlq.h src/trealla.h
 src/bifs_http.o: src/base64.h src/bifs.h src/internal.h src/network.h src/jela.h src/trealla.h
-src/bifs_kvs.o: src/bifs.h src/trealla.h src/internal.h src/skiplist.h src/jela.h
 src/bifs_dbs.o: src/bifs.h src/trealla.h src/internal.h src/skiplist.h src/jela.h
 src/bifs_net.o: src/bifs.h src/trealla.h src/internal.h src/skiplist.h src/jela.h src/network.h
 src/daemon.o: src/daemon.h

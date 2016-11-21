@@ -25,7 +25,6 @@
 
 #ifndef ISO_ONLY
 extern int g_dbs_merge;
-extern int g_kvs_merge;
 extern int g_tpool_size;
 #endif
 
@@ -216,7 +215,7 @@ int main(int ac, char *av[])
 		}
 #ifndef ISO_ONLY
 		else if (!strcmp(av[i], "--merge"))
-			g_kvs_merge = g_dbs_merge = 1;
+			g_dbs_merge = 1;
 		else if (!strncmp(av[i], "--tpool",7))
 			sscanf(av[i], "--tpool=%d", &g_tpool_size);
 #endif
