@@ -72,7 +72,7 @@ static void manifest_file(session *s, const char *branch, const char *appname, c
 	}
 
 	char tmpbuf[256];
-	sprintf(tmpbuf, "/trealla-lang/trealla/apps/%s/%s/%s", branch, appname, filename);
+	sprintf(tmpbuf, "/trealla-lang/apps/%s/%s/%s", branch, appname, filename);
 	int status = 0;
 	http_get10(s, tmpbuf, 1, &status);
 
@@ -266,7 +266,7 @@ int main(int ac, char *av[])
 		session_set_stash(s, "HOST", host);
 		//printf("INFO: Connected https://%s\n", host);
 		char tmpbuf[256];
-		sprintf(tmpbuf, "/trealla-lang/trealla/apps/%s/%s/MANIFEST", branch, p1);
+		sprintf(tmpbuf, "/trealla-lang/apps/%s/%s/MANIFEST", branch, p1);
 		int status = 0, keep_alive = 1;
 		http_get10(s, tmpbuf, keep_alive, &status);
 
