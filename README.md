@@ -19,7 +19,7 @@ The rule database usage is currently immediate update view (the
 traditional way). ISO-PROLOG however specifies logical update view
 (ie. snapshot), so this may change in future (a flag?). The rule
 database uses first argument indexing on dynamic clauses which, along
-with the persistence option, allows for developing fast safe in-memory
+with the persistence option, allows for developing fast, safe, in-memory
 data stores that can be *logic'd over*.
 
 Writen in plain-old C with a permissive license.
@@ -32,12 +32,13 @@ Getting / Building
 
 	git clone https://github.com/trealla-lang/trealla
 	cd trealla
-	make [CC=gcc|clang|tcc] [iso]
+	make [CC=gcc|clang|tcc] [iso|iso_debug|debug]
 
 WIN compilation is sporadic and may not support everything.
 
 RaspberryPi compilation should probably use TCC, but TCC does not
-support 128-bit integers or atomics (so no procs).
+support 128-bit integers or atomics (so no procs). GCC & Clang are
+very slow.
 
 Compiler should be C11 if using procs (to use atomics) otherwise
 C99 should be adequate, eg:
@@ -59,12 +60,13 @@ Usage
 	--listing      - same as '--goal=listing'
 	--stats        - print statistics at completion of query
 	--trace        - trace step-by-step of execution
-	--noopt        - disable optimizations
+	--noopt        - disable optimizations (or -O0)
 	--tpool=N      - thread-pool size (default is 2)
 	--daemon       - daemonize program (or -d)
 	--watchdog     - set restart watchdog for daemon (or -w)
 	--cd=path      - chdir for daemon
-	--swi7         - use '[|]' as the list constructor
+	--swi7         - use *'[|]'* as the list constructor
+	--traditional  - use *'.'* as the list constructor (default)
 	--quiet        - no banner (or -q)
 	--load         - load file (or -l, actually does nothing)
 	--preload      - loads compiled-in Prolog modules
@@ -73,9 +75,9 @@ Usage
 Files can be filename[.ext] where '.ext' if not specified can be one
 of the following: .pro, .prolog, .pl or .P
 
-	tpl -q -l samples/validate.pro --start
-	yap -q -l samples/validate.pro -z start,halt
-	swipl -q -l samples/validate.pro -t start --traditional
+	tpl -l samples/validate.pro
+	yap -l samples/validate.pro
+	swipl -l samples/validate.pro --traditional
 
 	./tpl samples/queens4 --test
 	./tpl samples/queens12 --test
@@ -119,7 +121,7 @@ and compiler options. Made with 'make iso' option:
   ./tpl samples/hanoi '--goal=hanoiq(20)'
 
 	yap       0.072s
-	swipl     0.206s
+	swi       0.206s
 	gprolog   0.404s
 	trealla   0.455s
 
@@ -127,20 +129,20 @@ and compiler options. Made with 'make iso' option:
 
 	yap       0.052s
 	trealla   0.138s
-	swipl     0.212s
+	swi       0.212s
 	gprolog   0.272s
 
   ./tpl samples/queens4 '--goal=test3'  // queens 4x4 10K times
 
 	yap       0.152s
-	swipl     0.875s
+	swi       0.875s
 	trealla   1.043s
 	gprolog   1.180s
 
   ./tpl samples/queens12 '--goal=testq' // queens 12x12 1 times
 
 	yap       1.546s
-	swipl     8.189s
+	swi       8.189s
 	trealla  10.190s
 	gprolog  11.204s
 
@@ -150,6 +152,8 @@ To-Do?
 So much.
 
 Work on optimization.
+
+Second-arg indexing for dynamics.
 
   ...
 

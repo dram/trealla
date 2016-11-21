@@ -1,3 +1,5 @@
+:-initialization(start).
+
 % This is just a bunch of conformance tests.
 % Hopefully more will get added over time.
 
@@ -7,7 +9,8 @@
 
 start :- test1, test2, test3, test4a, test4b, test5a, test5b,
 		test6a, test6b, test6c, test7, test8, test9a, test9b, test9c,
-		test10, test11.
+		test10, test11,
+		halt.
 
 test1 :-
 	write('Test1:\t'),
