@@ -471,6 +471,52 @@ char *trealla_readline(FILE *fp)
 	return line;
 }
 
+char *trealla_readstring(FILE *fp)
+{
+	if ((fp == stdin) && isatty(0))
+		return history_readline_eol("|: ", '\0');
+
+	size_t maxlen = 0, blocksize = 1024;
+	char *line = NULL;
+
+	while (!feof(fp))
+	{
+		maxlen += blocksize;
+		char *newline;
+
+		if ((newline = (char*)realloc(line, maxlen+1)) == NULL)
+			break;
+
+		line = newline;
+		char *block = (line + maxlen) - blocksize;
+
+		if (fgets(block, blocksize+1, fp) == NULL)
+		{
+			if (block == line)
+			{
+				free(line);
+				line = NULL;
+			}
+
+			break;
+		}
+
+		if (strchr(block, '\n') != NULL)	// FIXME
+		{
+			size_t len = strlen(block);
+
+			if (block[len-1] == '\n')
+				block[--len] = '\0';
+
+			break;
+		}
+
+		blocksize *= 2;
+	}
+
+	return line;
+}
+
 uint64_t gettimeofday_usec(void)
 #ifdef _WIN32
 {
