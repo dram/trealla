@@ -24,6 +24,7 @@ test1 :-
 
 test2 :-
 	dbs:load,
+	listing(rec2),
 	dbs:begin,
 	assertz(rec2(2)),
 	assertz(rec2(3)),

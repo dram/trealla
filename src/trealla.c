@@ -2277,7 +2277,6 @@ int query_parse(tpl_query *self, const char *src)
 		return 0;
 	}
 
-
 	if (!xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses)))
 	{
 		self->halt = 0; self->halt_s = strdup("NOTHING TO DO"); self->line_nbr = __LINE__;
@@ -2653,7 +2652,7 @@ void query_destroy(tpl_query *self)
 			query_destroy(self->curr_pid);
 	}
 
-	node *tmp = NLIST_FRONT(&self->kvs_queue);
+	node *tmp = NLIST_FRONT(&self->tran_queue);
 
 	if (tmp)
 		term_heapcheck(tmp);

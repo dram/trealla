@@ -106,7 +106,7 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 		{
 			line_nbr++;
 
-			if (!isalpha(line[0]))
+			if (!isalpha(line[0]) && (line[0] != '_'))
 				continue;
 
 			if (!query_parse(q, line))
@@ -208,19 +208,19 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 
 	if (n->flags & FLAG_DBS_RETRACT)
 	{
-		dst += snprintf(dst, *buflen, "_r(");
+		dst += snprintf(dst, *buflen, "r_(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
 	else if (n->flags & FLAG_DBS_ASSERTZ)
 	{
-		dst += snprintf(dst, *buflen, "_z(");
+		dst += snprintf(dst, *buflen, "z_(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
 	else if (n->flags & FLAG_DBS_ASSERTA)
 	{
-		dst += snprintf(dst, *buflen, "_a(");
+		dst += snprintf(dst, *buflen, "a_(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
@@ -246,7 +246,7 @@ static int dbs_end(tpl_query *q, int do_sync)
 	node *n = NULL;
 	int any = 0;
 
-	while ((n = NLIST_POP_FRONT(&q->dbs_queue)) != NULL)
+	while ((n = NLIST_POP_FRONT(&q->tran_queue)) != NULL)
 	{
 		node *tmp = n->orig;
 
@@ -301,7 +301,7 @@ static void dbs_bail(tpl_query *q)
 {
 	node *n = NULL;
 
-	while ((n = NLIST_POP_FRONT(&q->dbs_queue)) != NULL)
+	while ((n = NLIST_POP_FRONT(&q->tran_queue)) != NULL)
 	{
 		node *tmp = n->orig;
 		term_heapcheck(tmp);
