@@ -295,6 +295,7 @@ struct tpl_query_
 
 #ifndef ISO_ONLY
 	char linked, is_forked, is_proc, is_dead, is_busy, is_idle;
+	char kvs_tran;
 	tpl_query *curr_pid;
 	skiplist *kvs;							// allocate if needed
 	char *name;
@@ -321,11 +322,10 @@ struct trealla_
 	handler *h;
 	skiplist kvs;							// should use skipbuck
 	skiplist idle, names;
-	list tran_queue;
 	FILE *kvsfp;
 	tpool *tp;
 	lock *pid_guard, *kvs_guard, *dbs_guard;
-	int kvs_loaded, kvs_dirty, kvs_tran;
+	int kvs_loaded, kvs_dirty;
 	int kvs_loading;
 #endif
 };
@@ -387,8 +387,8 @@ inline static node *new_node(void)
 #define PIDUNLOCK(pl) lock_unlock(pl->pid_guard)
 #define DBSLOCK(pl) lock_lock(pl->pid_guard)
 #define DBSUNLOCK(pl) lock_unlock(pl->pid_guard)
-#define KVSLOCK(q) if (!q->pl->kvs_loading && !q->pl->kvs_tran) lock_lock(q->pl->kvs_guard)
-#define KVSUNLOCK(q) if (!q->pl->kvs_loading && !q->pl->kvs_tran) lock_unlock(q->pl->kvs_guard)
+#define KVSLOCK(q) if (!q->pl->kvs_loading && !q->kvs_tran) lock_lock(q->pl->kvs_guard)
+#define KVSUNLOCK(q) if (!q->pl->kvs_loading && !q->kvs_tran) lock_unlock(q->pl->kvs_guard)
 #endif
 
 #ifndef ISO_ONLY
