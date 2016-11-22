@@ -3064,17 +3064,15 @@ static int bif_iso_univ(tpl_query *q)
 	if (is_var(term1) && is_var(term2))
 	{
 		node *s = make_structure();
-		node *head = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
+		node *l = term2;
 
-		while (head)
+		while (is_list(l))
 		{
-			NLIST_PUSH_BACK(&s->val_l, clone_term(q, head));
-			head = NLIST_NEXT(head);
-
-			if (!is_list(head))
-				break;
-
-			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, q->latest_context);
+			NLIST_PUSH_BACK(&s->val_l, clone_term(q, n));
+			node *tail = NLIST_NEXT(head);
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		put_env(q, q->curr_frame+term1->slot, s, -1);
@@ -3196,19 +3194,16 @@ static int bif_iso_length(tpl_query *q)
 	if (is_list(term1) && !q->retry)
 	{
 		size_t cnt = 0;
-		node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 		q->latest_context = save_context;
+		node *l = term2;
 
-		while (head)
+		while (is_list(l))
 		{
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			//node *n = get_arg(q, head, q->latest_context);
 			cnt++;
 			node *tail = NLIST_NEXT(head);
-			tail = get_arg(q, tail, q->latest_context);
-
-			if (!is_list(tail))
-				break;
-
-			head = NLIST_NEXT(NLIST_FRONT(&tail->val_l));
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		if (is_var(term2))
