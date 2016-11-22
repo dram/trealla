@@ -1689,7 +1689,7 @@ static int bif_iso_get_char(tpl_query *q)
 		;
 
 	line[1] = '\0';
-	node *n = make_atom(strdup(line), 0);
+	node *n = make_atom(strdup(line), 1);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -1866,7 +1866,8 @@ static int bif_iso_number_codes(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *n = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, x, q->curr_frame);
 
 			if (!is_integer(n))
 			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
@@ -1879,7 +1880,7 @@ static int bif_iso_number_codes(tpl_query *q)
 			v *= 10;
 			v += i;
 
-			n = NLIST_NEXT(n);
+			n = NLIST_NEXT(x);
 
 			if (is_atom(n))
 			{
@@ -1937,10 +1938,11 @@ static int bif_iso_number_chars(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *n = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, x, q->curr_frame);
 
 			if (!is_atom(n))
-			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
+			{ QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
 
 			char i = n->val_s[0]-'0';
 
@@ -1949,7 +1951,7 @@ static int bif_iso_number_chars(tpl_query *q)
 
 			v *= 10;
 			v += i;
-			n = NLIST_NEXT(n);
+			n = NLIST_NEXT(x);
 
 			if (is_atom(n))
 			{
@@ -2008,14 +2010,15 @@ static int bif_iso_atom_chars(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *n = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, x, q->curr_frame);
 
 			if (!is_atom(n))
-			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
+			{ QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
 
 			char i = n->val_s[0];
 			*dst++ = i;
-			n = NLIST_NEXT(n);
+			n = NLIST_NEXT(x);
 
 			if (is_atom(n))
 			{
@@ -2073,7 +2076,8 @@ static int bif_iso_atom_codes(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *n = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, x, q->curr_frame);
 
 			if (!is_integer(n))
 			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
@@ -2084,7 +2088,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
 
 			*dst++ = (char)n->val_i;
-			n = NLIST_NEXT(n);
+			n = NLIST_NEXT(x);
 
 			if (is_atom(n))
 			{
