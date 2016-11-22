@@ -1909,7 +1909,7 @@ static int bif_iso_number_codes(tpl_query *q)
 		node *tmp = make_int(*src);
 		NLIST_PUSH_BACK(&l->val_l, tmp);
 
-		if (!++src)
+		if (!*++src)
 			break;
 
 		tmp = make_list();
@@ -1979,13 +1979,10 @@ static int bif_iso_number_chars(tpl_query *q)
 
 	while (*src)
 	{
-		char tmpbuf2[2];
-		tmpbuf2[0] = *src;
-		tmpbuf2[1] = '\0';
-		node *tmp = make_atom(strdup(tmpbuf2), 1);
+		node *tmp = make_atom(strndup(src, 1), 1);
 		NLIST_PUSH_BACK(&l->val_l, tmp);
 
-		if (!++src)
+		if (!*++src)
 			break;
 
 		tmp = make_list();
