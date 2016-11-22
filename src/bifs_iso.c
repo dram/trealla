@@ -1850,52 +1850,6 @@ static int bif_iso_peek_char2(tpl_query *q)
 	return ok;
 }
 
-static int bif_iso_set_input(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_set_output(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_curr_input(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_curr_output(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_sub_atom(tpl_query *q)
-{
-	//node *args = get_args(q);
-	//node *term1 = get_term(term1);
-	//node *term2 = get_term(term2);
-	//node *term3 = get_term(term3);
-	//node *term4 = get_term(term4);
-	//node *term5 = get_term(term5);
-	return 0;
-}
-
-static int bif_iso_atom_chars(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_atom_codes(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_char_code(tpl_query *q)
-{
-	return 0;
-}
-
 static int bif_iso_number_codes(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -2043,6 +1997,52 @@ static int bif_iso_number_chars(tpl_query *q)
 	ok = unify_term(q, term2, save_l, q->curr_frame);
 	term_heapcheck(save_l);
 	return ok;
+}
+
+static int bif_iso_set_input(tpl_query *q)
+{
+	return 0;
+}
+
+static int bif_iso_set_output(tpl_query *q)
+{
+	return 0;
+}
+
+static int bif_iso_curr_input(tpl_query *q)
+{
+	return 0;
+}
+
+static int bif_iso_curr_output(tpl_query *q)
+{
+	return 0;
+}
+
+static int bif_iso_sub_atom(tpl_query *q)
+{
+	//node *args = get_args(q);
+	//node *term1 = get_term(term1);
+	//node *term2 = get_term(term2);
+	//node *term3 = get_term(term3);
+	//node *term4 = get_term(term4);
+	//node *term5 = get_term(term5);
+	return 0;
+}
+
+static int bif_iso_atom_chars(tpl_query *q)
+{
+	return 0;
+}
+
+static int bif_iso_atom_codes(tpl_query *q)
+{
+	return 0;
+}
+
+static int bif_iso_char_code(tpl_query *q)
+{
+	return 0;
 }
 
 static void expand_frame(tpl_query *q, unsigned cnt)
