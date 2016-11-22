@@ -1502,13 +1502,12 @@ static int bif_ws_request5(tpl_query *q)
 	if (is_atom(term4) && strcmp(term4->val_s, "[]"))
 		strcat(prots, term4->val_s);
 
-	node *term = term4;
+	node *l = term4;
 
-	while (is_list(term))
+	while (is_list(l))
 	{
-		term = NLIST_FRONT(&term->val_l);
-		term = NLIST_NEXT(term);
-		node *n = get_arg(q, term, q->curr_frame);
+		node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+		node *n = get_arg(q, head, q->curr_frame);
 
 		if (is_atom(n))
 		{
@@ -1518,7 +1517,8 @@ static int bif_ws_request5(tpl_query *q)
 			strcat(prots, n->val_s);
 		}
 
-		term = NLIST_NEXT(term);
+		node *tail = NLIST_NEXT(head);
+		l = get_arg(q, tail, q->latest_context);
 	}
 
 	int status;

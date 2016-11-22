@@ -2854,58 +2854,56 @@ static int bif_iso_sort(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
+	int save_context = q->latest_context;
 	node *term2 = get_term(term2);
 	if (!is_atom(term1) && !is_list(term1)) { QABORT(ABORT_INVALIDARGNOTLIST); return 0; }
 	if (!is_var(term2) && !is_atom(term2) && !is_list(term2)) { QABORT(ABORT_INVALIDARGNOTVARORLIST); return 0; }
 	if (is_atom(term1) && strcmp(term1->val_s, "[]")) return 0;
 	if (is_atom(term2) && strcmp(term2->val_s, "[]")) return 0;
-	size_t n = 0;
+	size_t cnt = 0;
 
 	if (is_list(term1))
 	{
-		node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+		node *l = term1;
 
-		while (head)
+		while (is_list(l))
 		{
-			if (!is_atomic(head))
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, save_context);
+
+			if (!is_atomic(n))
 				return 0;
 
-			n++;
-			head = NLIST_NEXT(head);
-
-			if (!is_list(head))
-				break;
-
-			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+			cnt++;
+			node *tail = NLIST_NEXT(head);
+			l = get_arg(q, tail, save_context);
 		}
 
-		node **base = (node**)malloc(sizeof(node*)*n);
-		head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+		node **base = (node**)malloc(sizeof(node*)*cnt);
 		size_t i = 0;
+		l = term1;
 
-		while (head)
+		while (is_list(l))
 		{
-			base[i++] = head;
-			head = NLIST_NEXT(head);
-
-			if (!is_list(head))
-				break;
-
-			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, save_context);
+			base[i++] = n;
+			node *tail = NLIST_NEXT(head);
+			l = get_arg(q, tail, save_context);
 		}
 
-		qsort(base, n, sizeof(node*), nodecmp);
-		node *l = make_list();
+		qsort(base, cnt, sizeof(node*), nodecmp);
+		l = make_list();
 		node *tmp = l;
 
-		for (int i = 0; i < n; i++)
+		for (int i = 0; i < cnt; i++)
 		{
-			if (i < (n-1))
+			if (i < (cnt-1))
 				if (!nodecmp(&base[i], &base[i+1]))
 					continue;
 
 			NLIST_PUSH_BACK(&tmp->val_l, clone_term(q, base[i]));
-			if (i == (n-1)) break;
+			if (i == (cnt-1)) break;
 			node *tmp2;
 			NLIST_PUSH_BACK(&tmp->val_l, tmp2=make_list());
 			tmp = tmp2;
@@ -2941,6 +2939,7 @@ static int bif_iso_keysort(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
+	int save_context = q->latest_context;
 	node *term2 = get_term(term2);
 	if (!is_atom(term1) && !is_list(term1)) { QABORT(ABORT_INVALIDARGNOTLIST); return 0; }
 	if (!is_var(term2) && !is_atom(term2) && !is_list(term2)) { QABORT(ABORT_INVALIDARGNOTVARORLIST); return 0; }
@@ -2951,44 +2950,41 @@ static int bif_iso_keysort(tpl_query *q)
 
 	if (is_list(term1))
 	{
-		node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+		node *l = term1;
 
-		while (head)
+		while (is_list(l))
 		{
-			if (!is_compound(head))
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, save_context);
+
+			if (!is_compound(n))
 				return 0;
 
-			if ((NLIST_COUNT(&head->val_l) != 3) ||
-				!is_atom(NLIST_FRONT(&head->val_l)) ||
-					strcmp(NLIST_FRONT(&head->val_l)->val_s, "-"))
+			if ((NLIST_COUNT(&n->val_l) != 3) ||
+				!is_atom(NLIST_FRONT(&n->val_l)) ||
+					strcmp(NLIST_FRONT(&n->val_l)->val_s, "-"))
 				return 0;
 
 			cnt++;
-			head = NLIST_NEXT(head);
-
-			if (!is_list(head))
-				break;
-
-			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+			node *tail = NLIST_NEXT(head);
+			l = get_arg(q, tail, save_context);
 		}
 
 		node **base = (node**)malloc(sizeof(node*)*cnt);
-		head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 		size_t i = 0;
+		l = term1;
 
-		while (head)
+		while (is_list(l))
 		{
-			base[i++] = head;
-			head = NLIST_NEXT(head);
-
-			if (!is_list(head))
-				break;
-
-			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, save_context);
+			base[i++] = n;
+			node *tail = NLIST_NEXT(head);
+			l = get_arg(q, tail, save_context);
 		}
 
 		qsort(base, cnt, sizeof(node*), keycmp);
-		node *l = make_list();
+		l = make_list();
 		node *tmp = l;
 
 		for (i = 0; i < cnt; i++)

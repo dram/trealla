@@ -533,14 +533,15 @@ static int bif_proc_server3(tpl_query *q)
 #endif
 
 	int has_uncle = 0;
+	node *l = term1;
 
-	while (is_list(term1))
+	while (is_list(l))
 	{
-		term1 = NLIST_FRONT(&term1->val_l);
-		term1 = NLIST_NEXT(term1);
-		node *n = get_arg(q, term1, q->curr_frame);
+		node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+		node *n = get_arg(q, head, q->latest_context);
 		configure_server(q, h, n, &proc_callback3, &has_uncle);
-		term1 = NLIST_NEXT(term1);
+		node *tail = NLIST_NEXT(head);
+		l = get_arg(q, tail, q->latest_context);
 	}
 
 	handler_wait(h);
@@ -619,14 +620,15 @@ static int bif_proc_server2(tpl_query *q)
 	const char *capath = "./ca";
 	if (!stat(cafile, &st)) handler_set_ca(h, cafile, capath);
 	int has_uncle = 0;
+	node *l = term1;
 
-	while (is_list(term1))
+	while (is_list(l))
 	{
-		term1 = NLIST_FRONT(&term1->val_l);
-		term1 = NLIST_NEXT(term1);
-		node *n = get_arg(q, term1, q->curr_frame);
+		node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+		node *n = get_arg(q, head, q->latest_context);
 		configure_server(q, h, n, &proc_callback2, &has_uncle);
-		term1 = NLIST_NEXT(term1);
+		node *tail = NLIST_NEXT(head);
+		l = get_arg(q, tail, q->latest_context);
 	}
 
 	handler_wait(h);
@@ -656,14 +658,15 @@ static int bif_proc_server4(tpl_query *q)
 	const char *capath = "./ca";
 	if (!stat(cafile, &st)) handler_set_ca(h, cafile, capath);
 	int has_uncle = 0;
+	node *l = term1;
 
-	while (is_list(term1))
+	while (is_list(l))
 	{
-		term1 = NLIST_FRONT(&term1->val_l);
-		term1 = NLIST_NEXT(term1);
-		node *n = get_arg(q, term1, q->curr_frame);
+		node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+		node *n = get_arg(q, head, q->latest_context);
 		configure_server(q, h, n, &proc_callback2, &has_uncle);
-		term1 = NLIST_NEXT(term1);
+		node *tail = NLIST_NEXT(head);
+		l = get_arg(q, tail, q->latest_context);
 	}
 
 	handler_wait(h);
