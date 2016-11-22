@@ -9,7 +9,7 @@
 
 start :- test1, test2, test3, test4a, test4b, test5a, test5b,
 		test6a, test6b, test6c, test7, test8, test9a, test9b, test9c,
-		test10, test11,
+		test10, test11, test12,
 		halt.
 
 test1 :-
@@ -133,5 +133,13 @@ test11 :-
 	L1 = [peter,anne,pat,tom],
 	findall(Age,age(Name,Age),L2),
 	L2 = [7,5,8,5],
+	write('PASSED!'), nl.
+
+test12 :-
+	write('Test12:\t'),
+	number_chars(123, ['1','2','3']),
+	number_codes(123, [49,50,51]),
+	atom_chars('123', ['1','2','3']),
+	atom_codes('123', [49,50,51]),
 	write('PASSED!'), nl.
 
