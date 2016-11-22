@@ -21,6 +21,7 @@
 #define get_callable(t) get_next_arg(q, &args); if (!is_callable(t)) { QABORT(ABORT_INVALIDARGNOTCALLABLE); return 0; }
 #define get_structure(t) get_next_arg(q, &args); if (!is_structure(t)) { QABORT(ABORT_INVALIDARGNOTSTRUCTURE); return 0; }
 #define get_list(t) get_next_arg(q, &args); if (!is_list(t)) { QABORT(ABORT_INVALIDARGNOTLIST); return 0; }
+#define get_list_or_var(t) get_next_arg(q, &args); if (!is_list(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTLISTORVAR); return 0; }
 #define get_stream(t) get_next_arg(q, &args); if (!is_stream(t)) { QABORT(ABORT_INVALIDARGNOTSTREAM); return 0; }
 #define get_file(t) get_next_arg(q, &args); if (!is_file(t)) { QABORT(ABORT_INVALIDARGNOTFILE); return 0; }
 #define get_term(t) get_next_arg(q, &args); if (t == NULL) { QABORT(ABORT_INVALIDARGMISSING); return 0; }
