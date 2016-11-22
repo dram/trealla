@@ -1595,10 +1595,6 @@ static int bif_iso_get_code(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
 	char ch = getc(stdin);
-
-	while (getc(stdin) != '\n')
-		;
-
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1613,10 +1609,6 @@ static int bif_iso_get_code2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	char ch = getc(sp->fptr);
-
-	while (getc(sp->fptr) != '\n')
-		;
-
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1629,10 +1621,6 @@ static int bif_iso_get_byte(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
 	char ch = getc(stdin);
-
-	while (getc(stdin) != '\n')
-		;
-
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1647,10 +1635,6 @@ static int bif_iso_get_byte2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	char ch = getc(sp->fptr);
-
-	while (getc(sp->fptr) != '\n')
-		;
-
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1672,9 +1656,6 @@ static int bif_iso_get_char(tpl_query *q)
 		term_heapcheck(n);
 		return ok;
 	}
-
-	while (getc(stdin) != '\n')
-		;
 
 	line[1] = '\0';
 	node *n = make_atom(strdup(line), 1);
@@ -1701,9 +1682,6 @@ static int bif_iso_get_char2(tpl_query *q)
 		if (ok) q->is_det = 1;
 		return ok;
 	}
-
-	while (getc(sp->fptr) != '\n')
-		;
 
 	line[1] = '\0';
 	node *n = make_atom(strdup(line), 0);
