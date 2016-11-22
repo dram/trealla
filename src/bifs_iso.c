@@ -1596,7 +1596,9 @@ static int bif_iso_get_code(tpl_query *q)
 	if (line[0] == EOF)
 		line[0] = -1;
 
-	getc(stdin);
+	while (getc(stdin) != '\n')
+		;
+
 	line[1] = '\0';
 	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1616,7 +1618,9 @@ static int bif_iso_get_code2(tpl_query *q)
 	if (line[0] == EOF)
 		line[0] = -1;
 
-	getc(stdin);
+	while (getc(sp->fptr) != '\n')
+		;
+
 	line[1] = '\0';
 	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1634,7 +1638,9 @@ static int bif_iso_get_byte(tpl_query *q)
 	if (line[0] == EOF)
 		line[0] = -1;
 
-	getc(stdin);
+	while (getc(stdin) != '\n')
+		;
+
 	line[1] = '\0';
 	node *n = make_quick_int(line[0]);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1654,7 +1660,9 @@ static int bif_iso_get_byte2(tpl_query *q)
 	if (line[0] == EOF)
 		line[0] = -1;
 
-	getc(stdin);
+	while (getc(sp->fptr) != '\n')
+		;
+
 	line[1] = '\0';
 	node *n = make_quick_int(line[0]);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1677,7 +1685,9 @@ static int bif_iso_get_char(tpl_query *q)
 		return ok;
 	}
 
-	getc(stdin);
+	while (getc(stdin) != '\n')
+		;
+
 	line[1] = '\0';
 	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1702,7 +1712,9 @@ static int bif_iso_get_char2(tpl_query *q)
 		return ok;
 	}
 
-	getc(stdin);
+	while (getc(sp->fptr) != '\n')
+		;
+
 	line[1] = '\0';
 	node *n = make_atom(strdup(line), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
