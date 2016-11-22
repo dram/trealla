@@ -47,6 +47,21 @@ C99 should be adequate, eg:
 
 if not the default.
 
+Missing
+-------
+
+Current ISO predicates that are not implemented:
+
+	bagog
+	setof
+	set_input
+	set_output
+	curr_input
+	curr_output
+	sub_atom
+
+As far as I know, anyway.
+
 Usage
 -----
 
