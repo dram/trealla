@@ -553,7 +553,7 @@ int match(tpl_query *q)
 		int is_lastmatch = !NLIST_NEXT(q->curr_match);
 		int is_lastcall = !NLIST_NEXT(q->curr_term) || (body->flags & FLAG_CUT);
 
-		if (!is_lastcall || q->noopt)
+		if (!is_lastcall || q->noopt || q->is_det)
 			try_me(q);
 		else if (!is_lastmatch)
 			try_me_nofollow(q);
