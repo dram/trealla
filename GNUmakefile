@@ -57,6 +57,8 @@ iso_profile:
 tpl: $(OBJECTS) tpl.o
 	$(CC) -o tpl tpl.o $(OBJECTS) $(OPT) $(LDFLAGS)
 
+# May need to install VIM to get XXD
+
 src/http_client.h: modules/http_client.pro
 	xxd -i modules/http_client.pro >src/http_client.h
 

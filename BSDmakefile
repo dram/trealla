@@ -58,13 +58,29 @@ iso_profile:
 tpl: $(OBJECTS) tpl.o
 	$(CC) -o tpl tpl.o $(OBJECTS) $(OPT) $(LDFLAGS)
 
+# May need to install VIM to get XXD
+
+src/http_client.h: modules/http_client.pro
+	xxd -i modules/http_client.pro >src/http_client.h
+
+src/smtp_client.h: modules/smtp_client.pro
+	xxd -i modules/smtp_client.pro >src/smtp_client.h
+
+src/dict.h: modules/dict.pro
+	xxd -i modules/dict.pro >src/dict.h
+
+src/auth.h: modules/auth.pro
+	xxd -i modules/auth.pro >src/auth.h
+
+src/blog.h: modules/blog.pro
+	xxd -i modules/blog.pro >src/blog.h
+
 clean:
 	rm -f src/*.o gmon.* *.o tpl
 
 tpl.o: src/trealla.h src/daemon.h src/history.h
 tpl.o: src/http_client.h src/dict.h src/smtp_client.h
 tpl.o: src/auth.h src/blog.h
-
 
 # DO NOT DELETE
 
