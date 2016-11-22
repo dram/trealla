@@ -1949,7 +1949,6 @@ static int bif_iso_number_chars(tpl_query *q)
 
 			v *= 10;
 			v += i;
-
 			n = NLIST_NEXT(n);
 
 			if (is_atom(n))
@@ -1976,6 +1975,140 @@ static int bif_iso_number_chars(tpl_query *q)
 	while (*src)
 	{
 		node *tmp = make_atom(strndup(src, 1), 1);
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+
+		if (!*++src)
+			break;
+
+		tmp = make_list();
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+		l = tmp;
+	}
+
+	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
+	int ok = unify_term(q, term2, save_l, q->curr_frame);
+	term_heapcheck(save_l);
+	return ok;
+}
+
+static int bif_iso_atom_chars(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_var(term1);
+	node *term2 = get_list_or_var(term2);
+
+	if (is_var(term1) && is_var(term2))
+	{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
+
+	if (is_list(term2))
+	{
+		char tmpbuf[FUNCTOR_SIZE];
+		char *dst = tmpbuf;
+		node *l = term2;
+
+		while (l != NULL)
+		{
+			node *n = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+
+			if (!is_atom(n))
+			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
+
+			char i = n->val_s[0];
+			*dst++ = i;
+			n = NLIST_NEXT(n);
+
+			if (is_atom(n))
+			{
+				if (!strcmp(n->val_s, "[]"))
+					break;
+			}
+
+			l = n;
+		}
+
+		*dst = '\0';
+		node *tmp = make_atom(strdup(tmpbuf), 1);
+		int ok = unify_term(q, term1, tmp, q->curr_frame);
+		term_heapcheck(tmp);
+		return ok;
+	}
+
+	node *save_l = make_list();
+	node *l = save_l;
+	const char *src = term1->val_s;
+
+	while (*src)
+	{
+		node *tmp = make_atom(strndup(src, 1), 1);
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+
+		if (!*++src)
+			break;
+
+		tmp = make_list();
+		NLIST_PUSH_BACK(&l->val_l, tmp);
+		l = tmp;
+	}
+
+	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
+	int ok = unify_term(q, term2, save_l, q->curr_frame);
+	term_heapcheck(save_l);
+	return ok;
+}
+
+static int bif_iso_atom_codes(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_var(term1);
+	node *term2 = get_list_or_var(term2);
+
+	if (is_var(term1) && is_var(term2))
+	{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
+
+	if (is_list(term2))
+	{
+		char tmpbuf[FUNCTOR_SIZE];
+		char *dst = tmpbuf;
+		node *l = term2;
+
+		while (l != NULL)
+		{
+			node *n = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+
+			if (!is_integer(n))
+			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
+
+			int i = n->val_i-'0';
+
+			if ((i < 0) || (i > 9))
+			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
+
+			*dst++ = (char)n->val_i;
+			n = NLIST_NEXT(n);
+
+			if (is_atom(n))
+			{
+				if (!strcmp(n->val_s, "[]"))
+					break;
+			}
+
+			l = n;
+		}
+
+		*dst = '\0';
+		node *tmp = make_atom(strdup(tmpbuf), 1);
+		int ok = unify_term(q, term1, tmp, q->curr_frame);
+		term_heapcheck(tmp);
+		return ok;
+	}
+
+	node *save_l = make_list();
+	node *l = save_l;
+	const char *src = term1->val_s;
+
+	while (*src)
+	{
+		node *tmp = make_int(*src);
 		NLIST_PUSH_BACK(&l->val_l, tmp);
 
 		if (!*++src)
@@ -2046,16 +2179,6 @@ static int bif_iso_sub_atom(tpl_query *q)
 	//node *term3 = get_term(term3);
 	//node *term4 = get_term(term4);
 	//node *term5 = get_term(term5);
-	return 0;
-}
-
-static int bif_iso_atom_chars(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_atom_codes(tpl_query *q)
-{
 	return 0;
 }
 
