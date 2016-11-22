@@ -742,7 +742,7 @@ transaction. Inside a transaction changes to the database are not visible.
 
 To write to the log only, without updating the database:
 
-	log(:Goal)
+	log(:Term)
 
 where *Term* is an asserta/assertz/retract (or other) database
 operation. This can be useful for external adapters that need to write

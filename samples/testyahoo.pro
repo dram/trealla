@@ -5,42 +5,25 @@
 :-define(QUOTE_SERVER,'http://download.finance.yahoo.com').
 
 test1 :-
-	yahoo_quote('GOOG',L),
-	writeln(L),
-	true.
+	quote('GOOG').
 
 test2 :-
-	yahoo_chart('GOOG',L),
-	writeln(L),
+	chart('GOOG').
+
+quote(Symbol) :-
+	yahoo_quote(Symbol,Data),
+	writeln(Data),
 	true.
 
-% Return a list of current values:
-%
-%	 [SYMBOL,PREV-CLOSE,OPEN,LAST-PRICE,VOLUME,BID,ASK,DATE,TIME]
-%
+chart(Symbol) :-
+	yahoo_chart(Symbol,Data),
+	writeln(Data),
+	true.
 
-yahoo_quote(Symbol,L) :-
+yahoo_quote(Symbol,Data) :-
 	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
-	http_client:get11_data(?QUOTE_SERVER,Path,Data),
-	%writeln(Data),
-	split(Data,'\n',L1),	% one line per symbol
-	line(L1,[],L).			% parse each line
+	http_client:get11_data(?QUOTE_SERVER,Path,Data).
 
-% Return a list of daily values, each of
-% which is a list of values...
-%
-%	 [DATE,OPEN,HIGH,LOW,CLOSE,VOLUME,ADJ-CLOSE]
-
-yahoo_chart(Symbol,L) :-
+yahoo_chart(Symbol,Data) :-
 	concat('/table.csv?s=',Symbol,'',Path),
-	http_client:get11_data(?CHART_SERVER,Path,Data),
-	%writeln(Data),
-	split(Data,'\n',L1),	% one line per day
-	L1 = [_|L2],			% skip CSV header
-	line(L2,[],L3),			% parse each line
-	reverse(L3,L).
-
-line([],Old,Old).
-line([Data|T],Old,New) :-
-	parse_csv(Data,V),
-	line(T,[V|Old],New).
+	http_client:get11_data(?CHART_SERVER,Path,Data).

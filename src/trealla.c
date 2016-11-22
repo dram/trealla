@@ -946,12 +946,39 @@ static void make_dynamic(module *db, const char *functarity)
 static void dir_dynamic(lexer *l, node *n)
 {
 	node *term1 = n;
+	node *term2 = NLIST_NEXT(term1);
 	if (!is_compound(term1)) return;
 	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 	if (!is_integer(NLIST_NEXT(head))) return;
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
 	make_dynamic(l->db, tmpbuf);
+
+#ifndef ISO_ONLY
+	if (!term2) return;
+	if (!is_list(term2)) return;
+	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
+	int i = 1;
+
+	while (n2)
+	{
+		if (is_atom(n2))
+		{
+			if (!strcmp(n2->val_s, "unique"))
+			{
+				//????
+			}
+		}
+
+		n2 = NLIST_NEXT(n2);
+
+		if (!is_list(n2))
+			break;
+
+		n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+		i++;
+	}
+#endif
 }
 
 static void dir_op(lexer *l, node *n)
@@ -1011,44 +1038,39 @@ static void make_persist(module *db, const char *functarity)
 static void dir_persist(lexer *l, node *n)
 {
 	node *term1 = n;
+	node *term2 = NLIST_NEXT(term1);
 	if (!is_compound(term1)) return;
 	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 	if (!is_integer(NLIST_NEXT(head))) return;
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
 	make_persist(l->db, tmpbuf);
-}
 
-static void dir_export(lexer *l, node *n)
-{
-	node *term1 = n;
-	char tmpbuf[FUNCTOR_SIZE+10];
-
-	if (!is_list(term1))
-		return;
-
-	node *n2 = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+#ifndef ISO_ONLY
+	if (!term2) return;
+	if (!is_list(term2)) return;
+	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
+	int i = 1;
 
 	while (n2)
 	{
 		if (is_atom(n2))
 		{
-			if (!strcmp(n2->val_s, "[]"))
-				break;
-		}
-		else if (is_compound(n2))
-		{
-			node *n3 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
-			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", n3->val_s, ARITY_CHAR, (int)NLIST_NEXT(n3)->val_i);
-			sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-			//printf("DEBUG: export %s\n", tmpbuf);
+			if (!strcmp(n2->val_s, "unique"))
+			{
+				//????
+			}
 		}
 
 		n2 = NLIST_NEXT(n2);
 
-		if (is_list(n2))
-			n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+		if (!is_list(n2))
+			break;
+
+		n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+		i++;
 	}
+#endif
 }
 
 static void dir_module(lexer *l, node *n)
@@ -1149,6 +1171,38 @@ static void dir_module(lexer *l, node *n)
 	}
 
 	free(dstbuf);
+}
+
+static void dir_export(lexer *l, node *n)
+{
+	node *term1 = n;
+	char tmpbuf[FUNCTOR_SIZE+10];
+
+	if (!is_list(term1))
+		return;
+
+	node *n2 = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+
+	while (n2)
+	{
+		if (is_atom(n2))
+		{
+			if (!strcmp(n2->val_s, "[]"))
+				break;
+		}
+		else if (is_compound(n2))
+		{
+			node *n3 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", n3->val_s, ARITY_CHAR, (int)NLIST_NEXT(n3)->val_i);
+			sl_set(&l->db->exports, strdup(tmpbuf), NULL);
+			//printf("DEBUG: export %s\n", tmpbuf);
+		}
+
+		n2 = NLIST_NEXT(n2);
+
+		if (is_list(n2))
+			n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+	}
 }
 
 static void dir_using(lexer *l, node *n)

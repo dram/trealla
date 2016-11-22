@@ -2627,7 +2627,6 @@ static int bif_iso_retract(tpl_query *q)
 #ifndef ISO_ONLY
 		if (q->curr_db->in_tran)
 		{
-			printf("*** retract %s -> %s\n", tmp->val_s, functor);
 			node *tmp = CALLOC(node);
 			tmp->orig = match;
 			NLIST_PUSH_BACK(&q->curr_db->tran_queue, tmp);
