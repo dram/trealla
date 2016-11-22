@@ -25,5 +25,5 @@ yahoo_quote(Symbol,Data) :-
 	http_client:get11_data(?QUOTE_SERVER,Path,Data).
 
 yahoo_chart(Symbol,Data) :-
-	concat('/table.csv?s=',Symbol,'',Path),
+	concat('/table.csv?s=',Symbol,Path),
 	http_client:get11_data(?CHART_SERVER,Path,Data).
