@@ -1590,17 +1590,12 @@ static int bif_iso_get_code(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	char line[2];
-	line[0] = getc(stdin);
-
-	if (line[0] == EOF)
-		line[0] = -1;
+	char ch = getc(stdin);
 
 	while (getc(stdin) != '\n')
 		;
 
-	line[1] = '\0';
-	node *n = make_atom(strdup(line), 0);
+	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -1612,17 +1607,12 @@ static int bif_iso_get_code2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	char line[2];
-	line[0] = getc(sp->fptr);
-
-	if (line[0] == EOF)
-		line[0] = -1;
+	char ch = getc(sp->fptr);
 
 	while (getc(sp->fptr) != '\n')
 		;
 
-	line[1] = '\0';
-	node *n = make_atom(strdup(line), 0);
+	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	return ok;
