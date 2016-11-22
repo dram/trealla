@@ -321,6 +321,9 @@ int follow(tpl_query *q)
 
 	if (q->curr_term == NULL)
 		return proceed(q);
+	else if (!is_callable(q->curr_term))
+		{ QABORT(ABORT_NOTCALLABLE); return 0; }
+
 
 	return 1;
 }
