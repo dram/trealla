@@ -1307,6 +1307,7 @@ static int bif_iso_read2(tpl_query *q)
 	lexer_done(&l);
 	int ok = unify_term(q, term1, term, q->curr_frame);
 	term_heapcheck(term);
+	if (ok) q->is_det = 1;
 	return ok;
 }
 
@@ -1338,6 +1339,7 @@ static int bif_iso_read(tpl_query *q)
 	lexer_done(&l);
 	int ok = unify_term(q, term1, term, q->curr_frame);
 	term_heapcheck(term);
+	if (ok) q->is_det = 1;
 	return ok;
 }
 
@@ -1390,6 +1392,7 @@ static int bif_iso_read_term3(tpl_query *q)
 	lexer_done(&l);
 	int ok = unify_term(q, term1, term, q->curr_frame);
 	term_heapcheck(term);
+	if (ok) q->is_det = 1;
 	return ok;
 }
 
@@ -1422,6 +1425,7 @@ static int bif_iso_read_term(tpl_query *q)
 	lexer_done(&l);
 	int ok = unify_term(q, term1, term, q->curr_frame);
 	term_heapcheck(term);
+	if (ok) q->is_det = 1;
 	return ok;
 }
 
@@ -2636,6 +2640,7 @@ static int bif_iso_retract(tpl_query *q)
 			DBUNLOCK(q->curr_db);
 
 		term_heapcheck(n);
+		q->is_det = 1;
 		return 1;
 	}
 
@@ -3286,6 +3291,7 @@ static int bif_iso_length(tpl_query *q)
 		node *tmp = make_const_atom("[]", 0);
 		put_env(q, q->curr_frame+orig_term1->slot, tmp, -1);
 		tmp->refcnt--;
+		q->is_det = 1;
 		return 1;
 	}
 
@@ -3306,6 +3312,7 @@ static int bif_iso_length(tpl_query *q)
 		node *tmp = make_const_atom("[]", 0);
 		put_env(q, q->curr_frame+orig_term1->slot, tmp, -1);
 		tmp->refcnt--;
+		q->is_det = 1;
 		return 1;
 	}
 
@@ -3325,6 +3332,7 @@ static int bif_iso_length(tpl_query *q)
 	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
 	put_env(q, q->curr_frame+orig_term1->slot, save_l, q->curr_frame);
 	save_l->refcnt--;
+	q->is_det = 1;
 	return 1;
 }
 
@@ -3372,6 +3380,7 @@ static int bif_iso_term_variables(tpl_query *q)
 	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
 	put_env(q, q->curr_frame+term2->slot, save_l, -1);
 	save_l->refcnt--;
+	q->is_det = 1;
 	return 1;
 }
 
@@ -3430,6 +3439,7 @@ static int bif_iso_clause(tpl_query *q)
 	}
 
 	put_env(q, q->curr_frame+term2->slot, body, q->env_point);
+	q->is_det = 1;
 	try_me_nofollow(q);
 	return 1;
 }
