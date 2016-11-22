@@ -1567,8 +1567,10 @@ static int bif_iso_put_byte2(tpl_query *q)
 static int bif_iso_put_code(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	fwrite(term1->val_s, 1, 1, stdout);
+	node *term1 = get_int(term1);
+	char tmpbuf[20];
+	sprintf(tmpbuf, "%c", (int)term1->val_i);
+	fwrite(tmpbuf, 1, 1, stdout);
 	return 1;
 }
 
@@ -1576,16 +1578,19 @@ static int bif_iso_put_code2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_file_or_socket(term1);
-	node *term2 = get_atom(term2);
+	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
 	int ok;
 
+	char tmpbuf[20];
+	sprintf(tmpbuf, "%c", (int)term1->val_i);
+
 #ifndef ISO_ONLY
 	if (is_socket(term1))
-		ok = session_write((session*)sp->sptr, term2->val_s, 1);
+		ok = session_write((session*)sp->sptr, tmpbuf, 1);
 	else
 #endif
-		ok = fwrite(term2->val_s, 1, 1, sp->fptr);
+		ok = fwrite(tmpbuf, 1, 1, sp->fptr);
 
 	return ok > 0;
 }
@@ -1827,29 +1832,22 @@ static int bif_iso_number_codes(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, x, q->curr_frame);
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, q->latest_context);
 
 			if (!is_integer(n))
 			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
 
-			int i = n->val_i-'0';
-
-			if ((i < 0) || (i > 9))
-			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
-
+			char i = (char)n->val_i-'0';
 			v *= 10;
 			v += i;
+			node *tail = NLIST_NEXT(head);
+			tail = get_arg(q, tail, q->latest_context);
 
-			n = NLIST_NEXT(x);
+			if (!is_list(tail))
+				break;
 
-			if (is_atom(n))
-			{
-				if (!strcmp(n->val_s, "[]"))
-					break;
-			}
-
-			l = n;
+			l = tail;
 		}
 
 		node *tmp = make_quick_int(v);
@@ -1902,8 +1900,8 @@ static int bif_iso_number_chars(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, x, q->curr_frame);
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, q->latest_context);
 
 			if (!is_atom(n))
 			{ QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
@@ -1915,15 +1913,13 @@ static int bif_iso_number_chars(tpl_query *q)
 
 			v *= 10;
 			v += i;
-			n = NLIST_NEXT(x);
+			node *tail = NLIST_NEXT(head);
+			tail = get_arg(q, tail, q->latest_context);
 
-			if (is_atom(n))
-			{
-				if (!strcmp(n->val_s, "[]"))
-					break;
-			}
+			if (!is_list(tail))
+				break;
 
-			l = n;
+			l = tail;
 		}
 
 		q->curr_context = save_context;
@@ -1977,23 +1973,21 @@ static int bif_iso_atom_chars(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, x, q->curr_frame);
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, q->latest_context);
 
 			if (!is_atom(n))
 			{ QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
 
 			char i = n->val_s[0];
 			*dst++ = i;
-			n = NLIST_NEXT(x);
+			node *tail = NLIST_NEXT(head);
+			tail = get_arg(q, tail, q->latest_context);
 
-			if (is_atom(n))
-			{
-				if (!strcmp(n->val_s, "[]"))
-					break;
-			}
+			if (!is_list(tail))
+				break;
 
-			l = n;
+			l = tail;
 		}
 
 		*dst = '\0';
@@ -2045,8 +2039,8 @@ static int bif_iso_atom_codes(tpl_query *q)
 
 		while (l != NULL)
 		{
-			node *x = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, x, q->curr_frame);
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			node *n = get_arg(q, head, q->latest_context);
 
 			if (!is_integer(n))
 			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
@@ -2057,15 +2051,13 @@ static int bif_iso_atom_codes(tpl_query *q)
 			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
 
 			*dst++ = (char)n->val_i;
-			n = NLIST_NEXT(x);
+			node *tail = NLIST_NEXT(head);
+			tail = get_arg(q, tail, q->latest_context);
 
-			if (is_atom(n))
-			{
-				if (!strcmp(n->val_s, "[]"))
-					break;
-			}
+			if (!is_list(tail))
+				break;
 
-			l = n;
+			l = tail;
 		}
 
 		*dst = '\0';
@@ -3216,6 +3208,7 @@ static int bif_iso_length(tpl_query *q)
 	node *args = get_args(q);
 	node *orig_term1 = NLIST_NEXT(args);
 	node *term1 = get_term(term1);
+	int save_context = q->latest_context;
 	node *orig_term2 = NLIST_NEXT(args);
 	node *term2 = get_int_or_var(term2);
 	if (!is_var(term1) && !is_atom(term1) && !is_list(term1)) { QABORT(ABORT_INVALIDARGNOTVARORLIST); return 0; }
@@ -3228,19 +3221,18 @@ static int bif_iso_length(tpl_query *q)
 	{
 		size_t cnt = 0;
 		node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
+		q->latest_context = save_context;
 
 		while (head)
 		{
-			if (!is_atomic(head))
-				return 0;
-
 			cnt++;
-			head = NLIST_NEXT(head);
+			node *tail = NLIST_NEXT(head);
+			tail = get_arg(q, tail, q->latest_context);
 
-			if (!is_list(head))
+			if (!is_list(tail))
 				break;
 
-			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+			head = NLIST_NEXT(NLIST_FRONT(&tail->val_l));
 		}
 
 		if (is_var(term2))
