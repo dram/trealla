@@ -1859,8 +1859,6 @@ static int bif_iso_number_codes(tpl_query *q)
 	if (is_var(term1) && is_var(term2))
 	{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
 
-	int ok = 0;
-
 	if (is_list(term2))
 	{
 		nbr_t v = 0;
@@ -1893,7 +1891,7 @@ static int bif_iso_number_codes(tpl_query *q)
 		}
 
 		node *tmp = make_quick_int(v);
-		ok = unify_term(q, term1, tmp, q->curr_frame);
+		int ok = unify_term(q, term1, tmp, q->curr_frame);
 		term_heapcheck(tmp);
 		return ok;
 	}
@@ -1918,7 +1916,7 @@ static int bif_iso_number_codes(tpl_query *q)
 	}
 
 	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
-	ok = unify_term(q, term2, save_l, q->curr_frame);
+	int ok = unify_term(q, term2, save_l, q->curr_frame);
 	term_heapcheck(save_l);
 	return ok;
 }
@@ -1931,8 +1929,6 @@ static int bif_iso_number_chars(tpl_query *q)
 
 	if (is_var(term1) && is_var(term2))
 	{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
-
-	int ok = 0;
 
 	if (is_list(term2))
 	{
@@ -1966,7 +1962,7 @@ static int bif_iso_number_chars(tpl_query *q)
 		}
 
 		node *tmp = make_quick_int(v);
-		ok = unify_term(q, term1, tmp, q->curr_frame);
+		int ok = unify_term(q, term1, tmp, q->curr_frame);
 		term_heapcheck(tmp);
 		return ok;
 	}
@@ -1991,8 +1987,34 @@ static int bif_iso_number_chars(tpl_query *q)
 	}
 
 	NLIST_PUSH_BACK(&l->val_l, make_const_atom("[]", 0));
-	ok = unify_term(q, term2, save_l, q->curr_frame);
+	int ok = unify_term(q, term2, save_l, q->curr_frame);
 	term_heapcheck(save_l);
+	return ok;
+}
+
+static int bif_iso_char_code(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_var(term1);
+	node *term2 = get_int_or_var(term2);
+
+	if (is_var(term1) && is_var(term2))
+	{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
+
+	if (is_integer(term2))
+	{
+		char tmpbuf[2];
+		tmpbuf[0] = (char)term2->val_i;
+		tmpbuf[1] = '\0';
+		node *tmp = make_atom(strdup(tmpbuf), 1);
+		int ok = unify_term(q, term1, tmp, q->curr_frame);
+		term_heapcheck(tmp);
+		return ok;
+	}
+
+	node *tmp = make_quick_int(term1->val_s[0]);
+	int ok = unify_term(q, term2, tmp, q->curr_frame);
+	term_heapcheck(tmp);
 	return ok;
 }
 
@@ -2033,11 +2055,6 @@ static int bif_iso_atom_chars(tpl_query *q)
 }
 
 static int bif_iso_atom_codes(tpl_query *q)
-{
-	return 0;
-}
-
-static int bif_iso_char_code(tpl_query *q)
 {
 	return 0;
 }
