@@ -1006,25 +1006,21 @@ static int bif_sys_begins2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_list(term2);
-	node *n = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
+	node *l = term2;
 
-	while (n != NULL)
+	while (is_list(l))
 	{
+		node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+		node *n = get_arg(q, head, q->latest_context);
+
 		if (is_atom(n))
 		{
 			if (!strncmp(term1->val_s, n->val_s, strlen(n->val_s)))
 				return 1;
 		}
 
-		n = NLIST_NEXT(n);
-
-		if (!n)
-			break;
-
-		if (!is_list(n))
-			break;
-
-		n = NLIST_NEXT(NLIST_FRONT(&n->val_l));
+		node *tail = NLIST_NEXT(head);
+		l = get_arg(q, tail, q->latest_context);
 	}
 
 	return 0;

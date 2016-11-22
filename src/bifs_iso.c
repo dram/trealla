@@ -1830,7 +1830,7 @@ static int bif_iso_number_codes(tpl_query *q)
 		nbr_t v = 0;
 		node *l = term2;
 
-		while (l != NULL)
+		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
 			node *n = get_arg(q, head, q->latest_context);
@@ -1842,12 +1842,7 @@ static int bif_iso_number_codes(tpl_query *q)
 			v *= 10;
 			v += i;
 			node *tail = NLIST_NEXT(head);
-			tail = get_arg(q, tail, q->latest_context);
-
-			if (!is_list(tail))
-				break;
-
-			l = tail;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		node *tmp = make_quick_int(v);
@@ -1898,7 +1893,7 @@ static int bif_iso_number_chars(tpl_query *q)
 		nbr_t v = 0;
 		node *l = term2;
 
-		while (l != NULL)
+		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
 			node *n = get_arg(q, head, q->latest_context);
@@ -1914,12 +1909,7 @@ static int bif_iso_number_chars(tpl_query *q)
 			v *= 10;
 			v += i;
 			node *tail = NLIST_NEXT(head);
-			tail = get_arg(q, tail, q->latest_context);
-
-			if (!is_list(tail))
-				break;
-
-			l = tail;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		q->curr_context = save_context;
@@ -1971,7 +1961,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 		char *dst = tmpbuf;
 		node *l = term2;
 
-		while (l != NULL)
+		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
 			node *n = get_arg(q, head, q->latest_context);
@@ -1982,12 +1972,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 			char i = n->val_s[0];
 			*dst++ = i;
 			node *tail = NLIST_NEXT(head);
-			tail = get_arg(q, tail, q->latest_context);
-
-			if (!is_list(tail))
-				break;
-
-			l = tail;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		*dst = '\0';
@@ -2037,7 +2022,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 		char *dst = tmpbuf;
 		node *l = term2;
 
-		while (l != NULL)
+		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
 			node *n = get_arg(q, head, q->latest_context);
@@ -2052,12 +2037,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 
 			*dst++ = (char)n->val_i;
 			node *tail = NLIST_NEXT(head);
-			tail = get_arg(q, tail, q->latest_context);
-
-			if (!is_list(tail))
-				break;
-
-			l = tail;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		*dst = '\0';
