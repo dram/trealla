@@ -246,6 +246,9 @@ standard but are commonly found in Prolog implementations:
 	term_to_atom(+Term,?Atom)   - convert term to atom
 	term_to_blob(+Term,-Blob)   - convert term to BLOB
 	is_list(+Term)              - is the arg a list?
+	is_struct(+Term)            - is the arg a structure?
+	is_tuple(+Term)             - is the arg a tuple?
+	is_stream(+Term)            - is the arg a stream?
 	findnsols(+N,@Term,:G,-L)   - as per SWI-Prolog
 	maplist(:Goal,+L)           - call goal with every element of list L
 	maplist(:Goal,+L1,+L2)      - call goal with every element of L1 & L2
@@ -269,10 +272,6 @@ System-extras: namespace 'sys'
 
 These are a random assortment of utilities:
 
-	is_struct(+Term)            - is the arg a structure?
-	is_tuple(+Term)             - is the arg a tuple?
-	is_stream(+Term)            - is the arg a stream?
-	is_socket(+Term)            - is the arg a socket?
 	now(-Secs)                  - get the seconds C-epoch (also a function now())
 	timestamp(-Usecs)           - get the useconds C-epoch
 	sleep(+Secs)                - yield for seconds (also hsleep/1 for hard-sleep)
@@ -611,6 +610,7 @@ Default ones for testing are provided.
 	udp(+S,?V)                      - unifies with 'true/false'
 	ipv4(+S,?V)                     - unifies with 'true/false'
 	ipv6(+S,?V)                     - unifies with 'true/false'
+	is_socket(+Term)                - is the arg a socket?
 
 With *server/3* a listener is started which waits for incoming connections.
 Whenever an event is detected on a socket a thread continues as an

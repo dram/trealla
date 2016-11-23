@@ -61,34 +61,6 @@ static int bif_sys_now0(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_is_tuple1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	return is_tuple(term1);
-}
-
-static int bif_sys_is_struct1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	return is_structure(term1);
-}
-
-static int bif_sys_is_stream1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	return is_stream(term1);
-}
-
-static int bif_sys_is_socket1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	return is_socket(term1);
-}
-
 static int bif_sys_system1(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1503,10 +1475,6 @@ static int bif_sys_parse_tab(tpl_query *q)
 void bifs_load_sys(void)
 {
 	DEFINE_BIF("sys:concat", -1, bif_sys_concat);
-	DEFINE_BIF("sys:is_struct", 1, bif_sys_is_struct1);
-	DEFINE_BIF("sys:is_tuple", 1, bif_sys_is_tuple1);
-	DEFINE_BIF("sys:is_stream", 1, bif_sys_is_stream1);
-	DEFINE_BIF("sys:is_socket", 1, bif_sys_is_socket1);
 	DEFINE_BIF("sys:system", 1, bif_sys_system1);
 	DEFINE_BIF("sys:load_file", 2, bif_sys_load_file2);
 	DEFINE_BIF("sys:save_file", 2, bif_sys_save_file2);

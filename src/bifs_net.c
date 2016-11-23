@@ -648,6 +648,13 @@ static int bif_net_readmsg(tpl_query *q)
 	return 1;
 }
 
+static int bif_net_is_socket(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	return is_socket(term1);
+}
+
 void bifs_load_net(void)
 {
 	DEFINE_BIF("net:server", 4, bif_net_server4);
@@ -666,6 +673,7 @@ void bifs_load_net(void)
 	DEFINE_BIF("net:tcp", 2, bif_net_tcp);
 	DEFINE_BIF("net:udp", 2, bif_net_udp);
 	DEFINE_BIF("net:tls", 2, bif_net_tls);
+	DEFINE_BIF("sys:is_socket", 1, bif_net_is_socket);
 	DEFINE_BIF("net:readmsg", 2, bif_net_readmsg);
 	DEFINE_BIF("net:stash_get", 4, bif_net_stash_get4);
 	DEFINE_BIF("net:stash_get", 3, bif_net_stash_get3);

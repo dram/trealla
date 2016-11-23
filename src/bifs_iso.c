@@ -4244,6 +4244,27 @@ static int bif_sys_is_list(tpl_query *q)
 	return is_list(term1);
 }
 
+static int bif_sys_is_tuple(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	return is_tuple(term1);
+}
+
+static int bif_sys_is_struct(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	return is_structure(term1);
+}
+
+static int bif_sys_is_stream(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	return is_stream(term1);
+}
+
 static int bif_sys_consult(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -4696,6 +4717,9 @@ void bifs_load_iso(void)
 	DEFINE_BIF("time", 2, bif_sys_time2);
 	DEFINE_BIF("between", 3, bif_sys_between);
 	DEFINE_BIF("is_list", 1, bif_sys_is_list);
+	DEFINE_BIF("is_struct", 1, bif_sys_is_struct);
+	DEFINE_BIF("is_tuple", 1, bif_sys_is_tuple);
+	DEFINE_BIF("is_stream", 1, bif_sys_is_stream);
 	DEFINE_BIF("term_to_atom", 2, bif_sys_term_to_atom);
 	DEFINE_BIF("term_to_blob", 2, bif_sys_term_to_blob);
 	DEFINE_BIF("findnsols", 1+4, bif_sys_findnsols);
