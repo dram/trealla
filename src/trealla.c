@@ -134,6 +134,7 @@ static ops g_ops[] =
 	{0}
  };
 
+#ifndef ISO_ONLY
 extern uint8_t _binary_modules_auth_pro_start[];
 extern uint8_t _binary_modules_auth_pro_size;
 extern uint8_t _binary_modules_blog_pro_start[];
@@ -160,7 +161,7 @@ library[] =
   { "http_client",	_binary_modules_http_client_pro_start,	&_binary_modules_http_client_pro_size },
   {0}
 };
-
+#endif
 
 const ops *get_op(module *db, const char *functor, int hint_prefix)
 {
@@ -954,8 +955,8 @@ static void dir_dynamic(lexer *l, node *n)
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
 	make_dynamic(l->db, tmpbuf);
 
-#ifndef ISO_ONLY
 	if (!term2) return;
+#ifndef ISO_ONLY
 	if (!is_list(term2)) return;
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
 	int i = 1;
@@ -2758,6 +2759,7 @@ void query_stats(tpl_query *self)
 #endif
 }
 
+#ifndef ISO_ONLY
 static void kvs_done(skiplist *d)
 {
 	sl_start(d);
@@ -2768,6 +2770,7 @@ static void kvs_done(skiplist *d)
 
 	sl_done(d, NULL);
 }
+#endif
 
 void query_destroy(tpl_query *self)
 {
