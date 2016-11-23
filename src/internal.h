@@ -315,7 +315,7 @@ struct trealla_
 	skiplist mods;
 	module db;
 	lexer lex;
-	char *keywords[MAX_BIFS];
+	const char *keywords[MAX_BIFS+20];
 	volatile int abort, abort_wait;
 	int trace, noopt, tty, erlang;
 	int flag_char_conversion, flag_debug, flag_character_escapes;

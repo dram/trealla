@@ -3025,7 +3025,13 @@ trealla *trealla_create(const char *name)
 		idx++;
 	}
 
-	pl->keywords[idx] = NULL;
+	pl->keywords[idx++] = "maplist";
+	pl->keywords[idx++] = "member";
+	pl->keywords[idx++] = "select";
+	pl->keywords[idx++] = "efface";
+	pl->keywords[idx++] = "reverse";
+	pl->keywords[idx++] = "append";
+	pl->keywords[idx++] = "find";
 	history_keywords((const char**)pl->keywords);
 
 #ifndef ISO_ONLY
