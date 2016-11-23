@@ -163,13 +163,11 @@ static size_t sprint2_list(char **dstbuf, size_t *bufsize, char **_dst, trealla 
 		else dst += snprintf(dst, *bufsize-(dst-*dstbuf), "[");
 
 		int this_context = q?q->latest_context:-1;
-		node *nf = NLIST_FRONT(&n->val_l);
-		node *head = NLIST_NEXT(nf);
+		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
 		node *term = q?get_arg(q, head, this_context):head;
 		dst += sprint2_term(dstbuf, bufsize, &dst, pl, q, term, listing>0?listing:1);
-
 		node *tail = NLIST_NEXT(head);
-		if (tail) term = q?get_arg(q, tail, this_context):tail;
+		term = q?get_arg(q, tail, this_context):tail;
 
 		if (is_list(term))
 		{
