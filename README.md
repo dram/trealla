@@ -167,8 +167,8 @@ Each module specifies a separate and self-contained database for both
 its static rules and dynamic assertions. It also represents a unit of
 locking for updates.
 
-	:-module(+Module,+PublicList).			% Specify public list
 	:-module(+Module).
+	:-module(+Module,+PublicList).			% Specify public list
 	:-export(+PublicList).					% Specify public list
 
 The *module* directive can specify a list of exported public predicates,
@@ -186,20 +186,18 @@ defines a name/value pair in the module namespace.
 
 	?Name
 
-Will substitute during module load a defined value from the module
-namespace. The *?MODULE* name will give the module name. This is a lexical
-pasting of the value.
-
-Other pre-defined names are *?RANDOM*, *?RANDOMSTR*, *?TIME* and *?TIMESTR*.
+Will substitute during load a defined value from the namespace. The name
+*?MODULE* will give the module name. This is a lexical pasting of the
+value. Other pre-defined names are *?RANDOM*, *?RANDOMSTR*, *?TIME*
+and *?TIMESTR*.
 
 Use the lexical namespace(s):
 
 	:-using([+Module,...]).
 
 The *include/1* directive loads a file that is lexically pasted into the
-source.
-
-Use the *unload_file/1* directive to remove a module from the system.
+source. Use the *unload_file/1* directive to remove a module from the
+system.
 
 User-defined Functions
 ----------------------
