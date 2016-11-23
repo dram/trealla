@@ -134,35 +134,6 @@ static ops g_ops[] =
 	{0}
  };
 
-#ifndef ISO_ONLY
-extern uint8_t _binary_modules_auth_pro_start[];
-extern uint8_t _binary_modules_auth_pro_size;
-extern uint8_t _binary_modules_blog_pro_start[];
-extern uint8_t _binary_modules_blog_pro_size;
-extern uint8_t _binary_modules_dict_pro_start[];
-extern uint8_t _binary_modules_dict_pro_size;
-extern uint8_t _binary_modules_http_client_pro_start[];
-extern uint8_t _binary_modules_http_client_pro_size;
-extern uint8_t _binary_modules_smtp_client_pro_start[];
-extern uint8_t _binary_modules_smtp_client_pro_size;
-
-struct library
-{
-	const char *name;
-	const uint8_t *code;
-	const uint8_t *len;
-}
-library[] =
-{
-  { "auth", 		_binary_modules_auth_pro_start,			&_binary_modules_auth_pro_size },
-  { "blog", 		_binary_modules_blog_pro_start,			&_binary_modules_blog_pro_size },
-  { "dict",			_binary_modules_dict_pro_start,			&_binary_modules_dict_pro_size },
-  { "smtp_client",	_binary_modules_smtp_client_pro_start,	&_binary_modules_smtp_client_pro_size },
-  { "http_client",	_binary_modules_http_client_pro_start,	&_binary_modules_http_client_pro_size },
-  {0}
-};
-#endif
-
 const ops *get_op(module *db, const char *functor, int hint_prefix)
 {
 	const ops *optr;
@@ -1267,7 +1238,7 @@ static void dir_use_module(lexer *l, node *n)
 
 	DBSUNLOCK(l->pl);
 
-	struct library *lib = &library[0];
+	struct library *lib = &libs[0];
 
 	while (lib != NULL)
 	{

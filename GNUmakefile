@@ -7,7 +7,7 @@ OBJECTS_ISO = src/trealla.o src/bifs_iso.o src/history.o src/jela.o \
 OBJECTS_ALL = $(OBJECTS_ISO) src/base64.o src/bifs_sys.o src/bifs_http.o \
 			src/jsonq.o src/bifs_net.o src/bifs_proc.o \
 			src/network.o src/skipbuck.o src/thread.o src/uncle.o \
-			src/uuid.o src/xmlq.o src/bifs_dbs.o \
+			src/uuid.o src/xmlq.o src/bifs_dbs.o src/library.o \
 			src/auth.o src/blog.o src/dict.o \
 			src/http_client.o src/smtp_client.o
 
@@ -91,6 +91,7 @@ src/daemon.o: src/daemon.h
 src/history.o: src/history.h
 src/jela.o: src/jela.h src/trealla.h src/internal.h src/bifs.h src/jela.h src/list.h src/skiplist.h
 src/jsonq.o: src/jsonq.h
+src/library.o: src/bifs.h
 src/list.o: src/list.h
 src/network.o: src/network.h src/skiplist.h src/skipbuck.h src/thread.h src/uncle.h
 src/print.o: src/trealla.h src/internal.h src/bifs.h src/list.h src/base64.h

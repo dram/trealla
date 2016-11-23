@@ -66,6 +66,15 @@ typedef struct
 	g_bifs[g_bifs_idx].bifptr = p; \
 	g_bifs_idx++;
 
+struct library
+{
+	const char *name;
+	const uint8_t *code;
+	const uint8_t *len;
+};
+
+extern struct library libs[];
+
 enum { HELLO,BYE,CMD,HTTP2 };
 
 extern funcs g_bifs[MAX_BIFS];
