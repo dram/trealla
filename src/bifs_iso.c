@@ -3513,7 +3513,7 @@ static int bif_iso_integer(tpl_query *q)
 
 		if (q->nv.type == NUM_FLOAT)
 		{
-			q->nv.val_i = (nbr_t)(q->nv.val_f+0.5);
+			q->nv.val_i = (nbr_t)q->nv.val_f;
 			q->nv.type = NUM_INTEGER;
 		}
 		else if (q->nv.type != NUM_INTEGER)
@@ -4167,9 +4167,7 @@ static int bif_iso_round(tpl_query *q)
 
 	if (q->nv.type == NUM_FLOAT)
 		q->nv.val_i = (nbr_t)(q->nv.val_f+0.5);
-	else if (q->nv.type == NUM_INTEGER)
-		;
-	else
+	else if (q->nv.type != NUM_INTEGER)
 		{ QABORT(ABORT_TYPEERROR); return 0; }
 
 	q->nv.type = NUM_INTEGER;
@@ -4193,9 +4191,7 @@ static int bif_iso_truncate(tpl_query *q)
 
 	if (q->nv.type == NUM_FLOAT)
 		q->nv.val_i = (nbr_t)q->nv.val_f;
-	else if (q->nv.type == NUM_INTEGER)
-		;
-	else
+	else if (q->nv.type != NUM_INTEGER)
 		{ QABORT(ABORT_TYPEERROR); return 0; }
 
 	q->nv.type = NUM_INTEGER;
