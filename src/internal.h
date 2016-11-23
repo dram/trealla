@@ -308,11 +308,14 @@ struct tpl_query_
 #endif
 };
 
+#define MAX_BIFS 1000
+
 struct trealla_
 {
 	skiplist mods;
 	module db;
 	lexer lex;
+	char *keywords[MAX_BIFS];
 	volatile int abort, abort_wait;
 	int trace, noopt, tty, erlang;
 	int flag_char_conversion, flag_debug, flag_character_escapes;

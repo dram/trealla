@@ -84,11 +84,6 @@ char *history_readline(const char* prompt)
 	return history_readline_eol(prompt, '\0');
 }
 
-void history_keywords(const char **word_array)
-{
-	key_words = word_array;
-}
-
 static void output(const char *fmt, const char *prompt, const char *line)
 {
 	size_t len = (strlen(line)*10)+1024;
@@ -773,6 +768,11 @@ char *history_readline_eol(const char* prompt, char eol)
 	if (g_last) free(g_last);
 	g_last = strdup(n->line);
 	return line;
+}
+
+void history_keywords(const char **word_array)
+{
+	key_words = word_array;
 }
 
 void history_load(const char *filename)

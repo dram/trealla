@@ -49,8 +49,6 @@
 #define KEY_PEMFILE "key.pem"
 #define CERT_PEMFILE "cert.pem"
 
-#define MAX_BIFS 1000
-
 typedef struct
 {
 	char *functor;
@@ -68,7 +66,7 @@ typedef struct
 
 enum { HELLO,BYE,CMD,HTTP2 };
 
-extern funcs g_bifs[MAX_BIFS];
+extern funcs g_bifs[];
 extern size_t g_bifs_idx;
 extern const funcs *get_bifarity(lexer *l, const char *functor, int arity);
 extern const funcs *get_bif(lexer *l, const char *functor);

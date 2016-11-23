@@ -2988,18 +2988,6 @@ static int tmocmp(const char *k1, const char *k2)
 }
 #endif
 
-// FIXME: go thru the BIFs table and set as keywords...
-
-static const char *key_words[] =
-{
-	"repeat","true","false","fail","halt","call","once","is",
-	"asserta","assertz","retract","retractall","listing",
-	"consult","reconsult","deconsult", "read","write","writeq",
-	"write_canonical","nl","open","close","var","nonvar","atomic",
-	"integer","float","div","mod","rem",
-	NULL
-};
-
 trealla *trealla_create(const char *name)
 {
 	if (!name) name = "default";
@@ -3011,7 +2999,6 @@ trealla *trealla_create(const char *name)
 	pl->tty = isatty(0);
 	db_init(&pl->db, pl, name);
 	sl_init(&pl->mods, 0, &strcmp, NULL);
-	history_keywords(key_words);
 
 	if (first_time)
 	{
@@ -3029,6 +3016,17 @@ trealla *trealla_create(const char *name)
 		uuid_seed(time(NULL));
 #endif
 	}
+
+	int idx = 0;
+
+	while (g_bifs[idx].functor != NULL)
+	{
+		pl->keywords[idx] = g_bifs[idx].functor;
+		idx++;
+	}
+
+	pl->keywords[idx] = NULL;
+	history_keywords((const char**)pl->keywords);
 
 #ifndef ISO_ONLY
 	sl_init(&pl->idle, 0, &tmocmp, NULL);
