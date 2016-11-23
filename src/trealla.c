@@ -231,7 +231,7 @@ const char *make_key(trealla *pl, char *dstbuf, node *term)
 	return dstbuf;
 }
 
-static char *dict(module *db, const char *key)
+static const char *dict(module *db, const char *key)
 {
 	char *value = NULL;
 
@@ -318,7 +318,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 			free(tmp->val_s);
 
 		tmp->flags |= FLAG_CONST;
-		tmp->val_s = dict(db, tmpbuf);
+		tmp->val_s = (char*)dict(db, tmpbuf);
 	}
 	else
 		strcpy(tmpbuf, functor);
@@ -909,7 +909,7 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 
 static void make_dynamic(module *db, const char *functarity)
 {
-	char *key = dict(db, functarity);
+	const char *key = dict(db, functarity);
 	rule *r = CALLOC(rule);
 	r->dynamic = 1;
 	sl_init(&r->idx, 1, &strcmp, NULL);
@@ -1783,24 +1783,6 @@ static void lexer_finalize(lexer *self)
 	sl_clear(&self->symtab, NULL);
 }
 
-// Common keywords to optimize facts
-
-static const char *get_keyword(const char *s)
-{
-	static const char *keywords[] =
-		{"true","false","fail","repeat",":-","->"};
-
-	int i;
-
-	for (i = 0; i < (sizeof(keywords)/sizeof(char*)); i++)
-	{
-		if (!strcmp(s, keywords[i]))
-			return keywords[i];
-	}
-
-	return NULL;
-}
-
 const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 {
 	self->depth++;
@@ -2052,7 +2034,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			else
 			{
 				n->flags |= FLAG_CONST;
-				n->val_s = dict(&self->pl->db, self->tok);
+				n->val_s = (char*)dict(&self->pl->db, self->tok);
 			}
 
 			free(self->tok);
@@ -2079,14 +2061,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 			else if (!self->quoted)
 			{
-				const char *src = get_keyword(self->tok);
-
-				if (src)
-				{
-					free(self->tok);
-					n->flags |= FLAG_CONST;
-					self->tok = (char*)src;
-				}
+				char *src = (char*)dict(&self->pl->db, self->tok);
+				n->flags |= FLAG_CONST;
+				free(self->tok);
+				self->tok = src;
 			}
 #ifndef ISO_ONLY
 			else if (self->quoted == 3)
@@ -2205,7 +2183,7 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 		free(term->val_s);
 
 	term->flags |= FLAG_CONST;
-	term->val_s = dict(l->db, functarity);
+	term->val_s = (char*)dict(l->db, functarity);
 	return r;
 }
 
@@ -3017,8 +2995,8 @@ static const char *key_words[] =
 	"repeat","true","false","fail","halt","call","once","is",
 	"asserta","assertz","retract","retractall","listing",
 	"consult","reconsult","deconsult", "read","write","writeq",
-	"write_canonical","nl", "module","use_module", "export","define",
-	"using","include","open","close","var","nonvar","atomic",
+	"write_canonical","nl","open","close","var","nonvar","atomic",
+	"integer","float","div","mod","rem",
 	NULL
 };
 
