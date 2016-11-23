@@ -3509,7 +3509,7 @@ static int bif_iso_is(tpl_query *q)
 	if (is_integer(term1) && (q->nv.type == NUM_INTEGER))
 		return term1->val_i == q->nv.val_i;
 	else if (is_float(term1) && (q->nv.type == NUM_FLOAT))
-		return float_eq(term1->val_f, q->nv.val_f);
+		return term1->val_f == q->nv.val_f;
 
 	{ QABORT(ABORT_TYPEERROR); return 0; }
 }
