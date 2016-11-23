@@ -134,25 +134,30 @@ static ops g_ops[] =
 	{0}
  };
 
-#include "dict.h"
-#include "auth.h"
-#include "blog.h"
-#include "smtp_client.h"
-#include "http_client.h"
+extern uint8_t _binary_modules_auth_pro_start[];
+extern uint8_t _binary_modules_auth_pro_size;
+extern uint8_t _binary_modules_blog_pro_start[];
+extern uint8_t _binary_modules_blog_pro_size;
+extern uint8_t _binary_modules_dict_pro_start[];
+extern uint8_t _binary_modules_dict_pro_size;
+extern uint8_t _binary_modules_http_client_pro_start[];
+extern uint8_t _binary_modules_http_client_pro_size;
+extern uint8_t _binary_modules_smtp_client_pro_start[];
+extern uint8_t _binary_modules_smtp_client_pro_size;
 
 struct library
 {
 	const char *name;
-	const unsigned char *code;
-	const unsigned int *len;
+	const uint8_t *code;
+	const uint8_t *len;
 }
- library[] =
+library[] =
 {
-  { "dict",			modules_dict_pro,			&modules_dict_pro_len },
-  { "auth", 		modules_auth_pro,			&modules_auth_pro_len },
-  { "blog", 		modules_blog_pro,			&modules_blog_pro_len },
-  { "smtp_client",	modules_smtp_client_pro,	&modules_smtp_client_pro_len },
-  { "http_client",	modules_http_client_pro,	&modules_http_client_pro_len },
+  { "auth", 		_binary_modules_auth_pro_start,			&_binary_modules_auth_pro_size },
+  { "blog", 		_binary_modules_blog_pro_start,			&_binary_modules_blog_pro_size },
+  { "dict",			_binary_modules_dict_pro_start,			&_binary_modules_dict_pro_size },
+  { "smtp_client",	_binary_modules_smtp_client_pro_start,	&_binary_modules_smtp_client_pro_size },
+  { "http_client",	_binary_modules_http_client_pro_start,	&_binary_modules_http_client_pro_size },
   {0}
 };
 

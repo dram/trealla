@@ -8,7 +8,9 @@ OBJECTS_ISO = src/trealla.o src/bifs_iso.o src/history.o src/jela.o \
 OBJECTS_ALL = $(OBJECTS_ISO) src/base64.o src/bifs_sys.o src/bifs_http.o \
 			src/jsonq.o src/bifs_net.o src/bifs_proc.o \
 			src/network.o src/skipbuck.o src/thread.o src/uncle.o \
-			src/uuid.o src/xmlq.o src/bifs_dbs.o
+			src/uuid.o src/xmlq.o src/bifs_dbs.o \
+			src/auth.o src/blog.o src/dict.o \
+			src/http_client.o src/smtp_client.o
 
 .ifndef USE_SSL
 USE_SSL = 1
@@ -58,22 +60,20 @@ iso_profile:
 tpl: $(OBJECTS) tpl.o
 	$(CC) -o tpl tpl.o $(OBJECTS) $(OPT) $(LDFLAGS)
 
-# May need to install VIM to get XXD
+src/auth.o: modules/auth.pro
+	ld -r -b binary -o src/auth.o modules/auth.pro
 
-src/http_client.h: modules/http_client.pro
-	xxd -i modules/http_client.pro >src/http_client.h
+src/blog.o: modules/blog.pro
+	ld -r -b binary -o src/blog.o modules/blog.pro
 
-src/smtp_client.h: modules/smtp_client.pro
-	xxd -i modules/smtp_client.pro >src/smtp_client.h
+src/dict.o: modules/dict.pro
+	ld -r -b binary -o src/dict.o modules/dict.pro
 
-src/dict.h: modules/dict.pro
-	xxd -i modules/dict.pro >src/dict.h
+src/http_client.o: modules/http_client.pro
+	ld -r -b binary -o src/http_client.o modules/http_client.pro
 
-src/auth.h: modules/auth.pro
-	xxd -i modules/auth.pro >src/auth.h
-
-src/blog.h: modules/blog.pro
-	xxd -i modules/blog.pro >src/blog.h
+src/smtp_client.o: modules/smtp_client.pro
+	ld -r -b binary -o src/smtp_client.o modules/smtp_client.pro
 
 clean:
 	rm -f src/*.o gmon.* *.o tpl
