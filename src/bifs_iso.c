@@ -2841,7 +2841,7 @@ static int bif_iso_sort(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
 	int save_context = q->latest_context;
-	node *term2 = get_list_or_var(term2);
+	node *term2 = get_atom_or_list_or_var(term2);
 	q->latest_context = save_context;
 
 	if (is_list(term1))
@@ -2917,7 +2917,7 @@ static int bif_iso_keysort(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
 	int save_context = q->latest_context;
-	node *term2 = get_list_or_var(term2);
+	node *term2 = get_atom_or_list_or_var(term2);
 	q->latest_context = save_context;
 
 	if (is_list(term1))

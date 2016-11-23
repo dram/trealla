@@ -8,6 +8,7 @@
 #define get_atom(t) get_next_arg(q, &args); if (!is_atom(t)) { QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
 #define get_atom_or_int(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_integer(t)) { QABORT(ABORT_INVALIDARGNOTATOMORINT); return 0; }
 #define get_atom_or_list(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_list(t)) { QABORT(ABORT_INVALIDARGNOTATOMORLIST); return 0; }
+#define get_atom_or_list_or_var(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_list(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTATOMORLIST); return 0; }
 #define get_atom_or_var(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTATOMORVAR); return 0; }
 #define get_int_or_var(t) get_next_arg(q, &args); if (!is_integer(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTATOMORVAR); return 0; }
 #define get_nbr(t) get_next_arg(q, &args); if (!is_number(t)) { QABORT(ABORT_INVALIDARGNOTNBR); return 0; }
