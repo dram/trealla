@@ -292,7 +292,7 @@ struct tpl_query_
 	uint16_t frame_size, depth, max_depth, fail_arg;
 	char retry, halt, ok, def_choice, def_env;
 	char is_det, timed_out, trace, noopt;
-	char is_running, is_yielded;
+	char is_running, is_yielded, eval;
 
 #ifndef ISO_ONLY
 	char linked, is_forked, is_proc, is_dead, is_busy, is_idle;

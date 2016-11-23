@@ -630,20 +630,6 @@ static int bif_iso_number(tpl_query *q)
 	return is_number(term1) ? 1 : 0;
 }
 
-static int bif_iso_integer(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	return is_integer(term1) ? 1 : 0;
-}
-
-static int bif_iso_float(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	return is_float(term1) ? 1 : 0;
-}
-
 static int bif_iso_compound(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -3492,7 +3478,9 @@ static int bif_iso_is(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_nbr_or_var(term1);
+	q->eval = 1;
 	eval(q, &args);
+	q->eval = 0;
 
 	if (is_var(term1))
 	{
@@ -3512,6 +3500,57 @@ static int bif_iso_is(tpl_query *q)
 		return term1->val_f == q->nv.val_f;
 
 	{ QABORT(ABORT_TYPEERROR); return 0; }
+}
+
+static int bif_iso_integer(tpl_query *q)
+{
+	node *args = get_args(q);
+
+	if (q->eval)
+	{
+		eval(q, &args);
+
+		if (q->nv.type == NUM_FLOAT)
+		{
+			q->nv.val_i = (nbr_t)q->nv.val_f;
+			q->nv.type = NUM_INTEGER;
+		}
+		else if (q->nv.type != NUM_INTEGER)
+			{ QABORT(ABORT_TYPEERROR); return 0; }
+
+		q->nv.type = NUM_INTEGER;
+		return 1;
+	}
+	else
+	{
+		node *term1 = get_term(term1);
+		return is_integer(term1) ? 1 : 0;
+	}
+}
+
+static int bif_iso_float(tpl_query *q)
+{
+	node *args = get_args(q);
+
+	if (q->eval)
+	{
+		eval(q, &args);
+
+		if (q->nv.type == NUM_INTEGER)
+		{
+			q->nv.val_f = (flt_t)q->nv.val_i;
+			q->nv.type = NUM_FLOAT;
+		}
+		else if (q->nv.type != NUM_FLOAT)
+			{ QABORT(ABORT_TYPEERROR); return 0; }
+
+		return 1;
+	}
+	else
+	{
+		node *term1 = get_term(term1);
+		return is_float(term1) ? 1 : 0;
+	}
 }
 
 int bif_iso_reverse(tpl_query *q)
