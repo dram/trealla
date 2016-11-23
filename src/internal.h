@@ -437,7 +437,6 @@ extern void asserta_index(lexer *l, node *r, int manual, int *persist);
 extern void assertz_index(lexer *l, node *r, int manual, int *persist);
 extern void retract_index(lexer *l, node *r, int *persist);
 extern tpl_query *query_create_subquery(tpl_query *self, int process);
-extern int float_eq(flt_t f1, flt_t f2);
 extern void attach_vars(lexer *l, node *var);
 extern int xref_rule(lexer *l, node *r);
 extern node *make_const_atom(const char *s, int quoted);

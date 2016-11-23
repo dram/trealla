@@ -16,6 +16,7 @@ extern void trust_me(tpl_query *q);
 extern int unify_term(tpl_query *q, node *term1, node *term2, unsigned frame);
 extern int query_inline(tpl_query *q);
 extern void query_reset(tpl_query *q);
+extern int float_eq(flt_t f1, flt_t f2);
 
 #define try_me(q) try_me2(q, 0, 0)
 #define try_me_nofollow(q) try_me2(q, 1, 0)

@@ -188,11 +188,6 @@ const ops *get_op(module *db, const char *functor, int hint_prefix)
 	return optr;
 }
 
-int float_eq(flt_t f1, flt_t f2)
-{
-	return f1 == f2; // FIXME
-}
-
 static void stream_close(stream *sp)
 {
 	if (sp->filename) free(sp->filename);

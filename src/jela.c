@@ -116,6 +116,11 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 	return 1;
 }
 
+int float_eq(flt_t f1, flt_t f2)
+{
+	return f1 == f2; // FIXME
+}
+
 int unify_term(tpl_query *q, node *term1, node *term2, unsigned frame)
 {
 	DEBUG { printf("### unify_term "); print_term(q->pl, q, term1, 1); printf(" : "); print_term(q->pl, q, term2, 1); printf("\n"); }
