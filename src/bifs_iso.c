@@ -2968,8 +2968,7 @@ static int bif_iso_keysort(tpl_query *q)
 			node *n = get_arg(q, head, q->latest_context);
 			base[idx++] = n;
 			node *tail = NLIST_NEXT(head);
-			l = get_arg(q, tail, save_context);
-			save_context = q->latest_context;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		qsort(base, cnt, sizeof(node*), keycmp);
