@@ -1,6 +1,8 @@
 #ifndef BIFS_H
 #define BIFS_H
 
+#include <assert.h>
+
 #define get_arity(q) (NLIST_COUNT(&q->curr_term->val_l)-1)
 #define get_args(q) NLIST_FRONT(&q->curr_term->val_l)
 
@@ -62,7 +64,8 @@ typedef struct
 	g_bifs[g_bifs_idx].functor = (char*)f; \
 	g_bifs[g_bifs_idx].arity = a; \
 	g_bifs[g_bifs_idx].bifptr = p; \
-	g_bifs_idx++;
+	g_bifs_idx++; \
+	assert(g_bifs_idx < MAX_BIFS);
 
 enum { HELLO,BYE,CMD,HTTP2 };
 
