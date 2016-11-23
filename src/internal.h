@@ -326,6 +326,15 @@ struct trealla_
 #endif
 };
 
+struct library
+{
+	const char *name;
+	const uint8_t *code;
+	const uint8_t *len;
+};
+
+extern struct library libs[];
+
 #define is_compound(n) (((n)->flags & TYPE_COMPOUND) ? 1 : 0)
 #define is_list(n) (((n)->flags & FLAG_LIST) ? 1 : 0)
 #define is_structure(n) (is_compound(n) && !is_list(n))

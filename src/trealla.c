@@ -1238,13 +1238,13 @@ static void dir_use_module(lexer *l, node *n)
 
 	DBSUNLOCK(l->pl);
 
-	struct library *lib = &libs[0];
+	struct library *lib = libs;
 
-	while (lib != NULL)
+	while (lib->name != NULL)
 	{
-		if (!strcmp(name, lib->name))
+		if (!strcmp(lib->name, name))
 		{
-			char *src = strndup((const char*)lib->code, *lib->len);
+			char *src = strndup((const char*)lib->code, (size_t)lib->len);
 			trealla_consult_text(l->pl, src, name);
 			free(src);
 			return;

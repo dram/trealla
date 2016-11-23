@@ -4,16 +4,19 @@
 
 #include "trealla.h"
 #include "internal.h"
-#include "bifs.h"
 
 extern uint8_t _binary_modules_auth_pro_start[];
 extern uint8_t _binary_modules_auth_pro_size;
+
 extern uint8_t _binary_modules_blog_pro_start[];
 extern uint8_t _binary_modules_blog_pro_size;
+
 extern uint8_t _binary_modules_dict_pro_start[];
 extern uint8_t _binary_modules_dict_pro_size;
+
 extern uint8_t _binary_modules_http_client_pro_start[];
 extern uint8_t _binary_modules_http_client_pro_size;
+
 extern uint8_t _binary_modules_smtp_client_pro_start[];
 extern uint8_t _binary_modules_smtp_client_pro_size;
 
