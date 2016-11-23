@@ -2854,42 +2854,40 @@ static int bif_iso_sort(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
-	int orig_context = q->latest_context;
+	int save_context = q->latest_context;
 	node *term2 = get_list_or_var(term2);
+	q->latest_context = save_context;
 
 	if (is_list(term1))
 	{
 		node *l = term1;
-		int save_context = orig_context;
 		size_t cnt = 0;
 
 		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, head, save_context);
+			node *n = get_arg(q, head, q->latest_context);
 
 			if (!is_atomic(n))
 				return 0;
 
 			cnt++;
 			node *tail = NLIST_NEXT(head);
-			l = get_arg(q, tail, save_context);
-			save_context = q->latest_context;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		node **base = (node**)malloc(sizeof(node*)*cnt);
 		l = term1;
-		save_context = orig_context;
+		q->latest_context = save_context;
 		size_t idx = 0;
 
 		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, head, save_context);
+			node *n = get_arg(q, head, q->latest_context);
 			base[idx++] = n;
 			node *tail = NLIST_NEXT(head);
-			l = get_arg(q, tail, save_context);
-			save_context = q->latest_context;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		qsort(base, cnt, sizeof(node*), nodecmp);
@@ -2932,19 +2930,19 @@ static int bif_iso_keysort(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
-	int orig_context = q->latest_context;
+	int save_context = q->latest_context;
 	node *term2 = get_list_or_var(term2);
+	q->latest_context = save_context;
 
 	if (is_list(term1))
 	{
 		node *l = term1;
-		int save_context = orig_context;
 		size_t cnt = 0;
 
 		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, head, save_context);
+			node *n = get_arg(q, head, q->latest_context);
 
 			if (!is_compound(n))
 				return 0;
@@ -2956,19 +2954,18 @@ static int bif_iso_keysort(tpl_query *q)
 
 			cnt++;
 			node *tail = NLIST_NEXT(head);
-			l = get_arg(q, tail, save_context);
-			save_context = q->latest_context;
+			l = get_arg(q, tail, q->latest_context);
 		}
 
 		node **base = (node**)malloc(sizeof(node*)*cnt);
-		save_context = orig_context;
+		q->latest_context = save_context;
 		l = term1;
 		size_t idx = 0;
 
 		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			node *n = get_arg(q, head, save_context);
+			node *n = get_arg(q, head, q->latest_context);
 			base[idx++] = n;
 			node *tail = NLIST_NEXT(head);
 			l = get_arg(q, tail, save_context);
