@@ -2859,9 +2859,9 @@ static int bif_iso_sort(tpl_query *q)
 
 	if (is_list(term1))
 	{
-		size_t cnt = 0;
 		node *l = term1;
 		int save_context = orig_context;
+		size_t cnt = 0;
 
 		while (is_list(l))
 		{
@@ -2878,9 +2878,9 @@ static int bif_iso_sort(tpl_query *q)
 		}
 
 		node **base = (node**)malloc(sizeof(node*)*cnt);
-		size_t i = 0;
 		l = term1;
 		save_context = orig_context;
+		size_t i = 0;
 
 		while (is_list(l))
 		{
@@ -2933,18 +2933,18 @@ static int bif_iso_keysort(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	int save_context = q->latest_context;
+	int orig_context = q->latest_context;
 	node *term2 = get_term(term2);
 	if (!is_atom(term1) && !is_list(term1)) { QABORT(ABORT_INVALIDARGNOTLIST); return 0; }
 	if (!is_var(term2) && !is_atom(term2) && !is_list(term2)) { QABORT(ABORT_INVALIDARGNOTVARORLIST); return 0; }
 	if (is_atom(term1) && strcmp(term1->val_s, "[]")) return 0;
 	if (is_atom(term2) && strcmp(term2->val_s, "[]")) return 0;
 
-	size_t cnt = 0;
-
 	if (is_list(term1))
 	{
 		node *l = term1;
+		int save_context = orig_context;
+		size_t cnt = 0;
 
 		while (is_list(l))
 		{
@@ -2962,11 +2962,13 @@ static int bif_iso_keysort(tpl_query *q)
 			cnt++;
 			node *tail = NLIST_NEXT(head);
 			l = get_arg(q, tail, save_context);
+			save_context = q->latest_context;
 		}
 
 		node **base = (node**)malloc(sizeof(node*)*cnt);
-		size_t i = 0;
+		save_context = orig_context;
 		l = term1;
+		size_t i = 0;
 
 		while (is_list(l))
 		{
@@ -2975,6 +2977,7 @@ static int bif_iso_keysort(tpl_query *q)
 			base[i++] = n;
 			node *tail = NLIST_NEXT(head);
 			l = get_arg(q, tail, save_context);
+			save_context = q->latest_context;
 		}
 
 		qsort(base, cnt, sizeof(node*), keycmp);
