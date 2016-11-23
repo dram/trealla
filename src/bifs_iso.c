@@ -3467,20 +3467,21 @@ static void eval_term(tpl_query *q, node *n)
 static void eval(tpl_query *q, node **args)
 {
 	node *tmp = get_next_arg(q, args);
+	q->eval++;
 
 	if (is_number(tmp))
 		eval_nbr(q, tmp);
 	else if (is_callable(tmp))
 		eval_term(q, tmp);
+
+	q->eval--;
 }
 
 static int bif_iso_is(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_nbr_or_var(term1);
-	q->eval = 1;
 	eval(q, &args);
-	q->eval = 0;
 
 	if (is_var(term1))
 	{
