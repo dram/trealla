@@ -2887,7 +2887,10 @@ static int bif_iso_sort(tpl_query *q)
 					continue;
 
 			NLIST_PUSH_BACK(&tmp->val_l, clone_term(q, base[i]));
-			if (i == (cnt-1)) break;
+
+			if (i == (cnt-1))
+				break;
+
 			node *tmp2;
 			NLIST_PUSH_BACK(&tmp->val_l, tmp2=make_list());
 			tmp = tmp2;
@@ -2964,7 +2967,10 @@ static int bif_iso_keysort(tpl_query *q)
 		for (size_t i = 0; i < cnt; i++)
 		{
 			NLIST_PUSH_BACK(&tmp->val_l, clone_term(q, base[i]));
-			if (i == (cnt-1)) break;
+
+			if (i == (cnt-1))
+				break;
+
 			node *tmp2;
 			NLIST_PUSH_BACK(&tmp->val_l, tmp2=make_list());
 			tmp = tmp2;
