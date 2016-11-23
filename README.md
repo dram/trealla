@@ -160,17 +160,6 @@ and compiler options. Made with 'make iso' option:
 	trealla  10.190s
 	gprolog  11.204s
 
-To-Do?
-------
-
-So much.
-
-Work on optimization.
-
-Second-arg indexing for dynamics.
-
-  ...
-
 Modules
 -------
 
