@@ -3927,8 +3927,11 @@ static int bif_iso_sin(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
-	else q->nv.val_f = sin(q->nv.val_f);
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
+	q->nv.val_f = sin(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
 }
@@ -3937,7 +3940,10 @@ static int bif_iso_asin(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = asin(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -3947,7 +3953,10 @@ static int bif_iso_cos(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = cos(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -3957,7 +3966,10 @@ static int bif_iso_acos(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = acos(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -3967,7 +3979,10 @@ static int bif_iso_tan(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = tan(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -3977,7 +3992,10 @@ static int bif_iso_atan(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = atan(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -4034,7 +4052,10 @@ static int bif_iso_exp(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = exp(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -4044,7 +4065,10 @@ static int bif_iso_sqrt(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = sqrt(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -4054,7 +4078,10 @@ static int bif_iso_log(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type == NUM_INTEGER) q->nv.val_f = (flt_t)q->nv.val_i;
+
+	if (q->nv.type == NUM_INTEGER)
+		q->nv.val_f = (flt_t)q->nv.val_i;
+
 	q->nv.val_f = log(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -4069,6 +4096,8 @@ static int bif_iso_abs(tpl_query *q)
 		q->nv.val_f = q->nv.val_f < 0.0 ? -q->nv.val_f : q->nv.val_f;
 	else if (q->nv.type == NUM_INTEGER)
 		q->nv.val_i = q->nv.val_i < 0 ? -q->nv.val_i : q->nv.val_i;
+	else
+		{ QABORT(ABORT_TYPEERROR); return 0; }
 
 	return 1;
 }
@@ -4090,6 +4119,8 @@ static int bif_iso_max(tpl_query *q)
 		np = nv1.val_f > nv2.val_f ? &nv1 : &nv2;
 	else if ((nv1.type == NUM_FLOAT) && (nv2.type == NUM_INTEGER))
 		np = nv1.val_f > nv2.val_i ? &nv1 : &nv2;
+	else
+		{ QABORT(ABORT_TYPEERROR); return 0; }
 
 	q->nv = *np;
 	return 1;
@@ -4112,6 +4143,8 @@ static int bif_iso_min(tpl_query *q)
 		np = nv1.val_f < nv2.val_f ? &nv1 : &nv2;
 	else if ((nv1.type == NUM_FLOAT) && (nv2.type == NUM_INTEGER))
 		np = nv1.val_f < nv2.val_i ? &nv1 : &nv2;
+	else
+		{ QABORT(ABORT_TYPEERROR); return 0; }
 
 	q->nv = *np;
 	return 1;
@@ -4126,6 +4159,8 @@ static int bif_iso_sign(tpl_query *q)
 		q->nv.val_i = q->nv.val_i < 0 ? -1 : q->nv.val_i > 0 ? 1 : 0;
 	else if (q->nv.type == NUM_FLOAT)
 		q->nv.val_f = q->nv.val_f < 0.0 ? -1.0 : q->nv.val_f > 0.0 ? 1.0 : 0.0;
+	else
+		{ QABORT(ABORT_TYPEERROR); return 0; }
 
 	return 1;
 }
@@ -4134,7 +4169,10 @@ static int bif_iso_float_fractional_part(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type != NUM_FLOAT) { QABORT(ABORT_TYPEERROR); return 0; }
+
+	if (q->nv.type != NUM_FLOAT)
+		{ QABORT(ABORT_TYPEERROR); return 0; }
+
 	q->nv.val_f -= (nbr_t)q->nv.val_f;
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -4144,7 +4182,10 @@ static int bif_iso_float_integer_part(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type != NUM_FLOAT) { QABORT(ABORT_TYPEERROR); return 0; }
+
+	if (q->nv.type != NUM_FLOAT)
+		{ QABORT(ABORT_TYPEERROR); return 0; }
+
 	q->nv.val_f = (nbr_t)q->nv.val_f;
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -4154,7 +4195,10 @@ static int bif_iso_floor(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type != NUM_FLOAT) { QABORT(ABORT_TYPEERROR); return 0; }
+
+	if (q->nv.type != NUM_FLOAT)
+		{ QABORT(ABORT_TYPEERROR); return 0; }
+
 	q->nv.val_i = floor(q->nv.val_f);
 	q->nv.type = NUM_INTEGER;
 	return 1;
@@ -4166,11 +4210,13 @@ static int bif_iso_round(tpl_query *q)
 	eval(q, &args);
 
 	if (q->nv.type == NUM_FLOAT)
+	{
+		q->nv.type = NUM_INTEGER;
 		q->nv.val_i = (nbr_t)(q->nv.val_f+0.5);
+	}
 	else if (q->nv.type != NUM_INTEGER)
 		{ QABORT(ABORT_TYPEERROR); return 0; }
 
-	q->nv.type = NUM_INTEGER;
 	return 1;
 }
 
@@ -4178,7 +4224,10 @@ static int bif_iso_ceiling(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
-	if (q->nv.type != NUM_FLOAT) return 0;
+
+	if (q->nv.type != NUM_FLOAT)
+		{ QABORT(ABORT_TYPEERROR); return 0; }
+
 	q->nv.val_f -= ceil(q->nv.val_f);
 	q->nv.type = NUM_FLOAT;
 	return 1;
@@ -4190,11 +4239,13 @@ static int bif_iso_truncate(tpl_query *q)
 	eval(q, &args);
 
 	if (q->nv.type == NUM_FLOAT)
+	{
 		q->nv.val_i = (nbr_t)q->nv.val_f;
+		q->nv.type = NUM_INTEGER;
+	}
 	else if (q->nv.type != NUM_INTEGER)
 		{ QABORT(ABORT_TYPEERROR); return 0; }
 
-	q->nv.type = NUM_INTEGER;
 	return 1;
 }
 
