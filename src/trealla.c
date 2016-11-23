@@ -231,7 +231,7 @@ const char *make_key(trealla *pl, char *dstbuf, node *term)
 	return dstbuf;
 }
 
-static const char *dict(module *db, const char *key)
+static char *dict(module *db, const char *key)
 {
 	char *value = NULL;
 
@@ -318,7 +318,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 			free(tmp->val_s);
 
 		tmp->flags |= FLAG_CONST;
-		tmp->val_s = (char*)dict(db, tmpbuf);
+		tmp->val_s = dict(db, tmpbuf);
 	}
 	else
 		strcpy(tmpbuf, functor);
@@ -1001,7 +1001,7 @@ static void dir_initialization(lexer *l, node *n)
 #ifndef ISO_ONLY
 static void make_persist(module *db, const char *functarity)
 {
-	char *key = dict(db, functarity);
+	const char *key = dict(db, functarity);
 	rule *r = CALLOC(rule);
 	r->dynamic = r->persist = 1;
 	sl_init(&r->idx, 1, &strcmp, NULL);
@@ -2034,7 +2034,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			else
 			{
 				n->flags |= FLAG_CONST;
-				n->val_s = (char*)dict(&self->pl->db, self->tok);
+				n->val_s = dict(&self->pl->db, self->tok);
 			}
 
 			free(self->tok);
@@ -2061,7 +2061,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 			else if (!self->quoted)
 			{
-				char *src = (char*)dict(&self->pl->db, self->tok);
+				char *src = dict(&self->pl->db, self->tok);
 				n->flags |= FLAG_CONST;
 				free(self->tok);
 				self->tok = src;
@@ -2183,7 +2183,7 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 		free(term->val_s);
 
 	term->flags |= FLAG_CONST;
-	term->val_s = (char*)dict(l->db, functarity);
+	term->val_s = dict(l->db, functarity);
 	return r;
 }
 
