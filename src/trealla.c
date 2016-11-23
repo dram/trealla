@@ -716,6 +716,7 @@ static int attach_ops(lexer *l, node *term)
 		}
 
 		const ops *optr = get_op(&l->pl->db, functor, !NLIST_PREV(n)?1:0);
+
 		if (!optr->op)
 		{
 			was_operator = 0;
@@ -1803,6 +1804,7 @@ static const char *get_keyword(const char *s)
 const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 {
 	self->depth++;
+	int first = 1;
 
 	while ((src = get_token(self, src, line)) != NULL)
 	{
@@ -1830,6 +1832,14 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 			continue;
 		}
+
+		if (!self->quoted && !strcmp(self->tok, "-") && first)
+		{
+			free(self->tok);
+			self->tok = strdup("--");
+		}
+
+		first = 0;
 
 		if (!self->quoted &&
 			(!strcmp(self->tok, "]") || !strcmp(self->tok, ")")))
