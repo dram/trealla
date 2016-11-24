@@ -116,7 +116,7 @@ addcomment(PostId,Id,User,Body) :-
 	dict:set(D2,?FieldBody,Body,D3),
 	dbs:begin,
 	assertz(blog_comments(PostId,Id)),
-	assertz(blog_comment(,Id,D3)),
+	assertz(blog_comment(Id,D3)),
 	dbs:end.
 
 replycomment(WhoId,Id) :-
