@@ -737,7 +737,7 @@ series of one or more updates with *begin/end* calls:
 
 	begin/0              - start atomic transaction sequence
 	end/0                - commit changes with fsync
-	end(+Boolean)        - commit changes with or without fsync (1/0 or true/false)
+	end(+Boolean)        - commit changes optional fsync
 
 and occurs as a single (all-or-nothing) update to the database and
 (if persistent) write to the transaction log-file. A transaction locks
@@ -749,10 +749,10 @@ To write to the log only, without updating the database:
 
 	log(:Term)
 
-where *Term* is an asserta/assertz/retract (or other) database
-operation. This can be useful for external adapters that need to write
-to the log what to do, without actually doing it itself. Another
-program will then tail the log and update the real database.
+where *Term* is an asserta/assertz/retract (or other) operation. This
+can be useful for external adapters that need to write to the log what
+to do, without actually doing it. Another program could then tail the
+log and update the real database.
 
 Periodically the log and the master are merged and a new master is
 created, discarding old files. This normally happens when the '--merge'
