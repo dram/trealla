@@ -313,9 +313,12 @@ These are a random assortment of utilities:
 BLOBs and atoms can often be used interchangeably, as the code checks
 the type. While BLOBs can contain embedded NULs etc, atoms can't. Atoms
 have a terminating NUL that is not returned as part of the length, but
-BLOBs store a length internally. Also, *'atom_length/2'* returns the
-number of utf-8 characters in an atom while for BLOBs it's the stored
-length. Atoms are assumed utf-8.
+BLOBs also store a length internally. BLOBS can be written and read in
+back-quotes in which case the enclosed characters are base64-encoded
+(eg. `SGVsbG8sIHdvcmxkIQ==` == 'Hello, world!').
+
+Also, *'atom_length/2'* returns the number of utf-8 characters in an
+atom while for BLOBs it's the stored length. Atoms are assumed utf-8.
 
 Concurrent Processes: namespace 'proc'
 --------------------------------------
