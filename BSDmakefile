@@ -79,8 +79,6 @@ clean:
 	rm -f src/*.o gmon.* *.o tpl
 
 tpl.o: src/trealla.h src/daemon.h src/history.h
-tpl.o: src/http_client.h src/dict.h src/smtp_client.h
-tpl.o: src/auth.h src/blog.h
 
 # DO NOT DELETE
 
