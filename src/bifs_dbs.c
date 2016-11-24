@@ -233,7 +233,7 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 	if (!db->in_tran) *dst++ = '\n';
 	*dst = '\0';
 	fwrite(*dstbuf, 1, dst-*dstbuf, db->fp);
-	//if (!db->in_tran) fflush(db->fp);
+	if (!db->in_tran) fflush(db->fp);
 }
 
 static int dbs_end(tpl_query *q, int do_sync)
@@ -286,14 +286,14 @@ static int bif_dbs_end1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_int(term1);
-	int n;
+	int do_sync;
 
 	if (is_integer(term1))
-		n = term1->val_i;
+		do_sync = term1->val_i != 0;
 	else
-		n = !strcmp(term1->val_s, "true");
+		do_sync = !strcmp(term1->val_s, "true");
 
-	dbs_end(q, n != 0);
+	dbs_end(q, do_sync);
 	return 1;
 }
 
