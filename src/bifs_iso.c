@@ -431,7 +431,10 @@ static int bif_iso_repeat(tpl_query *q)
 
 int bif_iso_and(tpl_query *q)
 {
+	if (q->retry) return 0;
 	node *args = get_args(q);
+	allocate_frame(q);
+	try_me(q);
 	q->curr_term = args;
 	return 1;
 }
