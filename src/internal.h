@@ -119,7 +119,7 @@ typedef struct
 	const char *name;					// Module name
 	skiplist idx;						// First-arg index
 	list clauses;
-	char dynamic, manual, persist;
+	uint8_t dynamic, manual, persist;
 }
  rule;
 
@@ -202,13 +202,14 @@ typedef struct
 	char *name;
 	skiplist rules, dict, exports;
 	ops uops[MAX_UOPS];
-	int uops_cnt, in_tran;
+	int uops_cnt;
+	uint8_t in_tran;
 
 #ifndef ISO_ONLY
 	list tran_queue;
-	int loading;
 	FILE *fp;
 	lock *guard;
+	uint8_t loading;
 #endif
 }
  module;
@@ -255,8 +256,9 @@ typedef struct
 	trealla *pl;
 	module *db;
 	char *init, *tok;
-	int fact, depth, consult, numeric;
-	int quoted, anons, vars, error, erlang;
+	int depth, anons, vars, numeric;
+	uint8_t fact, consult;
+	uint8_t quoted, error;
 }
  lexer;
 
@@ -290,16 +292,16 @@ struct tpl_query_
 	uint32_t curr_frame, curr_choice;
 	int32_t tmo_msecs;
 	uint16_t frame_size, depth, max_depth, fail_arg;
-	char retry, halt, ok, def_choice, def_env;
-	char is_det, timed_out, trace, noopt;
-	char is_running, is_yielded, eval;
+	uint8_t retry, halt, ok, def_choice, def_env;
+	uint8_t is_det, timed_out, trace, noopt;
+	uint8_t is_running, is_yielded, eval;
 
 #ifndef ISO_ONLY
-	char linked, is_forked, is_proc, is_dead, is_busy, is_idle;
 	list queue;								// process queue
 	tpl_query *curr_pid;
-	skiplist *kvs;							// allocate if needed
-	char *name;								// named procs
+	skiplist *kvs;
+	char *name;
+	uint8_t linked, is_forked, is_proc, is_dead, is_busy, is_idle;
 
 #if (__STDC_VERSION__ >= 201112L) && !defined(ISO_ONLY)
 	_Atomic
@@ -317,9 +319,9 @@ struct trealla_
 	lexer lex;
 	const char *keywords[MAX_BIFS+20];
 	volatile int abort, abort_wait;
-	int trace, noopt, tty, erlang;
-	int flag_char_conversion, flag_debug, flag_character_escapes;
-	int flag_unknown, flag_double_quotes;
+	uint8_t trace, noopt, tty;
+	uint8_t flag_char_conversion, flag_debug, flag_character_escapes;
+	uint8_t flag_unknown, flag_double_quotes;
 
 #ifndef ISO_ONLY
 	handler *h;

@@ -910,6 +910,7 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 static void dir_dynamic(lexer *l, node *n)
 {
 	node *term1 = n;
+	node *term2 = NLIST_NEXT(term1);
 	if (!is_compound(term1)) return;
 	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 	if (!is_integer(NLIST_NEXT(head))) return;
@@ -920,15 +921,13 @@ static void dir_dynamic(lexer *l, node *n)
 	r->dynamic = 1;
 	sl_init(&r->idx, 1, &strcmp, NULL);
 
-#ifndef ISO_ONLY
-	node *term2 = NLIST_NEXT(term1);
-
 	if (!term2)
 	{
 		sl_set(&l->db->rules, key, r);
 		return;
 	}
 
+#ifndef ISO_ONLY
 	if (!is_list(term2))
 	{
 		sl_set(&l->db->rules, key, r);
