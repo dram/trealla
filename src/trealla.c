@@ -907,15 +907,6 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 	else if (!strcmp(flag, "character_escapes")) l->pl->flag_character_escapes = !strcmp(term2->val_s,"true")?1:0;
 }
 
-static void make_dynamic(module *db, const char *functarity)
-{
-	const char *key = dict(db, functarity);
-	rule *r = CALLOC(rule);
-	r->dynamic = 1;
-	sl_init(&r->idx, 1, &strcmp, NULL);
-	sl_set(&db->rules, key, r);
-}
-
 static void dir_dynamic(lexer *l, node *n)
 {
 	node *term1 = n;
@@ -925,7 +916,11 @@ static void dir_dynamic(lexer *l, node *n)
 	if (!is_integer(NLIST_NEXT(head))) return;
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
-	make_dynamic(l->db, tmpbuf);
+	const char *key = dict(l->db, tmpbuf);
+	rule *r = CALLOC(rule);
+	r->dynamic = 1;
+	sl_init(&r->idx, 1, &strcmp, NULL);
+	sl_set(&l->db->rules, key, r);
 
 	if (!term2) return;
 #ifndef ISO_ONLY
@@ -999,15 +994,6 @@ static void dir_initialization(lexer *l, node *n)
 }
 
 #ifndef ISO_ONLY
-static void make_persist(module *db, const char *functarity)
-{
-	const char *key = dict(db, functarity);
-	rule *r = CALLOC(rule);
-	r->dynamic = r->persist = 1;
-	sl_init(&r->idx, 1, &strcmp, NULL);
-	sl_set(&db->rules, key, r);
-}
-
 static void dir_persist(lexer *l, node *n)
 {
 	node *term1 = n;
@@ -1017,7 +1003,11 @@ static void dir_persist(lexer *l, node *n)
 	if (!is_integer(NLIST_NEXT(head))) return;
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
-	make_persist(l->db, tmpbuf);
+	const char *key = dict(l->db, tmpbuf);
+	rule *r = CALLOC(rule);
+	r->dynamic = r->persist = 1;
+	sl_init(&r->idx, 1, &strcmp, NULL);
+	sl_set(&l->db->rules, key, r);
 
 #ifndef ISO_ONLY
 	if (!term2) return;
