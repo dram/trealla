@@ -1882,16 +1882,21 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		if (!self->quoted && !strcmp(self->tok, ",") &&
 			!is_tuple(term) && !(term->flags & FLAG_BARE))
 		{
-			free(self->tok);
-
-			if (!(term->flags & FLAG_CONSING))
+			if (term->flags & FLAG_CONSING)
+			{
+				free(self->tok);
+				node *tmp = make_list();
+				tmp->flags |= FLAG_CONSING;
+				NLIST_PUSH_BACK(&term->val_l, tmp);
+				term = tmp;
 				continue;
+			}
 
-			node *tmp = make_list();
-			tmp->flags |= FLAG_CONSING;
-			NLIST_PUSH_BACK(&term->val_l, tmp);
-			term = tmp;
-			continue;
+			if (!self->pl->canonical || (self->depth > 1))
+			{
+				free(self->tok);
+				continue;
+			}
 		}
 
 		if (!self->quoted && !strcmp(self->tok, "|"))
@@ -2986,6 +2991,7 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 tpl_query *trealla_create_query(trealla *self) { return trealla_create_query2(self, NULL); }
 void trealla_trace(trealla *self, int mode) { self->trace = mode; }
 void trealla_noopt(trealla *self, int mode) { self->noopt = mode; }
+void trealla_canonical(trealla *self, int mode) { self->canonical = mode; }
 
 #ifndef ISO_ONLY
 static int tmocmp(const char *k1, const char *k2)
@@ -3011,6 +3017,7 @@ trealla *trealla_create(const char *name)
 	g_instances++;
 	static int first_time = 1;
 	pl->tty = isatty(0);
+	pl->canonical = 1;
 	db_init(&pl->db, pl, name);
 	sl_init(&pl->mods, 0, &strcmp, NULL);
 

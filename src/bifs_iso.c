@@ -4546,6 +4546,62 @@ static int bif_sys_listing(tpl_query *q)
 	return 1;
 }
 
+static int bif_sys_canonical(tpl_query *q)
+{
+	const char *functor = NULL;
+
+	if (is_compound(q->curr_term))
+	{
+		node *args = get_args(q);
+		node *term1 = get_next_arg(q, &args);
+
+		if (term1)
+		{
+			if (!is_atom(term1))
+			{ QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
+		}
+
+		functor = term1->val_s;
+	}
+
+	//printf("DEBUG: listing module '%s'\n", q->curr_db->name);
+
+	module *db = q->curr_db;
+	sl_start(&db->rules);
+	rule *r;
+
+	while (sl_next(&db->rules, (void**)&r) != NULL)
+	{
+		for (node *n = NLIST_FRONT(&r->clauses); n; n = NLIST_NEXT(n))
+		{
+			if (n->flags & FLAG_HIDDEN)
+				continue;
+
+			if (functor)
+			{
+				node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
+
+				if (is_atom(head))
+				{
+					if (strncmp(head->val_s, functor, strlen(functor)))
+						continue;
+				}
+				else if (is_compound(head))
+				{
+					if (strncmp(NLIST_FRONT(&head->val_l)->val_s, functor, strlen(functor)))
+						continue;
+				}
+			}
+
+			print_term(q->pl, q, n, 2);
+			printf(".");
+			printf("\n");
+		}
+	}
+
+	return 1;
+}
+
 static int bif_sys_time1(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -4803,6 +4859,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("reconsult", 1, bif_sys_reconsult);
 	DEFINE_BIF("listing", 0, bif_sys_listing);
 	DEFINE_BIF("listing", 1, bif_sys_listing);
+	DEFINE_BIF("canonical", 0, bif_sys_canonical);
+	DEFINE_BIF("canonical", 1, bif_sys_canonical);
 	DEFINE_BIF("abolish", 2, bif_sys_abolish);
 	DEFINE_BIF("writeln", 1, bif_sys_writeln);
 	DEFINE_BIF("writeln", 2, bif_sys_writeln2);
