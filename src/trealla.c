@@ -78,20 +78,22 @@ size_t strlen_utf8(const char *s)
 static ops g_ops[] =
  {
 	{":-", "xfx", 1200},
-	{"?-", "fx", 1200},
 	{":-", "fx", 1200},
+	{"?-", "fx", 1200},
 	{";", "xfy", 1100},
+	{"|", "xfy", 1100},
 	{"->", "xfy", 1050},
+	{"*->", "xfy", 1050},
 	{",", "xfy", 1000},
+#ifndef ISO_ONLY
+	//{":=", "xfx", 990},
+#endif
 #ifndef ISO_ONLY
 	{"receive", "fy", 900},
 	{"undo", "fy", 900},
 	{"enter", "fy", 900},
 #endif
 	{"\\+", "fy", 900},
-#ifndef ISO_ONLY
-	{":=", "xfx", 700},
-#endif
 	{"is", "xfx", 700},
 	{"=", "xfx", 700},
 	{"\\=", "xfx", 700},
@@ -108,12 +110,12 @@ static ops g_ops[] =
 	{"@>", "xfx", 700},
 	{"@>=", "xfx", 700},
 	{"=..", "xfx", 700},
-	{":", "xfy", 650},
-#ifndef ISO_ONLY
-	//{".", "xfy", 600},
-#endif
+	{":", "xfy", 600},
 	{"+", "yfx", 500},
 	{"-", "yfx", 500},
+#ifndef ISO_ONLY
+	//{"?", "yfx", 500},
+#endif
 	{"*", "yfx", 400},
 	{"/", "yfx", 400},
 	{"//", "yfx", 400},
@@ -130,6 +132,10 @@ static ops g_ops[] =
 	{"^", "xfx", 200},
 	{"--", "fy", 200},
 	{"\\", "fy", 200},
+#ifndef ISO_ONLY
+	//{".", "yfx", 100},
+	//{"$", "fx", 1},
+#endif
 
 	{0}
  };
@@ -555,7 +561,9 @@ static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor)
 	}
 
 	node *n_prev = NLIST_PREV(n);
+	if (!n_prev) return NULL;
 	node *n_next = NLIST_NEXT(n);
+	if (!n_next) return NULL;
 	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
 	NLIST_REMOVE(&term->val_l, n);
 	NLIST_REMOVE(&term->val_l, n_prev);
@@ -618,6 +626,7 @@ static node *attach_op_prefix_n(lexer *l, node *term, node *n)
 	}
 
 	node *n_next = NLIST_NEXT(n);
+	if (!n_next) return NULL;
 	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
 	NLIST_REMOVE(&term->val_l, n);
 	NLIST_PUSH_BACK(&tmp->val_l, n);
@@ -645,6 +654,7 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 	}
 
 	node *n_next = NLIST_NEXT(n);
+	if (!n_next) return NULL;
 	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
 	NLIST_REMOVE(&term->val_l, n);
 	NLIST_REMOVE(&term->val_l, n_next);
@@ -679,6 +689,7 @@ static node *attach_op_postfix(lexer *l, node *term, node *n)
 	}
 
 	node *n_prev = NLIST_PREV(n);
+	if (!n_prev) return NULL;
 	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
 	NLIST_REMOVE(&term->val_l, n);
 	NLIST_REMOVE(&term->val_l, n_prev);
