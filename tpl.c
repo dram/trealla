@@ -334,6 +334,8 @@ int main(int ac, char *av[])
 			init = strdup("test");
 		else if (!strcmp(av[i], "--listing"))
 			init = strdup("listing");
+		else if (!strcmp(av[i], "--listing_canonical"))
+			init = strdup("listing_canonical");
 	}
 
 	int status = 0;

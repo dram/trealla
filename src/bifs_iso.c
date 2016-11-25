@@ -431,10 +431,7 @@ static int bif_iso_repeat(tpl_query *q)
 
 int bif_iso_and(tpl_query *q)
 {
-	if (q->retry) return 0;
 	node *args = get_args(q);
-	allocate_frame(q);
-	try_me(q);
 	q->curr_term = args;
 	return 1;
 }
@@ -4546,7 +4543,7 @@ static int bif_sys_listing(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_canonical(tpl_query *q)
+static int bif_sys_listing_canonical(tpl_query *q)
 {
 	const char *functor = NULL;
 
@@ -4859,8 +4856,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("reconsult", 1, bif_sys_reconsult);
 	DEFINE_BIF("listing", 0, bif_sys_listing);
 	DEFINE_BIF("listing", 1, bif_sys_listing);
-	DEFINE_BIF("canonical", 0, bif_sys_canonical);
-	DEFINE_BIF("canonical", 1, bif_sys_canonical);
+	DEFINE_BIF("listing_canonical", 0, bif_sys_listing_canonical);
+	DEFINE_BIF("listing_canonical", 1, bif_sys_listing_canonical);
 	DEFINE_BIF("abolish", 2, bif_sys_abolish);
 	DEFINE_BIF("writeln", 1, bif_sys_writeln);
 	DEFINE_BIF("writeln", 2, bif_sys_writeln2);
