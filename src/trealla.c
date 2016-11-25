@@ -910,7 +910,6 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 static void dir_dynamic(lexer *l, node *n)
 {
 	node *term1 = n;
-	node *term2 = NLIST_NEXT(term1);
 	if (!is_compound(term1)) return;
 	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 	if (!is_integer(NLIST_NEXT(head))) return;
@@ -920,11 +919,22 @@ static void dir_dynamic(lexer *l, node *n)
 	rule *r = CALLOC(rule);
 	r->dynamic = 1;
 	sl_init(&r->idx, 1, &strcmp, NULL);
-	sl_set(&l->db->rules, key, r);
 
-	if (!term2) return;
 #ifndef ISO_ONLY
-	if (!is_list(term2)) return;
+	node *term2 = NLIST_NEXT(term1);
+
+	if (!term2)
+	{
+		sl_set(&l->db->rules, key, r);
+		return;
+	}
+
+	if (!is_list(term2))
+	{
+		sl_set(&l->db->rules, key, r);
+		return;
+	}
+
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
 	int i = 1;
 
@@ -936,6 +946,10 @@ static void dir_dynamic(lexer *l, node *n)
 			{
 				//????
 			}
+			else if (!strcmp(n2->val_s, "persist"))
+			{
+				r->persist = 1;
+			}
 		}
 
 		n2 = NLIST_NEXT(n2);
@@ -946,6 +960,8 @@ static void dir_dynamic(lexer *l, node *n)
 		n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
 		i++;
 	}
+
+	sl_set(&l->db->rules, key, r);
 #endif
 }
 
@@ -1009,7 +1025,6 @@ static void dir_persist(lexer *l, node *n)
 	sl_init(&r->idx, 1, &strcmp, NULL);
 	sl_set(&l->db->rules, key, r);
 
-#ifndef ISO_ONLY
 	if (!term2) return;
 	if (!is_list(term2)) return;
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
@@ -1033,7 +1048,6 @@ static void dir_persist(lexer *l, node *n)
 		n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
 		i++;
 	}
-#endif
 }
 
 static void dir_module(lexer *l, node *n)

@@ -721,9 +721,9 @@ Database store: namespace 'dbs'
 ------------------------------
 
 The rule database will save to the transaction log asserted items
-that have first been declared persistent (and also dynamic) with:
+that have first been declared persistent with:
 
-	:-persist(Name/Arity).
+	:-dynamic(Name/Arity,[persist]).
 
 All such persistent asserta/assertz/retract items are recorded. A
 retractall call is converted to individual retracts.
