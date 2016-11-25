@@ -643,18 +643,23 @@ int call(tpl_query *q)
 		if (r == NULL)
 		{
 			char tmpbuf[FUNCTOR_SIZE+10];
-			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 
-			if (!sl_get(&q->curr_db->rules, tmpbuf, (void**)&r))
+			if (!strchr(functor, ARITY_CHAR))
 			{
-				printf("ERROR: UNKNOWN -> '%s'\n", tmpbuf);
+				snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+				functor = tmpbuf;
+			}
+
+			if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
+			{
+				printf("ERROR: UNKNOWN -> '%s'\n", functor);
 				QABORT(ABORT_NOTDYNAMIC);
 				return 0;
 			}
 
-			if (0 && !r->dynamic && !strchr(tmpbuf, ':'))
+			if (0 && !r->dynamic && !strchr(functor, ':'))
 			{
-				printf("ERROR: NOT DYNAMIC '%s'\n", tmpbuf);
+				printf("ERROR: NOT DYNAMIC '%s'\n", functor);
 				QABORT(ABORT_NOTDYNAMIC);
 				return 0;
 			}
