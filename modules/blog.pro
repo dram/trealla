@@ -18,12 +18,12 @@
 
 % These are our database records:
 
-:-persist(blog_name/2).
-:-persist(blog_blog/2).
-:-persist(blog_post/2).
-:-persist(blog_comments/2).
-:-persist(blog_comment/2).
-:-persist(blog_reply/3).
+:-dynamic(blog_name/2,[persist]).
+:-dynamic(blog_blog/2,[persist]).
+:-dynamic(blog_post/2,[persist]).
+:-dynamic(blog_comments/2,[persist]).
+:-dynamic(blog_comment/2,[persist]).
+:-dynamic(blog_reply/3,[persist]).
 
 % At the moment we are creating blogs on demand. To rename a
 % blog you can just alter the BlogName -> BlogId mapping in the
