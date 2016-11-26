@@ -170,6 +170,7 @@ extern void bifs_load_stomp(void);
 
 extern int bif_iso_true(tpl_query *q);
 extern int bif_iso_reverse(tpl_query *q);
+extern int bif_iso_and(tpl_query *q);
 extern int bif_iso_cut(tpl_query *q);
 extern int bif_iso_cutfail(tpl_query *q);
 extern int bif_iso_fail(tpl_query *q);

@@ -663,11 +663,15 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 	NLIST_PUSH_BACK(&tmp->val_l, n_next);
 	const char *functor = n->val_s;
 
-	if (!strcmp(functor, "\\+"))
+	if (!strcmp(functor, "\\+"))	// Becomes xfy
 	{
 		node *n2 = make_cutfail();
 		n2->flags |= FLAG_HIDDEN;
-		NLIST_PUSH_BACK(&tmp->val_l, n2);
+
+		if (is_builtin(n_next))
+			NLIST_PUSH_BACK(&n_next->val_l, n2);
+		else
+			NLIST_PUSH_BACK(&tmp->val_l, n2);
 	}
 
 	tmp = flatten(term, tmp);
@@ -1876,8 +1880,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			return src;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ",") &&
-			!is_tuple(term) && !(term->flags & FLAG_BARE))
+		if (!self->quoted && !is_tuple(term) &&
+			!(term->flags & FLAG_BARE) && !strcmp(self->tok, ","))
 		{
 			if (term->flags & FLAG_CONSING)
 			{

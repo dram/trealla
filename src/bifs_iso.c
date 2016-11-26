@@ -177,6 +177,14 @@ node *make_fail(void)
 	return n;
 }
 
+node *make_and(void)
+{
+	node *n = make_const_atom(",", 0);
+	n->flags |= FLAG_BUILTIN;
+	n->bifptr = bif_iso_and;
+	return n;
+}
+
 node *make_cut(void)
 {
 	node *n = make_const_atom("!", 0);
@@ -443,7 +451,7 @@ static int bif_iso_repeat(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_and(tpl_query *q)
+int bif_iso_and(tpl_query *q)
 {
 	node *args = get_args(q);
 	q->curr_term = args;
@@ -455,7 +463,7 @@ static int bif_iso_not(tpl_query *q)
 	if (q->retry) return 1;
 	node *args = get_args(q);
 	allocate_frame(q);
-	try_me(q);
+	try_me_nofollow(q);
 	q->curr_term = args;
 	return 1;
 }
@@ -523,10 +531,11 @@ static int bif_iso_call(tpl_query *q)
 	if (q->retry) return 0;
 	node *args = get_args(q);
 	node *var = get_var(var);				// FLAG_HIDDEN
+	node *term1 = get_callable(term1);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = args;
-	return 1;
+	q->curr_term = term1;
+	return call(q);
 }
 
 static int bif_iso_calln(tpl_query *q)

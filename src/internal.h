@@ -454,6 +454,7 @@ extern tpl_query *query_create_subquery(tpl_query *self, int process);
 extern void attach_vars(lexer *l, node *var);
 extern int xref_rule(lexer *l, node *r);
 extern node *make_const_atom(const char *s, int quoted);
+extern node *make_and(void);
 extern node *make_cut(void);
 extern node *make_cutfail(void);
 extern node *make_true(void);
