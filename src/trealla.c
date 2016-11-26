@@ -644,6 +644,9 @@ static node *attach_op_prefix_n(lexer *l, node *term, node *n)
 
 static node *attach_op_prefix(lexer *l, node *term, node *n)
 {
+	node *n_next = NLIST_NEXT(n);
+	if (!n_next) return NULL;
+
 	node *tmp = make_structure();
 	tmp->flags |= FLAG_ATTACHED;
 
@@ -653,22 +656,16 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 		tmp->bifptr = n->bifptr;
 	}
 
-	node *n_next = NLIST_NEXT(n);
-	if (!n_next) return NULL;
 	NLIST_INSERT_BEFORE(&term->val_l, n, tmp);
 	NLIST_REMOVE(&term->val_l, n);
 	NLIST_REMOVE(&term->val_l, n_next);
 	NLIST_PUSH_BACK(&tmp->val_l, n);
 	NLIST_PUSH_BACK(&tmp->val_l, n_next);
-
 	const char *functor = n->val_s;
 
 	if (!strcmp(functor, "\\+"))
 	{
-		node *n2 = make_cut();
-		n2->flags |= FLAG_HIDDEN;
-		NLIST_PUSH_BACK(&tmp->val_l, n2);
-		n2 = make_fail();
+		node *n2 = make_cutfail();
 		n2->flags |= FLAG_HIDDEN;
 		NLIST_PUSH_BACK(&tmp->val_l, n2);
 	}

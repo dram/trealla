@@ -161,7 +161,7 @@ node *make_var(tpl_query *q)
 	return n;
 }
 
-static node *make_true(void)
+node *make_true(void)
 {
 	node *n = make_const_atom("true", 0);
 	n->flags |= FLAG_BUILTIN;
@@ -182,6 +182,14 @@ node *make_cut(void)
 	node *n = make_const_atom("!", 0);
 	n->flags |= FLAG_BUILTIN|FLAG_CUT;
 	n->bifptr = bif_iso_cut;
+	return n;
+}
+
+node *make_cutfail(void)
+{
+	node *n = make_const_atom("!fail", 0);
+	n->flags |= FLAG_BUILTIN|FLAG_CUT;
+	n->bifptr = bif_iso_cutfail;
 	return n;
 }
 
@@ -422,6 +430,12 @@ int bif_iso_cut(tpl_query *q)
 	return 1;
 }
 
+int bif_iso_cutfail(tpl_query *q)
+{
+	trust_me(q);
+	return 0;
+}
+
 static int bif_iso_repeat(tpl_query *q)
 {
 	if (!q->retry) allocate_frame(q);
@@ -429,19 +443,19 @@ static int bif_iso_repeat(tpl_query *q)
 	return 1;
 }
 
-int bif_iso_and(tpl_query *q)
+static int bif_iso_and(tpl_query *q)
 {
-	if (q->retry) return 0;
 	node *args = get_args(q);
-	allocate_frame(q);
-	try_me(q);
 	q->curr_term = args;
 	return 1;
 }
 
-static int bif_iso_dot(tpl_query *q)
+static int bif_iso_not(tpl_query *q)
 {
+	if (q->retry) return 1;
 	node *args = get_args(q);
+	allocate_frame(q);
+	try_me(q);
 	q->curr_term = args;
 	return 1;
 }
@@ -452,18 +466,6 @@ static int bif_iso_do(tpl_query *q)
 	q->curr_term = args;
 	trust_me(q);
 	return 1;
-}
-
-static int bif_iso_not(tpl_query *q)
-{
-	q->is_det = 0;
-	if (q->retry) return 1;
-	node *args = get_args(q);
-	node *term1 = get_callable(term1);
-	allocate_frame(q);
-	try_me(q);
-	q->curr_term = term1;
-	return call(q);
 }
 
 static int bif_iso_then(tpl_query *q)
@@ -510,11 +512,10 @@ static int bif_iso_once(tpl_query *q)
 {
 	if (q->retry) return 0;
 	node *args = get_args(q);
-	node *term1 = get_callable(term1);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = term1;
-	return call(q);
+	q->curr_term = args;
+	return 1;
 }
 
 static int bif_iso_call(tpl_query *q)
@@ -522,11 +523,10 @@ static int bif_iso_call(tpl_query *q)
 	if (q->retry) return 0;
 	node *args = get_args(q);
 	node *var = get_var(var);				// FLAG_HIDDEN
-	node *term1 = get_callable(term1);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = term1;
-	return call(q);
+	q->curr_term = args;
+	return 1;
 }
 
 static int bif_iso_calln(tpl_query *q)
@@ -4700,7 +4700,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", -1, bif_iso_do);
 	DEFINE_BIF(":-", -1, 0);
-	DEFINE_BIF(".", -1, bif_iso_dot);
 	DEFINE_BIF("\\+", 1, bif_iso_not);
 	DEFINE_BIF(",", 2, bif_iso_and);
 	DEFINE_BIF(";", 2, bif_iso_or);

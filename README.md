@@ -72,7 +72,7 @@ Usage
 	--goal=term    - set 'term' as the top-level goal
 	--start        - same as '--goal=start'
 	--test         - same as '--goal=test'
-	--listing      - same as '--goal=listing'
+	--listing      - same as '--goal=listing' (also --listing_canonical)
 	--stats        - print statistics at completion of query
 	--trace        - trace step-by-step of execution
 	--noopt        - disable optimizations (or -O0)

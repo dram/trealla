@@ -455,6 +455,8 @@ extern void attach_vars(lexer *l, node *var);
 extern int xref_rule(lexer *l, node *r);
 extern node *make_const_atom(const char *s, int quoted);
 extern node *make_cut(void);
+extern node *make_cutfail(void);
+extern node *make_true(void);
 extern node *make_fail(void);
 extern rule *xref_term(lexer *l, node *term, int arity);
 extern const char *parse_number(char ch, const char *s, nbr_t *v, int *numeric);
