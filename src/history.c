@@ -198,6 +198,9 @@ char *history_readline_eol(const char* prompt, char eol)
 		}
 #endif
 
+		if (!escape && (ch == '\x04'))						// CTRL-D (kill)
+			continue;
+
 		if (!escape && (ch == '\x0B'))						// CTRL-K (erase to end)
 		{
 			int len = strlen(dst);
