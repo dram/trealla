@@ -153,6 +153,14 @@ int main(int ac, char *av[])
 
 	for (int i = 1; i < ac; i++)
 	{
+		if (!strcmp(av[i], "--sizes"))
+		{
+			printf("sizeof int=%d\n", (int)sizeof(int));
+			printf("sizeof long=%d\n", (int)sizeof(long));
+			printf("sizeof long long=%d\n", (int)sizeof(long long));
+			printf("sizeof void*=%d\n", (int)sizeof(void*));
+		}
+
 		if (!strcmp(av[i], "-d") || !strcmp(av[i], "--daemon"))
 			daemon = 1;
 #ifndef ISO_ONLY

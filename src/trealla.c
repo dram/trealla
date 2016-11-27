@@ -510,8 +510,8 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 		node *tmp_rest = NLIST_NEXT(tmp_fa);
 		NLIST_REMOVE(&head->val_l, tmp_rest);
 		term_heapcheck(tmp_rest);
-		uint64_t fpos = -1;
-		node *tmp = make_int(fpos);
+		nbr_t off = dbs_get_fpos(db);
+		node *tmp = make_int(off);
 		tmp->flags |= FLAG_DBS_STORAGE|FLAG_HEX;
 		head->flags |= FLAG_DBS_STORAGE;
 		NLIST_PUSH_BACK(&head->val_l, tmp);
