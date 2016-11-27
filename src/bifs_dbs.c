@@ -76,9 +76,6 @@ static int dbs_merge(module *db)
 	snprintf(tmpname2, sizeof(tmpname2), "%s.%016llX.dbs", db->name, (long long)time(NULL));
 	rename(tmpname, tmpname2);
 	printf("DEBUG: Renamed '%s' -> '%s'\n", tmpname, tmpname2);
-	snprintf(tmpname, sizeof(tmpname), "%s.dat.dbs", db->name);
-	remove(tmpname);
-	printf("DEBUG: Remove '%s'\n", tmpname);
 	rename(filename, tmpname);
 	printf("DEBUG: Renamed '%s' -> '%s'\n", filename, tmpname);
 	return 1;
@@ -157,21 +154,7 @@ static void dbs_load(module *db, int tail)
 		snprintf(tmpname, sizeof(tmpname), "%s.log.dbs", db->name);
 		snprintf(tmpname2, sizeof(tmpname2), "%s.%016llX.dbs", db->name, (long long)time(NULL));
 		rename(tmpname, tmpname2);
-		snprintf(tmpname, sizeof(tmpname), "%s.dat.dbs", db->name);
-		remove(tmpname);
 		rename(filename, tmpname);
-	}
-
-	// Load the database stream...
-
-	snprintf(filename, sizeof(filename), "%s.dat.dbs", db->name);
-	db->fp = fopen(filename, "rb");
-
-	if (db->fp != NULL)
-	{
-		dbs_load_file(db, filename, 0);
-		fclose(db->fp);
-		db->fp = NULL;
 	}
 
 	// Load the transaction stream...

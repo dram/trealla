@@ -81,19 +81,12 @@ typedef uint64_t mask_t;
 #define FLAG_LIST				(1ULL << 39)
 #define FLAG_PTR				(1ULL << 40)
 
-// KVS flags...
-
-#define FLAG_KVS_DISCARD		(1ULL << 50)
-#define FLAG_KVS_LPUSH			(1ULL << 51)
-#define FLAG_KVS_LPOP			(1ULL << 52)
-#define FLAG_KVS_LERASE			(1ULL << 53)
-#define FLAG_KVS_INC			(1ULL << 54)
-
 // DBS flags...
 
-#define FLAG_DBS_ASSERTA		(1ULL << 50)
-#define FLAG_DBS_ASSERTZ		(1ULL << 51)
-#define FLAG_DBS_RETRACT		(1ULL << 52)
+#define FLAG_DBS_STORAGE		(1ULL << 50)
+#define FLAG_DBS_ASSERTA		(1ULL << 51)
+#define FLAG_DBS_ASSERTZ		(1ULL << 52)
+#define FLAG_DBS_RETRACT		(1ULL << 53)
 
 #define NLIST_INIT(l) list_init(l)
 #define NLIST_COUNT(l) list_count(l)
@@ -116,10 +109,10 @@ typedef struct node_ node;
 
 typedef struct
 {
-	const char *name;					// Module name
-	skiplist idx;						// First-arg index
+	const char *modname;							// Module name
+	skiplist idx;								// First-arg index
 	list clauses;
-	uint8_t dynamic, manual, persist;
+	uint8_t dynamic, manual, persist, storage;
 }
  rule;
 

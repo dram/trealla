@@ -495,13 +495,28 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 	if (!sl_get(&db->rules, tmpbuf, (void**)&r))
 	{
 		r = CALLOC(rule);
-		r->name = db->name;
+		r->modname = db->name;
 		r->dynamic = r->manual = manual;
 		sl_init(&r->idx, 1, &strcmp, NULL);
 		sl_set(&db->rules, strdup(tmpbuf), r);
 	}
 
 	*persist = r->persist;
+
+	if (r->storage)
+	{
+		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
+		node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+		node *tmp_rest = NLIST_NEXT(tmp_fa);
+		NLIST_REMOVE(&head->val_l, tmp_rest);
+		term_heapcheck(tmp_rest);
+		uint64_t fpos = -1;
+		node *tmp = make_int(fpos);
+		tmp->flags |= FLAG_DBS_STORAGE|FLAG_HEX;
+		head->flags |= FLAG_DBS_STORAGE;
+		NLIST_PUSH_BACK(&head->val_l, tmp);
+		//print_term(l->pl, NULL, n, 1); printf("\n");
+	}
 
 	if (append_mode)
 		NLIST_PUSH_BACK(&r->clauses, n);
@@ -1122,6 +1137,10 @@ static void dir_dynamic(lexer *l, node *n)
 			{
 				r->persist = 1;
 			}
+			else if (!strcmp(n2->val_s, "storage"))
+			{
+				r->storage = r->persist = 1;
+			}
 		}
 
 		n2 = NLIST_NEXT(n2);
@@ -1182,46 +1201,6 @@ static void dir_initialization(lexer *l, node *n)
 }
 
 #ifndef ISO_ONLY
-static void dir_persist(lexer *l, node *n)
-{
-	node *term1 = n;
-	node *term2 = NLIST_NEXT(term1);
-	if (!is_compound(term1)) return;
-	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
-	if (!is_integer(NLIST_NEXT(head))) return;
-	char tmpbuf[KEY_SIZE];
-	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
-	const char *key = dict(l->db, tmpbuf);
-	rule *r = CALLOC(rule);
-	r->dynamic = r->persist = 1;
-	sl_init(&r->idx, 1, &strcmp, NULL);
-	sl_set(&l->db->rules, key, r);
-
-	if (!term2) return;
-	if (!is_list(term2)) return;
-	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
-	int i = 1;
-
-	while (n2)
-	{
-		if (is_atom(n2))
-		{
-			if (!strcmp(n2->val_s, "unique"))
-			{
-				//????
-			}
-		}
-
-		n2 = NLIST_NEXT(n2);
-
-		if (!is_list(n2))
-			break;
-
-		n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
-		i++;
-	}
-}
-
 static void dir_module(lexer *l, node *n)
 {
 	node *term1 = n;
@@ -1502,8 +1481,6 @@ static void directive(lexer *l, node *n)
 	else if (!strcmp(functor, "op"))
 		dir_op(l, n3);
 #ifndef ISO_ONLY
-	else if (!strcmp(functor, "persist"))
-		dir_persist(l, n3);
 	else if (!strcmp(functor, "module"))
 		dir_module(l, n3);
 	else if (!strcmp(functor, "using"))
@@ -2215,7 +2192,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			else
 			{
 				n->flags |= FLAG_CONST;
-				n->val_s = dict(&self->pl->db, self->tok);
+				n->val_s = dict(self->db, self->tok);
 			}
 
 			free(self->tok);
@@ -2242,7 +2219,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 			else if (!self->quoted)
 			{
-				char *src = dict(&self->pl->db, self->tok);
+				char *src = dict(self->db, self->tok);
 				n->flags |= FLAG_CONST;
 				free(self->tok);
 				self->tok = src;
@@ -3093,10 +3070,10 @@ int trealla_deconsult(trealla *self, const char *name)
 
 	while ((key = sl_next(&self->db.rules, (void**)&r)) != NULL)
 	{
-		if (!r->name)
+		if (!r->modname)
 			continue;
 
-		if (strcmp(r->name, name) != 0)
+		if (strcmp(r->modname, name) != 0)
 			continue;
 
 		sl_del(&self->db.rules, key, NULL);
