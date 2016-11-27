@@ -1289,12 +1289,12 @@ static int bif_sys_parse_csv(tpl_query *q)
 	node *l = make_list();
 	node *save_l = l;
 	char *dstbuf = (char*)malloc(LEN(term1)+1);
+	char *dst = dstbuf;
 
 	while (isspace(*src))
 		src++;
 
 	int quoted = 0, was_quoted = 0;
-	char *dst = dstbuf;
 
 	while (*src)
 	{
