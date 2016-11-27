@@ -2945,28 +2945,23 @@ static int bif_iso_univ(tpl_query *q)
 	else if (is_var(term1) && is_list(term2))
 	{
 		node *s = make_structure();
-		node *head = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
-		node *body = NLIST_NEXT(head);
+		node *l = term2;
+		int cnt = 0;
 
-		if (is_atom(body))
+		while (is_list(l))
 		{
-			node *head = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
-			put_env(q, q->curr_frame+term1->slot, head, q->curr_frame);
-			return 1;
+			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
+			NLIST_PUSH_BACK(&s->val_l, copy_term(q, head));
+			node *tail = NLIST_NEXT(head);
+			l = get_arg(q, tail, q->latest_context);
+			cnt++;
 		}
 
-		while (head)
-		{
-			NLIST_PUSH_BACK(&s->val_l, clone_term(q,head));
-			head = NLIST_NEXT(head);
+		if (NLIST_COUNT(&s->val_l) == 1)
+			put_env(q, q->curr_frame+term1->slot, NLIST_FRONT(&s->val_l), q->curr_frame);
+		else
+			put_env(q, q->curr_frame+term1->slot, s, q->curr_frame);
 
-			if (!is_list(head))
-				break;
-
-			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
-		}
-
-		put_env(q, q->curr_frame+term1->slot, s, q->curr_frame);
 		term_heapcheck(s);
 		return 1;
 	}
