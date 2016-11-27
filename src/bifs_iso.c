@@ -2942,6 +2942,34 @@ static int bif_iso_univ(tpl_query *q)
 		term_heapcheck(save_l);
 		return ok;
 	}
+	else if (is_var(term1) && is_list(term2))
+	{
+		node *s = make_structure();
+		node *head = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
+		node *body = NLIST_NEXT(head);
+
+		if (is_atom(body))
+		{
+			node *head = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
+			put_env(q, q->curr_frame+term1->slot, head, q->curr_frame);
+			return 1;
+		}
+
+		while (head)
+		{
+			NLIST_PUSH_BACK(&s->val_l, clone_term(q,head));
+			head = NLIST_NEXT(head);
+
+			if (!is_list(head))
+				break;
+
+			head = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+		}
+
+		put_env(q, q->curr_frame+term1->slot, s, q->curr_frame);
+		term_heapcheck(s);
+		return 1;
+	}
 
 	return 0;
 }

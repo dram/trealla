@@ -1,4 +1,4 @@
-:-initialization(start).
+:-initialization(main).
 
 % This is just a bunch of conformance tests.
 % Hopefully more will get added over time.
@@ -7,9 +7,9 @@
 %   yap -q -l samples/validate.pro -z start,halt
 %   tpl -q -l samples/validate.pro --start
 
-start :- test1, test2, test3, test4a, test4b, test5a, test5b,
+main :- test1, test2, test3, test4a, test4b, test5a, test5b,
 		test6a, test6b, test6c, test7, test8, test9a, test9b, test9c,
-		test10, test11, test12,
+		test10, test11, test12, test13,
 		halt.
 
 test1 :-
@@ -143,3 +143,9 @@ test12 :-
 	atom_codes('123', [49,50,51]),
 	write('PASSED!'), nl.
 
+test13 :-
+	write('Test13:\t'),
+	F =.. [a,1,2],
+	F = a(1,2),
+	a(1,2,3) =.. [a,1,2,3],
+	write('PASSED!'), nl.

@@ -1792,7 +1792,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 		if ((ch == '{') && (*s == '}'))		// Hack
 			token_put(&t, ch = *s++);
 
-		static const char seps[] = ".!()[]{}_\"'` \t\r\n";
+		static const char seps[] = "!()[]{}_\"'` \t\r\n";
 
 		if (strchr(seps, ch) || strchr(seps, *s) || isalnum(*s))
 			break;
