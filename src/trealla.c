@@ -503,7 +503,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 
 	*persist = r->persist;
 
-	if (r->storage)
+	if (r->storage && 0)
 	{
 		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
 		node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
@@ -514,7 +514,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 		tmp->flags |= FLAG_PTR;
 		head->flags |= FLAG_DBS_STORAGE;
 		NLIST_PUSH_BACK(&head->val_l, tmp);
-		print_term(l->pl, NULL, n, 1); printf("\n");
+		//print_term(l->pl, NULL, n, 1); printf("\n");
 	}
 
 	if (append_mode)
