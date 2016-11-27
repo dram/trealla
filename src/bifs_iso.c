@@ -2946,15 +2946,14 @@ static int bif_iso_univ(tpl_query *q)
 	{
 		node *s = make_structure();
 		node *l = term2;
-		int cnt = 0;
 
 		while (is_list(l))
 		{
 			node *head = NLIST_NEXT(NLIST_FRONT(&l->val_l));
-			NLIST_PUSH_BACK(&s->val_l, copy_term(q, head));
+			node *n = get_arg(q, head, q->latest_context);
+			NLIST_PUSH_BACK(&s->val_l, copy_term(q, n));
 			node *tail = NLIST_NEXT(head);
 			l = get_arg(q, tail, q->latest_context);
-			cnt++;
 		}
 
 		if (NLIST_COUNT(&s->val_l) == 1)
