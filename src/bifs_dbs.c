@@ -34,8 +34,11 @@ static int dbs_merge(module *db)
 	}
 
 	mkdir("db", 0777);
+	char pathname[1024];
+	sprintf(pathname, "db/%s", db->name);
+	mkdir(pathname, 0777);
 	char filename[1024];
-	snprintf(filename, sizeof(filename), "db/%s.%s", db->name, "tmp.dbs");
+	snprintf(filename, sizeof(filename), "db/%s/%s.%s", db->name, db->name, "tmp.dbs");
 	db->fp = fopen(filename, "wb");
 	if (db->fp == NULL) return 0;
 	printf("INFO: Saving '%s' ... ", filename);
@@ -69,12 +72,12 @@ static int dbs_merge(module *db)
 	printf("Saved %llu items\n", (unsigned long long)any);
 
 	char tmpname[1024], tmpname2[1024];
-	snprintf(tmpname, sizeof(tmpname), "db/%s.new.dbs", db->name);
+	snprintf(tmpname, sizeof(tmpname), "db/%s/%s.new.dbs", db->name, db->name);
 	rename(filename, tmpname);
 	printf("DEBUG: Renamed '%s' -> '%s'\n", filename, tmpname);
 	strcpy(filename, tmpname);
-	snprintf(tmpname, sizeof(tmpname), "db/%s.log.dbs", db->name);
-	snprintf(tmpname2, sizeof(tmpname2), "db/%s.%016llX.dbs", db->name, (long long)time(NULL));
+	snprintf(tmpname, sizeof(tmpname), "db/%s/%s.log.dbs", db->name, db->name);
+	snprintf(tmpname2, sizeof(tmpname2), "db/%s/%s.%016llX.dbs", db->name, db->name, (long long)time(NULL));
 	rename(tmpname, tmpname2);
 	printf("DEBUG: Renamed '%s' -> '%s'\n", tmpname, tmpname2);
 	rename(filename, tmpname);
@@ -135,8 +138,11 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 static void dbs_load(module *db, int tail)
 {
 	mkdir("db", 0777);
+	char pathname[1024];
+	sprintf(pathname, "db/%s", db->name);
+	mkdir(pathname, 0777);
 	char filename[1024];
-	snprintf(filename, sizeof(filename), "db/%s.tmp.dbs", db->name);
+	snprintf(filename, sizeof(filename), "db/%s/%s.tmp.dbs", db->name, db->name);
 	db->fp = fopen(filename, "rb");
 	if (db->fp != NULL)
 	{
@@ -145,7 +151,7 @@ static void dbs_load(module *db, int tail)
 		remove(filename);
 	}
 
-	snprintf(filename, sizeof(filename), "db/%s.new.dbs", db->name);
+	snprintf(filename, sizeof(filename), "db/%s/%s.new.dbs", db->name, db->name);
 	db->fp = fopen(filename, "rb");
 
 	if (db->fp != NULL)
@@ -153,15 +159,15 @@ static void dbs_load(module *db, int tail)
 		fclose(db->fp);
 		db->fp = NULL;
 		char tmpname[1024], tmpname2[1024];
-		snprintf(tmpname, sizeof(tmpname), "db/%s.log.dbs", db->name);
-		snprintf(tmpname2, sizeof(tmpname2), "db/%s.%016llX.dbs", db->name, (long long)time(NULL));
+		snprintf(tmpname, sizeof(tmpname), "db/%s/%s.log.dbs", db->name, db->name);
+		snprintf(tmpname2, sizeof(tmpname2), "db/%s/%s.%016llX.dbs", db->name, db->name, (long long)time(NULL));
 		rename(tmpname, tmpname2);
 		rename(filename, tmpname);
 	}
 
 	// Load the transaction stream...
 
-	snprintf(filename, sizeof(filename), "db/%s.log.dbs", db->name);
+	snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
 	db->fp = fopen(filename, "rb");
 
 	if (db->fp != NULL)
@@ -188,8 +194,11 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 	if (!db->fp)
 	{
 		mkdir("db", 0777);
+		char pathname[1024];
+		sprintf(pathname, "db/%s", db->name);
+		mkdir(pathname, 0777);
 		char filename[1024];
-		snprintf(filename, sizeof(filename), "db/%s.log.dbs", db->name);
+		snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
 		db->fp = fopen(filename, "ab");
 		assert(db->fp != NULL);
 	}
