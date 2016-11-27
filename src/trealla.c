@@ -824,7 +824,7 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 	NLIST_PUSH_BACK(&tmp->val_l, n_next);
 	const char *functor = n->val_s;
 
-	if (!strcmp(functor, "\\+"))	// Becomes xfy
+	if (!strcmp(functor, "\\+"))
 	{
 		node *n2 = make_cutfail();
 		n2->flags |= FLAG_HIDDEN;
