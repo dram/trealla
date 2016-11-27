@@ -2831,6 +2831,7 @@ tpl_query *query_create_subquery(tpl_query *self, int is_proc)
 	if (!q) return NULL;
 	q->noopt = self->noopt;
 	q->trace = self->trace;
+	q->curr_db = self->curr_db;
 
 #ifndef ISO_ONLY
 	q->is_proc = is_proc;
