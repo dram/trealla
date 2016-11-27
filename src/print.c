@@ -334,6 +334,11 @@ size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tp
 		dst += sprint2_list(dstbuf, bufsize, &dst, pl, q, n, listing);
 	else if (is_compound(n))
 		dst += sprint2_compound(dstbuf, bufsize, &dst, pl, q, n, listing);
+	else if (is_ptr(n) && listing)
+	{
+		*dst++ = '@';
+		dst += sprint_int(dst, *bufsize-(dst-*dstbuf), n->val_i, 10);
+	}
 	else if (is_integer(n) && (n->flags & FLAG_BINARY) && listing)
 		dst += sprint_int(dst, *bufsize-(dst-*dstbuf), n->val_u, 2);
 	else if (is_integer(n) && (n->flags & FLAG_OCTAL) && listing)

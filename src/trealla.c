@@ -503,19 +503,18 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 
 	*persist = r->persist;
 
-	if (r->storage && 0)
+	if (r->storage)
 	{
 		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
 		node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
 		node *tmp_rest = NLIST_NEXT(tmp_fa);
 		NLIST_REMOVE(&head->val_l, tmp_rest);
 		term_heapcheck(tmp_rest);
-		nbr_t off = dbs_get_fpos(db);
-		node *tmp = make_int(off);
-		tmp->flags |= FLAG_DBS_STORAGE|FLAG_HEX;
+		node *tmp = make_int(dbs_get_fpos(db));
+		tmp->flags |= FLAG_PTR;
 		head->flags |= FLAG_DBS_STORAGE;
 		NLIST_PUSH_BACK(&head->val_l, tmp);
-		//print_term(l->pl, NULL, n, 1); printf("\n");
+		print_term(l->pl, NULL, n, 1); printf("\n");
 	}
 
 	if (append_mode)
