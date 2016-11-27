@@ -120,7 +120,6 @@ static int process_enqueue(tpl_query *q, tpl_query *who, node *term, int noerror
 	{
 		term = clone_term(q, term);
 		term->pid = q;
-		term->refcnt--;
 		q->refcnt++;
 		who->refcnt++;
 	}
