@@ -3098,8 +3098,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "select(X,[Head|Tail],[Head|Rest]) :- select(X,Tail,Rest).");
 	trealla_make_rule(pl, "efface([],L,L) :- !.");
 	trealla_make_rule(pl, "efface([H|T],L,L2) :- selectall(H,L,L1),efface(T,L1,L2).");
-	trealla_make_rule(pl, "revzap([X|L],L2,L3) :- revzap(L,[X|L2],L3).");
 	trealla_make_rule(pl, "revzap([],L,L).");
+	trealla_make_rule(pl, "revzap([X|L],L2,L3) :- revzap(L,[X|L2],L3).");
 	trealla_make_rule(pl, "reverse(L1,L2) :- revzap(L1,[],L2).");
 	trealla_make_rule(pl, "append([],L,L).");
 	trealla_make_rule(pl, "append([User|Rest],L,L2) :- append(Rest,[User|L],L2).");

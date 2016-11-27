@@ -1326,14 +1326,14 @@ static int bif_sys_parse_csv(tpl_query *q)
 
 		*dst = '\0';
 
-		// We allow for simple [+/-]integers and decimals,
+		// We allow for simple [-]integers and decimals,
 		// the rest are treated as quoted atoms.
 
 		node *tmp;
 		const char *tmp_src = dstbuf;
 		int dots = 0, bad = 0;
 
-		if ((*tmp_src == '-') || (*tmp_src == '+'))
+		if (*tmp_src == '-')
 			tmp_src++;
 
 		while (*tmp_src)

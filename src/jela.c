@@ -286,9 +286,9 @@ static int proceed(tpl_query *q)
 		if (!q->curr_choice)
 			break;
 
+		unsigned last_frame = q->curr_frame;
 		choice *c = &q->choices[q->curr_choice];
 		q->curr_choice = c->previous;
-		unsigned last_frame = q->curr_frame;
 		q->curr_context = c->curr_frame;
 		q->curr_match = c->curr_match;
 		q->idx_iter = c->idx_iter;
@@ -299,7 +299,7 @@ static int proceed(tpl_query *q)
 
 		// Can trim the frame?
 
-		if ((last_frame > q->curr_frame) && !q->noopt && 0)
+		if ((last_frame > (q->curr_frame+q->frame_size)) && !q->noopt)
 			deallocate_frame(q);
 
 		if (c->nofollow)
