@@ -258,8 +258,9 @@ int bif_iso_fail(tpl_query *q)
 
 static int bif_iso_halt(tpl_query *q)
 {
+	QABORT(ABORT_HALT);
 	q->halt = ABORT_HALT;
-	return 0;
+	return 1;
 }
 
 static int bif_iso_halt1(tpl_query *q)
@@ -268,7 +269,7 @@ static int bif_iso_halt1(tpl_query *q)
 	node *term1 = get_int(term1);
 	QABORT(ABORT_HALT);
 	q->halt = term1->val_i;
-	return 0;
+	return 1;
 }
 
 int bif_iso_cut(tpl_query *q)
@@ -302,7 +303,7 @@ static int bif_iso_not(tpl_query *q)
 	if (q->retry) return 1;
 	node *args = get_args(q);
 	allocate_frame(q);
-	try_me_nofollow(q);
+	try_me(q);
 	q->curr_term = args;
 	return 1;
 }

@@ -844,7 +844,7 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 		node *n2 = make_cutfail();
 		n2->flags |= FLAG_HIDDEN;
 
-		if (is_builtin(n_next))
+		if (!strcmp(n_next->val_s, ","))
 			NLIST_PUSH_BACK(&n_next->val_l, n2);
 		else
 			NLIST_PUSH_BACK(&tmp->val_l, n2);
@@ -2612,7 +2612,9 @@ int query_run(tpl_query *self)
 	if (!self->is_yielded && self->halt)
 	{
 		if (!self->pl->abort && (self->halt > ABORT_HALT))
-			printf("ERROR: ERROR %s\n", self->halt_s?self->halt_s:"ABORT");
+			printf("WARN: ERROR %s\n", self->halt_s?self->halt_s:"ABORT");
+		else if (!self->pl->abort && (self->halt == ABORT_HALT))
+			printf("Halted\n");
 
 		self->ok = 0;
 	}
