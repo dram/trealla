@@ -375,21 +375,17 @@ int main(int ac, char *av[])
 			while (isspace(*src))
 				src++;
 
-			if (!strcmp(src, "halt.") || !strcmp(src, "quit."))
-			{
-				printf("Done\n");
-				free(line);
-				break;
-			}
-
 			tpl_query *q = trealla_create_query(pl);
 			if (!q) break;
 			int ok = query_parse(q, src);
 			if (ok) ok = query_run(q);
 			if (ok) query_dump(q);
 
-			if (pl->abort)
+			if (pl->abort || q->halt)
+			{
+				query_destroy(q);
 				break;
+			}
 
 			while (ok && query_choices(q))
 			{
