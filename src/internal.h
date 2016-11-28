@@ -203,6 +203,7 @@ typedef struct
 	FILE *fp;
 	lock *guard;
 	uint8_t loading;
+	nbr_t last_fpos;
 #endif
 }
  module;

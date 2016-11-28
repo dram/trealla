@@ -103,7 +103,8 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 
 	do
 	{
-		while ((line = trealla_readline(db->fp)) != NULL)
+		while (db->last_fpos = ftell(db->fp),
+			((line = trealla_readline(db->fp)) != NULL))
 		{
 			line_nbr++;
 
@@ -186,7 +187,7 @@ static void dbs_load(module *db, int tail)
 
 nbr_t dbs_get_fpos(module *db)
 {
-	return ftell(db->fp);
+	return db->loading ? db->last_fpos : ftell(db->fp);
 }
 
 void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
