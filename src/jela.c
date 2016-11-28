@@ -190,10 +190,11 @@ void prepare_frame(tpl_query *q, unsigned frame_size)
 	}
 }
 
+#define TRACE(s) DEBUG printf("###[ %s ] ==> size=%d, choice_point=%u, curr_choice=%u, env_point=%u\n", s, q->frame_size, q->choice_point, q->curr_choice, q->env_point);
+
 void allocate_frame(tpl_query *q)
 {
-	DEBUG printf("### allocate_frame size=%d, choice_point=%u, curr_choice=%u, env_point=%u\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point);
-
+	TRACE("allocate_frame");
 	g_allocates++;
 	choice *c = &q->choices[q->choice_point];
 	mask_t *mptr = &c->mask;
@@ -219,8 +220,7 @@ void allocate_frame(tpl_query *q)
 
 void reallocate_frame(tpl_query *q)
 {
-	DEBUG printf("### reallocate_frame size=%d, choice_point=%u, curr_choice=%u, env_point=%u\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point);
-
+	TRACE("reallocate_frame");
 	g_reallocates++;
 	choice *c = &q->choices[q->choice_point];
 	mask_t *mptr = &c->mask;
@@ -254,8 +254,7 @@ void reallocate_frame(tpl_query *q)
 
 void deallocate_frame(tpl_query *q)
 {
-	DEBUG printf("### deallocate_frame size=%d, choice_point=%u, curr_choice=%u, env_point=%u\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point);
-
+	TRACE("deallocate_frame");
 	g_deallocates++;
 	unsigned new_envs_point = q->curr_frame + q->frame_size;
 
@@ -281,7 +280,7 @@ static int proceed(tpl_query *q)
 {
 	do
 	{
-		DEBUG printf("### proceed size=%u, choice_point=%u, curr_choice=%u, env_point=%u\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point);
+		TRACE("proceed");
 
 		if (!q->curr_choice)
 			break;
@@ -312,7 +311,7 @@ static int proceed(tpl_query *q)
 
 int follow(tpl_query *q)
 {
-	DEBUG printf("### follow size=%u, choice_point=%u, curr_choice=%u, env_point=%u\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point);
+	TRACE("follow");
 
 	if (q->curr_term->flags & FLAG_NOFOLLOW)
 		q->curr_term = NULL;
@@ -330,8 +329,7 @@ int follow(tpl_query *q)
 
 void try_me2(tpl_query *q, int nofollow, int nochoice)
 {
-	DEBUG printf("### try_me size=%u, choice_point=%u, curr_choice=%u, env_point=%u (poss=%u)\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point, q->choices_possible);
-
+	TRACE("try_me");
 	choice *c = &q->choices[q->choice_point];
 	c->previous = q->curr_choice;
 	c->curr_match = q->curr_match;
@@ -358,7 +356,7 @@ void try_me2(tpl_query *q, int nofollow, int nochoice)
 
 int retry_me(tpl_query *q)
 {
-	DEBUG printf("### retry_me1 size=%u, choice_point=%u, curr_choice=%u, env_point=%u\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point);
+	TRACE("retry_me");
 
 	if (!q->choice_point)
 		return 0;
@@ -383,8 +381,7 @@ int retry_me(tpl_query *q)
 
 void trust_me(tpl_query *q)
 {
-	DEBUG printf("### trust_me size=%u, choice_point=%u, curr_choice=%u, env_point=%u\n", q->frame_size, q->choice_point, q->curr_choice, q->env_point);
-
+	TRACE("trust_me");
 	q->choice_point = q->curr_choice+1;
 	choice *c = &q->choices[q->curr_choice];
 	c->cut = 1;
@@ -393,8 +390,7 @@ void trust_me(tpl_query *q)
 
 void execute_term(tpl_query *q, node *term, unsigned frame_size)
 {
-	DEBUG { printf("### execute_term size=%u, frame=%u, env_point=%u, next_size=%u ", frame_size, q->curr_frame, q->env_point, frame_size); print_term(q->pl, q, term, 1); printf("\n"); }
-
+	TRACE("execute_term");
 	g_executes++;
 	q->curr_term = term;
 	q->curr_context = q->curr_frame = q->env_point;
@@ -407,7 +403,7 @@ void execute_term(tpl_query *q, node *term, unsigned frame_size)
 
 static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 {
-	DEBUG { printf("### reexecute_term size=%u ", frame_size); print_term(q->pl, q, term, 1); printf("\n"); }
+	TRACE("reexecute_term");
 
 	if (q->env_point != q->curr_frame)
 	{
@@ -579,8 +575,7 @@ int match(tpl_query *q)
 
 int call(tpl_query *q)
 {
-	DEBUG { printf("### call_term size=%u, curr_frame=%u ", q->frame_size, q->curr_frame); if (q->curr_term) print_term(q->pl, q, q->curr_term, 1); printf("\n"); }
-
+	TRACE("call");
 	int status = 0;
 
 	if (is_builtin(q->curr_term) && q->curr_term->bifptr)
@@ -677,7 +672,6 @@ int call(tpl_query *q)
 void begin_query(tpl_query *q, node *term)
 {
 	DEBUG { printf("### begin_query "); print_term(q->pl, q, term, 1); printf("\n"); }
-
 	q->curr_term = term;
 }
 
