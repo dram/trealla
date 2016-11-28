@@ -19,6 +19,7 @@
 
 #include "trealla.h"
 #include "internal.h"
+#include "jela.h"
 #include "bifs.h"
 #include "daemon.h"
 #include "history.h"
@@ -381,7 +382,7 @@ int main(int ac, char *av[])
 			if (ok) ok = query_run(q);
 			if (ok) query_dump(q);
 
-			if (pl->abort || q->halt)
+			if (pl->abort || (q->halt == ABORT_HALT))
 			{
 				query_destroy(q);
 				break;
