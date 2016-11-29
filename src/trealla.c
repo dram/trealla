@@ -1964,7 +1964,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ".") /*&& !*src*/)
+		if (!self->quoted && !strcmp(self->tok, ".") && (!*src || isspace(*src)))
 		{
 			free(self->tok);
 			lexer_finalize(self);
@@ -2107,8 +2107,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 					const ops *optr = get_op(&self->pl->db, functor, 0);
 					int doit = !strcmp(functor, ",") && !self->quoted && is_tuple(term);
 
-					if ((!optr->op &&
-						strcmp(functor, g_list_cons) &&
+					if ((!optr->op /*&& strcmp(functor, g_list_cons)*/ &&
 						strcmp(functor, "!")) || doit)
 					{
 						NLIST_REMOVE(&term->val_l, tmp);
@@ -2131,7 +2130,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 							NLIST_PUSH_BACK(&n->val_l, tmp);
 						}
 
-						if (!strcmp(functor, g_list_cons) && (tmp->flags&FLAG_QUOTED))
+						if (!strcmp(functor, g_list_cons) && !(tmp->flags&FLAG_QUOTED))
 							n->flags |= FLAG_LIST;
 
 						if (is_builtin(tmp))
@@ -2532,7 +2531,7 @@ int query_parse(tpl_query *self, const char *src)
 
 	char *line = (char*)malloc(strlen(src)+10);
 	sprintf(line, "?- %s", src);
-	if (src[strlen(src)-1] != '.') strcat(line, ".");
+	if (src[strlen(src)-1] != '.') strcat(line, ".");	// FIXME
 	lexer_parse(self->lex, self->lex->r, line, NULL);
 	free(line);
 
