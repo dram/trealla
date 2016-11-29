@@ -172,10 +172,6 @@ int main(int ac, char *av[])
 #endif
 		else if (!strcmp(av[i], "-q") || !strcmp(av[i], "--quiet"))
 			quiet = 1;
-		else if (!strcmp(av[i], "--traditional"))
-			g_list_cons = ".";
-		else if (!strcmp(av[i], "--swi7"))
-			g_list_cons = "[|]";
 	}
 
 	if (daemon)

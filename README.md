@@ -80,8 +80,6 @@ Usage
 	--daemon       - daemonize program (or -d)
 	--watchdog     - set restart watchdog for daemon (or -w)
 	--cd=path      - chdir for daemon
-	--swi7         - use *'[|]'* as the list constructor
-	--traditional  - use *'.'* as the list constructor (default)
 	--quiet        - no banner (or -q)
 	--load         - load file (or -l, actually does nothing)
 	--merge        - merge KVS transaction log into main data file
