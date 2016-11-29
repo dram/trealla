@@ -431,6 +431,7 @@ extern void trace(tpl_query *q, int fail, int leave);
 extern node *copy_term2(tpl_query *q, node *from, int clone, int depth);
 extern uint64_t gettimeofday_usec(void);
 extern void term_heapcheck(node *n);
+extern void term_destroy(node *n);
 extern char *trealla_readline(FILE *fp);
 extern char *trealla_readstring(FILE *fp);
 

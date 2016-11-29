@@ -94,26 +94,20 @@ node *dbs_read_entry(module* db, nbr_t fpos)
 	if (line == NULL)
 		return NULL;
 
-	tpl_query *q = trealla_create_query(db->pl);
-
-	if (!q)
-	{
-		free(line);
-		return NULL;
-	}
-
-	if (!query_parse(q, line))
-		printf("ERROR: '%s' ==> %s\n", db->name, line);
-
+	lexer l;
+	lexer_init(&l, db->pl);
+	lexer_parse(&l, NULL, line, &line);
 	free(line);
-	node *term = NLIST_FRONT(&q->lex->clauses);
+	node *term = NLIST_FRONT(&l.clauses);
 	term = NLIST_FRONT(&term->val_l);
-	node *n = NLIST_NEXT(term);
-	term = NLIST_FRONT(&n->val_l);
-	n = NLIST_NEXT(term);
-	//print_term(db->pl, q, n, 1); printf("\n");
-	n->refcnt++;
-	query_destroy(q);
+	term = NLIST_NEXT(term);
+	node *n = NLIST_FRONT(&term->val_l);
+	n = NLIST_NEXT(n);
+	//print_term(db->pl, NULL, n, 1); printf("\n");
+	NLIST_REMOVE(&term->val_l, n);
+	node *n2 = NLIST_FRONT(&l.clauses);
+	term_destroy(n2);
+	lexer_done(&l);
 	return n;
 }
 

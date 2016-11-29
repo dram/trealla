@@ -521,8 +521,10 @@ int match(tpl_query *q)
 			node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
 			node *tmp_rest = NLIST_NEXT(tmp_fa);
 			nbr_t fpos = tmp_rest->val_i;
-			node *n = dbs_read_entry(q->curr_db, fpos);
-			term_heapcheck(n);
+			node *n = dbs_read_entry(q->curr_db, fpos);		// Get from storage
+			NLIST_INSERT_AFTER(&head->val_l, tmp_rest, n);	// Replace original...
+			NLIST_REMOVE(&head->val_l, tmp_rest);
+			term_heapcheck(tmp_rest);
 		}
 
 		unsigned frame_size = q->curr_match->frame_size;

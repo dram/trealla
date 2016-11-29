@@ -179,7 +179,7 @@ static void stream_close(stream *sp)
 #endif
 }
 
-static void term_destroy(node *n)
+void term_destroy(node *n)
 {
 	while (n)
 	{
