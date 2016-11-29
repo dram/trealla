@@ -1785,14 +1785,22 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 		token_put(&t, ch);
 
-		if ((ch == '[') && (*s == ']'))		// Hack
+		// These are some hacks...
+
+		if ((ch == '[') && (*s == ']'))
 			token_put(&t, ch = *s++);
 
 
-		if ((ch == '{') && (*s == '}'))		// Hack
+		if ((ch == '{') && (*s == '}'))
 			token_put(&t, ch = *s++);
 
-		static const char seps[] = "!()[]{}_\"'` \t\r\n";
+		if ((ch == '=') && (s[0] == '.') && s[1] == '.')
+		{
+			token_put(&t, ch = *s++);
+			token_put(&t, ch = *s++);
+		}
+
+		static const char seps[] = ".!()[]{}_\"'` \t\r\n";
 
 		if (strchr(seps, ch) || strchr(seps, *s) || isalnum(*s))
 			break;
@@ -2031,7 +2039,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				continue;
 			}
 
-			if (!self->pl->canonical || (self->depth > 1))
+			//if (!self->pl->canonical || (self->depth > 1))
 			{
 				free(self->tok);
 				continue;
