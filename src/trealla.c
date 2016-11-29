@@ -512,7 +512,6 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 		term_heapcheck(tmp_rest);
 		node *tmp = make_int(dbs_get_fpos(db));
 		tmp->flags |= FLAG_PTR;
-		head->flags |= FLAG_DBS_STORAGE;
 		n->flags |= FLAG_DBS_STORAGE;
 		NLIST_PUSH_BACK(&head->val_l, tmp);
 		//print_term(l->pl, NULL, n, 1); printf("\n");
