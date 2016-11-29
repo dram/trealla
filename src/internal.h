@@ -313,7 +313,7 @@ struct trealla_
 	lexer lex;
 	const char *keywords[MAX_BIFS+20];
 	volatile int abort, abort_wait;
-	uint8_t trace, noopt, tty, canonical;
+	uint8_t trace, noopt, tty;
 	uint8_t flag_char_conversion, flag_debug, flag_character_escapes;
 	uint8_t flag_unknown, flag_double_quotes;
 

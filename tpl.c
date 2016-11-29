@@ -215,10 +215,6 @@ int main(int ac, char *av[])
 			stats = 1;
 		else if (!strcmp(av[i], "--noopt") || !strcmp(av[i], "-O0"))
 			trealla_noopt(pl, 1);
-		else if (!strcmp(av[i], "--canonical"))
-			trealla_canonical(pl, 1);
-		else if (!strcmp(av[i], "--nocanonical"))
-			trealla_canonical(pl, 0);
 		else if (!strncmp(av[i], "--memM=",7))
 			sscanf(av[i], "%*[^=]=%d", &g_trealla_memlimit_mb);
 		else if (!strncmp(av[i], "--memG=",7))

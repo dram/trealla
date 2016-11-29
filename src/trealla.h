@@ -9,7 +9,6 @@ typedef struct tpl_query_ tpl_query;
 extern trealla *trealla_create(const char *name);
 extern void trealla_trace(trealla *pl, int mode);
 extern void trealla_noopt(trealla *pl, int mode);
-extern void trealla_canonical(trealla *pl, int mode);
 extern int trealla_consult_file(trealla *pl, const char *name);
 extern int trealla_consult_text(trealla *pl, const char *s, const char *name);
 extern int trealla_deconsult(trealla *pl, const char *name);

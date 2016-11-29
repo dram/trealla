@@ -1090,7 +1090,6 @@ static int bif_iso_nl1(tpl_query *q)
 static int bif_iso_nl(tpl_query *q)
 {
 	fwrite("\n", 1, 1, stdout);
-	fflush(stdout);
 	return 1;
 }
 
@@ -4542,10 +4541,7 @@ static int bif_sys_writeln2(tpl_query *q)
 	if (is_socket(term1))
 		ok = session_write((session*)sp->sptr, tmpbuf, dst-tmpbuf);
 	else
-	{
 		ok = fwrite(tmpbuf, 1, dst-tmpbuf, sp->fptr);
-		if (ok > 0) fflush(sp->fptr);
-	}
 
 	free(tmpbuf);
 	return ok > 0;

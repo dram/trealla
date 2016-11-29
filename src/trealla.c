@@ -503,7 +503,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 
 	*persist = r->persist;
 
-	if (r->storage && 0)
+	if (r->storage)
 	{
 		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
 		node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
@@ -2038,11 +2038,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				continue;
 			}
 
-			//if (!self->pl->canonical || (self->depth > 1))
-			{
-				free(self->tok);
-				continue;
-			}
+			free(self->tok);
+			continue;
 		}
 
 		if (!self->quoted && !strcmp(self->tok, "|"))
@@ -2577,7 +2574,6 @@ void trace(tpl_query *q, int fail, int leave)
 #endif
 
 	fprintf(stdout, "%s\n", dstbuf);
-	fflush(stdout);
 	free(dstbuf);
 	q->latest_context = save_context;
 }
@@ -3140,7 +3136,6 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 tpl_query *trealla_create_query(trealla *self) { return trealla_create_query2(self, NULL); }
 void trealla_trace(trealla *self, int mode) { self->trace = mode; }
 void trealla_noopt(trealla *self, int mode) { self->noopt = mode; }
-void trealla_canonical(trealla *self, int mode) { self->canonical = mode; }
 
 #ifndef ISO_ONLY
 static int tmocmp(const char *k1, const char *k2)
@@ -3166,7 +3161,6 @@ trealla *trealla_create(const char *name)
 	g_instances++;
 	static int first_time = 1;
 	pl->tty = isatty(0);
-	pl->canonical = 1;
 	db_init(&pl->db, pl, name);
 	sl_init(&pl->mods, 0, &strcmp, NULL);
 

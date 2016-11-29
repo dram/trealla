@@ -515,26 +515,19 @@ int match(tpl_query *q)
 			continue;
 		}
 
+		node *term = NLIST_FRONT(&q->curr_match->val_l);
+		node *head = NLIST_NEXT(term);
+		node *save_head = head;
+
 		if (q->curr_match->flags & FLAG_DBS_STORAGE)
 		{
-			node *head = NLIST_NEXT(NLIST_FRONT(&q->curr_match->val_l));
 			node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
 			node *tmp_rest = NLIST_NEXT(tmp_fa);
-			nbr_t fpos = tmp_rest->val_i;
-			node *n = dbs_read_entry(q->curr_db, fpos);		// Get from storage
-			NLIST_INSERT_AFTER(&head->val_l, tmp_rest, n);	// Replace original...
-			NLIST_REMOVE(&head->val_l, tmp_rest);
-			term_heapcheck(tmp_rest);
+			head = dbs_read_entry(q->curr_db, tmp_rest->val_i);
 		}
 
 		unsigned frame_size = q->curr_match->frame_size;
 		prepare_frame(q, frame_size);
-
-		node *term = NLIST_FRONT(&q->curr_match->val_l);		// Get the ':-'
-		node *head = NLIST_NEXT(term);
-
-		//printf("*** Curr %s\n", q->curr_term->val_s);
-		//printf("*** Head %s\n", head->val_s);
 
 		DEBUG { printf("### match : "); print_term(q->pl, q, q->curr_term, 1); printf(" <==> "); print_term(q->pl, q, head, 1); printf("\n"); }
 
@@ -543,6 +536,12 @@ int match(tpl_query *q)
 
 		if (!unify_term(q, q->curr_term, head, q->env_point))
 		{
+			if (head != save_head)
+			{
+				term_heapcheck(head);
+				head = save_head;
+			}
+
 			if (!NLIST_NEXT(q->curr_match))
 				break;
 
@@ -554,6 +553,12 @@ int match(tpl_query *q)
 			q->curr_match = NLIST_NEXT(q->curr_match);
 			reallocate_frame(q);
 			continue;
+		}
+
+		if (head != save_head)
+		{
+			term_heapcheck(head);
+			head = save_head;
 		}
 
 		node *body = NLIST_NEXT(head);
