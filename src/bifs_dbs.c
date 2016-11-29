@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include <assert.h>
 #include <sys/stat.h>
 
@@ -83,6 +84,37 @@ static int dbs_merge(module *db)
 	rename(filename, tmpname);
 	printf("DEBUG: Renamed '%s' -> '%s'\n", filename, tmpname);
 	return 1;
+}
+
+node *dbs_read_entry(module* db, nbr_t fpos)
+{
+	fseek(db->fp, fpos, SEEK_SET);
+	char *line = trealla_readline(db->fp);
+
+	if (line == NULL)
+		return NULL;
+
+	tpl_query *q = trealla_create_query(db->pl);
+
+	if (!q)
+	{
+		free(line);
+		return NULL;
+	}
+
+	if (!query_parse(q, line))
+		printf("ERROR: '%s' ==> %s\n", db->name, line);
+
+	free(line);
+	node *term = NLIST_FRONT(&q->lex->clauses);
+	term = NLIST_FRONT(&term->val_l);
+	node *n = NLIST_NEXT(term);
+	term = NLIST_FRONT(&n->val_l);
+	n = NLIST_NEXT(term);
+	//print_term(db->pl, q, n, 1); printf("\n");
+	n->refcnt++;
+	query_destroy(q);
+	return n;
 }
 
 static void dbs_load_file(module *db, const char *filename, int tail)
@@ -183,6 +215,10 @@ static void dbs_load(module *db, int tail)
 		g_dbs_merge = 0;
 		dbs_merge(db);
 	}
+
+	snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
+	db->fp = fopen(filename, "a+b");
+	assert(db->fp != NULL);
 }
 
 nbr_t dbs_get_fpos(module *db)
@@ -200,7 +236,7 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 		mkdir(pathname, 0777);
 		char filename[1024];
 		snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
-		db->fp = fopen(filename, "ab");
+		db->fp = fopen(filename, "a+b");
 		assert(db->fp != NULL);
 	}
 

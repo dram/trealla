@@ -175,6 +175,7 @@ extern int bif_iso_cut(tpl_query *q);
 extern int bif_iso_cutfail(tpl_query *q);
 extern int bif_iso_fail(tpl_query *q);
 extern int bif_dbs_enter(tpl_query *q);
+extern node *dbs_read_entry(module* db, nbr_t fpos);
 
 #endif
 

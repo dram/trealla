@@ -515,6 +515,16 @@ int match(tpl_query *q)
 			continue;
 		}
 
+		if (q->curr_match->flags & FLAG_DBS_STORAGE)
+		{
+			node *head = NLIST_NEXT(NLIST_FRONT(&q->curr_match->val_l));
+			node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+			node *tmp_rest = NLIST_NEXT(tmp_fa);
+			nbr_t fpos = tmp_rest->val_i;
+			node *n = dbs_read_entry(q->curr_db, fpos);
+			term_heapcheck(n);
+		}
+
 		unsigned frame_size = q->curr_match->frame_size;
 		prepare_frame(q, frame_size);
 
