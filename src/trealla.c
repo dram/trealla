@@ -503,7 +503,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 
 	*persist = r->persist;
 
-	if (r->storage)
+	if (r->storage && 0)
 	{
 		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
 		node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
