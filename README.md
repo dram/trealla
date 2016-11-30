@@ -158,4 +158,4 @@ and compiler options. Made with 'make iso' option:
 	trealla  10.190s
 	gprolog  11.204s
 
-![Features](FEATURES.ms)
+![Features](FEATURES.md)
