@@ -321,8 +321,7 @@ process no longer exists. If the process is linked it will notify its
 parent.
 
 Each process has access to it's own private dictionary (as described
-above). It is lock-free, in-memory and fast. For a shared-dictionary
-use the KV-store (described below).
+above). It is lock-free, in-memory and fast.
 
 A process name may be any grounded term.
 
