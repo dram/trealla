@@ -719,12 +719,21 @@ Database store: namespace 'dbs'
 ------------------------------
 
 The rule database will save to the transaction log asserted items
-that have first been declared persistent with:
+that have first been declared with the 'persist' modifier:
 
 	:-dynamic(Name/Arity,[persist]).
 
 All such persistent asserta/assertz/retract items are recorded. A
 retractall call is converted to individual retracts.
+
+The alternative declaration with a 'storage' modifier:
+
+	:-dynamic(Name/Arity,[storage]).
+
+means that all data from the second-argument on is stored on disk
+and is not in memory. Instead a filepos is stored and the data is
+loaded on demand. In this way rule databases far larger than physical
+memory can be accessed.
 
 To load previously saved values:
 
