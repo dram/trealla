@@ -15,8 +15,8 @@ It supports much of ISO-PROLOG minus (for now) exceptions and bagof,
 setof, ...? With:
 
  - modules
- - persistent clause database (in-memory)
- - key-value datastore (for huge storage requirements)
+ - persistent clause database (logged to disk)
+ - key-value datastore (for huge storage to disk)
  - transactions on database operations
  - first-argument indexing
  - Erlang-style processes and message-passing
