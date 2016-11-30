@@ -113,7 +113,8 @@ static node *copy_var(tpl_query *q, node *from)
 
 node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 {
-	if (depth > (1024*1024)) { QABORT2(ABORT_MAXDEPTH,"COPY_TERM"); return 0; }
+	if (depth > (1024*1024))
+		{ QABORT2(ABORT_MAXDEPTH,"COPY_TERM"); return 0; }
 
 	if (is_number(from))
 		return copy_nbr(q, from);
@@ -130,7 +131,7 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 		node *tmp;
 
 		if (!q->d)
-		{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
+			{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
 
 		if (!sl_get(q->d, (char*)e, (void**)&tmp))
 			sl_set(q->d, (char*)e, tmp=make_var(q));

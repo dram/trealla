@@ -283,7 +283,7 @@ struct tpl_query_
 	uint32_t choices_used, choices_possible, choice_point;
 	uint32_t envs_used, envs_possible, env_point;
 	uint32_t curr_context, latest_context, line_nbr;
-	uint32_t curr_frame, curr_choice;
+	uint32_t curr_frame, curr_choice, print_depth;
 	int32_t tmo_msecs;
 	uint16_t frame_size, depth, max_depth, fail_arg;
 	uint8_t retry, halt, ok, def_choice, def_env;

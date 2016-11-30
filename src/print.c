@@ -15,6 +15,7 @@
 #include "list.h"
 #include "trealla.h"
 #include "internal.h"
+#include "jela.h"
 #include "bifs.h"
 
 #ifndef ISO_ONLY
@@ -312,6 +313,9 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 
 size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n, int listing)
 {
+	if (q) if (++q->print_depth > MAX_UNIFY_DEPTH)
+		{ QABORT2(ABORT_MAXDEPTH,"CYCLIC TERM"); return 0; }
+
 	char *dst = *_dst;
 	node *n = q?get_arg(q, _n, q->latest_context):_n;
 	size_t xlen = (is_atom(n) ? LEN(n) : 64) + 1024;
@@ -404,6 +408,7 @@ size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tp
 	else if (is_atom(n))
 		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "%s", n->val_s);
 
+	if (q) q->print_depth--;
 	return dst - *_dst;
 }
 
