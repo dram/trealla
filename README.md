@@ -12,15 +12,21 @@ maintaining a trail (environment) and stack (choices). It uses deep
 binding and structure sharing.
 
 It supports much of ISO-PROLOG minus (for now) exceptions and bagof,
-setof, ...? With modules, unlimited length and number of UTF-8 or
-binary atoms. Plus 128-bit integers on 64-bit systems.
+setof, ...? With:
+
+ - modules
+ - persistent database (in-memory)
+ - key-value storage (in-memory index only)
+ - transactions on database operations
+ - first-argument indexing
+ - Erlang-style processes and message-passing
+ - advanced built-in networking features
+ - unlimited length and number of UTF-8 or binary atoms
+ - 128-bit integers
 
 The rule database usage is currently immediate update view (the
 traditional way). ISO-PROLOG however specifies logical update view
-(ie. snapshot), so this may change in future (a flag?). The rule
-database uses first argument indexing on dynamic clauses which, along
-with the persistence option, allows for developing fast, safe, in-memory
-data stores that can be *logic'd over*.
+(ie. snapshot), so this may change in future (a flag?).
 
 Writen in plain-old C with a permissive license.
 
