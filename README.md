@@ -88,7 +88,7 @@ Usage
 	--cd=path      - chdir for daemon
 	--quiet        - no banner (or -q)
 	--load         - load file (or -l, actually does nothing)
-	--merge        - merge KVS transaction log into main data file
+	--merge        - merge transaction log
 
 Files can be filename[.ext] where '.ext' if not specified can be one
 of the following: .pro, .prolog, .pl or .P
