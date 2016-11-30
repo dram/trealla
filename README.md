@@ -21,7 +21,7 @@ setof, ...? With:
  - first-argument indexing
  - Erlang-style processes and message-passing
  - advanced built-in networking features
- - unlimited length and number of UTF-8 or binary atoms
+ - unlimited length and number of UTF8 or binary atoms
  - 128-bit integers
 
 The rule database usage is currently immediate update view (the

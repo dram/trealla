@@ -158,8 +158,8 @@ BLOBs also store a length internally. BLOBS can be written and read in
 back-quotes in which case the enclosed characters are base64-encoded
 (eg. `SGVsbG8sIHdvcmxkIQ==` == 'Hello, world!').
 
-Also, *'atom_length/2'* returns the number of utf-8 characters in an
-atom while for BLOBs it's the stored length. Atoms are assumed utf-8.
+Also, *'atom_length/2'* returns the number of UTF8 characters in an
+atom while for BLOBs it's the stored length. Atoms are assumed UTF8.
 
 Concurrent Processes: namespace 'proc'
 --------------------------------------
@@ -529,7 +529,7 @@ With *'msg/3'* *Op* can be the atom *'more'*, *'data'*, *'ping'* or
 anything else should be discarded.
 
 Also note data atom will be a BLOB for a binary message and an atom for
-a text (utf-8) message.
+a text (UTF8) message.
 
 The *request/5* client call takes an atom or list of atoms of wanted
 protocols and returns the one selected by the server on success. A

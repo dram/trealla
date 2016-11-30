@@ -1104,7 +1104,7 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 	else if (!strcmp(flag, "character_escapes")) l->pl->flag_character_escapes = !strcmp(term2->val_s,"true")?1:0;
 }
 
-static void dir_dynamic(lexer *l, node *n)
+void dir_dynamic(lexer *l, node *n)
 {
 	node *term1 = n;
 	node *term2 = NLIST_NEXT(term1);
@@ -1342,7 +1342,7 @@ static void dir_export(lexer *l, node *n)
 	}
 }
 
-static void dir_using(lexer *l, node *n)
+void dir_using(lexer *l, node *n)
 {
 	node *term1 = n;
 
@@ -1374,7 +1374,7 @@ static void dir_using(lexer *l, node *n)
 	}
 }
 
-static void dir_define(lexer *l, node *n)
+void dir_define(lexer *l, node *n)
 {
 	node *term1 = n;
 	node *term2 = NLIST_NEXT(term1);
@@ -1386,7 +1386,7 @@ static void dir_define(lexer *l, node *n)
 	add_define(l, term1->val_s, tmpbuf);
 }
 
-static void dir_use_module(lexer *l, node *n)
+void dir_use_module(lexer *l, node *n)
 {
 	node *term1 = n;
 	if (!is_atom(term1)) return;
@@ -1421,14 +1421,14 @@ static void dir_use_module(lexer *l, node *n)
 	trealla_consult_file(l->pl, name);
 }
 
-static void dir_unload_file(lexer *l, node *n)
+void dir_unload_file(lexer *l, node *n)
 {
 	node *term1 = n;
 	if (!is_atom(term1)) return;
 	trealla_deconsult(l->pl, term1->val_s);
 }
 
-static void dir_function(lexer *l, node *n)
+void dir_function(lexer *l, node *n)
 {
 	node *term1 = n;
 
@@ -1461,7 +1461,7 @@ static void dir_function(lexer *l, node *n)
 }
 #endif
 
-static void dir_include(lexer *l, node *n)
+void dir_include(lexer *l, node *n)
 {
 	node *term1 = n;
 	if (!is_atom(term1)) return;
