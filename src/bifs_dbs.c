@@ -87,7 +87,7 @@ void dbs_save_node(module *db, FILE *fp, char **dstbuf, size_t *buflen, node *n)
 	node *head = NLIST_NEXT(term);
 	node *save_head = head;
 
-	if (n->flags & FLAG_DBS_STORAGE)
+	if ((n->flags & FLAG_DBS_STORAGE) && !db->in_tran)
 	{
 		node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
 		node *tmp_rest = NLIST_NEXT(tmp_fa);

@@ -2090,17 +2090,6 @@ int bif_asserta(tpl_query *q, node *n)
 	l.db = q->curr_db;
 	asserta_index(&l, n, 1, &persist);
 	lexer_done(&l);
-
-#ifndef ISO_ONLY
-	if (persist && !q->curr_db->loading)
-	{
-		size_t buflen = 1024*64;					// expandable
-		char *dstbuf = (char*)malloc(buflen+1);
-		dbs_save_node(q->curr_db, q->curr_db->fp, &dstbuf, &buflen, n);
-		free(dstbuf);
-	}
-#endif
-
 	return persist;
 }
 
@@ -2212,17 +2201,6 @@ int bif_assertz(tpl_query *q, node *n)
 	l.db = q->curr_db;
 	assertz_index(&l, n, 1, &persist);
 	lexer_done(&l);
-
-#ifndef ISO_ONLY
-	if (persist && !q->curr_db->loading)
-	{
-		size_t buflen = 1024*64;					// expandable
-		char *dstbuf = (char*)malloc(buflen+1);
-		dbs_save_node(q->curr_db, q->curr_db->fp, &dstbuf, &buflen, n);
-		free(dstbuf);
-	}
-#endif
-
 	return persist;
 }
 

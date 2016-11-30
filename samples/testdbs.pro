@@ -7,7 +7,9 @@ test :-
 	assertz(rec1(3,three)),
 	asserta(rec1(1,one)),
 	retract(rec1(X,Y)), write(X), write(' ==> '), write(Y), nl,
-	fail.
+		fail.
+test :-
+	true.
 
 test1 :-
 	dbs:load,
@@ -17,35 +19,35 @@ test1 :-
 	asserta(rec1(1,one)),
 	dbs:end,
 	retract(rec1(X,Y)), write(X), write(' ==> '), write(Y), nl,
-	fail.
-
+		fail
 test1 :-
-	listing(rec1).
+	true.
 
 test2 :-
 	dbs:load,
-	listing(rec2),
 	dbs:begin,
 	assertz(rec2(2,two)),
 	assertz(rec2(3,three)),
 	asserta(rec2(1,one)),
 	dbs:end,
 	retract(rec2(X,Y)), write(X), write(' ==> '), write(Y), nl,
-	fail.
-
+		fail.
 test2 :-
-	listing(rec2).
+	true.
 
-test3 :-
+test3a :-
 	dbs:load,
-	listing(rec3),
-	dbs:begin,
+	%dbs:begin,
 	assertz(rec3(2,two)),
 	assertz(rec3(3,three)),
 	asserta(rec3(1,one)),
-	dbs:end,
-	fail.
+	%dbs:end,
+	true.
 
-test3 :-
-	listing(rec3).
+test3b :-
+	dbs:load,
+	rec3(X,Y), write(X), write(' ==> '), write(Y), nl,
+		fail.
+test3b :-
+	true.
 

@@ -501,6 +501,16 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 		sl_set(&db->rules, strdup(tmpbuf), r);
 	}
 
+#ifndef ISO_ONLY
+	if (r->persist && !db->loading)
+	{
+		size_t buflen = 1024*64;					// expandable
+		char *dstbuf = (char*)malloc(buflen+1);
+		dbs_save_node(db, db->fp, &dstbuf, &buflen, n);
+		free(dstbuf);
+	}
+#endif
+
 	*persist = r->persist;
 
 	if (r->storage)
