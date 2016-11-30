@@ -38,14 +38,14 @@ test2 :-
 
 test3 :-
 	dbs:load,
-	listing(rec2),
+	listing(rec3),
 	dbs:begin,
-	assertz(rec2(2,two)),
-	assertz(rec2(3,three)),
-	asserta(rec2(1,one)),
+	assertz(rec3(2,two)),
+	assertz(rec3(3,three)),
+	asserta(rec3(1,one)),
 	dbs:end,
 	fail.
 
 test3 :-
-	listing(rec2).
+	listing(rec3).
 

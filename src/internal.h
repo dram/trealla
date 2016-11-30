@@ -8,6 +8,7 @@
 #include <stdatomic.h>
 #endif
 
+#include "skipbuck.h"
 #include "skiplist.h"
 #include "list.h"
 
@@ -109,8 +110,8 @@ typedef struct node_ node;
 
 typedef struct
 {
-	const char *modname;							// Module name
-	skiplist idx;								// First-arg index
+	const char *modname;
+	skiplist idx;
 	list clauses;
 	uint8_t dynamic, manual, persist, storage;
 }
