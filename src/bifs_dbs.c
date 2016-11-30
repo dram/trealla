@@ -26,22 +26,14 @@ int g_dbs_merge = 0;
 
 static int dbs_merge(module *db)
 {
-	if (db->fp)
-	{
-		fflush(db->fp);
-		ffsync(db->fp);
-		fclose(db->fp);
-		db->fp = NULL;
-	}
-
 	mkdir("db", 0777);
 	char pathname[1024];
 	sprintf(pathname, "db/%s", db->name);
 	mkdir(pathname, 0777);
 	char filename[1024];
 	snprintf(filename, sizeof(filename), "db/%s/%s.%s", db->name, db->name, "tmp.dbs");
-	db->fp = fopen(filename, "wb");
-	if (db->fp == NULL) return 0;
+	FILE *fp = fopen(filename, "wb");
+	if (fp == NULL) return 0;
 	printf("INFO: Saving '%s' ... ", filename);
 	fflush(stdout);
 	size_t buflen = 1024*64;					// expandable
@@ -60,15 +52,14 @@ static int dbs_merge(module *db)
 
 			n->flags &= ~FLAG_DBS_ASSERTA;
 			n->flags |= FLAG_DBS_ASSERTZ;
-			dbs_save_node(db, &dstbuf, &buflen, n);
+			dbs_save_node(db, fp, &dstbuf, &buflen, n);
 			any++;
 		}
 	}
 
-	fflush(db->fp);
-	ffsync(db->fp);
-	fclose(db->fp);
-	db->fp = NULL;
+	fflush(fp);
+	ffsync(fp);
+	fclose(fp);
 	free(dstbuf);
 	printf("Saved %llu items\n", (unsigned long long)any);
 
@@ -86,36 +77,36 @@ static int dbs_merge(module *db)
 	return 1;
 }
 
-void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
+void dbs_save_node(module *db, FILE *fp, char **dstbuf, size_t *buflen, node *n)
 {
-	if (!db->fp)
-	{
-		mkdir("db", 0777);
-		char pathname[1024];
-		sprintf(pathname, "db/%s", db->name);
-		mkdir(pathname, 0777);
-		char filename[1024];
-		snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
-		db->fp = fopen(filename, "a+b");
-		assert(db->fp != NULL);
-	}
-
+	node *save_n = n;
 	char *dst = *dstbuf;
 	*buflen -= 20;						// a bit of leeway
 
-	if (n->flags & FLAG_DBS_RETRACT)
+	node *term = NLIST_FRONT(&n->val_l);
+	node *head = NLIST_NEXT(term);
+	node *save_head = head;
+
+	if (n->flags & FLAG_DBS_STORAGE)
+	{
+		node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
+		node *tmp_rest = NLIST_NEXT(tmp_fa);
+		n = head = dbs_read_entry(db, tmp_rest->val_i);
+	}
+
+	if (save_n->flags & FLAG_DBS_RETRACT)
 	{
 		dst += snprintf(dst, *buflen, "r_(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
-	else if (n->flags & FLAG_DBS_ASSERTZ)
+	else if (save_n->flags & FLAG_DBS_ASSERTZ)
 	{
 		dst += snprintf(dst, *buflen, "z_(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 		*dst++ = ')';
 	}
-	else if (n->flags & FLAG_DBS_ASSERTA)
+	else if (save_n->flags & FLAG_DBS_ASSERTA)
 	{
 		dst += snprintf(dst, *buflen, "a_(");
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
@@ -126,11 +117,14 @@ void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
 		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
 	}
 
+	if (head != save_head)
+		term_heapcheck(head);
+
 	*dst++ = db->in_tran ?',':'.';
 	if (!db->in_tran) *dst++ = '\n';
 	*dst = '\0';
-	fwrite(*dstbuf, 1, dst-*dstbuf, db->fp);
-	if (!db->in_tran) fflush(db->fp);
+	fwrite(*dstbuf, 1, dst-*dstbuf, fp);
+	if (!db->in_tran) fflush(fp);
 }
 
 node *dbs_read_entry(module* db, nbr_t fpos)
@@ -248,19 +242,17 @@ static void dbs_load(module *db, int tail)
 	if (db->fp != NULL)
 	{
 		dbs_load_file(db, filename, tail);
-		fclose(db->fp);
-		db->fp = NULL;
-	}
 
-	if (g_dbs_merge)
-	{
-		g_dbs_merge = 0;
-		dbs_merge(db);
+		if (g_dbs_merge)
+			dbs_merge(db);
+
+		fclose(db->fp);
 	}
 
 	snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
 	db->fp = fopen(filename, "a+b");
 	assert(db->fp != NULL);
+	g_dbs_merge = 0;
 }
 
 nbr_t dbs_get_fpos(module *db)
@@ -366,7 +358,7 @@ static int bif_dbs_log(tpl_query *q)
 	size_t buflen = PRINTBUF_SIZE;					// expandable
 	char *dstbuf = (char*)malloc(buflen+1);
 	node *n = clone_term(q,term1);
-	dbs_save_node(q->curr_db, &dstbuf, &buflen, n);
+	dbs_save_node(q->curr_db, q->curr_db->fp, &dstbuf, &buflen, n);
 	term_heapcheck(n);
 	free(dstbuf);
 	return 1;

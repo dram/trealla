@@ -2096,7 +2096,7 @@ int bif_asserta(tpl_query *q, node *n)
 	{
 		size_t buflen = 1024*64;					// expandable
 		char *dstbuf = (char*)malloc(buflen+1);
-		dbs_save_node(q->curr_db, &dstbuf, &buflen, n);
+		dbs_save_node(q->curr_db, q->curr_db->fp, &dstbuf, &buflen, n);
 		free(dstbuf);
 	}
 #endif
@@ -2218,7 +2218,7 @@ int bif_assertz(tpl_query *q, node *n)
 	{
 		size_t buflen = 1024*64;					// expandable
 		char *dstbuf = (char*)malloc(buflen+1);
-		dbs_save_node(q->curr_db, &dstbuf, &buflen, n);
+		dbs_save_node(q->curr_db, q->curr_db->fp, &dstbuf, &buflen, n);
 		free(dstbuf);
 	}
 #endif
@@ -2338,7 +2338,7 @@ int bif_retract(tpl_query *q, node *n)
 	{
 		size_t buflen = 1024*64;					// expandable
 		char *dstbuf = (char*)malloc(buflen+1);
-		dbs_save_node(q->curr_db, &dstbuf, &buflen, n);
+		dbs_save_node(q->curr_db, q->curr_db->fp, &dstbuf, &buflen, n);
 		free(dstbuf);
 	}
 #endif

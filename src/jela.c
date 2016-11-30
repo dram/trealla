@@ -519,6 +519,9 @@ int match(tpl_query *q)
 		node *head = NLIST_NEXT(term);
 		node *save_head = head;
 
+		// Note: storage items are not kept in memory after a load.
+		// That is, they are single use only.
+
 		if (q->curr_match->flags & FLAG_DBS_STORAGE)
 		{
 			node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));

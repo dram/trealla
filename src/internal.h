@@ -436,7 +436,7 @@ extern char *trealla_readline(FILE *fp);
 extern char *trealla_readstring(FILE *fp);
 
 #ifndef ISO_ONLY
-extern void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n);
+extern void dbs_save_node(module *db, FILE* fp, char **dstbuf, size_t *buflen, node *n);
 extern nbr_t dbs_get_fpos(module *db);
 #endif
 
