@@ -862,6 +862,12 @@ static int bif_iso_write_term3(tpl_query *q)
 
 	size_t len = sprint2_term(&tmpbuf, &max_len, &dst, q->pl, q, term2, quoted);
 
+	if (q->halt)
+	{
+		free(tmpbuf);
+		return 0;
+	}
+
 #ifndef ISO_ONLY
 	if (dots)
 		g_list_cons = save_dots;
@@ -927,6 +933,12 @@ static int bif_iso_write_term(tpl_query *q)
 
 	size_t len = sprint2_term(&tmpbuf, &max_len, &dst, q->pl, q, term1, quoted);
 
+	if (q->halt)
+	{
+		free(tmpbuf);
+		return 0;
+	}
+
 	if (fs)
 	{
 		tmpbuf[len++] = '.';
@@ -954,6 +966,13 @@ static int bif_iso_write_canonical2(tpl_query *q)
 	char *tmpbuf = (char*)malloc(max_len+1);
 	char *dst = tmpbuf;
 	size_t len = sprint2_term(&tmpbuf, &max_len, &dst, q->pl, q, term2, 2);
+
+	if (q->halt)
+	{
+		free(tmpbuf);
+		return 0;
+	}
+
 	int ok;
 
 #ifndef ISO_ONLY
@@ -972,6 +991,10 @@ static int bif_iso_write_canonical(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	print_term(q->pl, q, term1, 2);
+
+	if (q->halt)
+		return 0;
+
 	return 1;
 }
 
@@ -985,6 +1008,13 @@ static int bif_iso_writeq2(tpl_query *q)
 	char *tmpbuf = (char*)malloc(max_len+1);
 	char *dst = tmpbuf;
 	size_t len = sprint2_term(&tmpbuf, &max_len, &dst, q->pl, q, term2, 1);
+
+	if (q->halt)
+	{
+		free(tmpbuf);
+		return 0;
+	}
+
 	int ok;
 
 #ifndef ISO_ONLY
@@ -1003,6 +1033,10 @@ static int bif_iso_writeq(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	print_term(q->pl, q, term1, 1);
+
+	if (q->halt)
+		return 0;
+
 	return 1;
 }
 
@@ -1026,6 +1060,12 @@ static int bif_iso_write2(tpl_query *q)
 		tmpbuf = (char*)malloc(max_len+1);
 		char *dst = tmpbuf;
 		len = sprint2_term(&tmpbuf, &max_len, &dst, q->pl, q, term2, 0);
+
+		if (q->halt)
+		{
+			free(tmpbuf);
+			return 0;
+		}
 	}
 
 	int ok;
@@ -1061,6 +1101,12 @@ static int bif_iso_write(tpl_query *q)
 		tmpbuf = (char*)malloc(max_len+1);
 		char *dst = tmpbuf;
 		len = sprint2_term(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
+
+		if (q->halt)
+		{
+			free(tmpbuf);
+			return 0;
+		}
 	}
 
 	fwrite(tmpbuf, 1, len, stdout);
