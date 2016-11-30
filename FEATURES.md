@@ -175,7 +175,8 @@ based on thread-pools.
 A message is a term. It can be as simple as an atom or number, or as
 complex as a list, tuple or compound.
 
-A proc yields when entering a blocking receive or sleep.
+A proc yields when entering a blocking recv, send, read, write or
+sleep.
 
 	spawn_link(+Name,:Goal)    - run goal as named linked process
 	spawn_link(:Goal)          - run goal as unnamed linked process
