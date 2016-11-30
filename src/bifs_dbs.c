@@ -86,6 +86,53 @@ static int dbs_merge(module *db)
 	return 1;
 }
 
+void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
+{
+	if (!db->fp)
+	{
+		mkdir("db", 0777);
+		char pathname[1024];
+		sprintf(pathname, "db/%s", db->name);
+		mkdir(pathname, 0777);
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
+		db->fp = fopen(filename, "a+b");
+		assert(db->fp != NULL);
+	}
+
+	char *dst = *dstbuf;
+	*buflen -= 20;						// a bit of leeway
+
+	if (n->flags & FLAG_DBS_RETRACT)
+	{
+		dst += snprintf(dst, *buflen, "r_(");
+		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
+		*dst++ = ')';
+	}
+	else if (n->flags & FLAG_DBS_ASSERTZ)
+	{
+		dst += snprintf(dst, *buflen, "z_(");
+		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
+		*dst++ = ')';
+	}
+	else if (n->flags & FLAG_DBS_ASSERTA)
+	{
+		dst += snprintf(dst, *buflen, "a_(");
+		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
+		*dst++ = ')';
+	}
+	else
+	{
+		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
+	}
+
+	*dst++ = db->in_tran ?',':'.';
+	if (!db->in_tran) *dst++ = '\n';
+	*dst = '\0';
+	fwrite(*dstbuf, 1, dst-*dstbuf, db->fp);
+	if (!db->in_tran) fflush(db->fp);
+}
+
 node *dbs_read_entry(module* db, nbr_t fpos)
 {
 	fseek(db->fp, fpos, SEEK_SET);
@@ -219,53 +266,6 @@ static void dbs_load(module *db, int tail)
 nbr_t dbs_get_fpos(module *db)
 {
 	return db->loading ? db->last_fpos : ftell(db->fp);
-}
-
-void dbs_save_node(module *db, char **dstbuf, size_t *buflen, node *n)
-{
-	if (!db->fp)
-	{
-		mkdir("db", 0777);
-		char pathname[1024];
-		sprintf(pathname, "db/%s", db->name);
-		mkdir(pathname, 0777);
-		char filename[1024];
-		snprintf(filename, sizeof(filename), "db/%s/%s.log.dbs", db->name, db->name);
-		db->fp = fopen(filename, "a+b");
-		assert(db->fp != NULL);
-	}
-
-	char *dst = *dstbuf;
-	*buflen -= 20;						// a bit of leeway
-
-	if (n->flags & FLAG_DBS_RETRACT)
-	{
-		dst += snprintf(dst, *buflen, "r_(");
-		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
-		*dst++ = ')';
-	}
-	else if (n->flags & FLAG_DBS_ASSERTZ)
-	{
-		dst += snprintf(dst, *buflen, "z_(");
-		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
-		*dst++ = ')';
-	}
-	else if (n->flags & FLAG_DBS_ASSERTA)
-	{
-		dst += snprintf(dst, *buflen, "a_(");
-		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
-		*dst++ = ')';
-	}
-	else
-	{
-		dst += sprint2_term(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
-	}
-
-	*dst++ = db->in_tran ?',':'.';
-	if (!db->in_tran) *dst++ = '\n';
-	*dst = '\0';
-	fwrite(*dstbuf, 1, dst-*dstbuf, db->fp);
-	if (!db->in_tran) fflush(db->fp);
 }
 
 static int dbs_end(tpl_query *q, int do_sync)
