@@ -1,7 +1,8 @@
+:-module(skynet,[start/0,test/0]).
+
 % Skynet - see https://github.com/atemerev/skynet
 
-:-module(skynet,[start/0,test/0]).
-:-using([proc]).
+:-use_module(proc).
 
 start :- run_skynet(1000000).
 test :- run_skynet(100).

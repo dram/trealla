@@ -2,8 +2,9 @@
 :-export([addpost/5,delpost/1,lockpost/1,getpost/8,getposts/2]).
 :-export([addcomment/4,replycomment/2,delcomment/1,undelcomment/1]).
 :-export([getcomment/6,getcomments/2]).
+
 :-use_module(dict).
-:-using([sys]).
+:-use_module(sys).
 
 :-define(FieldCreated,'created').
 :-define(FieldModified,'modified').

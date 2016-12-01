@@ -1,7 +1,8 @@
 :-dynamic(f/1).
 :-dynamic(g/2).
 :-define(ITEMS,10000).
-:-using([sys]).
+
+:-use_module(sys).
 
 test1a :-
 	write('Load...'), nl,

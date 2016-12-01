@@ -1,7 +1,9 @@
 :-module(http_client).
 :-export([get10_data/3,get10_file/3,put10_file/3]).
 :-export([get11_data/3,get11_file/3,put11_file/3]).
-:-using([sys,net]).
+
+:-use_module(sys).
+:-use_module(net).
 
 get10_data(Host,Path,Data) :-
 	client(Host,S),

@@ -1,4 +1,4 @@
-:-using([proc]).
+:-use_module(proc).
 
 test :-
 	fork,

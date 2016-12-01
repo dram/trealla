@@ -8,8 +8,8 @@ Each module specifies a separate and self-contained database for both
 its static rules and dynamic assertions. It also represents a unit of
 locking for updates.
 
-	:-module(+Module).
-	:-module(+Module,+PublicList).			% Specify public list
+	:-module(+Name).
+	:-module(+Name,+PublicList).			% Specify public list
 	:-export(+PublicList).					% Specify public list
 
 The *module* directive can specify a list of exported public predicates,
@@ -32,9 +32,10 @@ Will substitute during load a defined value from the namespace. The name
 value. Other pre-defined names are *?RANDOM*, *?RANDOMSTR*, *?TIME*
 and *?TIMESTR*.
 
-Use the lexical namespace(s):
+Use the module (by loading if necessary) and add the export-list to the
+current namespace:
 
-	:-using([+Module,...]).
+	:-use_module(+Name).
 
 The *include/1* directive loads a file that is lexically pasted into the
 source. Use the *unload_file/1* directive to remove a module from the
@@ -240,7 +241,7 @@ an average desktop PC two local processes can rendezvous at the rate
 of about 50K/sec. A Raspberry Pi at just under 10K/sec. For example,
 spawn 100K child processes and rendezvous with them:
 
-	:-using([proc]).
+	:-use_module(proc).
 
 	parent :-
 		between(1,100000,I),
@@ -289,7 +290,7 @@ in Erlang from [LYSEFGG] (http://learnyousomeerlang.com/content):
 
 becomes (after converting from functional to declarative style):
 
-	:-using([proc]).
+	:-use_module(proc).
 
 	important(L, L2) :-
 		tmo(0), receive {Priority, Message},
@@ -354,7 +355,8 @@ will be sought using discovery.
 Both *netproc/* and *pid/2* may take bind attributes (as outlined in the
 next section). For example, a simple echo server and client:
 
-	:-using([net,proc]).
+	:-use_module(proc).
+	:-use_module(net).
 
 	echod :-
 		server([';name=ECHO'],Pid),
@@ -370,7 +372,8 @@ next section). For example, a simple echo server and client:
 
 or to NOT use naming but instead use a specific port (9000):
 
-	:-using([net,proc]).
+	:-use_module(proc).
+	:-use_module(net).
 
 	echod :-
 		server([':9000'],Pid),

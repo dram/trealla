@@ -6,7 +6,11 @@
 
 :-module(stomp_server).
 :-export([start/0]).
-:-using([sys,net,kvs,stomp]).
+
+:-use_module(sys).
+:-use_module(net).
+:-use_module(proc).
+:-use_module(stomp).
 
 :-define(BindStomp,':9000').
 :-define(BindStomps,':9001;+tls').
@@ -44,14 +48,14 @@ process_request(S,Log,Param,Ver,'SUBSCRIBE') :-
 	stash_get(S,'STOMP_DESTINATION',Dest,_),
 	stash_get(S,'STOMP_ID',Id,_),
 	stash_set(S,Id,Dest),
-	kvs:lput(Dest,Old,[S|Old]),
+	lput(Dest,Old,[S|Old]),
 	process_receipt(S),
 	log_message(S,Log,1).
 
 process_request(S,Log,Param,Ver,'UNSUBSCRIBE') :-
 	stash_get(S,'STOMP_ID',Id,_),
 	stash_get(S,Id,Dest),
-	kvs:lerase(Dest,S),
+	lerase(Dest,S),
 	process_receipt(S),
 	log_message(S,Log,1).
 
@@ -60,7 +64,7 @@ process_request(S,Log,Param,Ver,'SEND') :-
 	stash_get(S,'STOMP_CONTENT_LENGTH',LenStr,0),
 	atom_integer(LenStr,Len),
 	bread(S,LenStr,Data),
-	kvs:lget(Dest,Subs),
+	lget(Dest,Subs),
 	uuid(Mid),
 	send_message(S,Subs,Mid,Data),
 	concat('message-id:',Mid,'\n',Hdrs),

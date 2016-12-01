@@ -1,6 +1,7 @@
 % Spawn a proc & exchange messages
 
-:-using([sys,proc]).
+:-use_module(sys).
+:-use_module(proc).
 
 test :-
 	fork,

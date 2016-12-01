@@ -1,11 +1,11 @@
-% An SMTP client: Add error-checking!
-
 :-module(smtp_client).
 :-export([send_plain/4,send_html/4,send_base64/4]).
 :-export([send_plain/5,send_html/5,send_base64/5]).
 :-export([send/6]).
 :-define(Server,'localhost:25').
-:-using([sys,net]).
+
+:-use_module(sys).
+:-use_module(net).
 
 send_plain(From,To,Subject,Body) :-
 	replace(Body,'\n.','\n..',Body2),

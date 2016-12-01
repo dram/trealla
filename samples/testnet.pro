@@ -1,6 +1,7 @@
 % An echo server
 
-:-using([sys,net]).
+:-use_module(sys).
+:-use_module(net).
 
 echod :-
 	server([':12345;tcp',':12345;udp'],S),
