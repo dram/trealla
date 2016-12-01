@@ -1104,13 +1104,13 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 	else if (!strcmp(flag, "character_escapes")) l->pl->flag_character_escapes = !strcmp(term2->val_s,"true")?1:0;
 }
 
-void dir_dynamic(lexer *l, node *n)
+int dir_dynamic(lexer *l, node *n)
 {
 	node *term1 = n;
 	node *term2 = NLIST_NEXT(term1);
-	if (!is_compound(term1)) return;
+	if (!is_compound(term1)) return 0;
 	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
-	if (!is_integer(NLIST_NEXT(head))) return;
+	if (!is_integer(NLIST_NEXT(head))) return 0;
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
 	const char *key = dict(l->db, tmpbuf);
@@ -1121,14 +1121,14 @@ void dir_dynamic(lexer *l, node *n)
 	if (!term2)
 	{
 		sl_set(&l->db->rules, key, r);
-		return;
+		return 0;
 	}
 
 #ifndef ISO_ONLY
 	if (!is_list(term2))
 	{
 		sl_set(&l->db->rules, key, r);
-		return;
+		return 0;
 	}
 
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
@@ -1163,6 +1163,8 @@ void dir_dynamic(lexer *l, node *n)
 
 	sl_set(&l->db->rules, key, r);
 #endif
+
+	return 1;
 }
 
 static void dir_op(lexer *l, node *n)
@@ -1202,19 +1204,20 @@ static void dir_op(lexer *l, node *n)
 	DBUNLOCK(l->db);
 }
 
-static void dir_initialization(lexer *l, node *n)
+static int dir_initialization(lexer *l, node *n)
 {
 	char tmpbuf[1024];
 	sprint_term(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 1);
 	l->init = strdup(tmpbuf);
+	return 1;
 }
 
 #ifndef ISO_ONLY
-static void dir_module(lexer *l, node *n)
+static int dir_module(lexer *l, node *n)
 {
 	node *term1 = n;
 	node *term2 = NLIST_NEXT(term1);
-	if (!is_atom(term1)) return;
+	if (!is_atom(term1)) return 0;
 	char *name = term1->val_s;
 
 	DBSLOCK(l->pl);
@@ -1223,7 +1226,7 @@ static void dir_module(lexer *l, node *n)
 	{
 		DBSUNLOCK(l->pl);
 		l->error = 1;
-		return;
+		return 0;
 	}
 
 	l->db = (module*)calloc(1, sizeof(module));
@@ -1265,9 +1268,9 @@ static void dir_module(lexer *l, node *n)
 	char filename[1024];
 	snprintf(filename, sizeof(filename), "%s.conf", name);
 	struct stat st = {0};
-	if (stat(filename, &st) != 0) return;
+	if (stat(filename, &st) != 0) return 1;
 	FILE *fp = fopen(filename, "rb");
-	if (fp == NULL) return;
+	if (fp == NULL) return 1;
 	char *dstbuf = (char*)malloc(st.st_size+1);
 	size_t len = fread(dstbuf, 1, st.st_size, fp);
 	dstbuf[len] = '\0';
@@ -1308,15 +1311,16 @@ static void dir_module(lexer *l, node *n)
 	}
 
 	free(dstbuf);
+	return 1;
 }
 
-static void dir_export(lexer *l, node *n)
+static int dir_export(lexer *l, node *n)
 {
 	node *term1 = n;
 	char tmpbuf[FUNCTOR_SIZE+10];
 
 	if (!is_list(term1))
-		return;
+		return 0;
 
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 
@@ -1340,20 +1344,22 @@ static void dir_export(lexer *l, node *n)
 		if (is_list(n2))
 			n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
 	}
+
+	return 1;
 }
 
-void dir_using(lexer *l, node *n)
+int dir_using(lexer *l, node *n)
 {
 	node *term1 = n;
 
 	if (is_atom(term1))
 	{
 		sl_set(&l->ns, strdup(term1->val_s), NULL);
-		return;
+		return 1;
 	}
 
 	if (!is_list(term1))
-		return;
+		return 0;
 
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 
@@ -1372,24 +1378,27 @@ void dir_using(lexer *l, node *n)
 		if (is_list(n2))
 			n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
 	}
+
+	return 1;
 }
 
-static void dir_define(lexer *l, node *n)
+static int dir_define(lexer *l, node *n)
 {
 	node *term1 = n;
 	node *term2 = NLIST_NEXT(term1);
-	if (!is_atom(term1) && !is_var(term1)) return;
-	if (!term2) return;
-	if (!is_atomic(term2)) return;
+	if (!is_atom(term1) && !is_var(term1)) return 0;
+	if (!term2) return 0;
+	if (!is_atomic(term2)) return 0;
 	char tmpbuf[KEY_SIZE];
 	sprint_term(tmpbuf, sizeof(tmpbuf), l->pl, NULL, term2, 1);
 	add_define(l, term1->val_s, tmpbuf);
+	return 1;
 }
 
-void dir_use_module(lexer *l, node *n)
+int dir_use_module(lexer *l, node *n)
 {
 	node *term1 = n;
-	if (!is_atom(term1)) return;
+	if (!is_atom(term1)) return 0;
 	const char *name = term1->val_s;
 	sl_set(&l->ns, strdup(name), NULL);
 
@@ -1398,7 +1407,7 @@ void dir_use_module(lexer *l, node *n)
 	if (sl_get(&l->pl->mods, name, NULL))
 	{
 		DBSUNLOCK(l->pl);
-		return;
+		return 1;
 	}
 
 	DBSUNLOCK(l->pl);
@@ -1412,23 +1421,23 @@ void dir_use_module(lexer *l, node *n)
 			char *src = strndup((const char*)lib->code, (size_t)lib->len);
 			trealla_consult_text(l->pl, src, name);
 			free(src);
-			return;
+			return 1;
 		}
 
 		lib++;
 	}
 
-	trealla_consult_file(l->pl, name);
+	return trealla_consult_file(l->pl, name);
 }
 
-void dir_unload_file(lexer *l, node *n)
+int dir_unload_file(lexer *l, node *n)
 {
 	node *term1 = n;
-	if (!is_atom(term1)) return;
-	trealla_deconsult(l->pl, term1->val_s);
+	if (!is_atom(term1)) return 0;
+	return trealla_deconsult(l->pl, term1->val_s);
 }
 
-void dir_function(lexer *l, node *n)
+int dir_function(lexer *l, node *n)
 {
 	node *term1 = n;
 
@@ -1458,14 +1467,16 @@ void dir_function(lexer *l, node *n)
 				n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
 		}
 	}
+
+	return 1;
 }
 #endif
 
-void dir_include(lexer *l, node *n)
+int dir_include(lexer *l, node *n)
 {
 	node *term1 = n;
-	if (!is_atom(term1)) return;
-	lexer_consult(l, term1->val_s);
+	if (!is_atom(term1)) return 0;
+	return lexer_consult(l, term1->val_s);
 }
 
 static void directive(lexer *l, node *n)

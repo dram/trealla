@@ -464,14 +464,14 @@ extern const ops *get_op(module *db, const char *functor, int hint_prefix);
 extern char *deescape(char *dst, const char *src, char quote);
 
 #ifndef ISO_ONLY
-extern void dir_using(lexer *l, node *n);
-extern void dir_use_module(lexer *l, node *n);
-extern void dir_unload_file(lexer *l, node *n);
-extern void dir_function(lexer *l, node *n);
+extern int dir_using(lexer *l, node *n);
+extern int dir_function(lexer *l, node *n);
+extern int dir_use_module(lexer *l, node *n);
+extern int dir_unload_file(lexer *l, node *n);
 #endif
 
-extern void dir_dynamic(lexer *l, node *n);
-extern void dir_include(lexer *l, node *n);
+extern int dir_dynamic(lexer *l, node *n);
+extern int dir_include(lexer *l, node *n);
 
 extern size_t sprint_term(char *dst, size_t size, trealla *pl, tpl_query *q, node *n, int listing);
 extern void print_term(trealla *pl, tpl_query *q, node *n, int listing);
