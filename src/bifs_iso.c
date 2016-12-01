@@ -4573,6 +4573,13 @@ static int bif_sys_writeln2(tpl_query *q)
 	return ok > 0;
 }
 
+static int bif_iso_unload_file(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	dir_unload_file(q->lex, term1);
+	return 1;
+}
 #endif
 
 static int bif_iso_include(tpl_query *q)
@@ -4583,19 +4590,11 @@ static int bif_iso_include(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_unload_file(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	dir_unload_file(q->lex, term1);
-	return 1;
-}
-
 static int bif_iso_dynamic(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_compound(term1);
-	dir_unload_file(q->lex, term1);
+	dir_dynamic(q->lex, term1);
 	return 1;
 }
 
@@ -4777,10 +4776,10 @@ void bifs_load_iso(void)
 	DEFINE_BIF("setof", 3, bif_iso_setof);
 
 	DEFINE_BIF("include", 1, bif_iso_include);
-	DEFINE_BIF("unload_file", 1, bif_iso_unload_file);
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 
 #ifndef ISO_ONLY
+	DEFINE_BIF("unload_file", 1, bif_iso_unload_file);
 	DEFINE_BIF("using", 1, bif_sys_using);
 	DEFINE_BIF("use_module", 1, bif_sys_use_module);
 #endif

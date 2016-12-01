@@ -519,15 +519,14 @@ int match(tpl_query *q)
 		node *head = NLIST_NEXT(term);
 		node *save_head = head;
 
-		// Note: storage items are not kept in memory after a load.
-		// That is, they are single use only.
-
+#ifndef ISO_ONLY
 		if (q->curr_match->flags & FLAG_DBS_STORAGE)
 		{
 			node *tmp_fa = NLIST_NEXT(NLIST_FRONT(&head->val_l));
 			node *tmp_rest = NLIST_NEXT(tmp_fa);
 			head = dbs_read_entry(q->curr_db, tmp_rest->val_i);
 		}
+#endif
 
 		unsigned frame_size = q->curr_match->frame_size;
 		prepare_frame(q, frame_size);

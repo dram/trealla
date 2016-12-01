@@ -513,6 +513,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 
 	*persist = r->persist;
 
+#ifndef ISO_ONLY
 	if (r->storage)
 	{
 		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
@@ -526,6 +527,7 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 		NLIST_PUSH_BACK(&head->val_l, tmp);
 		//print_term(l->pl, NULL, n, 1); printf("\n");
 	}
+#endif
 
 	if (append_mode)
 		NLIST_PUSH_BACK(&r->clauses, n);
