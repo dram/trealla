@@ -21,9 +21,9 @@
 
 :-dynamic(blog_name/2,[persist]).
 :-dynamic(blog_blog/2,[persist]).
-:-dynamic(blog_post/2,[persist]).
+:-dynamic(blog_post/2,[storage]).
 :-dynamic(blog_comments/2,[persist]).
-:-dynamic(blog_comment/2,[persist]).
+:-dynamic(blog_comment/2,[storage]).
 :-dynamic(blog_reply/3,[persist]).
 
 % At the moment we are creating blogs on demand. To rename a
