@@ -655,7 +655,12 @@ int call(tpl_query *q)
 
 		rule *r = xref_term(q->lex, tmp, arity);
 
-		if (r == NULL)
+		if (is_builtin(tmp) && tmp->bifptr)
+		{
+			status = tmp->bifptr(q);
+			g_s_resolves++;
+		}
+		else if (r == NULL)
 		{
 			char tmpbuf[FUNCTOR_SIZE+10];
 
@@ -680,9 +685,12 @@ int call(tpl_query *q)
 			}
 		}
 
-		q->curr_term->match = r;
-		status = match(q);
-		g_u_resolves++;
+		if (r != NULL)
+		{
+			q->curr_term->match = r;
+			status = match(q);
+			g_u_resolves++;
+		}
 	}
 
 	q->retry = 0;
