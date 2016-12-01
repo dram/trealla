@@ -271,11 +271,11 @@ struct tpl_query_
 	tpl_query *parent;
 	lexer *lex;
 	module *curr_db;
+	char *halt_s;
 
 	union
 	{
 		slnode *idx_iter;					// First-arg iterator
-		char *halt_s;
 		skiplist *d;						// used as a temp
 		number nv;
 		uint32_t line_nbr;

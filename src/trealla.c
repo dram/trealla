@@ -2744,7 +2744,7 @@ int query_inline(tpl_query *self)
 }
 
 double query_elapsed(tpl_query *self) { if (self) return (double)self->elapsed / 1000.0 / 1000.0; else return 0.0; }
-void query_abort(tpl_query *self) { if (self) { self->halt_s = (char*)"ABORT_INTERRUPTED"; self->halt = 1; }; }
+void query_abort(tpl_query *self) { if (self) { self->halt_s = (char*)strdup("ABORT_INTERRUPTED"); self->halt = 1; }; }
 
 double query_get_float(tpl_query *self, unsigned idx)
 {
@@ -2987,7 +2987,7 @@ void query_destroy(tpl_query *self)
 		lexer_done(self->lex);
 	}
 
-	if (self->halt)
+	if (self->halt_s)
 		free(self->halt_s);
 
 	if (!self->def_choice)
