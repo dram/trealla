@@ -598,7 +598,7 @@ int call(tpl_query *q)
 	TRACE("call");
 	int status = 0;
 
-	if (is_builtin(q->curr_term) && q->curr_term->bifptr)
+	if (is_builtin(q->curr_term))
 	{
 		status = q->curr_term->bifptr(q);
 		g_s_resolves++;
@@ -655,7 +655,7 @@ int call(tpl_query *q)
 
 		rule *r = xref_term(q->lex, tmp, arity);
 
-		if (is_builtin(tmp) && tmp->bifptr)
+		if (is_builtin(tmp))
 		{
 			status = tmp->bifptr(q);
 			g_s_resolves++;

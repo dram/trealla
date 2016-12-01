@@ -2399,10 +2399,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 		if (!sl_get(&l->pl->mods, key, (void**)&db))
 			continue;
 
-		char tmpbuf[FUNCTOR_SIZE*2];
-		sprintf(tmpbuf, "%s:%s", key, functor);
-
-		if ((term->bifptr = get_bifarity(l, tmpbuf, arity)->bifptr) != NULL)
+		if ((term->bifptr = get_bifarity(l, functor, arity)->bifptr) != NULL)
 		{
 			term->flags |= FLAG_BUILTIN;
 			return r;
