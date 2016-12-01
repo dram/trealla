@@ -465,7 +465,6 @@ extern char *deescape(char *dst, const char *src, char quote);
 
 #ifndef ISO_ONLY
 extern void dir_using(lexer *l, node *n);
-extern void dir_define(lexer *l, node *n);
 extern void dir_use_module(lexer *l, node *n);
 extern void dir_unload_file(lexer *l, node *n);
 extern void dir_function(lexer *l, node *n);

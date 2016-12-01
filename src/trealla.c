@@ -1374,7 +1374,7 @@ void dir_using(lexer *l, node *n)
 	}
 }
 
-void dir_define(lexer *l, node *n)
+static void dir_define(lexer *l, node *n)
 {
 	node *term1 = n;
 	node *term2 = NLIST_NEXT(term1);
