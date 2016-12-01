@@ -620,11 +620,12 @@ char *trealla_readline(FILE *fp)
 
 		if (strchr(block, '\n') != NULL)	// FIXME
 		{
+#if 0
 			size_t len = strlen(block);
 
 			if (block[len-1] == '\n')
 				block[--len] = '\0';
-
+#endif
 			break;
 		}
 
