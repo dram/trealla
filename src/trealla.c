@@ -2574,7 +2574,7 @@ int query_parse(tpl_query *self, const char *src)
 
 	if (!xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses)))
 	{
-		self->halt = 0; self->halt_s = strdup("NOTHING TO DO"); self->line_nbr = __LINE__;
+		self->halt = 0; self->line_nbr = __LINE__;
 		return 0;
 	}
 
@@ -2987,7 +2987,7 @@ void query_destroy(tpl_query *self)
 		lexer_done(self->lex);
 	}
 
-	if (self->halt_s)
+	if (self->halt)
 		free(self->halt_s);
 
 	if (!self->def_choice)

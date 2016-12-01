@@ -267,24 +267,26 @@ struct tpl_query_
 	choice *choices;
 	env *envs;
 	node *curr_term, *curr_match;
-	slnode *idx_iter;						// First-arg iterator
 	trealla *pl;
 	tpl_query *parent;
-	char *halt_s;
 	lexer *lex;
 	module *curr_db;
 
 	union
 	{
+		slnode *idx_iter;					// First-arg iterator
+		char *halt_s;
 		skiplist *d;						// used as a temp
 		number nv;
+		uint32_t line_nbr;
+		uint32_t print_depth;
 	};
 
 	uint64_t started, elapsed, tmo_when_msecs;
 	uint32_t choices_used, choices_possible, choice_point;
 	uint32_t envs_used, envs_possible, env_point;
-	uint32_t curr_context, latest_context, line_nbr;
-	uint32_t curr_frame, curr_choice, print_depth;
+	uint32_t curr_context, latest_context;
+	uint32_t curr_frame, curr_choice;
 	int32_t tmo_msecs;
 	uint16_t frame_size, depth, max_depth, fail_arg;
 	uint8_t retry, halt, ok, def_choice, def_env;
