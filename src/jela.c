@@ -592,9 +592,82 @@ int match(tpl_query *q)
 	return 0;
 }
 
+static int dynamic(tpl_query *q)
+{
+	int status = 0;
+	node *n;
+	int arity;
+
+	if (is_compound(q->curr_term))
+	{
+		n = get_args(q);
+		arity = get_arity(q);
+	}
+	else
+	{
+		n = q->curr_term;
+		arity = 0;
+	}
+
+	const char *functor = n->val_s;
+	char tmpbuf2[FUNCTOR_SIZE+10];
+	const char *src = strchr(functor, ':');
+
+	if (src)
+	{
+		memcpy(tmpbuf2, functor, src-functor);
+		tmpbuf2[src-functor] = '\0';
+		functor = src+1;
+		sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db);
+	}
+
+	//printf("DEBUG: dynamic %s/%d\n", tmp->val_s, arity);
+
+	rule *r = xref_term(q->lex, n, arity);
+
+	if (is_builtin(n))
+	{
+		g_s_resolves++;
+		return n->bifptr(q);
+	}
+
+	if (r == NULL)
+	{
+		char tmpbuf[FUNCTOR_SIZE+10];
+
+		if (!strchr(functor, ARITY_CHAR))
+		{
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+			functor = tmpbuf;
+		}
+
+		if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
+		{
+			printf("ERROR: UNKNOWN -> '%s'\n", functor);
+			QABORT(ABORT_NOTDYNAMIC);
+			return 0;
+		}
+
+		if (0 && !r->dynamic && !strchr(functor, ':'))
+		{
+			printf("ERROR: NOT DYNAMIC '%s'\n", functor);
+			QABORT(ABORT_NOTDYNAMIC);
+			return 0;
+		}
+	}
+
+	if (r != NULL)
+	{
+		q->curr_term->match = r;
+		status = match(q);
+		g_u_resolves++;
+	}
+
+	return status;
+}
+
 int call(tpl_query *q)
 {
-	TRACE("call");
 	int status = 0;
 
 	if (is_builtin(q->curr_term))
@@ -624,72 +697,7 @@ int call(tpl_query *q)
 	}
 	else
 	{
-		node *tmp;
-		int arity;
-
-		if (is_compound(q->curr_term))
-		{
-			tmp = get_args(q);
-			arity = get_arity(q);
-		}
-		else
-		{
-			tmp = q->curr_term;
-			arity = 0;
-		}
-
-		const char *functor = tmp->val_s;
-		char tmpbuf2[FUNCTOR_SIZE+10];
-		const char *src = strchr(functor, ':');
-
-		if (src)
-		{
-			memcpy(tmpbuf2, functor, src-functor);
-			tmpbuf2[src-functor] = '\0';
-			functor = src+1;
-			sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db);
-		}
-
-		//printf("DEBUG: dynamic %s/%d\n", tmp->val_s, arity);
-
-		rule *r = xref_term(q->lex, tmp, arity);
-
-		if (is_builtin(tmp))
-		{
-			status = tmp->bifptr(q);
-			g_s_resolves++;
-		}
-		else if (r == NULL)
-		{
-			char tmpbuf[FUNCTOR_SIZE+10];
-
-			if (!strchr(functor, ARITY_CHAR))
-			{
-				snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
-				functor = tmpbuf;
-			}
-
-			if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
-			{
-				printf("ERROR: UNKNOWN -> '%s'\n", functor);
-				QABORT(ABORT_NOTDYNAMIC);
-				return 0;
-			}
-
-			if (0 && !r->dynamic && !strchr(functor, ':'))
-			{
-				printf("ERROR: NOT DYNAMIC '%s'\n", functor);
-				QABORT(ABORT_NOTDYNAMIC);
-				return 0;
-			}
-		}
-
-		if (r != NULL)
-		{
-			q->curr_term->match = r;
-			status = match(q);
-			g_u_resolves++;
-		}
+		status = dynamic(q);
 	}
 
 	q->retry = 0;
