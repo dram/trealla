@@ -100,13 +100,13 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 		q->curr_context = q->latest_context;
 		node *tmp2 = get_arg(q, it2, frame);
 
-		q->depth++;
+		q->unify_depth++;
 
-		if (q->depth > q->max_depth)
-			q->max_depth = q->depth;
+		if (q->unify_depth > q->max_depth)
+			q->max_depth = q->unify_depth;
 
 		int ok = unify_term(q, tmp1, tmp2, q->latest_context);
-		q->depth--;
+		q->unify_depth--;
 		if (!ok) return 0;
 
 		it1 = NLIST_NEXT(it1);
@@ -120,7 +120,7 @@ int unify_term(tpl_query *q, node *term1, node *term2, unsigned frame)
 {
 	DEBUG { printf("### unify_term "); print_term(q->pl, q, term1, 1); printf(" : "); print_term(q->pl, q, term2, 1); printf("\n"); }
 
-	if (q->depth > MAX_UNIFY_DEPTH) { QABORT(ABORT_MAXDEPTH); return 0; }
+	if (q->unify_depth > MAX_UNIFY_DEPTH) { QABORT(ABORT_MAXDEPTH); return 0; }
 
 	if (is_compound(term1) && is_compound(term2))
 		return unify_compound(q, term1, term2, frame);
@@ -534,7 +534,7 @@ int match(tpl_query *q)
 		DEBUG { printf("### match : "); print_term(q->pl, q, q->curr_term, 1); printf(" <==> "); print_term(q->pl, q, head, 1); printf("\n"); }
 
 		g_match_try++;
-		q->max_depth = q->depth = q->fail_arg = 0;
+		q->max_depth = q->unify_depth = q->fail_arg = 0;
 
 		if (!unify_term(q, q->curr_term, head, q->env_point))
 		{
