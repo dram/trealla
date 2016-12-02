@@ -622,12 +622,11 @@ char *trealla_readline(FILE *fp)
 
 		if (strchr(block, '\n') != NULL)	// FIXME
 		{
-#if 0
 			size_t len = strlen(block);
 
-			if (block[len-1] == '\n')
+			if ((block[len-1] == '\n') &&
+				(block[len-2] == '.'))
 				block[--len] = '\0';
-#endif
 			break;
 		}
 
@@ -1988,9 +1987,14 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ".") && (!*src || isspace(*src)))
+		if (!self->quoted && !strcmp(self->tok, ".") &&
+			(!*src || isspace(*src)))
 		{
 			free(self->tok);
+
+			if (self->depth > 1)
+				continue;
+
 			lexer_finalize(self);
 
 			if (self->error)
