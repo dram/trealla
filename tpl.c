@@ -380,7 +380,7 @@ int main(int ac, char *av[])
 				break;
 			}
 
-			while (ok && query_choices(q))
+			while (ok && query_choices(q) && pl->tty)
 			{
 				printf("%s", "(abort=a,trace=t,next=;): ");
 				char ch = history_getch();
