@@ -400,6 +400,7 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 		it2 = NLIST_NEXT(it2);
 	}
 
+	q->latest_context = this_context;
 	return ok;
 }
 
