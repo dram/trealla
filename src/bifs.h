@@ -138,10 +138,18 @@ inline static void put_const_atom(tpl_query *q, unsigned point, const char *s, i
 inline static node *get_arg(tpl_query *q, node *term, unsigned frame)
 {
 	q->latest_context = frame;
-	if (!is_var(term)) return term;
+
+	if (!is_var(term))
+		return term;
+
 	const env *e = get_env(q, frame+term->slot);
-	if (!e->term) return term;
-	if (e->context != -1) q->latest_context = e->context;
+
+	if (!e->term)
+		return term;
+
+	if (e->context != -1)
+		q->latest_context = e->context;
+
 	return e->term;
 }
 

@@ -380,7 +380,6 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 	}
 
 	int this_context = q->curr_context;
-	int ok = 1;
 
 	while (it1)
 	{
@@ -388,23 +387,20 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 		node *tmp1 = get_arg(q, it1, this_context);
 		q->curr_context = q->latest_context;
 		node *tmp2 = get_arg(q, it2, frame);
-
 		q->unify_depth++;
 
 		if (q->unify_depth > q->max_depth)
 			q->max_depth = q->unify_depth;
 
-		ok = unify_term(q, tmp1, tmp2, q->latest_context);
+		int ok = unify_term(q, tmp1, tmp2, q->latest_context);
 		q->unify_depth--;
-		if (!ok) break;
+		if (!ok) return 0;
 
 		it1 = NLIST_NEXT(it1);
 		it2 = NLIST_NEXT(it2);
-		q->curr_context = this_context;
 	}
 
-	q->curr_context = this_context;
-	return ok;
+	return 1;
 }
 
 int unify_term(tpl_query *q, node *term1, node *term2, unsigned frame)
