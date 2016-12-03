@@ -387,9 +387,8 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 		node *tmp1 = get_arg(q, it1, this_context);
 		q->curr_context = q->latest_context;
 		node *tmp2 = get_arg(q, it2, frame);
-		q->unify_depth++;
 
-		if (q->unify_depth > q->max_depth)
+		if (q->unify_depth++ > q->max_depth)
 			q->max_depth = q->unify_depth;
 
 		int ok = unify_term(q, tmp1, tmp2, q->latest_context);
