@@ -379,7 +379,7 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 		it2 = NLIST_NEXT(it2);	//	...
 	}
 
-	int this_context = q->curr_context;
+	int this_context = q->latest_context;
 	int ok = 1;
 
 	while (it1)
@@ -400,10 +400,10 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 
 		it1 = NLIST_NEXT(it1);
 		it2 = NLIST_NEXT(it2);
-		q->curr_context = this_context;
+		q->latest_context = this_context;
 	}
 
-	q->curr_context = this_context;
+	q->latest_context = this_context;
 	return ok;
 }
 
