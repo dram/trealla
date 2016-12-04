@@ -272,12 +272,12 @@ struct tpl_query_
 	lexer *lex;
 	module *curr_db;
 	char *halt_s;
+	number nv;
 
 	union
 	{
 		slnode *idx_iter;					// First-arg iterator
 		skiplist *d;						// used as a temp
-		number nv;
 		uint32_t line_nbr;
 		uint32_t print_depth;
 	};
