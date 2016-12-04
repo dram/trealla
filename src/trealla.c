@@ -2077,7 +2077,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!self->quoted && (!strcmp(self->tok, ":-") || !strcmp(self->tok, "?-")))
+		if (!self->quoted &&
+			(!strcmp(self->tok, ":-") || !strcmp(self->tok, "?-")))
 			self->fact = 0;
 
 		node *n = new_node();
@@ -2229,6 +2230,12 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			free(self->tok);
 			attach_vars(self, n);
 		}
+		else if (!self->quoted && !is_op(self->db, self->tok) &&
+			!isalpha(self->tok[0]) && strcmp(self->tok, "!"))
+		{
+			printf("ERROR: unknown operator: '%s'\n", self->tok);
+			self->error = 1;
+		}
 		else
 		{
 			n->flags |= TYPE_ATOM;
@@ -2332,7 +2339,7 @@ int lexer_consult(lexer *self, const char *filename)
 		if (self->error)
 		{
 			printf("ERROR: consult '%s'\n>>> "
-				"Mismatched parenthesis or brackets,"
+				"Syntax error,"
 				"line=%d\n>>> %s\n", filename, nbr, src);
 			fclose(fp);
 			return 0;
