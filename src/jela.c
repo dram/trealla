@@ -455,57 +455,38 @@ int match(tpl_query *q)
 	rule *r = q->curr_term->match;
 	if (!r) return 0;
 
-	if (q->retry && q->curr_match)
+	if (r->dynamic)
 	{
-		if (r->dynamic)
+		node *term = NLIST_FRONT(&q->curr_term->val_l);		// Get the functor
+		node *fa = NLIST_NEXT(term);						// ... first arg
+		node *fval = get_arg(q, fa, q->curr_context);
+
+		if (!is_var(fval))
 		{
-			node *term = NLIST_FRONT(&q->curr_term->val_l);		// Get the functor
-			node *fa = NLIST_NEXT(term);						// ... first arg
-			node *fval = get_arg(q, fa, q->curr_context);
+			char tmpbuf[KEY_SIZE];
+			const char *key = make_key(q->pl, tmpbuf, fval);
 
-			if (!is_var(fval))
-			{
-				node *match;
-
-				if (!sl_nextx(&q->idx_iter, (void**)&match))
-					return 0;
-
-				q->curr_match = match;
-			}
-			else
-				q->curr_match = NLIST_NEXT(q->curr_match);
-		}
-		else
-			q->curr_match = NLIST_NEXT(q->curr_match);
-	}
-	else
-	{
-		if (r->dynamic)
-		{
-			node *term = NLIST_FRONT(&q->curr_term->val_l);		// Get the functor
-			node *fa = NLIST_NEXT(term);						// ... first arg
-			node *fval = get_arg(q, fa, q->curr_context);
-
-			if (!is_var(fval))
-			{
-				char tmpbuf[KEY_SIZE];
-				const char *key = make_key(q->pl, tmpbuf, fval);
+			if (!q->retry)
 				q->idx_iter = sl_findx(&r->idx, key);
-				node *match;
 
-				if (!sl_nextx(&q->idx_iter, (void**)&match))
-					return 0;
-
-				q->curr_match = match;
-			}
-			else
-				q->curr_match = NLIST_FRONT(&r->clauses);
+			if (!sl_nextx(&q->idx_iter, (void**)&q->curr_match))
+				return 0;
 		}
+		else if (q->retry)
+			q->curr_match = NLIST_NEXT(q->curr_match);
 		else
 			q->curr_match = NLIST_FRONT(&r->clauses);
-
-		allocate_frame(q);
 	}
+	else if (q->retry)
+		q->curr_match = NLIST_NEXT(q->curr_match);
+	else
+		q->curr_match = NLIST_FRONT(&r->clauses);
+
+	if (!q->curr_match)
+		return 0;
+
+	if (!q->retry)
+		allocate_frame(q);
 
 	while (q->curr_match && !q->halt)
 	{
