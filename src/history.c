@@ -135,7 +135,7 @@ char *history_readline_eol(const char* prompt, char eol)
 {
 	static const char *save_prompt;
 	static char tmp_prompt[1024];
-	const int DEF_BLOCK_SIZE = 1024;
+	const int DEF_BLOCK_SIZE = 1024*8;
 	size_t block_size = DEF_BLOCK_SIZE;
 	char *line = (char*)malloc(block_size);
 	char *dst = line;
@@ -514,7 +514,8 @@ char *history_readline_eol(const char* prompt, char eol)
 				last = last->next;
 
 			free(line);
-			line = strdup(last->line);
+			line = (char*)malloc(strlen(last->line)+block_size);
+			strcpy(line, last->line);
 			int curr_len = strlen(line);
 			output("\r%s%s", prompt, line);
 
@@ -545,7 +546,8 @@ char *history_readline_eol(const char* prompt, char eol)
 				last = last->next;
 
 			free(line);
-			line = strdup(last->line);
+			line = (char*)malloc(strlen(last->line)+block_size);
+			strcpy(line, last->line);
 			output("\r%s%s\e[K", prompt, line);
 			fflush(stdout);
 			dst = line+strlen(line);
@@ -569,7 +571,7 @@ char *history_readline_eol(const char* prompt, char eol)
 				last = last->prev;
 
 			free(line);
-			line = strdup(last->line);
+			line = (char*)malloc(strlen(last->line)+block_size);
 			int curr_len = strlen(line);
 			output("\r%s%s", prompt, line);
 
@@ -601,7 +603,8 @@ char *history_readline_eol(const char* prompt, char eol)
 				last = last->prev;
 
 			free(line);
-			line = strdup(last->line);
+			line = (char*)malloc(strlen(last->line)+block_size);
+			strcpy(line, last->line);
 			output("\r%s%s\e[K", prompt, line);
 			fflush(stdout);
 			dst = line+strlen(line);

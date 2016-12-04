@@ -373,6 +373,7 @@ int main(int ac, char *av[])
 			int ok = query_parse(q, src);
 			if (ok) ok = query_run(q);
 			if (ok) query_dump(q);
+			free(line);
 
 			if (pl->abort || (q->halt == ABORT_HALT))
 			{
@@ -400,7 +401,6 @@ int main(int ac, char *av[])
 			printf("\n(%.3lf s) %s\n", query_elapsed(q), ok?"yes":"no");
 			if (stats) query_stats(q);
 			query_destroy(q);
-			free(line);
 		}
 
 		history_save();
