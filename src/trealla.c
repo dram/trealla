@@ -1711,7 +1711,12 @@ static const char *get_token(lexer *l, const char *s, char **line)
 				while ((ch = *s++) != 0)
 				{
 					if (ch == quote)
-						break;
+					{
+						if (*s == quote)
+							s++;
+						else
+							break;
+					}
 
 					if (l->pl->flag_character_escapes &&
 						(l->quoted <= 2) && (ch == '\\'))
