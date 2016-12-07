@@ -1721,9 +1721,14 @@ static const char *get_token(lexer *l, const char *s, char **line)
 					if (l->pl->flag_character_escapes &&
 						(l->quoted <= 2) && (ch == '\\'))
 					{
-						const char *ptr = strchr(g_anti_escapes, ch = *s++);
-						if (ptr) token_put(&t, g_escapes[ptr-g_anti_escapes]);
-						else token_put(&t, ch);
+						if (*s == '\n')
+							s++;
+						else
+						{
+							const char *ptr = strchr(g_anti_escapes, ch = *s++);
+							if (ptr) token_put(&t, g_escapes[ptr-g_anti_escapes]);
+							else token_put(&t, ch);
+						}
 					}
 					else
 						token_put(&t, ch);
