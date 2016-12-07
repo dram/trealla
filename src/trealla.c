@@ -609,6 +609,8 @@ char *trealla_readline(FILE *fp)
 		line = newline;
 		char *block = (line + maxlen) - blocksize;
 
+		LOOP:
+
 		if (fgets(block, blocksize+1, fp) == NULL)
 		{
 			if (block == line)
@@ -620,14 +622,27 @@ char *trealla_readline(FILE *fp)
 			break;
 		}
 
-		if (strchr(block, '\n') != NULL)	// FIXME
-		{
-			size_t len = strlen(block);
+		size_t len = strlen(block);
 
+		if ((strchr(block, '\n') != NULL) && isatty(0))
+		{
 			if ((block[len-1] == '\n') &&
 				(block[len-2] == '.'))
 				block[--len] = '\0';
+
 			break;
+		}
+
+		if ((strchr(block, '\n') != NULL) && !isatty(0))
+		{
+			while (isspace(block[len-1]))
+				block[--len] = '\0';
+
+			if (block[len-1] == '.')
+				break;
+
+			block = block + len;
+			goto LOOP;
 		}
 
 		blocksize *= 2;
