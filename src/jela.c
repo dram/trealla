@@ -363,6 +363,124 @@ static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 		q->envs_used = q->env_point;
 }
 
+static int dynamic(tpl_query *q)
+{
+	int status = 0;
+	node *n;
+	int arity;
+
+	if (is_compound(q->curr_term))
+	{
+		n = get_args(q);
+		arity = get_arity(q);
+	}
+	else
+	{
+		n = q->curr_term;
+		arity = 0;
+	}
+
+	const char *functor = n->val_s;
+	char tmpbuf2[FUNCTOR_SIZE+10];
+	const char *src = strchr(functor, ':');
+
+	if (src)
+	{
+		memcpy(tmpbuf2, functor, src-functor);
+		tmpbuf2[src-functor] = '\0';
+		functor = src+1;
+		sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db);
+	}
+
+	//printf("DEBUG: dynamic %s/%d\n", tmp->val_s, arity);
+
+	rule *r = xref_term(q->lex, n, arity);
+
+	if (is_builtin(n))
+	{
+		g_s_resolves++;
+		return n->bifptr(q);
+	}
+
+	if (r == NULL)
+	{
+		char tmpbuf[FUNCTOR_SIZE+10];
+
+		if (!strchr(functor, ARITY_CHAR))
+		{
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+			functor = tmpbuf;
+		}
+
+		if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
+		{
+			printf("ERROR: UNKNOWN -> '%s'\n", functor);
+			QABORT(ABORT_NOTDYNAMIC);
+			return 0;
+		}
+
+		if (0 && !r->dynamic && !strchr(functor, ':'))
+		{
+			printf("ERROR: NOT DYNAMIC '%s'\n", functor);
+			QABORT(ABORT_NOTDYNAMIC);
+			return 0;
+		}
+	}
+
+	if (r != NULL)
+	{
+		q->curr_term->match = r;
+		status = match(q);
+		g_u_resolves++;
+	}
+
+	return status;
+}
+
+int call(tpl_query *q)
+{
+	int status = 0;
+
+	if (is_builtin(q->curr_term))
+	{
+		status = q->curr_term->bifptr(q);
+		g_s_resolves++;
+	}
+	else if (q->curr_term->match)
+	{
+		status = match(q);
+		g_u_resolves++;
+	}
+	else if (is_list(q->curr_term))
+	{
+		node *head = NLIST_FRONT(&q->curr_term->val_l);
+
+		for (node *n = NLIST_NEXT(head); n; n = NLIST_NEXT(n))
+		{
+			if (is_atom(n))
+				trealla_consult_file(q->pl, n->val_s);
+
+			n = NLIST_NEXT(n);
+
+			if (is_list(n))
+				n = NLIST_FRONT(&n->val_l);
+		}
+	}
+	else
+	{
+		status = dynamic(q);
+	}
+
+	q->retry = 0;
+	return q->ok = status;
+}
+
+void begin_query(tpl_query *q, node *term)
+{
+	DEBUG { printf("### begin_query "); print_term(q->pl, q, term, 1); printf("\n"); }
+	q->curr_term = term;
+}
+
 static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame)
 {
 	DEBUG { printf("### unify_compound : "); print_term(q->pl, q, term1, 1); printf(" <==> "); print_term(q->pl, NULL, term2, 1); printf("\n"); }
@@ -575,123 +693,5 @@ int match(tpl_query *q)
 	}
 
 	return 0;
-}
-
-static int dynamic(tpl_query *q)
-{
-	int status = 0;
-	node *n;
-	int arity;
-
-	if (is_compound(q->curr_term))
-	{
-		n = get_args(q);
-		arity = get_arity(q);
-	}
-	else
-	{
-		n = q->curr_term;
-		arity = 0;
-	}
-
-	const char *functor = n->val_s;
-	char tmpbuf2[FUNCTOR_SIZE+10];
-	const char *src = strchr(functor, ':');
-
-	if (src)
-	{
-		memcpy(tmpbuf2, functor, src-functor);
-		tmpbuf2[src-functor] = '\0';
-		functor = src+1;
-		sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db);
-	}
-
-	//printf("DEBUG: dynamic %s/%d\n", tmp->val_s, arity);
-
-	rule *r = xref_term(q->lex, n, arity);
-
-	if (is_builtin(n))
-	{
-		g_s_resolves++;
-		return n->bifptr(q);
-	}
-
-	if (r == NULL)
-	{
-		char tmpbuf[FUNCTOR_SIZE+10];
-
-		if (!strchr(functor, ARITY_CHAR))
-		{
-			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
-			functor = tmpbuf;
-		}
-
-		if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
-		{
-			printf("ERROR: UNKNOWN -> '%s'\n", functor);
-			QABORT(ABORT_NOTDYNAMIC);
-			return 0;
-		}
-
-		if (0 && !r->dynamic && !strchr(functor, ':'))
-		{
-			printf("ERROR: NOT DYNAMIC '%s'\n", functor);
-			QABORT(ABORT_NOTDYNAMIC);
-			return 0;
-		}
-	}
-
-	if (r != NULL)
-	{
-		q->curr_term->match = r;
-		status = match(q);
-		g_u_resolves++;
-	}
-
-	return status;
-}
-
-int call(tpl_query *q)
-{
-	int status = 0;
-
-	if (is_builtin(q->curr_term))
-	{
-		status = q->curr_term->bifptr(q);
-		g_s_resolves++;
-	}
-	else if (q->curr_term->match)
-	{
-		status = match(q);
-		g_u_resolves++;
-	}
-	else if (is_list(q->curr_term))
-	{
-		node *head = NLIST_FRONT(&q->curr_term->val_l);
-
-		for (node *n = NLIST_NEXT(head); n; n = NLIST_NEXT(n))
-		{
-			if (is_atom(n))
-				trealla_consult_file(q->pl, n->val_s);
-
-			n = NLIST_NEXT(n);
-
-			if (is_list(n))
-				n = NLIST_FRONT(&n->val_l);
-		}
-	}
-	else
-	{
-		status = dynamic(q);
-	}
-
-	q->retry = 0;
-	return q->ok = status;
-}
-
-void begin_query(tpl_query *q, node *term)
-{
-	DEBUG { printf("### begin_query "); print_term(q->pl, q, term, 1); printf("\n"); }
-	q->curr_term = term;
 }
 
