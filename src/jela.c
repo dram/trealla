@@ -21,17 +21,8 @@ static void bind_arg(const tpl_query *q, unsigned slot1, unsigned slot2)
 {
 	unsigned index1 = get_index(q, slot1);
 	unsigned index2 = get_index(q, slot2);
-
-	if (index2 >= index1)
-	{
-		env *e = &q->envs[index2];
-		e->binding = index2 - index1;
-	}
-	else
-	{
-		env *e = &q->envs[index1];
-		e->binding = index1 - index2;
-	}
+	env *e = &q->envs[index2];
+	e->binding = index2 - index1;
 }
 
 int grow_env_stack(tpl_query *q)
