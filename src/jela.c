@@ -373,10 +373,10 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 	node *it1 = NLIST_FRONT(&term1->val_l);
 	node *it2 = NLIST_FRONT(&term2->val_l);
 
-	if (term1->match)
+	if (term1->match == term2->match)
 	{
-		it1 = NLIST_NEXT(it1);	// skip functor
-		it2 = NLIST_NEXT(it2);	//	...
+		it1 = NLIST_NEXT(it1);		// skip functor
+		it2 = NLIST_NEXT(it2);		//	...
 	}
 
 	int this_context = q->curr_context;

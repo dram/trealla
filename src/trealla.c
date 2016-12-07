@@ -2620,6 +2620,7 @@ int query_parse(tpl_query *self, const char *src)
 
 void trace(tpl_query *q, int fail, int leave)
 {
+	if (!q->curr_term) return;
 	//if (q->curr_term->flags & FLAG_HIDDEN) return;
 	const int save_context = q->latest_context;
 	q->latest_context = q->curr_frame;
@@ -3300,9 +3301,9 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "maplist(P,[],[]).");
 	trealla_make_rule(pl, "maplist(P,[X1|X1s],[X2|X2s]) :- call(P,X1,X2),maplist(P,X1s,X2s).");
 	trealla_make_rule(pl, "member(X,[X|_]).");
-	trealla_make_rule(pl, "member(X,[_|Y]) :- member(X,Y).");
-	trealla_make_rule(pl, "select(X,[X|Tail],Tail).");
-	trealla_make_rule(pl, "select(X,[Head|Tail],[Head|Rest]) :- select(X,Tail,Rest).");
+	trealla_make_rule(pl, "member(X,[_|T]) :- member(X,T).");
+	trealla_make_rule(pl, "select(X,[X|T],T).");
+	trealla_make_rule(pl, "select(X,[H|T],[H|Rest]) :- select(X,T,Rest).");
 	trealla_make_rule(pl, "efface([],L,L) :- !.");
 	trealla_make_rule(pl, "efface([H|T],L,L2) :- selectall(H,L,L1),efface(T,L1,L2).");
 	trealla_make_rule(pl, "revzap([],L,L).");
@@ -3311,7 +3312,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "append([],L,L).");
 	trealla_make_rule(pl, "append([User|Rest],L,L2) :- append(Rest,[User|L],L2).");
 	trealla_make_rule(pl, "find(N,[],X).");
-	trealla_make_rule(pl, "find(1,[H|T],H).");
+	trealla_make_rule(pl, "find(1,[H|_],H).");
 	trealla_make_rule(pl, "find(N,[H|T],X) :- N1 is N-1, find(N1,T,X).");
 
 #endif

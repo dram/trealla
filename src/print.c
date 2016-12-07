@@ -155,6 +155,9 @@ size_t sprint_int(char *dst, size_t size, nbr_t n, int base)
 
 static size_t sprint2_list(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n, int listing)
 {
+	if (q) if (++q->print_depth > MAX_UNIFY_DEPTH)
+		{ QABORT2(ABORT_MAXDEPTH,"CYCLIC TERM"); return 0; }
+
 	int this_context = q?q->latest_context:-1;
 	char *dst = *_dst;
 	int inner = 0;
@@ -189,11 +192,15 @@ static size_t sprint2_list(char **dstbuf, size_t *bufsize, char **_dst, trealla 
 
 	dst += snprintf(dst, *bufsize-(dst-*dstbuf), "]");
 	if (q) q->latest_context = this_context;
+	if (q) q->print_depth--;
 	return dst - *_dst;
 }
 
 static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n, int listing)
 {
+	if (q) if (++q->print_depth > MAX_UNIFY_DEPTH)
+		{ QABORT2(ABORT_MAXDEPTH,"CYCLIC TERM"); return 0; }
+
 	char *dst = *_dst;
 	int this_context = q?q->latest_context:-1;
 	char tmpbuf[KEY_SIZE];
@@ -311,6 +318,7 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 	}
 
 	if (q) q->latest_context = this_context;
+	if (q) q->print_depth--;
 	return dst - *_dst;
 }
 
