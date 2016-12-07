@@ -1700,7 +1700,7 @@ static int bif_iso_peek_char2(tpl_query *q)
 static int bif_iso_number_codes(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_int_or_var(term1);
+	node *term1 = get_nbr_or_var(term1);
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2))
@@ -1735,13 +1735,13 @@ static int bif_iso_number_codes(tpl_query *q)
 
 	node *save_l = make_list();
 	node *l = save_l;
-	char tmpbuf[40];
-	sprintf(tmpbuf, "%d", (int)term1->val_i);
+	char tmpbuf[FUNCTOR_SIZE];
+	sprint_term(tmpbuf, sizeof(tmpbuf), q->pl, q, term1, 1);
 	const char *src = tmpbuf;
 
 	while (*src)
 	{
-		node *tmp = make_int(*src);
+		node *tmp = make_int((int)*src);
 		NLIST_PUSH_BACK(&l->val_l, tmp);
 
 		if (!*++src)
@@ -1762,7 +1762,7 @@ static int bif_iso_number_codes(tpl_query *q)
 static int bif_iso_number_chars(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_int_or_var(term1);
+	node *term1 = get_nbr_or_var(term1);
 	int save_context = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
@@ -1771,8 +1771,10 @@ static int bif_iso_number_chars(tpl_query *q)
 
 	if (is_list(term2))
 	{
-		nbr_t v = 0;
+		int is_real = 0;
 		node *l = term2;
+		char tmpbuf[FUNCTOR_SIZE];
+		char *dst = tmpbuf;
 
 		while (is_list(l))
 		{
@@ -1782,19 +1784,33 @@ static int bif_iso_number_chars(tpl_query *q)
 			if (!is_atom(n))
 			{ QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
 
-			char i = n->val_s[0]-'0';
+			if (n->val_s[0] == '.')
+				is_real = 1;
+			else
+			{
+				char i = n->val_s[0]-'0';
 
-			if ((i < 0) || (i > 9))
-			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
+				if ((i < 0) || (i > 9))
+				{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
 
-			v *= 10;
-			v += i;
+			}
+
+			*dst++ = n->val_s[0];
 			node *tail = NLIST_NEXT(head);
 			l = get_arg(q, tail, q->latest_context);
 		}
 
+		*dst = '\0';
+
 		q->curr_context = save_context;
-		node *tmp = make_quick_int(v);
+		node *tmp;
+
+		if (is_real)
+			tmp = make_float(atof(tmpbuf));
+		else
+			tmp = make_quick_int(atoll(tmpbuf));
+
+
 		int ok = unify_term(q, term1, tmp, q->curr_frame);
 		term_heapcheck(tmp);
 		if (ok) q->is_det = 1;
@@ -1803,8 +1819,8 @@ static int bif_iso_number_chars(tpl_query *q)
 
 	node *save_l = make_list();
 	node *l = save_l;
-	char tmpbuf[40];
-	sprintf(tmpbuf, "%d", (int)term1->val_i);
+	char tmpbuf[FUNCTOR_SIZE];
+	sprint_term(tmpbuf, sizeof(tmpbuf), q->pl, q, term1, 1);
 	const char *src = tmpbuf;
 
 	while (*src)
