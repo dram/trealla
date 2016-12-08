@@ -2829,7 +2829,7 @@ static int collect_vars(tpl_query *q, node *n)
 	}
 	else if (is_var(n))
 	{
-		env *e = get_env(q, q->curr_frame+n->slot);
+		env *e = get_env(q, 1+n->slot);
 
 		if (!sl_get(q->d, (char*)e, NULL))
 		{
@@ -2852,13 +2852,14 @@ void query_dump(tpl_query *self)
 
 	for (int i = 0; i < self->frame_size; i++)
 	{
-		env *e = get_env(self, self->curr_frame+i);
+		env *e = get_env(self, 1+i);
 		if (!e->term) continue;
 		node *n = NULL;
 
 		if (sl_get(&vars, (char*)e, (void**)&n))
 		{
 			char tmpbuf[PRINTBUF_SIZE];
+			self->latest_context = 1;
 			sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
 			printf(" %s: %s", n->val_s, tmpbuf);
 			sl_del(&vars, (char*)e, NULL);
