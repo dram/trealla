@@ -628,13 +628,13 @@ static int unify_compound(tpl_query *q, node *term1, signed context1, node *term
 	{
 		q->fail_arg++;
 		node *tmp1 = get_arg(q, it1, context1);
-		q->curr_context = q->latest_context;
+		int this_context = q->latest_context;
 		node *tmp2 = get_arg(q, it2, context2);
 
 		if (q->unify_depth++ > q->max_depth)
 			q->max_depth = q->unify_depth;
 
-		int ok = unify(q, tmp1, q->curr_context, tmp2, q->latest_context);
+		int ok = unify(q, tmp1, this_context, tmp2, q->latest_context);
 		q->unify_depth--;
 		if (!ok) return 0;
 
