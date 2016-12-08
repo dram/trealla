@@ -43,6 +43,8 @@ volatile int g_abort = 0;
 const char *g_trealla_version = "0.1alpha";
 const char *g_list_cons = ".";
 
+#define FUDGE_FACTOR 1
+
 #if (__STDC_VERSION__ >= 201112L) && !defined(ISO_ONLY)
 _Atomic
 #else
@@ -2694,7 +2696,7 @@ int query_run(tpl_query *self)
 
 void query_reset(tpl_query *self)
 {
-	env *e = &self->envs[1];
+	env *e = &self->envs[FUDGE_FACTOR];
 
 	for (size_t i = 0; i < self->envs_used; i++, e++)
 	{
@@ -2829,7 +2831,7 @@ static int collect_vars(tpl_query *q, node *n)
 	}
 	else if (is_var(n))
 	{
-		env *e = get_env(q, 1+n->slot);
+		env *e = get_env(q, FUDGE_FACTOR+n->slot);
 
 		if (!sl_get(q->d, (char*)e, NULL))
 		{
@@ -2859,7 +2861,7 @@ void query_dump(tpl_query *self)
 		if (sl_get(&vars, (char*)e, (void**)&n))
 		{
 			char tmpbuf[PRINTBUF_SIZE];
-			self->latest_context = 1;
+			self->latest_context = FUDGE_FACTOR;
 			sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
 			printf(" %s: %s", n->val_s, tmpbuf);
 			sl_del(&vars, (char*)e, NULL);
@@ -3010,7 +3012,7 @@ void query_destroy(tpl_query *self)
 		free(self->name);
 #endif
 
-	env *e = &self->envs[1];
+	env *e = &self->envs[FUDGE_FACTOR];
 
 	for (size_t i = 0; i < self->envs_used; i++, e++)
 	{
