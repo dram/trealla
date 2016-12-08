@@ -2621,7 +2621,7 @@ int query_parse(tpl_query *self, const char *src)
 void trace(tpl_query *q, int fail, int leave)
 {
 	if (!q->curr_term) return;
-	//if (q->curr_term->flags & FLAG_HIDDEN) return;
+	if (q->curr_term->flags & FLAG_HIDDEN) return;
 	const int save_context = q->latest_context;
 	q->latest_context = q->curr_frame;
 	size_t dstlen = PRINTBUF_SIZE;
