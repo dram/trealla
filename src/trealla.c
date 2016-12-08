@@ -2694,7 +2694,7 @@ int query_run(tpl_query *self)
 
 void query_reset(tpl_query *self)
 {
-	env *e = &self->envs[0];
+	env *e = &self->envs[self->env_point=1];
 
 	for (size_t i = 0; i < self->envs_used; i++, e++)
 	{
@@ -2850,7 +2850,7 @@ void query_dump(tpl_query *self)
 	self->d = NULL;
 	int any = 0;
 
-	for (int i = 0; i < self->frame_size; i++)
+	for (int i = 1; i <= self->frame_size; i++)
 	{
 		env *e = get_env(self, i);
 		if (!e->term) continue;
