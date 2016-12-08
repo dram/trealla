@@ -2649,7 +2649,7 @@ int query_run(tpl_query *self)
 	self->ok = 1;
 	self->started = gettimeofday_usec();
 	self->is_running++;
-	self->env_point = 1;
+	self->env_point = 1;					// NB: start at 1
 	allocate_frame(self);
 
 	if (!self->parent)
@@ -2694,7 +2694,7 @@ int query_run(tpl_query *self)
 
 void query_reset(tpl_query *self)
 {
-	env *e = &self->envs[self->env_point=1];
+	env *e = &self->envs[1];
 
 	for (size_t i = 0; i < self->envs_used; i++, e++)
 	{
@@ -2829,7 +2829,7 @@ static int collect_vars(tpl_query *q, node *n)
 	}
 	else if (is_var(n))
 	{
-		env *e = get_env(q, q->latest_context+n->slot);
+		env *e = get_env(q, q->curr_frame+n->slot);
 
 		if (!sl_get(q->d, (char*)e, NULL))
 		{
@@ -2850,17 +2850,16 @@ void query_dump(tpl_query *self)
 	self->d = NULL;
 	int any = 0;
 
-	for (int i = 1; i <= self->frame_size; i++)
+	for (int i = 0; i < self->frame_size; i++)
 	{
-		env *e = get_env(self, i);
+		env *e = get_env(self, self->curr_frame+i);
 		if (!e->term) continue;
-
-		char tmpbuf[PRINTBUF_SIZE];
-		sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, e->term, 1);
 		node *n = NULL;
 
 		if (sl_get(&vars, (char*)e, (void**)&n))
 		{
+			char tmpbuf[PRINTBUF_SIZE];
+			sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
 			printf(" %s: %s", n->val_s, tmpbuf);
 			sl_del(&vars, (char*)e, NULL);
 			any++;
@@ -3010,7 +3009,7 @@ void query_destroy(tpl_query *self)
 		free(self->name);
 #endif
 
-	env *e = &self->envs[0];
+	env *e = &self->envs[1];
 
 	for (size_t i = 0; i < self->envs_used; i++, e++)
 	{
