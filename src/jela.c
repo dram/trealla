@@ -21,8 +21,17 @@ static void bind_arg(const tpl_query *q, unsigned slot1, unsigned slot2)
 {
 	unsigned index1 = get_index(q, slot1);
 	unsigned index2 = get_index(q, slot2);
-	env *e = &q->envs[index2];
-	e->binding = index2 - index1;
+
+	if (index2 >= index1)
+	{
+		env *e = &q->envs[index2];
+		e->binding = index2 - index1;
+	}
+	else
+	{
+		env *e = &q->envs[index1];
+		e->binding = index1 - index2;
+	}
 }
 
 int grow_env_stack(tpl_query *q)
@@ -599,9 +608,9 @@ int match(tpl_query *q)
 	return 0;
 }
 
-static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame)
+static int unify_compound(tpl_query *q, node *term1, signed context1, node *term2, signed context2)
 {
-	DEBUG { printf("### unify_compound : "); print_term(q->pl, q, term1, 1); printf(" <==> "); print_term(q->pl, NULL, term2, 1); printf("\n"); }
+	DEBUG { printf("### unify_compound : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
 
 	if (NLIST_COUNT(&term1->val_l) != NLIST_COUNT(&term2->val_l))
 		return 0;
@@ -609,25 +618,23 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 	node *it1 = NLIST_FRONT(&term1->val_l);
 	node *it2 = NLIST_FRONT(&term2->val_l);
 
-	if (term1->match == term2->match)
+	if ((term1->match == term2->match) && 0)
 	{
 		it1 = NLIST_NEXT(it1);		// skip functor
 		it2 = NLIST_NEXT(it2);		//	...
 	}
 
-	int this_context = q->curr_context;
-
 	while (it1)
 	{
 		q->fail_arg++;
-		node *tmp1 = get_arg(q, it1, this_context);
+		node *tmp1 = get_arg(q, it1, context1);
 		q->curr_context = q->latest_context;
-		node *tmp2 = get_arg(q, it2, frame);
+		node *tmp2 = get_arg(q, it2, context2);
 
 		if (q->unify_depth++ > q->max_depth)
 			q->max_depth = q->unify_depth;
 
-		int ok = unify_term(q, tmp1, tmp2, q->latest_context);
+		int ok = unify(q, tmp1, q->curr_context, tmp2, q->latest_context);
 		q->unify_depth--;
 		if (!ok) return 0;
 
@@ -638,36 +645,30 @@ static int unify_compound(tpl_query *q, node *term1, node *term2, unsigned frame
 	return 1;
 }
 
-int unify_term(tpl_query *q, node *term1, node *term2, unsigned frame)
+int unify(tpl_query *q, node *term1, signed context1, node *term2, signed context2)
 {
-	DEBUG { printf("### unify_term : "); print_term(q->pl, q, term1, 1); printf(" <==> "); print_term(q->pl, NULL, term2, 1); printf("\n"); }
+	DEBUG { printf("### unify_term : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
 
 	if (q->unify_depth > MAX_UNIFY_DEPTH) { QABORT(ABORT_MAXDEPTH); return 0; }
 
 	if (is_compound(term1) && is_compound(term2))
-		return unify_compound(q, term1, term2, frame);
+		return unify_compound(q, term1, context1, term2, context2);
 
 	if (is_var(term1))
 	{
 		if (!is_var(term2))
 		{
-			put_env(q, q->curr_context+term1->slot, term2, is_compound(term2)?frame:-1);
+			put_env(q, context1+term1->slot, term2, is_compound(term2)?context2:-1);
 			return 1;
 		}
 
-		//printf("curr_context=%u, slot1=%u, frame=%u, slot2=%u\n", q->curr_context, term1->slot, frame, term2->slot);
-
-		if (q->curr_context+term1->slot <= frame+term2->slot)
-			bind_arg(q, q->curr_context+term1->slot, frame+term2->slot);
-		else
-			bind_arg(q, frame+term2->slot, q->curr_context+term1->slot);
-
+		bind_arg(q, context1+term1->slot, context2+term2->slot);
 		return 1;
 	}
 
 	if (is_var(term2))
 	{
-		put_env(q, frame+term2->slot, term1, is_compound(term1)?q->curr_context:-1);
+		put_env(q, context2+term2->slot, term1, is_compound(term1)?context1:-1);
 		return 1;
 	}
 

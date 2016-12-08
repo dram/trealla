@@ -419,7 +419,7 @@ inline static void put_env(const tpl_query *q, unsigned point, node *term, int f
 	env *e = &q->envs[point];
 	if (e->term) return;				// A safety check, set once
 	e -= e->binding;
-	e->context = frame?frame:-1;
+	e->context = frame;
 	e->term = term;
 	term->refcnt++;						// Only needed for heap terms
 }
