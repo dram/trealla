@@ -158,20 +158,19 @@ static size_t sprint2_list(char **dstbuf, size_t *bufsize, char **_dst, trealla 
 	if (q) if (++q->print_depth > MAX_UNIFY_DEPTH)
 		{ QABORT2(ABORT_MAXDEPTH,"CYCLIC TERM"); return 0; }
 
-	int this_context = q?q->latest_context:-1;
+	int save_context = q?q->latest_context:-1;
 	char *dst = *_dst;
 	int inner = 0;
 
-	while (n)
+	for (;;)
 	{
 		if (inner) dst += snprintf(dst, *bufsize-(dst-*dstbuf), ",");
 		else dst += snprintf(dst, *bufsize-(dst-*dstbuf), "[");
-
 		int this_context = q?q->latest_context:-1;
 		node *head = NLIST_NEXT(NLIST_FRONT(&n->val_l));
+		node *tail = NLIST_NEXT(head);
 		node *term = q?get_arg(q, head, this_context):head;
 		dst += sprint2_term(dstbuf, bufsize, &dst, pl, q, term, listing>0?listing:1);
-		node *tail = NLIST_NEXT(head);
 		term = q?get_arg(q, tail, this_context):tail;
 
 		if (is_list(term))
@@ -191,7 +190,7 @@ static size_t sprint2_list(char **dstbuf, size_t *bufsize, char **_dst, trealla 
 	}
 
 	dst += snprintf(dst, *bufsize-(dst-*dstbuf), "]");
-	if (q) q->latest_context = this_context;
+	if (q) q->latest_context = save_context;
 	if (q) q->print_depth--;
 	return dst - *_dst;
 }
@@ -202,7 +201,7 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 		{ QABORT2(ABORT_MAXDEPTH,"CYCLIC TERM"); return 0; }
 
 	char *dst = *_dst;
-	int this_context = q?q->latest_context:-1;
+	int save_context = q?q->latest_context:-1;
 	char tmpbuf[KEY_SIZE];
 	tmpbuf[0] = 0;
 	node *nf = NLIST_FRONT(&n->val_l);
@@ -230,7 +229,7 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 	{
 		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "{");
 		n = NLIST_NEXT(nf);
-		node *term = q?get_arg(q, n, this_context):n;
+		node *term = q?get_arg(q, n, save_context):n;
 		dst += sprint2_term(dstbuf, bufsize, &dst, pl, q, term, listing>0?listing:1);
 		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "}");
 	}
@@ -297,7 +296,7 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 		for (; n; n = NLIST_NEXT(n))
 		{
 			if (n->flags & FLAG_HIDDEN) continue;
-			node *term = q?get_arg(q, n, this_context):n;
+			node *term = q?get_arg(q, n, save_context):n;
 			dst += sprint2_term(dstbuf, bufsize, &dst, pl, q, term, listing>0?listing:1);
 			node *n2 = NLIST_NEXT(n);
 
@@ -311,13 +310,13 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 	{
 		for (n = nf; n; n = NLIST_NEXT(n))
 		{
-			node *term = q?get_arg(q, n, this_context):n;
+			node *term = q?get_arg(q, n, save_context):n;
 			dst += sprint2_term(dstbuf, bufsize, &dst, pl, q, term, listing>0?listing:1);
 			if (NLIST_NEXT(n)) dst += snprintf(dst, *bufsize-(dst-*dstbuf), " ");
 		}
 	}
 
-	if (q) q->latest_context = this_context;
+	if (q) q->latest_context = save_context;
 	if (q) q->print_depth--;
 	return dst - *_dst;
 }
@@ -328,7 +327,7 @@ size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tp
 		{ QABORT2(ABORT_MAXDEPTH,"CYCLIC TERM"); return 0; }
 
 	char *dst = *_dst;
-	int this_context = q?q->latest_context:-1;
+	int save_context = q?q->latest_context:-1;
 	node *n = q?get_arg(q, _n, q->latest_context):_n;
 	size_t xlen = (is_atom(n) ? LEN(n) : 64) + 1024;
 	size_t rem = (*bufsize-(dst-*dstbuf));
@@ -421,7 +420,7 @@ size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tp
 		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "%s", n->val_s);
 
 	if (q) q->print_depth--;
-	if (q) q->latest_context = this_context;
+	if (q) q->latest_context = save_context;
 	return dst - *_dst;
 }
 
