@@ -2854,16 +2854,17 @@ void query_dump(tpl_query *self)
 	{
 		env *e = get_env(self, i);
 		if (!e->term) continue;
-		if (any) printf(", ");
 
 		char tmpbuf[PRINTBUF_SIZE];
 		sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, e->term, 1);
 		node *n = NULL;
 
 		if (sl_get(&vars, (char*)e, (void**)&n))
-			printf("%s: %s", n->val_s, tmpbuf);
-
-		any++;
+		{
+			printf(" %s: %s", n->val_s, tmpbuf);
+			sl_del(&vars, (char*)e, NULL);
+			any++;
+		}
 	}
 
 	if (any)
