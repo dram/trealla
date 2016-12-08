@@ -2649,6 +2649,7 @@ int query_run(tpl_query *self)
 	self->ok = 1;
 	self->started = gettimeofday_usec();
 	self->is_running++;
+	self->env_point = 1;
 	allocate_frame(self);
 
 	if (!self->parent)

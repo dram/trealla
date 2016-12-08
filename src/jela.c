@@ -82,7 +82,6 @@ static int grow_choice_stack(tpl_query *q)
 void prepare_frame(tpl_query *q, unsigned frame_size)
 {
 	TRACE("prepare_frame");
-
 	q->curr_context = q->curr_frame;
 
 	while ((q->env_point+frame_size) >= q->envs_possible)
