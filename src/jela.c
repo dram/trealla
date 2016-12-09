@@ -210,7 +210,7 @@ static int proceed(tpl_query *q)
 
 		// Can trim the frame?
 
-		if ((last_frame > (q->curr_frame+q->frame_size)) && !q->noopt)
+		if ((last_frame > (q->curr_frame+q->frame_size)) && !q->noopt && 0)
 			deallocate_frame(q);
 
 		if (c->nofollow)
