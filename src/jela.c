@@ -480,6 +480,85 @@ void begin_query(tpl_query *q, node *term)
 	q->curr_term = term;
 }
 
+static int unify_compound(tpl_query *q, node *term1, signed context1, node *term2, signed context2)
+{
+	DEBUG { printf("### unify_compound : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
+
+	if (NLIST_COUNT(&term1->val_l) != NLIST_COUNT(&term2->val_l))
+		return 0;
+
+	node *it1 = NLIST_FRONT(&term1->val_l);
+	node *it2 = NLIST_FRONT(&term2->val_l);
+
+	if ((term1->match == term2->match) && 0)
+	{
+		it1 = NLIST_NEXT(it1);		// skip functor
+		it2 = NLIST_NEXT(it2);		//	...
+	}
+
+	while (it1)
+	{
+		q->fail_arg++;
+		node *tmp1 = get_arg(q, it1, context1);
+		int this_context = q->latest_context;
+		node *tmp2 = get_arg(q, it2, context2);
+
+		if (q->unify_depth++ > q->max_depth)
+			q->max_depth = q->unify_depth;
+
+		int ok = unify(q, tmp1, this_context, tmp2, q->latest_context);
+		q->unify_depth--;
+		if (!ok) return 0;
+
+		it1 = NLIST_NEXT(it1);
+		it2 = NLIST_NEXT(it2);
+	}
+
+	return 1;
+}
+
+int unify(tpl_query *q, node *term1, signed context1, node *term2, signed context2)
+{
+	DEBUG { printf("### unify_term : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
+
+	if (q->unify_depth > MAX_UNIFY_DEPTH) { QABORT(ABORT_MAXDEPTH); return 0; }
+
+	if (is_compound(term1) && is_compound(term2))
+		return unify_compound(q, term1, context1, term2, context2);
+
+	if (is_var(term1))
+	{
+		if (!is_var(term2))
+		{
+			put_env(q, context1+term1->slot, term2, is_compound(term2)?context2:-1);
+			return 1;
+		}
+
+		bind_arg(q, context1+term1->slot, context2+term2->slot);
+		return 1;
+	}
+
+	if (is_var(term2))
+	{
+		put_env(q, context2+term2->slot, term1, is_compound(term1)?context1:-1);
+		return 1;
+	}
+
+	if (is_integer(term1) && is_integer(term2))
+		return term1->val_i == term2->val_i;
+
+	if (is_float(term1) && is_float(term2))
+		return term1->val_f == term2->val_f;
+
+	if (is_atom(term1) && is_atom(term2))
+	{
+		if (term1->val_s == term2->val_s) return 1;
+		return !strcmp(term1->val_s, term2->val_s);
+	}
+
+	return 0;
+}
+
 int match(tpl_query *q)
 {
 	rule *r = q->curr_term->match;
@@ -583,7 +662,7 @@ int match(tpl_query *q)
 		int is_lastmatch = !NLIST_NEXT(q->curr_match);
 		int is_lastcall = !NLIST_NEXT(q->curr_term) || (body->flags & FLAG_CUT);
 
-		if (!is_lastcall || q->noopt || q->is_det)
+		if (!is_lastcall || q->noopt)
 			try_me(q);
 		else if (!is_lastmatch)
 			try_me_nofollow(q);
@@ -602,85 +681,6 @@ int match(tpl_query *q)
 
 		execute_term(q, head, frame_size);
 		return 1;
-	}
-
-	return 0;
-}
-
-static int unify_compound(tpl_query *q, node *term1, signed context1, node *term2, signed context2)
-{
-	DEBUG { printf("### unify_compound : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
-
-	if (NLIST_COUNT(&term1->val_l) != NLIST_COUNT(&term2->val_l))
-		return 0;
-
-	node *it1 = NLIST_FRONT(&term1->val_l);
-	node *it2 = NLIST_FRONT(&term2->val_l);
-
-	if ((term1->match == term2->match) && 0)
-	{
-		it1 = NLIST_NEXT(it1);		// skip functor
-		it2 = NLIST_NEXT(it2);		//	...
-	}
-
-	while (it1)
-	{
-		q->fail_arg++;
-		node *tmp1 = get_arg(q, it1, context1);
-		int this_context = q->latest_context;
-		node *tmp2 = get_arg(q, it2, context2);
-
-		if (q->unify_depth++ > q->max_depth)
-			q->max_depth = q->unify_depth;
-
-		int ok = unify(q, tmp1, this_context, tmp2, q->latest_context);
-		q->unify_depth--;
-		if (!ok) return 0;
-
-		it1 = NLIST_NEXT(it1);
-		it2 = NLIST_NEXT(it2);
-	}
-
-	return 1;
-}
-
-int unify(tpl_query *q, node *term1, signed context1, node *term2, signed context2)
-{
-	DEBUG { printf("### unify_term : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
-
-	if (q->unify_depth > MAX_UNIFY_DEPTH) { QABORT(ABORT_MAXDEPTH); return 0; }
-
-	if (is_compound(term1) && is_compound(term2))
-		return unify_compound(q, term1, context1, term2, context2);
-
-	if (is_var(term1))
-	{
-		if (!is_var(term2))
-		{
-			put_env(q, context1+term1->slot, term2, is_compound(term2)?context2:-1);
-			return 1;
-		}
-
-		bind_arg(q, context1+term1->slot, context2+term2->slot);
-		return 1;
-	}
-
-	if (is_var(term2))
-	{
-		put_env(q, context2+term2->slot, term1, is_compound(term1)?context1:-1);
-		return 1;
-	}
-
-	if (is_integer(term1) && is_integer(term2))
-		return term1->val_i == term2->val_i;
-
-	if (is_float(term1) && is_float(term2))
-		return term1->val_f == term2->val_f;
-
-	if (is_atom(term1) && is_atom(term2))
-	{
-		if (term1->val_s == term2->val_s) return 1;
-		return !strcmp(term1->val_s, term2->val_s);
 	}
 
 	return 0;
