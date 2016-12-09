@@ -9,7 +9,7 @@
 
 main :- test1, test2, test3, test4a, test4b, test5a, test5b,
 		test6a, test6b, test6c, test7, test8, test9a, test9b, test9c,
-		test10, test11, test12, test13,
+		test10, test11, test12, test13, test14,
 		halt.
 
 test1 :-
@@ -118,7 +118,7 @@ test10 :-
        ]
 	},
 	Item = {Author,_Works},
-	Author = (_N:V),
+	Author = ('author':V),
 	V == 'Philip K Dick',
 	write('PASSED!'), nl.
 
@@ -148,4 +148,12 @@ test13 :-
 	F =.. [a,1,2],
 	F = a(1,2),
 	a(1,2,3) =.. [a,1,2,3],
+	write('PASSED!'), nl.
+
+bar14(A,B) :- A=[B].
+foo14(A,B) :- bar14([A],B).
+
+test14 :-
+	write('Test14:\t'),
+	A=a, foo14(A,B), A=B,
 	write('PASSED!'), nl.
