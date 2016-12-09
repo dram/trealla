@@ -2330,7 +2330,6 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 {
 	node *save_rule = self->r;
 	FILE *save_fp = self->fp;
-	self->name = strdup("stdin");		// FIXME: memory leak
 	self->r = NULL;
 	self->fp = fp;
 	char *line;
@@ -2350,8 +2349,7 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 		{
 			printf("ERROR: consult '%s'\n>>> "
 				"Syntax error,"
-				"line=%d\n>>> %s\n", "stdin", nbr, src);
-			fclose(fp);
+				"line=%d\n>>> %s\n", self->name, nbr, src);
 			return 0;
 		}
 
