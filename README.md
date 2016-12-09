@@ -89,6 +89,7 @@ Usage
 	--quiet        - no banner (or -q)
 	--load         - load file (or -l, actually does nothing)
 	--merge        - merge transaction log
+	--consult      - consult from STDIN
 
 Files can be filename[.ext] where '.ext' if not specified can be one
 of the following: .pro, .prolog, .pl or .P
