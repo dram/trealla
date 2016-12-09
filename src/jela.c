@@ -660,24 +660,17 @@ int match(tpl_query *q)
 		node *body = NLIST_NEXT(head);
 		g_match_ok++;
 
-		if (body->bifptr == bif_iso_cutfail)
-			return 0;
-
 		int is_cut = body->bifptr == bif_iso_cut;
 		int is_lastmatch = !NLIST_NEXT(q->curr_match) || is_cut;
 		int is_lastcall = !NLIST_NEXT(q->curr_term);
-
-		if (!is_lastmatch || !is_lastcall)
-			try_me(q);
-
 		int is_complex = !q->is_det || (q->max_depth > 1);
+		int is_reex = !is_complex && is_lastcall && is_lastmatch &&
+				((q->curr_frame+frame_size) > q->env_point);
 
-		if (!is_complex && !q->noopt && is_lastcall &&
-			((q->curr_frame+frame_size) > q->env_point))
-		{
+		if (is_reex && !q->noopt)
 			reexecute_term(q, head, frame_size);
-			return 1;
-		}
+		else
+			try_me(q);
 
 		execute_term(q, head, frame_size);
 		return 1;
