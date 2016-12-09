@@ -670,9 +670,11 @@ int match(tpl_query *q)
 		if (is_reex && !q->noopt)
 			reexecute_term(q, head, frame_size);
 		else
+		{
 			try_me(q);
+			execute_term(q, head, frame_size);
+		}
 
-		execute_term(q, head, frame_size);
 		return 1;
 	}
 
