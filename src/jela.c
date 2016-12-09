@@ -664,7 +664,7 @@ int match(tpl_query *q)
 		int is_lastmatch = !NLIST_NEXT(q->curr_match) || is_cut;
 		int is_lastcall = !NLIST_NEXT(q->curr_term);
 		int is_complex = !q->is_det || (q->max_depth > 1);
-		int is_reex = !is_complex && is_lastcall && is_lastmatch &&
+		int is_reex = is_lastcall && is_lastmatch && !is_complex &&
 				((q->curr_frame+frame_size) > q->env_point);
 
 		if (is_reex && !q->noopt)
