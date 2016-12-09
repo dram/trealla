@@ -323,6 +323,8 @@ int main(int ac, char *av[])
 	{
 		if ((av[i][0] != '-') && !get)
 			trealla_consult_file(pl, av[i]);
+		else if (!strcmp(av[i], "--consult"))
+			trealla_consult_fp(pl, stdin);
 		else if (!strcmp(av[i], "--noquery"))
 			noquery = 1;
 		else if (!strncmp(av[i], "--goal=", 7))

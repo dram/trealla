@@ -482,7 +482,8 @@ extern size_t sprint2_term(char **dstbuf, size_t *bufsize, char **dst, trealla *
 extern const char *g_list_cons;
 extern void lexer_init(lexer *l, trealla *pl);
 extern const char *lexer_parse(lexer *l, node *term, const char *src, char **line);
-extern int lexer_consult(lexer *self, const char *filename);
+extern int lexer_consult_file(lexer *self, const char *filename);
+extern int lexer_consult_fp(lexer *self, FILE *fp);
 extern void lexer_done(lexer *l);
 
 #endif

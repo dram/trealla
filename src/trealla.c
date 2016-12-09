@@ -1495,7 +1495,7 @@ int dir_include(lexer *l, node *n)
 {
 	node *term1 = n;
 	if (!is_atom(term1)) return 0;
-	return lexer_consult(l, term1->val_s);
+	return lexer_consult_file(l, term1->val_s);
 }
 
 static void directive(lexer *l, node *n)
@@ -2326,28 +2326,11 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 static const char *exts[] = {".prolog",".pro",".pl",".P"};
 
-int lexer_consult(lexer *self, const char *filename)
+int lexer_consult_fp(lexer *self, FILE *fp)
 {
-	FILE *fp = fopen(filename, "rb");
-	size_t i = 0;
-
-	while (!fp && (i < (sizeof(exts)/sizeof(char*))))
-	{
-		char tmpbuf[1024];
-		strncpy(tmpbuf, filename, sizeof(tmpbuf)-10);
-		strcat(tmpbuf, exts[i++]);
-		fp = fopen(tmpbuf, "rb");
-	}
-
-	if (!fp)
-	{
-		printf("ERROR: consult '%s': %s\n", filename, strerror(errno));
-		return 0;
-	}
-
-	FILE *save_fp = self->fp;
 	node *save_rule = self->r;
-	self->name = strdup(filename);		// FIXME: memory leak
+	FILE *save_fp = self->fp;
+	self->name = strdup("stdin");		// FIXME: memory leak
 	self->r = NULL;
 	self->fp = fp;
 	char *line;
@@ -2367,7 +2350,7 @@ int lexer_consult(lexer *self, const char *filename)
 		{
 			printf("ERROR: consult '%s'\n>>> "
 				"Syntax error,"
-				"line=%d\n>>> %s\n", filename, nbr, src);
+				"line=%d\n>>> %s\n", "stdin", nbr, src);
 			fclose(fp);
 			return 0;
 		}
@@ -2375,9 +2358,33 @@ int lexer_consult(lexer *self, const char *filename)
 		nbr++;
 	}
 
-	fclose(fp);
 	self->fp = save_fp;
 	self->r = save_rule;
+	return 1;
+}
+
+int lexer_consult_file(lexer *self, const char *filename)
+{
+	FILE *fp = fopen(filename, "rb");
+	size_t i = 0;
+
+	while (!fp && (i < (sizeof(exts)/sizeof(char*))))
+	{
+		char tmpbuf[1024];
+		strncpy(tmpbuf, filename, sizeof(tmpbuf)-10);
+		strcat(tmpbuf, exts[i++]);
+		fp = fopen(tmpbuf, "rb");
+	}
+
+	if (!fp)
+	{
+		printf("ERROR: consult '%s': %s\n", filename, strerror(errno));
+		return 0;
+	}
+
+	self->name = strdup(filename);		// FIXME: memory leak
+	lexer_consult_fp(self, fp);
+	fclose(fp);
 	return 1;
 }
 
@@ -3052,6 +3059,36 @@ void query_destroy(tpl_query *self)
 	FREE(self);
 }
 
+int trealla_consult_fp(trealla *self, FILE *fp)
+{
+	if (!fp) return 0;
+
+	lexer l;
+	lexer_init(&l, self);
+	l.consult = 1;
+
+	if (!lexer_consult_fp(&l, fp))
+	{
+		if (l.init) free (l.init);
+		l.init = NULL;
+		lexer_done(&l);
+		return 0;
+	}
+
+	add_clauses(&l, 0);
+
+	if (l.init)
+	{
+		if (!trealla_run_query(self, l.init))
+			self->abort = 1;
+
+		free(l.init);
+	}
+
+	lexer_done(&l);
+	return 1;
+}
+
 int trealla_consult_file(trealla *self, const char *name)
 {
 	if (!name) return 0;
@@ -3061,7 +3098,7 @@ int trealla_consult_file(trealla *self, const char *name)
 	lexer_init(&l, self);
 	l.consult = 1;
 
-	if (!lexer_consult(&l, name))
+	if (!lexer_consult_file(&l, name))
 	{
 		if (l.init) free (l.init);
 		l.init = NULL;

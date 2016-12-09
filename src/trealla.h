@@ -1,6 +1,8 @@
 #ifndef TREALLA_H
 #define TREALLA_H
 
+#include <stdio.h>
+
 typedef struct trealla_ trealla;
 typedef struct tpl_query_ tpl_query;
 
@@ -10,6 +12,7 @@ extern trealla *trealla_create(const char *name);
 extern void trealla_trace(trealla *pl, int mode);
 extern void trealla_noopt(trealla *pl, int mode);
 extern int trealla_consult_file(trealla *pl, const char *name);
+extern int trealla_consult_fp(trealla *pl, FILE *fp);
 extern int trealla_consult_text(trealla *pl, const char *s, const char *name);
 extern int trealla_deconsult(trealla *pl, const char *name);
 extern int trealla_run_query(trealla *pl, const char *s);	// 4 in one
