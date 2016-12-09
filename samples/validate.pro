@@ -150,10 +150,10 @@ test13 :-
 	a(1,2,3) =.. [a,1,2,3],
 	write('PASSED!'), nl.
 
-bar14(A,B) :- A=[B].
-foo14(A,B) :- bar14([A],B).
+bar14([A],B) :- A=B.
+foo14(A,B) :- bar14(A,B).
 
 test14 :-
 	write('Test14:\t'),
-	A=a, foo14(A,B), A=B,
+	A=a, foo14([A],B), A=B,
 	write('PASSED!'), nl.
