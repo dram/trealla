@@ -104,6 +104,16 @@ of the following: .pro, .prolog, .pl or .P
 	./tpl samples/sieve --test
 	./tpl samples/fac --test
 
+Consulting from STDIN works as follows:
+
+	ARG=hello
+	./tpl --consult <<EOF
+	:-initialization(main).
+	main :- write($ARG), nl.
+	EOF
+
+and can be useful with scripting.
+
 Special Usage
 -------------
 
