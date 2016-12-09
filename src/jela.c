@@ -620,8 +620,8 @@ int match(tpl_query *q)
 
 		unsigned frame_size = q->curr_match->frame_size;
 
-		if (!frame_size)
-			frame_size = 1;						// FIXME
+		//if (!frame_size)
+		//	frame_size = 1;						// FIXME
 
 		prepare_frame(q, frame_size);
 
