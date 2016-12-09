@@ -46,18 +46,18 @@ test4b :-
 	(fail -> fail ; true),
 	write('PASSED!'), nl.
 
-name(john).
-name(mary).
-name(tom).
+name5(john).
+name5(mary).
+name5(tom).
 
 test5a :-
 	write('Test5a:\t'),
-	(name(john) ; fail),
+	(name5(john) ; fail),
 	write('PASSED!'), nl.
 
 test5b :-
 	write('Test5b:\t'),
-	(fail ; name(mary)),
+	(fail ; name5(mary)),
 	write('PASSED!'), nl.
 
 test6a :-
@@ -122,16 +122,16 @@ test10 :-
 	V == 'Philip K Dick',
 	write('PASSED!'), nl.
 
-age(peter,7).
-age(anne,5).
-age(pat,8).
-age(tom,5).
+age11(peter,7).
+age11(anne,5).
+age11(pat,8).
+age11(tom,5).
 
 test11 :-
 	write('Test11:\t'),
-	findall(Name,age(Name,Age),L1),
+	findall(Name,age11(Name,Age),L1),
 	L1 = [peter,anne,pat,tom],
-	findall(Age,age(Name,Age),L2),
+	findall(Age,age11(Name,Age),L2),
 	L2 = [7,5,8,5],
 	write('PASSED!'), nl.
 
