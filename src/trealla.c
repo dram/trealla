@@ -2651,11 +2651,13 @@ int query_run(tpl_query *self)
 	self->ok = 1;
 	self->started = gettimeofday_usec();
 	self->is_running++;
-	self->env_point = 1;					// NB: start at 1
 	allocate_frame(self);
 
 	if (!self->parent)
+	{
+		self->env_point = FUDGE_FACTOR;
 		execute_term(self, self->curr_term, self->curr_term->frame_size);
+	}
 
 	while (!g_abort && !self->pl->abort)
 	{
@@ -2898,29 +2900,31 @@ tpl_query *query_create_subquery(tpl_query *self, int is_proc)
 	q->refcnt++;
 #endif
 
-	for (size_t i = 0; i < self->frame_size; i++)
+	env *e_to = q->envs;
+
+	for (size_t i = 0; i < self->frame_size; i++, e_to++)
 	{
-		env *e = get_env(self, self->curr_frame+i);
-		node *n = e->term;
+		env *e_from = get_env(self, self->curr_frame+i);
+		node *n = e_from->term;
 
 		if (n == NULL)
 			continue;
 
 		if ((is_compound(n) || is_heap(n)) && is_proc)
-			q->envs[i].term = clone_term(self, n);
+			e_to->term = clone_term(self, n);
 		else
 		{
-			q->envs[i].term = n;
+			e_to->term = n;
 			n->refcnt++;
 		}
 
-		q->envs[i].binding = -1;
+		e_to->binding = -1;
 	}
 
-	q->env_point = q->frame_size = self->frame_size;
-	q->envs_used = q->env_point;
 	q->curr_context = q->curr_frame = 0;
-	allocate_frame(q);
+	q->frame_size = self->frame_size;
+	q->envs_used = q->curr_frame+q->frame_size;
+	q->env_point = q->curr_frame+q->frame_size;
 	return q;
 }
 
@@ -3012,7 +3016,7 @@ void query_destroy(tpl_query *self)
 		free(self->name);
 #endif
 
-	env *e = &self->envs[FUDGE_FACTOR];
+	env *e = &self->envs[self->parent?0:FUDGE_FACTOR];
 
 	for (size_t i = 0; i < self->envs_used; i++, e++)
 	{
