@@ -895,7 +895,7 @@ static int bif_iso_write_term3(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, len, sp->fptr);
 
 	free(tmpbuf);
-	return ok > 0;
+	return ok >= 0;
 }
 
 static int bif_iso_write_term(tpl_query *q)
@@ -983,7 +983,7 @@ static int bif_iso_write_canonical2(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, len, sp->fptr);
 
 	free(tmpbuf);
-	return ok > 0;
+	return ok >= 0;
 }
 
 static int bif_iso_write_canonical(tpl_query *q)
@@ -1025,7 +1025,7 @@ static int bif_iso_writeq2(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, len, sp->fptr);
 
 	free(tmpbuf);
-	return ok > 0;
+	return ok >= 0;
 }
 
 static int bif_iso_writeq(tpl_query *q)
@@ -1080,7 +1080,7 @@ static int bif_iso_write2(tpl_query *q)
 	if (!is_atom(term2))
 		free(tmpbuf);
 
-	return ok > 0;
+	return ok >= 0;
 }
 
 static int bif_iso_write(tpl_query *q)
@@ -4606,7 +4606,7 @@ static int bif_sys_writeln2(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, dst-tmpbuf, sp->fptr);
 
 	free(tmpbuf);
-	return ok > 0;
+	return ok >= 0;
 }
 
 static int bif_iso_unload_file(tpl_query *q)

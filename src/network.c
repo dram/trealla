@@ -888,7 +888,7 @@ static size_t bufwrite(void *dstbuf, const void *srcbuf, size_t nbytes)
 
 int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t len)
 {
-	if (!session_is_websocket(s)) return 0;
+	if (!session_is_websocket(s)) return -1;
 	char *dstbuf = (char*)malloc(len+64);
 	if (!dstbuf) return 0;
 	char *dst = dstbuf;
@@ -942,7 +942,7 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 	else if (len > 0)
 		dst += bufwrite(dst, src, len);
 
-	if (!session_write(s, dstbuf, dst-dstbuf))
+	if (session_write(s, dstbuf, dst-dstbuf) <= 0)
 		{ free(dstbuf); return 0; }
 
 	free(dstbuf);
@@ -1032,7 +1032,10 @@ int session_ws_parse(session *s, int *fin, unsigned *opcode, char **dstbuf, size
 
 int session_rawwrite(session *s, const void *buf, size_t len)
 {
-	if (s->disconnected || !len)
+	if (s->disconnected)
+		return -1;
+
+	if (!len)
 		return 0;
 
 	int wlen;
@@ -1078,7 +1081,10 @@ int session_rawwrite(session *s, const void *buf, size_t len)
 
 int session_write(session *s, const void *_buf, size_t len)
 {
-	if (s->disconnected || !len)
+	if (s->disconnected)
+		return -1;
+
+	if (!len)
 		return 0;
 
 	const char *buf = (const char*)_buf;
@@ -1132,8 +1138,8 @@ int session_bcastmsg(session *s, const char *buf)
 
 int session_read(session *s, void *buf, size_t len)
 {
-	if (s->disconnected || !len)
-		return 0;
+	if (s->disconnected)
+		return -1;
 
 	int rlen = 0;
 
@@ -1191,7 +1197,7 @@ int session_read(session *s, void *buf, size_t len)
 int session_readmsg(session *s, char **buf)
 {
 	if (s->disconnected)
-		return 0;
+		return -1;
 
 	// Allocate internal destination message buffer
 	// if one doesn't already exist...

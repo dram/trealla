@@ -644,6 +644,9 @@ static int bif_net_readmsg(tpl_query *q)
 		return 0;
 	}
 
+	if (session_on_disconnect((session*)sp->sptr))
+		return 0;
+
 	put_atom(q, q->curr_frame+term2->slot, line, 1);
 	return 1;
 }
