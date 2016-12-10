@@ -367,7 +367,7 @@ size_t sprint2_term(char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tp
 	else if (is_float(n))
 	{
 		const char *save_dst = dst;
-		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "%.*g", DBL_DIG+2, (double)n->val_f);
+		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "%.*g", DBL_DECIMAL_DIG, (double)n->val_f);
 		if (!strchr(save_dst, '.')) dst += snprintf(dst, *bufsize-(dst-*dstbuf), ".0");
 	}
 	else if (is_var(n) && !listing)
