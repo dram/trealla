@@ -663,7 +663,9 @@ int session_set_stash_int(session *s, const char *key, int64_t n)
 
 const char *session_del_stash(session *s, const char *key)
 {
-	if (!s->stash) return NULL;
+	if (!s->stash)
+		return NULL;
+
 	void *tmp_value = NULL;
 	sl_del(s->stash, key, &tmp_value);
 	return (char*)tmp_value;
@@ -671,7 +673,9 @@ const char *session_del_stash(session *s, const char *key)
 
 const char *session_get_stash(session *s, const char *key)
 {
-	if (!s->stash) return "";
+	if (!s->stash)
+		return "";
+
 	void *value = (char*)"";
 	sl_get(s->stash, key, &value);
 	return (char*)value;
@@ -679,7 +683,9 @@ const char *session_get_stash(session *s, const char *key)
 
 int64_t session_get_stash_int(session *s, const char *key)
 {
-	if (!s->stash) return 0;
+	if (!s->stash)
+		return 0;
+
 	void *value = (char*)"";
 	sl_get(s->stash, key, &value);
 	return atoll((char*)value);
@@ -776,8 +782,11 @@ int session_set_nonblocking(session *s, int n)
 
 const char *session_get_local_addr(session *s, int resolve)
 {
-	if (s->disconnected) return "";
-	if (!s->local) s->local = (char*)malloc(INET_ADDRSTRLEN+1);
+	if (s->disconnected)
+		return "";
+
+	if (!s->local)
+		s->local = (char*)malloc(INET_ADDRSTRLEN+1);
 
 	if (s->is_tcp && s->ipv4)
 	{
@@ -803,8 +812,11 @@ const char *session_get_local_addr(session *s, int resolve)
 
 const char *session_get_remote_addr(session *s, int resolve)
 {
-	if (s->disconnected) return "";
-	if (!s->remote) s->remote = (char*)malloc(INET_ADDRSTRLEN+1);
+	if (s->disconnected)
+		return "";
+
+	if (!s->remote)
+		s->remote = (char*)malloc(INET_ADDRSTRLEN+1);
 
 	if (s->is_tcp && s->ipv4)
 	{
@@ -888,9 +900,10 @@ static size_t bufwrite(void *dstbuf, const void *srcbuf, size_t nbytes)
 
 int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t len)
 {
-	if (!session_is_websocket(s)) return -1;
+	if (!session_is_websocket(s))
+		return -1;
+
 	char *dstbuf = (char*)malloc(len+64);
-	if (!dstbuf) return 0;
 	char *dst = dstbuf;
 	uint8_t f = 0;
 	if (fin) f |= 0x1 << 7;
@@ -943,7 +956,10 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 		dst += bufwrite(dst, src, len);
 
 	if (session_write(s, dstbuf, dst-dstbuf) <= 0)
-		{ free(dstbuf); return 0; }
+	{
+		free(dstbuf);
+		return 0;
+	}
 
 	free(dstbuf);
 	return 1;
@@ -1006,7 +1022,6 @@ int session_ws_parse(session *s, int *fin, unsigned *opcode, char **dstbuf, size
 	if (len)
 	{
 		char *bufptr = (char*)malloc(len+1);
-		if (!bufptr) return 0;
 
 		if (!(session_read(s, bufptr, len) == len))
 		{
@@ -1092,7 +1107,9 @@ int session_write(session *s, const void *_buf, size_t len)
 	while (len > 0)
 	{
 		int wlen = session_rawwrite(s, buf, len);
-		if (wlen < 0) return 0;
+
+		if (wlen < 0)
+			return 0;
 
 		if (!wlen)
 		{
@@ -1239,7 +1256,7 @@ int session_readmsg(session *s, char **buf)
 		return len;
 	}
 
-	if ((s->dst-s->dstbuf) >= MAX_READMSG_SIZE)
+	if ((s->dst - s->dstbuf) >= MAX_READMSG_SIZE)
 	{
 		*s->dst = '\0';
 		*buf = s->dstbuf;
@@ -1566,9 +1583,7 @@ int handler_wait_kqueue(handler *h, int wait)
 				h->use--;
 			}
 			else
-			{
 				tpool_start(h->tp, &kqueue_run, s);
-			}
 		}
 	}
 
@@ -1709,9 +1724,7 @@ int handler_wait_epoll(handler *h, int wait)
 				h->use--;
 			}
 			else
-			{
 				tpool_start(h->tp, &epoll_run, s);
-			}
 		}
 	}
 
@@ -2455,6 +2468,8 @@ handler *handler_create(int threads)
 			return NULL;
 		}
 	}
+	else
+		cnt = 1;
 #endif
 
 	handler *h = (handler*)calloc(1, sizeof(handler));
@@ -2472,7 +2487,7 @@ handler *handler_create(int threads)
 	h->fd = kqueue();
 	if (h->fd < 0) abort();
 #elif defined(__linux__)
-	h->fd = epoll_create(10);
+	h->fd = epoll_create(1);
 	if (h->fd < 0) abort();
 #endif
 
@@ -2487,7 +2502,9 @@ int handler_shutdown(handler *h)
 
 void handler_destroy(handler *h)
 {
-	if (!h) return;
+	if (!h)
+		return;
+
 	h->halt = 1;
 	msleep(10);
 
@@ -2506,7 +2523,8 @@ void handler_destroy(handler *h)
 	sb_int_destroy(h->fds);
 
 #if USE_SSL
-	if (h->ctx) SSL_CTX_free(h->ctx);
+	if (h->ctx)
+		SSL_CTX_free(h->ctx);
 #endif
 
 	free(h);
