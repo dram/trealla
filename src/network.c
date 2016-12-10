@@ -25,7 +25,6 @@
 #define poll WSAPoll
 #define msleep Sleep
 #define strcasecmp _stricmp
-#define strncasecmp _strnicmp
 #define SHUT_RD SD_RECEIVE
 #define SHUT_WR SD_SEND
 #define SHUT_RDWR SD_BOTH
@@ -151,11 +150,11 @@ struct session_
 
 	union
 	{
-		long long udata_int;
+		int64_t udata_int;
 		void *udata_ptr;
 	};
 
-	unsigned long long udata_flags;
+	uint64_t udata_flags;
 	int connected, disconnected, len, busy, handled, srclen, idx;
 	int use_cnt, fd, pri, ipv4, hidx, blocked;
 	int is_tcp, is_ssl, is_ws, is_nonblocking, is_client;
@@ -621,8 +620,8 @@ void session_set_udata_flag(session *s, unsigned flag) { s->udata_flags |= 1ULL 
 unsigned session_get_udata_flag(session *s, unsigned flag) { return s->udata_flags & (1ULL << flag); }
 void session_clr_udata_flag(session *s, unsigned flag) { s->udata_flags &= ~(1ULL << flag); }
 void session_clr_udata_flags(session *s) { s->udata_flags = 0; }
-void session_set_udata_int(session *s, long long data) { s->udata_int = data; }
-long long session_get_udata_int(session *s) { return s->udata_int; }
+void session_set_udata_int(session *s, int64_t data) { s->udata_int = data; }
+int64_t session_get_udata_int(session *s) { return s->udata_int; }
 void session_set_udata_ptr(session *s, void *data) { s->udata_ptr = data; }
 void *session_get_udata_ptr(session *s) { return s->udata_ptr; }
 const char *session_get_name(session *s) { return s->name?s->name:""; }
@@ -655,7 +654,7 @@ int session_set_stash(session *s, const char *key, const char *value)
 	return 1;
 }
 
-int session_set_stash_int(session *s, const char *key, long long n)
+int session_set_stash_int(session *s, const char *key, int64_t n)
 {
 	char value[40];
 	integer_to_ascii(n, value);
@@ -678,7 +677,7 @@ const char *session_get_stash(session *s, const char *key)
 	return (char*)value;
 }
 
-long long session_get_stash_int(session *s, const char *key)
+int64_t session_get_stash_int(session *s, const char *key)
 {
 	if (!s->stash) return 0;
 	void *value = (char*)"";
@@ -1033,8 +1032,9 @@ int session_ws_parse(session *s, int *fin, unsigned *opcode, char **dstbuf, size
 
 int session_rawwrite(session *s, const void *buf, size_t len)
 {
-	if (!buf || !len) return 0;
-	if (s->disconnected) return 0;
+	if (s->disconnected || !len)
+		return 0;
+
 	int wlen;
 
 	for (;;)
@@ -1078,8 +1078,9 @@ int session_rawwrite(session *s, const void *buf, size_t len)
 
 int session_write(session *s, const void *_buf, size_t len)
 {
-	if (!_buf || !len) return 0;
-	if (s->disconnected) return 0;
+	if (s->disconnected || !len)
+		return 0;
+
 	const char *buf = (const char*)_buf;
 
 	while (len > 0)
@@ -1111,7 +1112,9 @@ int session_writemsg(session *s, const char *buf)
 
 int session_bcast(session *s, const void *buf, size_t len)
 {
-	if (!buf || !len) return 0;
+	if (!len)
+		return 0;
+
 	if (s->is_tcp) return 0;
 	struct sockaddr_in addr4 = {0};
 	addr4.sin_family = AF_INET;
@@ -1129,8 +1132,9 @@ int session_bcastmsg(session *s, const char *buf)
 
 int session_read(session *s, void *buf, size_t len)
 {
-	if (!buf || !len) return 0;
-	if (s->disconnected) return 0;
+	if (s->disconnected || !len)
+		return 0;
+
 	int rlen = 0;
 
 	// Read until end of input buffer
@@ -1186,8 +1190,8 @@ int session_read(session *s, void *buf, size_t len)
 
 int session_readmsg(session *s, char **buf)
 {
-	if (!buf) return 0;
-	if (s->disconnected) return 0;
+	if (s->disconnected)
+		return 0;
 
 	// Allocate internal destination message buffer
 	// if one doesn't already exist...
@@ -1295,9 +1299,6 @@ static int session_shutdown(session *s)
 
 int session_close(session *s)
 {
-	if (!s)
-		return 0;
-
 	if (s->fd != -1)
 	{
 		s->disconnected = 1;
@@ -1332,7 +1333,8 @@ static void session_free(session *s)
 		free(s->remote);
 
 #if USE_SSL
-	if (s->ssl) SSL_free(s->ssl);
+	if (s->ssl)
+		SSL_free(s->ssl);
 #endif
 
 	free(s);
@@ -1340,7 +1342,9 @@ static void session_free(session *s)
 
 void session_unshare(session *s)
 {
-	if (--s->use_cnt > 0) return;
+	if (--s->use_cnt > 0)
+		return;
+
 	session_free(s);
 }
 
@@ -1360,11 +1364,10 @@ static int handler_accept(handler *h, server *srv, session **v)
 	if (h->halt)
 		return -1;
 
-	int newfd;
-
 	struct sockaddr_in6 addr6 = {0};
 	addr6.sin6_family = AF_UNSPEC;
 	socklen_t len = sizeof(addr6);
+	int newfd;
 
 	if ((newfd = accept(srv->fd, (struct sockaddr*)&addr6, &len)) < 0)
 	{
@@ -1465,8 +1468,10 @@ static int kqueue_run(void *data)
 {
 	if (g_debug) printf("*** KQUEUE: run %d\n", ((session*)data)->fd);
 	session *s = (session*)data;
-	while (s->f(s, s->v));
 	struct kevent ev = {0};
+
+	while (s->f(s, s->v))
+		;
 
 	if (s->blocked)
 	{
@@ -1477,7 +1482,10 @@ static int kqueue_run(void *data)
 		EV_SET(&ev, s->fd, EVFILT_READ, EV_ADD|EV_CLEAR|EV_DISPATCH, 0, 0, s);
 
 	kevent(s->h->fd, &ev, 1, NULL, 0, NULL);
-	if (!s->is_tcp) free(s);
+
+	if (!s->is_tcp)
+		free(s);
+
 	return 1;
 }
 
@@ -1602,8 +1610,10 @@ static int epoll_run(void *data)
 {
 	if (g_debug) printf("*** EPOLL: run %d\n", ((session*)data)->fd);
 	session *s = (session*)data;
-	while (s->f(s, s->v));
 	struct epoll_event ev = {0};
+
+	while (s->f(s, s->v))
+		;
 
 	if (s->blocked)
 	{
@@ -1619,7 +1629,10 @@ static int epoll_run(void *data)
 		ev.data.ptr = s;
 
 	epoll_ctl(s->h->fd, EPOLL_CTL_MOD, s->fd, &ev);
-	if (!s->is_tcp) free(s);
+
+	if (!s->is_tcp)
+		free(s);
+
 	return 1;
 }
 
@@ -1734,8 +1747,10 @@ static int poll_run(void *data)
 {
 	if (g_debug) printf("*** POLL: run %d\n", ((session*)data)->fd);
 	session *s = (session*)data;
-	while (s->f(s, s->v));
 	s->h->rpollfds[s->idx].fd = s->fd;
+
+	while (s->f(s, s->v))
+		;
 
 	if (s->blocked)
 		s->h->rpollfds[s->idx].events = POLLOUT|POLLRDHUP;
@@ -1743,7 +1758,10 @@ static int poll_run(void *data)
 		s->h->rpollfds[s->idx].events = POLLIN|POLLRDHUP;
 
 	s->h->rpollfds[s->idx].revents = 0;
-	if (!s->is_tcp) free(s);
+
+	if (!s->is_tcp)
+		free(s);
+
 	return 1;
 }
 
@@ -1849,11 +1867,10 @@ int handler_wait_poll(handler *h, int wait)
 
 static int handler_select_set(void *_h, int fd, void *_s)
 {
-	session *s = (session*)_s;
-
 	if (fd == -1)
 		return 1;
 
+	session *s = (session*)_s;
 	handler *h = (handler*)_h;
 
 	if (s->blocked)
@@ -1890,11 +1907,17 @@ static int select_run(void *data)
 {
 	if (g_debug) printf("*** SELECT: run %d\n", ((session*)data)->fd);
 	session *s = (session*)data;
-	while (s->f(s, s->v));
+
+	while (s->f(s, s->v))
+		;
+
 	handler_select_set(s->h, s->fd, s);
 	s->h->srvs[s->idx].fd = s->fd;
 	s->busy = 0;
-	if (!s->is_tcp) free(s);
+
+	if (!s->is_tcp)
+		free(s);
+
 	return 1;
 }
 

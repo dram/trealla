@@ -72,8 +72,8 @@ extern void session_clr_udata_flag(session *s, unsigned flag);
 extern void session_set_udata_flag(session *s, unsigned flag);		// flag=0..63
 extern unsigned session_get_udata_flag(session *s, unsigned flag);
 
-extern void session_set_udata_int(session *s, long long data);
-extern long long session_get_udata_int(session *s);
+extern void session_set_udata_int(session *s, int64_t data);
+extern int64_t session_get_udata_int(session *s);
 
 extern void session_set_udata_ptr(session *s, void *data);
 extern void *session_get_udata_ptr(session *s);
@@ -82,8 +82,8 @@ extern void *session_get_udata_ptr(session *s);
 // Note: the stash takes copies of key/value strings
 extern int session_set_stash(session *s, const char *key, const char *value);
 extern const char *session_get_stash(session *s, const char *key);
-extern int session_set_stash_int(session *s, const char *key, long long value);
-extern long long session_get_stash_int(session *s, const char *key);
+extern int session_set_stash_int(session *s, const char *key, int64_t value);
+extern int64_t session_get_stash_int(session *s, const char *key);
 // Note: must free returned value after use...
 extern const char *session_del_stash(session *s, const char *key);
 extern void session_clr_stash(session *s);

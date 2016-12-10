@@ -414,7 +414,7 @@ Optional attributes are allowed of the form 'key=value' such as
 'scope=TEST' which names a scope for discovery purposes, and 'name=QUOTES'
 which specifies a named service.
 
-If no port (or port is 0) is specified then one is assigned by the
+If no port (or port=0) is specified then one is assigned by the
 system. For named services with discovery this is usually sufficient.
 
 For SSL servers files *key.pem* and *cert.pem* are looked for, which
