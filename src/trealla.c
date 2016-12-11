@@ -2502,14 +2502,21 @@ int xref_rule(lexer *l, node *n)
 	node *body = NLIST_NEXT(head);
 
 	const char *head_functor = "";
+	int arity = 0;
 
 	if (is_compound(head))
+	{
 		head_functor = NLIST_FRONT(&head->val_l)->val_s;
+		arity = (int)head->val_i;
+	}
 	else if (is_atom(head))
 		head_functor = head->val_s;
 
 #ifndef ISO_ONLY
-	if (sl_get(&l->db->exports, head_functor, NULL))
+	char tmpbuf[FUNCTOR_SIZE+10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head_functor, ARITY_CHAR, arity);
+
+	if (sl_get(&l->db->exports, tmpbuf, NULL))
 	{
 		node *s = make_structure();
 		s->flags |= FLAG_BUILTIN|FLAG_HIDDEN;
