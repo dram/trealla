@@ -2507,7 +2507,7 @@ int xref_rule(lexer *l, node *n)
 	if (is_compound(head))
 	{
 		head_functor = NLIST_FRONT(&head->val_l)->val_s;
-		arity = (int)head->val_i;
+		arity = (int)NLIST_COUNT(&head->val_l)-1;
 	}
 	else if (is_atom(head))
 		head_functor = head->val_s;
@@ -2537,7 +2537,6 @@ int xref_rule(lexer *l, node *n)
 
 		if (is_compound(n))
 		{
-			//xref_rule(l, n);
 			node *tmp = NLIST_FRONT(&n->val_l);
 
 			if (is_atom(tmp) && !(tmp->flags & FLAG_BUILTIN))

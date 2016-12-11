@@ -103,7 +103,7 @@ getpost(Id,Deleted,Locked,Created,Modified,User,Head,Body) :-
 
 getposts(BlogName,L) :-
 	blog_name(BlogName,BlogId),
-	blog_blog(BlogId,Id2),
+	blog_blog(BlogId,_),
 	findall(Id,blog_blog(BlogId,Id),L).
 
 getposts(BlogName,[]).
