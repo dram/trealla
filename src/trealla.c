@@ -1137,17 +1137,17 @@ int dir_dynamic(lexer *l, node *n)
 	r->dynamic = 1;
 	sl_init(&r->idx, 1, &strcmp, NULL);
 
+#ifndef ISO_ONLY
 	if (!term2)
 	{
 		sl_set(&l->db->rules, key, r);
-		return 0;
+		return 1;
 	}
 
-#ifndef ISO_ONLY
 	if (!is_list(term2))
 	{
 		sl_set(&l->db->rules, key, r);
-		return 0;
+		return 1;
 	}
 
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
@@ -1179,10 +1179,9 @@ int dir_dynamic(lexer *l, node *n)
 		n2 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
 		i++;
 	}
-
-	sl_set(&l->db->rules, key, r);
 #endif
 
+	sl_set(&l->db->rules, key, r);
 	return 1;
 }
 
@@ -2659,10 +2658,7 @@ int query_run(tpl_query *self)
 	allocate_frame(self);
 
 	if (!self->parent)
-	{
 		self->env_point = FUDGE_FACTOR;
-		execute_term(self, self->curr_term, self->curr_term->frame_size);
-	}
 
 	while (!g_abort && !self->pl->abort)
 	{
@@ -2884,27 +2880,13 @@ void query_dump(tpl_query *self)
 
 static tpl_query *trealla_create_query2(trealla *pl, tpl_query *q);
 
-tpl_query *query_create_subquery(tpl_query *self, int is_proc)
+tpl_query *query_create_subquery(tpl_query *self)
 {
 	tpl_query *q = trealla_create_query2(self->pl, self);
 	if (!q) return NULL;
 	q->noopt = self->noopt;
 	q->trace = self->trace;
 	q->curr_db = self->curr_db;
-
-#ifndef ISO_ONLY
-	q->is_proc = is_proc;
-
-	if (self->curr_pid)
-	{
-		if (!--self->curr_pid->refcnt)
-			query_destroy(self->curr_pid);
-	}
-
-	self->curr_pid = q;
-	q->refcnt++;
-#endif
-
 	env *e_to = q->envs;
 
 	for (size_t i = 0; i < self->frame_size; i++, e_to++)
@@ -2915,14 +2897,8 @@ tpl_query *query_create_subquery(tpl_query *self, int is_proc)
 		if (n == NULL)
 			continue;
 
-		if ((is_compound(n) || is_heap(n)) && is_proc)
-			e_to->term = clone_term(self, n);
-		else
-		{
-			e_to->term = n;
-			n->refcnt++;
-		}
-
+		e_to->term = n;
+		n->refcnt++;
 		e_to->binding = -1;
 	}
 
@@ -2932,6 +2908,24 @@ tpl_query *query_create_subquery(tpl_query *self, int is_proc)
 	q->env_point = q->curr_frame+q->frame_size;
 	return q;
 }
+
+#ifndef ISO_ONLY
+tpl_query *query_create_proc(tpl_query *self)
+{
+	tpl_query *q = query_create_subquery(self);
+	if (!q) return NULL;
+	q->refcnt++;
+
+	if (self->curr_pid)
+	{
+		if (!--self->curr_pid->refcnt)
+			query_destroy(self->curr_pid);
+	}
+
+	self->curr_pid = q;
+	return q;
+}
+#endif
 
 void query_stats(tpl_query *self)
 {
@@ -3226,12 +3220,13 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 	q->curr_db = &self->db;
 
 #ifndef ISO_ONLY
-	if (!q->parent)
+	if (q->parent)
+		parent->refcnt++;
+	else
 		q->name = strdup("default");
 
 	q->refcnt = 1;
 	q->curr_pid = parent;
-	if (parent) parent->refcnt++;
 #endif
 
 	q->def_choice = q->def_env = 1;

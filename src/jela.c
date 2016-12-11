@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #ifdef _WIN32
 #define snprintf _snprintf
@@ -391,7 +392,7 @@ static int dynamic(tpl_query *q)
 		sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db);
 	}
 
-	//printf("DEBUG: dynamic %s/%d\n", tmp->val_s, arity);
+	//printf("DEBUG: dynamic %s/%d\n", n->val_s, arity);
 
 	rule *r = xref_term(q->lex, n, arity);
 
@@ -490,7 +491,7 @@ static int unify_compound(tpl_query *q, node *term1, signed context1, node *term
 	node *it1 = NLIST_FRONT(&term1->val_l);
 	node *it2 = NLIST_FRONT(&term2->val_l);
 
-	if ((term1->match == term2->match) && 0)
+	if (term1->match && (term1->match == term2->match))
 	{
 		it1 = NLIST_NEXT(it1);		// skip functor
 		it2 = NLIST_NEXT(it2);		//	...
@@ -519,12 +520,12 @@ static int unify_compound(tpl_query *q, node *term1, signed context1, node *term
 
 int unify(tpl_query *q, node *term1, signed context1, node *term2, signed context2)
 {
-	DEBUG { printf("### unify_term : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
-
 	if (q->unify_depth > MAX_UNIFY_DEPTH) { QABORT(ABORT_MAXDEPTH); return 0; }
 
 	if (is_compound(term1) && is_compound(term2))
 		return unify_compound(q, term1, context1, term2, context2);
+
+	DEBUG { printf("### unify_term : "); print_term(q->pl, NULL, term1, 1); printf(" (%d) <==> (%d) ", context1, context2); print_term(q->pl, NULL, term2, 1); printf("\n"); }
 
 	if (is_var(term1))
 	{
@@ -552,6 +553,7 @@ int unify(tpl_query *q, node *term1, signed context1, node *term2, signed contex
 
 	if (is_atom(term1) && is_atom(term2))
 	{
+		//printf("*** here: '%s' <==> '%s'\n", term1->val_s, term2->val_s);
 		if (term1->val_s == term2->val_s) return 1;
 		return !strcmp(term1->val_s, term2->val_s);
 	}

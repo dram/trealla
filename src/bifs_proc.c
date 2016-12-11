@@ -246,7 +246,7 @@ static int bif_proc_fork0(tpl_query *q)
 	if (!q->pl->tp)
 		q->pl->tp = tpool_create(g_tpool_size);
 
-	tpl_query *who = query_create_subquery(q, 1);
+	tpl_query *who = query_create_proc(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	who->is_forked = 1;
 	begin_query(who, NLIST_NEXT(q->curr_term));
@@ -314,7 +314,7 @@ static int bif_proc_spawn2(tpl_query *q)
 	if (!q->pl->tp)
 		q->pl->tp = tpool_create(g_tpool_size);
 
-	tpl_query *who = query_create_subquery(q, 1);
+	tpl_query *who = query_create_proc(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	who->linked = 0;
 	who->is_forked = 1;
@@ -349,7 +349,7 @@ static int bif_proc_spawn1(tpl_query *q)
 	if (!q->pl->tp)
 		q->pl->tp = tpool_create(g_tpool_size);
 
-	tpl_query *who = query_create_subquery(q, 1);
+	tpl_query *who = query_create_proc(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	who->linked = 0;
 	who->is_forked = 1;
@@ -379,7 +379,7 @@ static int bif_proc_spawn_link2(tpl_query *q)
 	if (!q->pl->tp)
 		q->pl->tp = tpool_create(g_tpool_size);
 
-	tpl_query *who = query_create_subquery(q, 1);
+	tpl_query *who = query_create_proc(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	who->linked = 1;
 	who->is_forked = 1;
@@ -414,7 +414,7 @@ static int bif_proc_spawn_link1(tpl_query *q)
 	if (!q->pl->tp)
 		q->pl->tp = tpool_create(g_tpool_size);
 
-	tpl_query *who = query_create_subquery(q, 1);
+	tpl_query *who = query_create_proc(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	who->linked = 1;
 	who->is_forked = 1;
@@ -441,7 +441,7 @@ static int proc_callback(tpl_query *q, session *s, node *goal, node *var)
 	{
 		//printf("DEBUG: CONNECT\n");
 		session_set_udata_flag(s, HELLO);
-		tpl_query *who = query_create_subquery(q, 1);
+		tpl_query *who = query_create_proc(q);
 		if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 		begin_query(who, goal);
 		stream *sp = CALLOC(stream);
@@ -1296,7 +1296,7 @@ static int bif_proc_until2(tpl_query *q)
 
 	while (!g_abort && !q->halt)
 	{
-		tpl_query *who = query_create_subquery(q, 0);
+		tpl_query *who = query_create_subquery(q);
 		if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 		begin_query(who, term1);
 		int ok = query_run(who);

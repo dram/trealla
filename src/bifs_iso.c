@@ -3295,7 +3295,7 @@ static int bif_iso_findall(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_callable(term2);
 	node *term3 = get_var(term3);
-	tpl_query *who = query_create_subquery(q, 0);
+	tpl_query *who = query_create_subquery(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	begin_query(who, term2);
 	query_run(who);
@@ -3305,7 +3305,7 @@ static int bif_iso_findall(tpl_query *q)
 	while (who->ok)
 	{
 		who->latest_context = 0;
-		node *from = get_arg(who, term1, who->latest_context);
+		node *from = get_arg(who, term1, 0);
 		node *res = clone_term(who, from);
 
 		if (!end)
@@ -4362,7 +4362,7 @@ static int bif_sys_findnsols(tpl_query *q)
 
 	if (!q->retry)
 	{
-		who = query_create_subquery(q, 0);
+		who = query_create_subquery(q);
 		if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 		sp = CALLOC(stream);
 		sp->subqptr = who;
@@ -4537,7 +4537,7 @@ static int bif_sys_time1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	tpl_query *who = query_create_subquery(q, 0);
+	tpl_query *who = query_create_subquery(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	begin_query(who, term1);
 	int ok = query_run(who);
@@ -4551,7 +4551,7 @@ static int bif_sys_time2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
 	node *term2 = get_var(term2);
-	tpl_query *who = query_create_subquery(q, 0);
+	tpl_query *who = query_create_subquery(q);
 	if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 	begin_query(who, term1);
 	int ok = query_run(who);

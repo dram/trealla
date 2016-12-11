@@ -19,7 +19,7 @@ test1 :-
 	asserta(rec1(1,one)),
 	dbs:end,
 	retract(rec1(X,Y)), write(X), write(' ==> '), write(Y), nl,
-		fail
+		fail.
 test1 :-
 	true.
 

@@ -16,18 +16,18 @@
 :-define(MaxAge,300).
 :-define(KeepDays,7).
 
-:-define(FieldNick,'nick').
-:-define(FieldEmail,'email').
-:-define(FieldCreated,'created').
-:-define(FieldModified,'modified').
-:-define(FieldDeleted,'deleted').
-:-define(FieldSalt,'salt').
-:-define(FieldHash,'hash').
-:-define(FieldUser,'user').
-:-define(FieldExpires,'expires').
-:-define(FieldMaxAge,'maxage').
-:-define(FieldLocked,'locked').
-:-define(FieldUuid,'uuid').
+:-define(FieldNick,nick).
+:-define(FieldEmail,email).
+:-define(FieldCreated,created).
+:-define(FieldModified,modified).
+:-define(FieldDeleted,deleted).
+:-define(FieldSalt,salt).
+:-define(FieldHash,hash).
+:-define(FieldUser,user).
+:-define(FieldExpires,expires).
+:-define(FieldMaxAge,maxage).
+:-define(FieldLocked,locked).
+:-define(FieldUuid,uuid).
 
 % These are our database records:
 

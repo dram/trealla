@@ -1,21 +1,22 @@
 :-module(blog,[init/0]).
-:-export([addpost/5,delpost/1,lockpost/1,getpost/8,getposts/2]).
+:-export([addpost/5,delpost/1,lockpost/1]).
+:-export([getpost/8,getposts/2]).
 :-export([addcomment/4,replycomment/2,delcomment/1,undelcomment/1]).
 :-export([getcomment/6,getcomments/2]).
 
 :-use_module(dict).
 :-use_module(sys).
 
-:-define(FieldCreated,'created').
-:-define(FieldModified,'modified').
-:-define(FieldOwner,'owner').
-:-define(FieldLocked,'locked').
-:-define(FieldDeleted,'deleted').
-:-define(FieldPost,'post').
-:-define(FieldHead,'head').
-:-define(FieldBody,'body').
-:-define(FieldReplies,'replies').
-:-define(FieldReplyto,'replyto').
+:-define(FieldCreated,created).
+:-define(FieldModified,modified).
+:-define(FieldOwner,owner).
+:-define(FieldLocked,locked).
+:-define(FieldDeleted,deleted).
+:-define(FieldPost,post).
+:-define(FieldHead,head).
+:-define(FieldBody,body).
+:-define(FieldReplies,replies).
+:-define(FieldReplyto,replyto).
 
 % These are our database records:
 
@@ -102,6 +103,7 @@ getpost(Id,Deleted,Locked,Created,Modified,User,Head,Body) :-
 
 getposts(BlogName,L) :-
 	blog_name(BlogName,BlogId),
+	blog_blog(BlogId,Id2),
 	findall(Id,blog_blog(BlogId,Id),L).
 
 getposts(BlogName,[]).

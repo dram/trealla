@@ -158,7 +158,7 @@ static int net_callback(session *s, void *data)
 	{
 		//printf("DEBUG: CONNECT\n");
 		session_set_udata_flag(s, HELLO);
-		tpl_query *who = query_create_subquery(q, 0);
+		tpl_query *who = query_create_subquery(q);
 		if (!who) { QABORT(ABORT_OUTOFMEMORY); return 0; }
 		begin_query(who, goal);
 		stream *sp = CALLOC(stream);
