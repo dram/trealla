@@ -423,8 +423,8 @@ static int get_ns(lexer *l, const char *name)
 static void add_function(lexer *l, node *n)
 {
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&n->val_l));
-	char tmpbuf[KEY_SIZE];
-	snprintf(tmpbuf, KEY_SIZE, "%s%c%d", n2->val_s, ARITY_CHAR, (int)(NLIST_NEXT(n2)->val_i));
+	char tmpbuf[FUNCTOR_SIZE+10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", n2->val_s, ARITY_CHAR, (int)(NLIST_NEXT(n2)->val_i));
 	sl_set(&l->funs, strdup(tmpbuf), NULL);
 }
 
@@ -433,8 +433,8 @@ static int get_function(lexer *l, node *n)
 	if (!sl_count(&l->funs))
 		return 0;
 
-	char tmpbuf[KEY_SIZE];
-	snprintf(tmpbuf, KEY_SIZE, "%s%c%d", NLIST_FRONT(&n->val_l)->val_s, ARITY_CHAR, (int)(NLIST_COUNT(&n->val_l)-1));
+	char tmpbuf[FUNCTOR_SIZE+10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", NLIST_FRONT(&n->val_l)->val_s, ARITY_CHAR, (int)(NLIST_COUNT(&n->val_l)-1));
 	int ok = sl_get(&l->funs, tmpbuf, NULL);
 	return ok;
 }
@@ -478,19 +478,17 @@ static void assert_index(lexer *l, node *n, int manual, int *persist, int append
 
 	const char *functor = tmp->val_s;
 	char tmpbuf[FUNCTOR_SIZE+10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+	char *save = NULL;
 
-	if (!strchr(functor, ARITY_CHAR))		// FIXME
-	{
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
+	if (!(tmp->flags & FLAG_CONST))
+		save = tmp->val_s;
 
-		if (!(tmp->flags & FLAG_CONST))
-			free(tmp->val_s);
+	tmp->flags |= FLAG_CONST;
+	tmp->val_s = dict(db, tmp->val_s);
 
-		tmp->flags |= FLAG_CONST;
-		tmp->val_s = dict(db, tmpbuf);
-	}
-	else
-		strcpy(tmpbuf, functor);
+	if (save != NULL)
+		free(save);
 
 	rule *r = NULL;
 
@@ -565,17 +563,21 @@ void retract_index(lexer *l, node *n, int *persist)
 	module *db = l->db;
 	node *tmp = NLIST_FRONT(&n->val_l);
 	node *head = tmp = NLIST_NEXT(tmp), *idx = NULL;
+	int arity = 0;
 
 	if (is_compound(head))
 	{
+		arity = NLIST_COUNT(&head->val_l)-1;
 		tmp = NLIST_FRONT(&head->val_l);
 		idx = NLIST_NEXT(tmp);
 	}
 
 	const char *functor = tmp->val_s;
+	char tmpbuf[FUNCTOR_SIZE+10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 	rule *r = NULL;
 
-	if (!sl_get(&db->rules, functor, (void**)&r))
+	if (!sl_get(&db->rules, tmpbuf, (void**)&r))
 	{
 		*persist = 0;
 		return;
@@ -1130,25 +1132,24 @@ int dir_dynamic(lexer *l, node *n)
 	if (!is_compound(term1)) return 0;
 	node *head = NLIST_NEXT(NLIST_FRONT(&term1->val_l));
 	if (!is_integer(NLIST_NEXT(head))) return 0;
-	char tmpbuf[KEY_SIZE];
+	char tmpbuf[FUNCTOR_SIZE+10];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", head->val_s, ARITY_CHAR, (int)NLIST_NEXT(head)->val_i);
-	const char *key = dict(l->db, tmpbuf);
-	rule *r = CALLOC(rule);
-	r->dynamic = 1;
-	sl_init(&r->idx, 1, &strcmp, NULL);
+	rule *r = NULL;
+
+	if (!sl_get(&l->db->rules, tmpbuf, (void**)&r))
+	{
+		r = CALLOC(rule);
+		r->dynamic = 1;
+		sl_init(&r->idx, 1, &strcmp, NULL);
+		sl_set(&l->db->rules, strdup(tmpbuf), r);
+	}
+
+	if (!term2)
+		return 1;
 
 #ifndef ISO_ONLY
-	if (!term2)
-	{
-		sl_set(&l->db->rules, key, r);
-		return 1;
-	}
-
 	if (!is_list(term2))
-	{
-		sl_set(&l->db->rules, key, r);
 		return 1;
-	}
 
 	node *n2 = NLIST_NEXT(NLIST_FRONT(&term2->val_l));
 	int i = 1;
@@ -1181,7 +1182,6 @@ int dir_dynamic(lexer *l, node *n)
 	}
 #endif
 
-	sl_set(&l->db->rules, key, r);
 	return 1;
 }
 
@@ -2391,26 +2391,23 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 		return NULL;
 
 	char tmpbuf[FUNCTOR_SIZE+10];
-	const char *functarity;
-
-	if (!strchr(functor, ARITY_CHAR))
-	{
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
-		functarity = tmpbuf;
-	}
-	else
-		functarity = functor;
-
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 	rule *r = NULL;
 
-	if (!sl_get(&db->rules, functarity, (void**)&r))
+	if (!sl_get(&db->rules, tmpbuf, (void**)&r))
 		return NULL;
 
+	char *save = NULL;
+
 	if (!(term->flags & FLAG_CONST))
-		free(term->val_s);
+		save = term->val_s;
 
 	term->flags |= FLAG_CONST;
-	term->val_s = dict(l->db, functarity);
+	term->val_s = dict(l->db, term->val_s);
+
+	if (save != NULL)
+		free(save);
+
 	return r;
 }
 
@@ -2422,24 +2419,45 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 	if (src)
 	{
-		char tmpbuf[FUNCTOR_SIZE+10];
-		memcpy(tmpbuf, functor, src-functor);
-		tmpbuf[src-functor] = '\0';
+		char tmpbuf2[FUNCTOR_SIZE+10];
+		memcpy(tmpbuf2, functor, src-functor);
+		tmpbuf2[src-functor] = '\0';
 		functor = src+1;
 		module *db = NULL;
 
-		if (sl_get(&l->pl->mods, tmpbuf, (void**)&db))
+		if (sl_get(&l->pl->mods, tmpbuf2, (void**)&db))
 		{
+			char tmpbuf[FUNCTOR_SIZE+10];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 
 			if (!sl_get(&db->exports, tmpbuf, NULL))
+			{
+				printf("WARN: in '%s', not exported  '%s:%s'\n", l->db->name, db->name, tmpbuf);
 				return NULL;
+			}
 
-			r = xref_term2(l, db, functor, term, arity);
+			if (!sl_get(&db->rules, tmpbuf, (void**)&r))
+			{
+				r = CALLOC(rule);
+				sl_init(&r->idx, 1, &strcmp, NULL);
+				sl_set(&db->rules, strdup(tmpbuf), r);
+			}
+
+			char *save = NULL;
+
+			if (!(term->flags & FLAG_CONST))
+				save = term->val_s;
+
+			term->flags |= FLAG_CONST;
+			term->val_s = dict(db, functor);
+
+			if (save != NULL)
+				free(save);
+
+			return r;
 		}
 	}
 
-	if (r != NULL) return r;
 	r = xref_term2(l, l->db, functor, term, arity);
 	if (r != NULL) return r;
 	r = xref_term2(l, &l->pl->db, functor, term, arity);

@@ -2399,27 +2399,14 @@ static int bif_iso_retract(tpl_query *q)
 	}
 
 	functor = tmp->val_s;
-	char tmpbuf[(FUNCTOR_SIZE*2)+10];
-
-	if (!strchr(functor, ARITY_CHAR))
-	{
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
-
-		if (!(tmp->flags & FLAG_CONST))
-			free(tmp->val_s);
-
-		tmp->val_s = strdup(tmpbuf);
-	}
-	else
-		strcpy(tmpbuf, functor);
-
-	functor = tmpbuf;
+	char tmpbuf[FUNCTOR_SIZE+10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 	rule *r = NULL;
 
 	if (!q->curr_db->in_tran)
 		DBLOCK(q->curr_db);
 
-	if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
+	if (!sl_get(&q->curr_db->rules, tmpbuf, (void**)&r))
 	{
 		if (!q->curr_db->in_tran)
 			DBUNLOCK(q->curr_db);
@@ -2529,27 +2516,14 @@ static int bif_iso_retractall(tpl_query *q)
 	}
 
 	functor = tmp->val_s;
-	char tmpbuf[(FUNCTOR_SIZE*2)+10];
-
-	if (!strchr(functor, ARITY_CHAR))
-	{
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
-
-		if (!(tmp->flags & FLAG_CONST))
-			free(tmp->val_s);
-
-		tmp->val_s = strdup(tmpbuf);
-	}
-	else
-		strcpy(tmpbuf, functor);
-
-	functor = tmpbuf;
+	char tmpbuf[FUNCTOR_SIZE+10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 	rule *r = NULL;
 
 	if (!q->curr_db->in_tran)
 		DBLOCK(q->curr_db);
 
-	if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
+	if (!sl_get(&q->curr_db->rules, tmpbuf, (void**)&r))
 	{
 		if (!q->curr_db->in_tran)
 			DBUNLOCK(q->curr_db);
@@ -4226,7 +4200,7 @@ static int bif_sys_abolish(tpl_query *q)
 	node *term2 = get_int(term2);
 	const char *functor = term1->val_s;
 	int arity = (int)term2->val_i;
-	char tmpbuf[KEY_SIZE];
+	char tmpbuf[FUNCTOR_SIZE+10];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 	rule *r = NULL;
 	DBLOCK(q->curr_db);

@@ -1,8 +1,8 @@
 :-module(blog,[init/0]).
-:-export([addpost/5,delpost/1,lockpost/1]).
+:-export([addpost/5,delpost/1,undelpost/1,lockpost/1,unlockpost/1]).
 :-export([getpost/8,getposts/2]).
 :-export([addcomment/4,replycomment/2,delcomment/1,undelcomment/1]).
-:-export([getcomment/6,getcomments/2]).
+:-export([getcomment/7,getcomments/2]).
 
 :-use_module(dict).
 :-use_module(sys).

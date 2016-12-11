@@ -381,18 +381,35 @@ static int dynamic(tpl_query *q)
 	}
 
 	const char *functor = n->val_s;
+
+#if 1
 	char tmpbuf2[FUNCTOR_SIZE+10];
 	const char *src = strchr(functor, ':');
 
 	if (src)
 	{
+		//printf("*** dynamic %s\n", functor);
 		memcpy(tmpbuf2, functor, src-functor);
 		tmpbuf2[src-functor] = '\0';
 		functor = src+1;
-		sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db);
-	}
 
-	//printf("DEBUG: dynamic %s/%d\n", n->val_s, arity);
+		if (sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db))
+		{
+#if 0
+			char *save = n->val_s;
+			n->val_s = strdup(functor);
+
+			if (!(n->flags & FLAG_CONST))
+				free(save);
+
+			n->flags &= ~FLAG_CONST;
+			functor = n->val_s;
+#endif
+		}
+	}
+#endif
+
+	//printf("DEBUG: dynamic %s/%d\n", functor, arity);
 
 	rule *r = xref_term(q->lex, n, arity);
 
@@ -405,23 +422,11 @@ static int dynamic(tpl_query *q)
 	if (r == NULL)
 	{
 		char tmpbuf[FUNCTOR_SIZE+10];
+		snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 
-		if (!strchr(functor, ARITY_CHAR))
+		if (!sl_get(&q->curr_db->rules, tmpbuf, (void**)&r))
 		{
-			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
-			functor = tmpbuf;
-		}
-
-		if (!sl_get(&q->curr_db->rules, functor, (void**)&r))
-		{
-			printf("ERROR: UNKNOWN -> '%s'\n", functor);
-			QABORT(ABORT_NOTDYNAMIC);
-			return 0;
-		}
-
-		if (0 && !r->dynamic && !strchr(functor, ':'))
-		{
-			printf("ERROR: NOT DYNAMIC '%s'\n", functor);
+			printf("ERROR: UNKNOWN -> '%s'\n", tmpbuf);
 			QABORT(ABORT_NOTDYNAMIC);
 			return 0;
 		}
