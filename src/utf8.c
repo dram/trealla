@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <ctype.h>
 
 size_t strlen_utf8(const char *s)
 {
@@ -13,6 +14,12 @@ size_t strlen_utf8(const char *s)
 	}
 
 	return cnt;
+}
+
+int isalpha_utf8(int _ch)
+{
+	unsigned ch = (unsigned)_ch;
+	return isalpha(ch) || (ch > 0x7F);
 }
 
 int get_char_utf8(const char **_src)

@@ -55,7 +55,7 @@ char *deescape(char *dst, const char *src, char quote)
 
 static int needs_quoting(const char *s)
 {
-	if (!*s || isupper(*s) || !isalpha(*s))
+	if (!*s || isupper(*s) || !isalpha_utf8(*s))
 		return 1;
 
 	if (*s == '_')
@@ -63,7 +63,9 @@ static int needs_quoting(const char *s)
 
 	while (*s)
 	{
-		if (!isalnum(*s) && (*s != '_') && (*s != ':'))
+		int ch = get_char_utf8(&s);
+
+		if (!isalpha_utf8(ch) && !isdigit(ch) && (ch != '_') && (ch != ':'))
 			return 1;
 
 		s++;

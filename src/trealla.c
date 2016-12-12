@@ -1538,17 +1538,18 @@ static void token_init(token *t)
 	*t->dst = '\0';
 }
 
-static void token_put(token *t, char ch)
+static void token_put(token *t, int _ch)
 {
+	unsigned ch = (unsigned)_ch;
 	size_t len = t->dst - t->buf;
 
-	if ((len+1) == t->maxlen)
+	if ((len+4) >= t->maxlen)
 	{
 		t->buf = (char*)realloc(t->buf, (t->maxlen*=2)+1);
 		t->dst = t->buf + len;
 	}
 
-	*t->dst++ = ch;
+	t->dst += put_char_utf8(t->dst, ch);
 	*t->dst = '\0';
 }
 
@@ -1680,13 +1681,15 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	token t;
 	token_init(&t);
 	l->numeric = l->quoted = 0;
-	char ch, quote;
+	char quote;
 #ifndef ISO_ONLY
 	int is_def = 0;
 #endif
 
-	while ((ch = *s++) != 0)
+	while (*s)
 	{
+		int ch = get_char_utf8(&s);
+
 		if ((t.dst != t.buf) && (ch == '?') && (isupper(*s)))
 		{
 			s--;
@@ -1754,13 +1757,15 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			break;
 		}
 
-		if (isalpha(ch) || (ch == '_'))
+		if (isalpha_utf8(ch) || (ch == '_'))
 		{
 			token_put(&t, ch);
 
-			while ((ch = *s++) != 0)
+			while (*s)
 			{
-				if (!isalnum(ch) && (ch != '_'))
+				ch = get_char_utf8(&s);
+
+				if (!isalpha_utf8(ch) && !isdigit(ch) && (ch != '_'))
 				{
 #ifndef ISO_ONLY
 					if ((ch == ':') && get_ns(l, t.buf))
@@ -2242,7 +2247,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			attach_vars(self, n);
 		}
 		else if (!self->quoted && !is_op(self->db, self->tok) &&
-			!isalpha(self->tok[0]) && strcmp(self->tok, "!"))
+			!isalpha_utf8(self->tok[0]) && !isdigit(self->tok[0]) && strcmp(self->tok, "!"))
 		{
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
@@ -3393,5 +3398,5 @@ void trealla_destroy(trealla *self)
 	g_instances--;
 
 	if (!g_instances && (g_allocs > 0))
-		printf("WARN: orphaned=%u\n", (unsigned)g_allocs);
+		printf("DEBUG: orphaned=%u\n", (unsigned)g_allocs);
 }

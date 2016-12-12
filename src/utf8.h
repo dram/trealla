@@ -4,5 +4,6 @@
 extern size_t strlen_utf8(const char *s);
 extern int get_char_utf8(const char **src);
 extern int put_char_utf8(char *dst, int ch);
+extern int isalpha_utf8(int ch);
 
 #endif
