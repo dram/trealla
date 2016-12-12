@@ -2216,9 +2216,9 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		}
 		else if (!self->quoted && !strcmp(self->tok, "pi"))
 		{
-			free(self->tok);
 			n->flags |= TYPE_FLOAT|FLAG_PI;
 			n->val_f = PI;
+			free(self->tok);
 		}
 		else if (!self->quoted &&
 			((self->tok[0] == '_') || isupper(self->tok[0])))
@@ -2670,7 +2670,10 @@ int query_run(tpl_query *self)
 	allocate_frame(self);
 
 	if (!self->parent)
+	{
 		self->env_point = FUDGE_FACTOR;
+		self->envs_used = self->env_point;
+	}
 
 	while (!g_abort && !self->pl->abort)
 	{
@@ -2867,10 +2870,9 @@ void query_dump(tpl_query *self)
 	self->d = NULL;
 	int any = 0;
 	sl_start(&vars);
-	env *e;
 	node *n;
 
-	while ((e = (env*)sl_next(&vars, (void**)&n)) != NULL)
+	while (sl_next(&vars, (void**)&n) != NULL)
 	{
 		char tmpbuf[PRINTBUF_SIZE];
 		sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
@@ -3021,9 +3023,9 @@ void query_destroy(tpl_query *self)
 		free(self->name);
 #endif
 
-	env *e = &self->envs[self->parent?0:FUDGE_FACTOR];
+	env *e = &self->envs[0];
 
-	for (size_t i = 0; i < self->envs_used; i++, e++)
+	for (size_t i = 0; i < self->envs_possible; i++, e++)
 	{
 		if (e->term)
 			term_heapcheck(e->term);
