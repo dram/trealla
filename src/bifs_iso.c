@@ -1947,12 +1947,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 			if (!is_integer(n))
 			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
 
-			int i = n->val_i-'0';
-
-			if ((i < 0) || (i > 9))
-			{ QABORT(ABORT_INVALIDARGNOTINT); return 0; }
-
-			*dst++ = (char)n->val_i;
+			dst += put_char_utf8(dst, n->val_i);
 			node *tail = NLIST_NEXT(head);
 			l = get_arg(q, tail, q->latest_context);
 		}
@@ -1971,10 +1966,11 @@ static int bif_iso_atom_codes(tpl_query *q)
 
 	while (*src)
 	{
-		node *tmp = make_int(*src);
+		int ch = get_char_utf8(&src);
+		node *tmp = make_int(ch);
 		NLIST_PUSH_BACK(&l->val_l, tmp);
 
-		if (!*++src)
+		if (!*src)
 			break;
 
 		tmp = make_list();
