@@ -1397,7 +1397,11 @@ static int bif_iso_put_char(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
-	fwrite(term1->val_s, 1, 1, stdout);
+	const char *src = term1->val_s;
+	int ch = get_char_utf8(&src);
+	char tmpbuf[20];
+	int len = put_char_utf8(tmpbuf, ch);
+	fwrite(tmpbuf, 1, len, stdout);
 	return 1;
 }
 
@@ -1409,12 +1413,17 @@ static int bif_iso_put_char2(tpl_query *q)
 	stream *sp = term1->val_str;
 	int ok;
 
+	const char *src = term2->val_s;
+	int ch = get_char_utf8(&src);
+	char tmpbuf[20];
+	int len = put_char_utf8(tmpbuf, ch);
+
 #ifndef ISO_ONLY
 	if (is_socket(term1))
-		ok = session_write((session*)sp->sptr, term2->val_s, 1);
+		ok = session_write((session*)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(term2->val_s, 1, 1, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, sp->fptr);
 
 	return ok > 0;
 }
@@ -1450,8 +1459,8 @@ static int bif_iso_put_code(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
 	char tmpbuf[20];
-	sprintf(tmpbuf, "%c", (int)term1->val_i);
-	fwrite(tmpbuf, 1, 1, stdout);
+	int len = put_char_utf8(tmpbuf, term1->val_i);
+	fwrite(tmpbuf, 1, len, stdout);
 	return 1;
 }
 
@@ -1464,14 +1473,14 @@ static int bif_iso_put_code2(tpl_query *q)
 	int ok;
 
 	char tmpbuf[20];
-	sprintf(tmpbuf, "%c", (int)term1->val_i);
+	int len = put_char_utf8(tmpbuf, term2->val_i);
 
 #ifndef ISO_ONLY
 	if (is_socket(term1))
-		ok = session_write((session*)sp->sptr, tmpbuf, 1);
+		ok = session_write((session*)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, 1, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, sp->fptr);
 
 	return ok > 0;
 }
@@ -1480,7 +1489,7 @@ static int bif_iso_get_code(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	char ch = getc(stdin);
+	int ch = getc(stdin);				// FIXME
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1494,7 +1503,7 @@ static int bif_iso_get_code2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	char ch = getc(sp->fptr);
+	int ch = getc(sp->fptr);
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1506,7 +1515,7 @@ static int bif_iso_get_byte(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	char ch = getc(stdin);
+	int ch = getc(stdin);
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1520,7 +1529,7 @@ static int bif_iso_get_byte2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	char ch = getc(sp->fptr);
+	int ch = getc(sp->fptr);
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1533,7 +1542,7 @@ static int bif_iso_get_char(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
 	char line[2];
-	line[0] = getc(stdin);
+	line[0] = getc(stdin);			// FIXME
 
 	if (line[0] == EOF)
 	{
@@ -1581,7 +1590,7 @@ static int bif_iso_peek_code(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	char ch = getc(stdin);
+	int ch = getc(stdin);				// FIXME
 
 	if (ch != EOF)
 		ungetc(ch, stdin);
@@ -1599,7 +1608,7 @@ static int bif_iso_peek_code2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	char ch = getc(sp->fptr);
+	int ch = getc(sp->fptr);
 
 	if (ch != EOF)
 		ungetc(ch, stdin);
@@ -1615,7 +1624,7 @@ static int bif_iso_peek_byte(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	char ch = getc(stdin);
+	int ch = getc(stdin);
 
 	if (ch != EOF)
 		ungetc(ch, stdin);
@@ -1633,7 +1642,7 @@ static int bif_iso_peek_byte2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	char ch = getc(sp->fptr);
+	int ch = getc(sp->fptr);
 
 	if (ch != EOF)
 		ungetc(ch, stdin);
@@ -1650,7 +1659,7 @@ static int bif_iso_peek_char(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
 	char line[2];
-	line[0] = getc(stdin);
+	line[0] = getc(stdin);			// FIXME
 
 	if (line[0] == EOF)
 	{
