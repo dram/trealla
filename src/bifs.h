@@ -3,6 +3,8 @@
 
 #include <assert.h>
 
+#include "utf8.h"
+
 #define get_arity(q) (NLIST_COUNT(&q->curr_term->val_l)-1)
 #define get_args(q) NLIST_FRONT(&q->curr_term->val_l)
 

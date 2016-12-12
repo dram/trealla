@@ -444,9 +444,6 @@ extern nbr_t dbs_get_fpos(module *db);
 #endif
 
 extern int grow_env_stack(tpl_query *q);
-extern size_t strlen_utf8(const char *s);
-extern int get_char_utf8(const char **src);
-extern int put_char_utf8(char *dst, int ch);
 extern void process_error(tpl_query *q);
 extern void asserta_index(lexer *l, node *r, int manual, int *persist);
 extern void assertz_index(lexer *l, node *r, int manual, int *persist);

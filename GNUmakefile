@@ -2,7 +2,7 @@ CFLAGS = -Isrc -O3 $(OPT) -Wall -D_DEFAULT_SOURCE -D_BSD_SOURCE -Wwrite-strings
 LDFLAGS = -lm
 
 OBJECTS_ISO = src/trealla.o src/bifs_iso.o src/history.o src/jela.o \
-			src/list.o src/print.o src/skiplist.o src/daemon.o
+			src/list.o src/print.o src/skiplist.o src/utf8.o src/daemon.o
 
 OBJECTS_ALL = $(OBJECTS_ISO) src/base64.o src/bifs_sys.o src/bifs_http.o \
 			src/jsonq.o src/bifs_net.o src/bifs_proc.o \
@@ -82,7 +82,7 @@ tpl.o: src/trealla.h src/daemon.h src/history.h
 # DO NOT DELETE
 
 src/base64.o: src/base64.h
-src/bifs_iso.o: src/bifs.h src/history.h src/internal.h src/jela.h src/trealla.h
+src/bifs_iso.o: src/bifs.h src/history.h src/internal.h src/jela.h src/trealla.h src/utf8.h
 src/bifs_sys.o: src/base64.h src/bifs.h src/internal.h src/jela.h src/network.h src/xmlq.h src/trealla.h
 src/bifs_http.o: src/base64.h src/bifs.h src/internal.h src/network.h src/jela.h src/trealla.h
 src/bifs_dbs.o: src/bifs.h src/trealla.h src/internal.h src/skiplist.h src/jela.h
@@ -99,7 +99,8 @@ src/proc.o: src/bifs.h src/internal.h src/jela.h src/network.h src/trealla.h
 src/skipbuck.o: src/skipbuck.h
 src/skiplist.o: src/skiplist.h
 src/thread.o: src/thread.h src/list.h
-src/trealla.o: src/trealla.h src/jela.h src/internal.h src/bifs.h src/list.h src/base64.h src/skiplist.h src/jsonq.h src/xmlq.h src/uuid.h src/uncle.h src/network.h src/thread.h
+src/trealla.o: src/trealla.h src/jela.h src/internal.h src/bifs.h src/list.h src/base64.h src/skiplist.h src/jsonq.h
+src/trealla.o: src/xmlq.h src/uuid.h src/uncle.h src/network.h src/thread.h src/utf8.h
 src/uncle.o: src/uncle.h src/jsonq.h src/network.h src/skipbuck.h src/thread.h
 src/uuid.o: src/uuid.h src/thread.h
 src/xmlq.o: src/xmlq.h
