@@ -382,7 +382,6 @@ static int dynamic(tpl_query *q)
 
 	const char *functor = n->val_s;
 
-#if 1
 	char tmpbuf2[FUNCTOR_SIZE+10];
 	const char *src = strchr(functor, ':');
 
@@ -407,7 +406,6 @@ static int dynamic(tpl_query *q)
 #endif
 		}
 	}
-#endif
 
 	//printf("DEBUG: dynamic %s/%d\n", functor, arity);
 
