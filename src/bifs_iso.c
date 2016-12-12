@@ -1886,8 +1886,9 @@ static int bif_iso_atom_chars(tpl_query *q)
 			if (!is_atom(n))
 			{ QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
 
-			char i = n->val_s[0];
-			*dst++ = i;
+			const char *src = n->val_s;
+			int ch = get_char_utf8(&src);
+			dst += put_char_utf8(dst, ch);
 			node *tail = NLIST_NEXT(head);
 			l = get_arg(q, tail, q->latest_context);
 		}
@@ -1906,10 +1907,13 @@ static int bif_iso_atom_chars(tpl_query *q)
 
 	while (*src)
 	{
-		node *tmp = make_atom(strndup(src, 1), 1);
+		int ch = get_char_utf8(&src);
+		char tmpbuf[20];
+		put_char_utf8(tmpbuf, ch);
+		node *tmp = make_atom(strdup(tmpbuf), 1);
 		NLIST_PUSH_BACK(&l->val_l, tmp);
 
-		if (!*++src)
+		if (!*src)
 			break;
 
 		tmp = make_list();
