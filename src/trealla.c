@@ -2866,22 +2866,16 @@ void query_dump(tpl_query *self)
 	collect_vars(self, NLIST_FRONT(&self->lex->clauses));
 	self->d = NULL;
 	int any = 0;
+	sl_start(&vars);
+	env *e;
+	node *n;
 
-	for (int i = 0; i < self->frame_size; i++)
+	while ((e = (env*)sl_next(&vars, (void**)&n)) != NULL)
 	{
-		env *e = get_env(self, 1+i);
-		if (!e->term) continue;
-		node *n = NULL;
-
-		if (sl_get(&vars, (char*)e, (void**)&n))
-		{
-			char tmpbuf[PRINTBUF_SIZE];
-			self->latest_context = FUDGE_FACTOR;
-			sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
-			printf(" %s: %s", n->val_s, tmpbuf);
-			sl_del(&vars, (char*)e, NULL);
-			any++;
-		}
+		char tmpbuf[PRINTBUF_SIZE];
+		sprint_term(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
+		printf(" %s: %s", n->val_s, tmpbuf);
+		any++;
 	}
 
 	if (any)
