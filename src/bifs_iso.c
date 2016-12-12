@@ -1489,7 +1489,7 @@ static int bif_iso_get_code(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	int ch = getc(stdin);				// FIXME
+	int ch = getc_utf8(stdin);
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1503,7 +1503,7 @@ static int bif_iso_get_code2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	int ch = getc(sp->fptr);
+	int ch = getc_utf8(sp->fptr);
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1515,7 +1515,7 @@ static int bif_iso_get_byte(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	int ch = getc(stdin);
+	int ch = getc_utf8(stdin);
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1529,7 +1529,7 @@ static int bif_iso_get_byte2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	int ch = getc(sp->fptr);
+	int ch = getc_utf8(sp->fptr);
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
@@ -1541,10 +1541,10 @@ static int bif_iso_get_char(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	char line[2];
-	line[0] = getc(stdin);			// FIXME
+	char tmpbuf[20];
+	int ch = getc_utf8(stdin);
 
-	if (line[0] == EOF)
+	if (ch == EOF)
 	{
 		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1552,8 +1552,8 @@ static int bif_iso_get_char(tpl_query *q)
 		return ok;
 	}
 
-	line[1] = '\0';
-	node *n = make_atom(strdup(line), 1);
+	put_char_utf8(tmpbuf, ch);
+	node *n = make_atom(strdup(tmpbuf), 1);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
@@ -1566,10 +1566,10 @@ static int bif_iso_get_char2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	char line[2];
-	line[0] = getc(sp->fptr);
+	char tmpbuf[20];
+	int ch = getc_utf8(sp->fptr);
 
-	if (line[0] == EOF)
+	if (ch == EOF)
 	{
 		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1578,8 +1578,8 @@ static int bif_iso_get_char2(tpl_query *q)
 		return ok;
 	}
 
-	line[1] = '\0';
-	node *n = make_atom(strdup(line), 0);
+	put_char_utf8(tmpbuf, ch);
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
@@ -1590,10 +1590,10 @@ static int bif_iso_peek_code(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	int ch = getc(stdin);				// FIXME
+	int ch = getc_utf8(stdin);
 
 	if (ch != EOF)
-		ungetc(ch, stdin);
+		ungetc(ch, stdin);				// FIXME
 
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1608,10 +1608,10 @@ static int bif_iso_peek_code2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	int ch = getc(sp->fptr);
+	int ch = getc_utf8(sp->fptr);
 
 	if (ch != EOF)
-		ungetc(ch, stdin);
+		ungetc(ch, stdin);				// FIXME
 
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1624,10 +1624,10 @@ static int bif_iso_peek_byte(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	int ch = getc(stdin);
+	int ch = getc_utf8(stdin);
 
 	if (ch != EOF)
-		ungetc(ch, stdin);
+		ungetc(ch, stdin);				// FIXME
 
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1642,10 +1642,10 @@ static int bif_iso_peek_byte2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	int ch = getc(sp->fptr);
+	int ch = getc_utf8(sp->fptr);
 
 	if (ch != EOF)
-		ungetc(ch, stdin);
+		ungetc(ch, stdin);				// FIXME
 
 	node *n = make_quick_int(ch);
 	int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1658,10 +1658,10 @@ static int bif_iso_peek_char(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	char line[2];
-	line[0] = getc(stdin);			// FIXME
+	char tmpbuf[20];
+	int ch = getc_utf8(stdin);
 
-	if (line[0] == EOF)
+	if (ch == EOF)
 	{
 		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1670,9 +1670,9 @@ static int bif_iso_peek_char(tpl_query *q)
 		return ok;
 	}
 
-	ungetc(line[0], stdin);
-	line[1] = '\0';
-	node *n = make_atom(strdup(line), 0);
+	ungetc(ch, stdin);				// FIXME
+	put_char_utf8(tmpbuf, ch);
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
@@ -1685,10 +1685,10 @@ static int bif_iso_peek_char2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	char line[2];
-	line[0] = getc(sp->fptr);
+	char tmpbuf[20];
+	int ch = getc_utf8(sp->fptr);
 
-	if (line[0] == EOF)
+	if (ch == EOF)
 	{
 		node *n = make_const_atom(END_OF_FILE, 0);
 		int ok = unify_term(q, term1, n, q->curr_frame);
@@ -1697,9 +1697,9 @@ static int bif_iso_peek_char2(tpl_query *q)
 		return ok;
 	}
 
-	ungetc(line[0], sp->fptr);
-	line[1] = '\0';
-	node *n = make_atom(strdup(line), 0);
+	ungetc(ch, sp->fptr);		// FIXME
+	put_char_utf8(tmpbuf, ch);
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
