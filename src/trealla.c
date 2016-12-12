@@ -2420,8 +2420,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 	if (src)
 	{
 		char tmpbuf2[FUNCTOR_SIZE+10];
-		memcpy(tmpbuf2, functor, src-functor);
-		tmpbuf2[src-functor] = '\0';
+		strncpy(tmpbuf2, functor, src-functor);
 		functor = src+1;
 		module *db = NULL;
 

@@ -388,8 +388,7 @@ static int dynamic(tpl_query *q)
 	if (src)
 	{
 		//printf("*** dynamic %s\n", functor);
-		memcpy(tmpbuf2, functor, src-functor);
-		tmpbuf2[src-functor] = '\0';
+		strncpy(tmpbuf2, functor, src-functor);
 		functor = src+1;
 
 		if (sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db))
