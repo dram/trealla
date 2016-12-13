@@ -102,5 +102,6 @@ src/thread.o: src/thread.h src/list.h
 src/trealla.o: src/trealla.h src/jela.h src/internal.h src/bifs.h src/list.h src/base64.h src/skiplist.h src/jsonq.h
 src/trealla.o: src/xmlq.h src/uuid.h src/uncle.h src/network.h src/thread.h src/utf8.h
 src/uncle.o: src/uncle.h src/jsonq.h src/network.h src/skipbuck.h src/thread.h
+src/utf8.o: src/utf8.h
 src/uuid.o: src/uuid.h src/thread.h
 src/xmlq.o: src/xmlq.h
