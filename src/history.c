@@ -415,9 +415,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			fflush(stdout);
 			continue;
 		}
-#endif
-
-#ifndef _WIN32
+#else
 		if (escape && !strcmp(escbuf, "\e[3~"))				// DELETE
 		{
 			escape = 0;
@@ -456,9 +454,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 1;
 			continue;
 		}
-#endif
-
-#ifndef _WIN32
+#else
 		if (escape && !strcmp(escbuf, "\e[H"))				// HOME
 		{
 			escape = 0;
@@ -484,9 +480,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 0;
 			continue;
 		}
-#endif
-
-#ifndef _WIN32
+#else
 		if (escape && !strcmp(escbuf, "\e[F"))				// END
 		{
 			escape = 0;
@@ -528,9 +522,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			dst = line+strlen(line);
 			continue;
 		}
-#endif
-
-#ifndef _WIN32
+#else
 		if (escape && !strcmp(escbuf, "\e[A"))				// UP
 		{
 			escape = 0;
@@ -585,9 +577,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			dst = line+strlen(line);
 			continue;
 		}
-#endif
-
-#ifndef _WIN32
+#else
 		if (escape && !strcmp(escbuf, "\e[B"))				// DOWN
 		{
 			escape = 0;
@@ -624,9 +614,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			fflush(stdout);
 			continue;
 		}
-#endif
-
-#ifndef _WIN32
+#else
 		if (escape && !strcmp(escbuf, "\e[C"))				// RIGHT
 		{
 			escape = 0;
@@ -658,9 +646,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 1;
 			continue;
 		}
-#endif
-
-#ifndef _WIN32
+#else
 		if (escape && !strcmp(escbuf, "\e[D"))				// LEFT
 		{
 			escape = 0;
@@ -674,7 +660,9 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 1;
 			continue;
 		}
+#endif
 
+#ifndef _WIN32
 		if (escape && !strcmp(escbuf, "\e[1;5C"))			// CTRL-RIGHT
 		{
 			escape = 0;
