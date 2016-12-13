@@ -335,12 +335,13 @@ char *history_readline_eol(const char* prompt, char eol)
 
 		if (!escape)
 		{
-			unsigned char ch2 = ch;
 #ifdef _WIN32
 			if (ch == VK_RETURN)
-				ch2 = '\n';
+				ch = '\n';
 #endif
-			putchar(ch2);
+			char tmpbuf[20];
+			put_char_utf8(tmpbuf, ch);
+			printf("%s", tmpbuf);
 			fflush(stdout);
 		}
 
@@ -366,11 +367,13 @@ char *history_readline_eol(const char* prompt, char eol)
 
 		if (!escape && is_insert)
 		{
-			char *end = line+strlen(line);
-			char *src = end-1;
+			int len = put_len_utf8(ch);
+			int bytes = strlen(dst);
+			char *end = line+strlen(line)+len-1;
+			char *src = line+strlen(line)-1;
 			end[1] = '\0';
 
-			while (src >= dst)
+			while (bytes--)
 				*end-- = *src--;
 
 			printf("%s", dst+1);
@@ -392,7 +395,6 @@ char *history_readline_eol(const char* prompt, char eol)
 		else
 		{
 			dst += put_char_bare_utf8(dst, ch);
-
 			size_t n = dst - line;
 
 			if ((n+5) > block_size)
@@ -471,20 +473,21 @@ char *history_readline_eol(const char* prompt, char eol)
 		if (escape && !strcmp(escbuf, "\e[H"))				// HOME
 		{
 			escape = 0;
-			int len = 0;
 
 			while (dst != line)
 			{
+				int len = 0;
+
 				do
 				{
 					dst--;
+					len++;
 				}
 				 while (is_char_utf8(dst));
 
-				len++;
+				printf("\e[%dD", len);
 			}
 
-			printf("\e[%dD", len);
 			fflush(stdout);
 			dst = line;
 			is_insert = 1;

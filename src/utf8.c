@@ -44,9 +44,30 @@ int is_char_utf8(const char *src)
 	return (ch >= 0x80) && (ch <= 0xBF);
 }
 
+int put_len_utf8(int _ch)
+{
+	unsigned int ch = (unsigned int)_ch;
+	int len = 0;
+
+	if (ch <= 0x7F)
+		len = 1;
+	else if (ch <= 0x07FF)
+		len = 2;
+	else if (ch <= 0xFFFF)
+		len = 3;
+	else if (ch <= 0x01FFFFF)
+		len = 4;
+	else if (ch <= 0x03FFFFFF)
+		len = 5;
+	else if (ch <= 0x7FFFFFFF)
+		len = 6;
+
+	return len;
+}
+
 int put_char_bare_utf8(char *_dst, int _ch)
 {
-	unsigned ch = (unsigned)_ch;
+	unsigned int ch = (unsigned int)_ch;
 	unsigned char *dst = (unsigned char*)_dst;
 	int len = 0;
 
@@ -68,10 +89,22 @@ int put_char_bare_utf8(char *_dst, int _ch)
 		*dst = 0b11100000;
 		*dst++ |= (ch>>12) & 0b00001111;
 		*dst = 0b10000000;
-		*dst++ |= ((ch>>6) & 0b00111111);
+		*dst++ |= (ch>>6) & 0b00111111;
 		*dst = 0b10000000;
-		*dst++ |= (ch & 0b00111111);
+		*dst++ |= ch & 0b00111111;
 		len = 3;
+	}
+	else if (ch <= 0x01FFFFF)
+	{
+		*dst = 0b11100000;
+		*dst++ |= (ch>>18) & 0b00000111;
+		*dst = 0b10000000;
+		*dst++ |= (ch>>12) & 0b00111111;
+		*dst = 0b10000000;
+		*dst++ |= (ch>>6) & 0b00111111;
+		*dst = 0b10000000;
+		*dst++ |= ch & 0b00111111;
+		len = 4;
 	}
 
 	return len;
@@ -87,29 +120,36 @@ int put_char_utf8(char *dst, int ch)
 int get_char_utf8(const char **_src)
 {
 	const unsigned char *src = (const unsigned char*)*_src;
-	int n = 0, len = 0, expect = 1;
+	int expect = 1;
+	unsigned int n = 0;
 
 	while (*src && expect--)
 	{
 		unsigned char ch = *src++;
-		len++;
 
-		if ((ch & 0b11110000) == 0b11110000)
+		if ((ch & 0b11111100) == 0b11111100)
 		{
-			n <<= 3;
-			n |= ch & 0b00000111;
+			n = ch & 0b00000001;
+			expect = 5;
+		}
+		else if ((ch & 0b11111000) == 0b11111000)
+		{
+			n = ch & 0b00000011;
+			expect = 4;
+		}
+		else if ((ch & 0b11110000) == 0b11110000)
+		{
+			n = ch & 0b00000111;
 			expect = 3;
 		}
 		else if ((ch & 0b11100000) == 0b11100000)
 		{
-			n <<= 4;
-			n |= ch & 0b00001111;
+			n = ch & 0b00001111;
 			expect = 2;
 		}
 		else if ((ch & 0b11000000) == 0b11000000)
 		{
-			n <<= 5;
-			n |= ch & 0b00011111;
+			n = ch & 0b00011111;
 			expect = 1;
 		}
 		else if ((ch & 0b10000000) == 0b10000000)
@@ -119,19 +159,18 @@ int get_char_utf8(const char **_src)
 		}
 		else
 		{
-			n <<= 8;
-			n |= ch;
-			break;
+			n = ch;
 		}
 	}
 
 	*_src = (const char*)src;
-	return n;
+	return (int)n;
 }
 
 int getc_utf8(FILE *fp)
 {
-	int n = 0, len = 0, expect = 1;
+	unsigned int n = 0;
+	int expect = 1;
 
 	while (!feof(fp) && expect--)
 	{
@@ -141,24 +180,30 @@ int getc_utf8(FILE *fp)
 			return EOF;
 
 		unsigned char ch = (unsigned char)_ch;
-		len++;
 
-		if ((ch & 0b11110000) == 0b11110000)
+		if ((ch & 0b11111100) == 0b11111100)
 		{
-			n <<= 3;
-			n |= ch & 0b00000111;
+			n = ch & 0b00000001;
+			expect = 5;
+		}
+		else if ((ch & 0b11111000) == 0b11111000)
+		{
+			n = ch & 0b00000011;
+			expect = 4;
+		}
+		else if ((ch & 0b11110000) == 0b11110000)
+		{
+			n = ch & 0b00000111;
 			expect = 3;
 		}
 		else if ((ch & 0b11100000) == 0b11100000)
 		{
-			n <<= 4;
-			n |= ch & 0b00001111;
+			n = ch & 0b00001111;
 			expect = 2;
 		}
 		else if ((ch & 0b11000000) == 0b11000000)
 		{
-			n <<= 5;
-			n |= ch & 0b00011111;
+			n = ch & 0b00011111;
 			expect = 1;
 		}
 		else if ((ch & 0b10000000) == 0b10000000)
@@ -168,12 +213,10 @@ int getc_utf8(FILE *fp)
 		}
 		else
 		{
-			n <<= 8;
-			n |= ch;
-			break;
+			n = ch;
 		}
 	}
 
-	return n;
+	return (int)n;
 }
 
