@@ -291,7 +291,7 @@ struct tpl_query_
 	uint16_t frame_size, unify_depth, max_depth, fail_arg;
 	uint8_t retry, halt, ok, def_choice, def_env;
 	uint8_t is_det, timed_out, trace, noopt;
-	uint8_t is_running, is_yielded, eval;
+	uint8_t is_running, is_yielded, eval, did_getc;
 
 #ifndef ISO_ONLY
 	list queue;								// process queue

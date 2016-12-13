@@ -3028,6 +3028,12 @@ void query_destroy(tpl_query *self)
 		free(self->name);
 #endif
 
+	if (self->did_getc)
+	{
+		while (getc(stdin) != '\n')
+			;
+	}
+
 	env *e = &self->envs[0];
 
 	for (size_t i = 0; i < self->envs_possible; i++, e++)
