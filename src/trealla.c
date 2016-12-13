@@ -1712,7 +1712,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 			while (l->quoted)
 			{
-				while ((ch = *s++) != 0)
+				while ((ch = get_char_utf8(&s)) != 0)
 				{
 					if (ch == quote)
 					{

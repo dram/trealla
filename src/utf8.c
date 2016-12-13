@@ -107,7 +107,12 @@ int getc_utf8(FILE *fp)
 
 	while (!feof(fp) && expect--)
 	{
-		unsigned char ch = getc(fp);
+		int _ch = getc(fp);
+
+		if (_ch == EOF)
+			return EOF;
+
+		unsigned char ch = (unsigned char)_ch;
 		len++;
 
 		if ((ch & 0b11110000) == 0b11110000)
