@@ -68,7 +68,7 @@ static int history_getch2(int *alt)
 	newattr = oldattr;
 	newattr.c_lflag &= ~(ICANON|ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
-	int ch = getchar();
+	int ch = getc(stdin);
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
 	return ch;
 }
