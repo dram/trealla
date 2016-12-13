@@ -1516,7 +1516,10 @@ static int bif_iso_get_byte(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
 	int ch = getc(stdin);
-	node *n = make_quick_int(ch);
+	char tmpbuf[2];
+	tmpbuf[0] = (char)ch;
+	tmpbuf[1] = '\0';
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
@@ -1530,7 +1533,10 @@ static int bif_iso_get_byte2(tpl_query *q)
 	node *term2 = get_atom_or_var(term2);
 	stream *sp = term1->val_str;
 	int ch = getc(sp->fptr);
-	node *n = make_quick_int(ch);
+	char tmpbuf[2];
+	tmpbuf[0] = (char)ch;
+	tmpbuf[1] = '\0';
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term2, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
@@ -1629,7 +1635,10 @@ static int bif_iso_peek_byte(tpl_query *q)
 	if (ch != EOF)
 		ungetc(ch, stdin);				// FIXME
 
-	node *n = make_quick_int(ch);
+	char tmpbuf[2];
+	tmpbuf[0] = (char)ch;
+	tmpbuf[1] = '\0';
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term1, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
@@ -1647,7 +1656,10 @@ static int bif_iso_peek_byte2(tpl_query *q)
 	if (ch != EOF)
 		ungetc(ch, stdin);				// FIXME
 
-	node *n = make_quick_int(ch);
+	char tmpbuf[2];
+	tmpbuf[0] = (char)ch;
+	tmpbuf[1] = '\0';
+	node *n = make_atom(strdup(tmpbuf), 0);
 	int ok = unify_term(q, term2, n, q->curr_frame);
 	term_heapcheck(n);
 	if (ok) q->is_det = 1;
