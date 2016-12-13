@@ -5,6 +5,7 @@
 :-export([getcomment/7,getcomments/2]).
 
 :-use_module(dict).
+:-use_module(dbs).
 :-use_module(sys).
 
 :-define(FieldCreated,created).
