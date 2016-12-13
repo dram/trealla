@@ -1403,7 +1403,7 @@ int dir_use_module(lexer *l, node *n)
 	node *term1 = n;
 	if (!is_atom(term1)) return 0;
 	const char *name = term1->val_s;
-	sl_set(&l->ns, strdup(name), NULL);
+	//sl_set(&l->ns, strdup(name), NULL);
 
 	DBSLOCK(l->pl);
 

@@ -1,3 +1,4 @@
+:-use_module(sys).
 :-use_module(dbs).
 
 :-dynamic(rec1/2).
