@@ -69,7 +69,7 @@ static int history_getch2(int *alt)
 	newattr = oldattr;
 	newattr.c_lflag &= ~(ICANON|ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
-	int ch = getc(stdin);
+	int ch = getc_utf8(stdin);
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
 	return ch;
 }
@@ -151,7 +151,7 @@ char *history_readline_eol(const char* prompt, char eol)
 
 	while ((tmp = history_getch2(&alt)) != EOF)
 	{
-		unsigned char ch = (unsigned char)tmp;
+		unsigned ch = (unsigned)tmp;
 
 		//printf("%02X (%02X) ", tmp, (char)alt);
 
@@ -375,7 +375,7 @@ char *history_readline_eol(const char* prompt, char eol)
 
 			printf("%s", dst+1);
 
-			for (int i = 0; i < strlen_utf8(dst+1); i++)
+			for (int i = 0; i < strcount_utf8(dst+1); i++)
 				putchar('\b');
 
 			fflush(stdout);
@@ -391,11 +391,11 @@ char *history_readline_eol(const char* prompt, char eol)
 		}
 		else
 		{
-			*dst++ = ch;
+			dst += put_char_bare_utf8(dst, ch);
 
 			size_t n = dst - line;
 
-			if (n == block_size)
+			if ((n+5) > block_size)
 			{
 				line = (char*)realloc(line, block_size+=DEF_BLOCK_SIZE);
 				dst = line+n;

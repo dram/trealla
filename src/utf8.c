@@ -17,6 +17,21 @@ size_t strlen_utf8(const char *s)
 	return cnt;
 }
 
+size_t strcount_utf8(const char *s)
+{
+	size_t cnt = 0;
+
+	while (*s)
+	{
+		unsigned char ch = *(unsigned char*)s++;
+
+		if (ch <= 0xBF)
+			cnt++;
+	}
+
+	return cnt;
+}
+
 int isalpha_utf8(int _ch)
 {
 	unsigned ch = (unsigned)_ch;
@@ -29,7 +44,7 @@ int is_char_utf8(const char *src)
 	return (ch >= 0x80) && (ch <= 0xBF);
 }
 
-int put_char_utf8(char *_dst, int _ch)
+int put_char_bare_utf8(char *_dst, int _ch)
 {
 	unsigned ch = (unsigned)_ch;
 	unsigned char *dst = (unsigned char*)_dst;
@@ -59,7 +74,13 @@ int put_char_utf8(char *_dst, int _ch)
 		len = 3;
 	}
 
-	*dst = '\0';
+	return len;
+}
+
+int put_char_utf8(char *dst, int ch)
+{
+	int len = put_char_bare_utf8(dst, ch);
+	dst[len] = '\0';
 	return len;
 }
 
