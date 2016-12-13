@@ -23,6 +23,12 @@ int isalpha_utf8(int _ch)
 	return isalpha(ch) || (ch > 0x7F);
 }
 
+int is_char_utf8(const char *src)
+{
+	unsigned ch = *(const unsigned char*)src;
+	return (ch >= 0x80) && (ch <= 0xBF);
+}
+
 int put_char_utf8(char *_dst, int _ch)
 {
 	unsigned ch = (unsigned)_ch;
@@ -38,6 +44,7 @@ int put_char_utf8(char *_dst, int _ch)
 	{
 		*dst = 0b11000000;
 		*dst++ |= (ch>>6) & 0b00011111;
+		*dst = 0b10000000;
 		*dst++ |= (ch & 0b00111111);
 		len = 2;
 	}

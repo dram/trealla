@@ -11,5 +11,6 @@ extern int isalpha_utf8(int ch);
 
 extern int get_char_utf8(const char **src);
 extern int put_char_utf8(char *dst, int ch);
+extern int is_char_utf8(const char *src);
 
 #endif

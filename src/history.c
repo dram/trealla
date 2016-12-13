@@ -16,6 +16,7 @@
 #endif
 
 #include "history.h"
+#include "utf8.h"
 
 typedef struct cmd_ cmd;
 struct cmd_ { char *line; cmd *prev, *next; };
@@ -162,7 +163,14 @@ char *history_readline_eol(const char* prompt, char eol)
 		{
 			if (dst != line)
 			{
-				dst--;
+				int len = 0;
+
+				do
+				{
+					dst--;
+					len++;
+				}
+				 while (is_char_utf8(dst));
 
 				if (is_insert)
 				{
@@ -175,13 +183,16 @@ char *history_readline_eol(const char* prompt, char eol)
 					*end = '\0';
 					printf("\b%s ", dst);
 
-					for (int i = 0; i < (strlen(dst)+1); i++)
+					for (int i = 0; i < (strlen_utf8(dst)+1); i++)
 						putchar('\b');
 				}
 				else
 				{
 					*dst = '\0';
 					printf("\b \b");
+
+					if (--len)
+						printf("\b \b");
 				}
 
 				fflush(stdout);
@@ -208,6 +219,8 @@ char *history_readline_eol(const char* prompt, char eol)
 			for (int i = 0; i < len; i++)
 				putchar(' ');
 
+			len = strlen_utf8(dst);
+
 			for (int i = 0; i < len; i++)
 				putchar('\b');
 
@@ -218,7 +231,7 @@ char *history_readline_eol(const char* prompt, char eol)
 
 		if (!escape && (ch == '\x01'))						// CTRL-A (start of line)
 		{
-			int len = (int)(dst-line);
+			int len = (int)(dst-line);		// FIXME
 
 			for (int i = 0; i < len; i++)
 				putchar('\b');
@@ -362,7 +375,7 @@ char *history_readline_eol(const char* prompt, char eol)
 
 			printf("%s", dst+1);
 
-			for (int i = 0; i < strlen(dst+1); i++)
+			for (int i = 0; i < strlen_utf8(dst+1); i++)
 				putchar('\b');
 
 			fflush(stdout);
@@ -409,7 +422,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			dst[strlen(dst)-1] = '\0';
 			printf("%s ", dst);
 
-			for (int i = 0; i < (strlen(dst)+1); i++)
+			for (int i = 0; i < (strlen_utf8(dst)+1); i++)
 				putchar('\b');
 
 			fflush(stdout);
@@ -432,7 +445,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			dst[strlen(dst)-1] = '\0';
 			printf("%s ", dst);
 
-			for (int i = 0; i < (strlen(dst)+1); i++)
+			for (int i = 0; i < (strlen_utf8(dst)+1); i++)
 				putchar('\b');
 
 			fflush(stdout);
@@ -458,7 +471,20 @@ char *history_readline_eol(const char* prompt, char eol)
 		if (escape && !strcmp(escbuf, "\e[H"))				// HOME
 		{
 			escape = 0;
-			printf("\e[%dD", (int)(dst-line));
+			int len = 0;
+
+			while (dst != line)
+			{
+				do
+				{
+					dst--;
+				}
+				 while (is_char_utf8(dst));
+
+				len++;
+			}
+
+			printf("\e[%dD", len);
 			fflush(stdout);
 			dst = line;
 			is_insert = 1;
@@ -516,8 +542,11 @@ char *history_readline_eol(const char* prompt, char eol)
 			for (int i = 0; i < curr_len; i++)
 				putchar(' ');
 
+			curr_len = strlen_utf8(line);
+
 			for (int i = 0; i < curr_len; i++)
 				putchar('\b');
+
 			fflush(stdout);
 			dst = line+strlen(line);
 			continue;
@@ -625,8 +654,20 @@ char *history_readline_eol(const char* prompt, char eol)
 				continue;
 			}
 
-			dst++;
+			int len = 0;
+
+			do
+			{
+				dst++;
+				len++;
+			}
+			 while (is_char_utf8(dst));
+
 			printf("%s", escbuf);
+
+			if (--len)
+				printf("%s", escbuf);
+
 			fflush(stdout);
 			continue;
 		}
@@ -654,8 +695,20 @@ char *history_readline_eol(const char* prompt, char eol)
 			if (dst == line)
 				continue;
 
-			dst--;
+			int len = 0;
+
+			do
+			{
+				dst--;
+				len++;
+			}
+			 while (is_char_utf8(dst));
+
 			printf("%s", escbuf);
+
+			if (--len)
+				printf("%s", escbuf);
+
 			fflush(stdout);
 			is_insert = 1;
 			continue;

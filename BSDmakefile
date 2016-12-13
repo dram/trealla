@@ -89,7 +89,7 @@ src/bifs_http.o: src/base64.h src/bifs.h src/internal.h src/network.h src/jela.h
 src/bifs_dbs.o: src/bifs.h src/trealla.h src/internal.h src/skiplist.h src/jela.h
 src/bifs_net.o: src/bifs.h src/trealla.h src/internal.h src/skiplist.h src/jela.h src/network.h
 src/daemon.o: src/daemon.h
-src/history.o: src/history.h
+src/history.o: src/history.h src/utf8.h
 src/jela.o: src/jela.h src/trealla.h src/internal.h src/bifs.h src/jela.h src/list.h src/skiplist.h
 src/jsonq.o: src/jsonq.h
 src/library.o: src/trealla.h src/internal.h
