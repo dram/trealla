@@ -4,8 +4,7 @@
 :-export([send/6]).
 :-define(Server,'localhost:25').
 
-:-use_module(sys).
-:-use_module(net).
+:-using([sys,net]).
 
 send_plain(From,To,Subject,Body) :-
 	replace(Body,'\n.','\n..',Body2),

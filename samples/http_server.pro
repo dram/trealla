@@ -26,9 +26,7 @@
 :-module(http_server).
 :-export([test/0,start/0,start/1,start/2]).
 
-:-use_module(sys).
-:-use_module(net).
-:-use_module(http).
+:-using([sys,net]).
 
 % Note: defined values can also be supplied in a 'http_server.conf'
 % config file in the current directory, which will override the

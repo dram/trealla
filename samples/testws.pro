@@ -1,6 +1,4 @@
-:-use_module(sys).
-:-use_module(net).
-:-use_module(ws).
+:-using([sys,net,ws]).
 
 echo(Server,Msg) :-
 	client(Server,S),

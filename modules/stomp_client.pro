@@ -1,10 +1,7 @@
 :-module(stomp_client).
 :-export([test/1,connect/2,disconnect/1]).
 
-:-use_module(sys).
-:-use_module(net).
-:-use_module(proc).
-:-use_module(stomp).
+:-using([sys,net,proc,stomp]).
 
 test(Host) :-
 	connect(Host,S),

@@ -1,10 +1,7 @@
 :-module(ws_server).
 :-export([start/0,start/1,start/2]).
 
-:-use_module(sys).
-:-use_module(net).
-:-use_module(http).
-:-use_module(ws).
+:-using([sys,net]).
 
 % Note: defined values can also be supplied in a 'ws_server.conf'
 % config file in the current directory, which will override the

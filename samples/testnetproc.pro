@@ -1,5 +1,4 @@
-:-use_module(sys).
-:-use_module(proc).
+:-using([sys,proc]).
 
 % Use discovery
 

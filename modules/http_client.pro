@@ -2,8 +2,7 @@
 :-export([get10_data/3,get10_file/3,put10_file/3]).
 :-export([get11_data/3,get11_file/3,put11_file/3]).
 
-:-use_module(sys).
-:-use_module(net).
+:-using([sys,net]).
 
 get10_data(Host,Path,Data) :-
 	client(Host,S),

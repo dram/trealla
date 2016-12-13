@@ -7,8 +7,7 @@
 :-export([setuser_pass/2,getuser_uuid/2]).
 
 :-use_module(dict).
-:-use_module(dbs).
-:-use_module(sys).
+:-using([sys]).
 
 % Note: defined values can also be supplied in an 'auth.conf'
 % config file in the current directory, which will override the

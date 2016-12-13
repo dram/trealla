@@ -1,6 +1,3 @@
-:-use_module(sys).
-:-use_module(dbs).
-
 :-dynamic(rec1/2).
 :-dynamic(rec2/2,[persist]).
 :-dynamic(rec3/2,[storage]).

@@ -2,7 +2,6 @@
 
 % Skynet - see https://github.com/atemerev/skynet
 
-:-use_module(proc).
 :-using([proc]).
 
 start :- run_skynet(1000000).

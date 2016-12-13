@@ -1,5 +1,5 @@
 :-use_module(http_client).
-:-use_module(sys).
+:-using([sys]).
 
 :-define(CHART_SERVER,'http://ichart.finance.yahoo.com').
 :-define(QUOTE_SERVER,'http://download.finance.yahoo.com').
