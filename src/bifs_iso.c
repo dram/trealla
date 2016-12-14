@@ -808,7 +808,10 @@ static int bif_iso_close(tpl_query *q)
 	else
 #endif
 	if (sp->fptr)
+	{
 		fclose(sp->fptr);
+		sp->fptr = NULL;
+	}
 
 	return 1;
 }
