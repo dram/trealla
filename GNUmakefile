@@ -94,7 +94,7 @@ src/jsonq.o: src/jsonq.h
 src/library.o: src/trealla.h src/internal.h
 src/list.o: src/list.h
 src/network.o: src/network.h src/skiplist.h src/skipbuck.h src/thread.h src/uncle.h
-src/print.o: src/trealla.h src/internal.h src/bifs.h src/list.h src/base64.h
+src/print.o: src/trealla.h src/internal.h src/bifs.h src/list.h src/base64.h src/utf8.h
 src/proc.o: src/bifs.h src/internal.h src/jela.h src/network.h src/trealla.h
 src/skipbuck.o: src/skipbuck.h
 src/skiplist.o: src/skiplist.h
