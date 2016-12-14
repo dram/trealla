@@ -9,7 +9,6 @@
 
 #ifdef _WIN32
 #define snprintf _snprintf
-#include <windows.h>
 #else
 #include <unistd.h>
 #include <termios.h>
@@ -32,35 +31,6 @@ static const char **key_words = NULL;
 #define italic "\e[3m"
 #define red "\e[31m"
 
-#ifdef _WIN32
-static int history_getch2(int *alt)
-{
-	HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-	INPUT_RECORD irInputRecord;
-	DWORD dwEventsRead;
-	CHAR cChar;
-	if (alt) *alt = '\0';
-
-	while (ReadConsoleInputA(hStdin, &irInputRecord, 1, &dwEventsRead))
-	{
-		if ((irInputRecord.EventType == KEY_EVENT) &&
-			(irInputRecord.Event.KeyEvent.wVirtualKeyCode != VK_SHIFT) &&
-			(irInputRecord.Event.KeyEvent.wVirtualKeyCode != VK_MENU) &&
-			(irInputRecord.Event.KeyEvent.wVirtualKeyCode != VK_CONTROL))
-		{
-			cChar = irInputRecord.Event.KeyEvent.uChar.AsciiChar;
-
-			if ((cChar == '\0') && alt)
-				*alt = irInputRecord.Event.KeyEvent.wVirtualKeyCode;
-
-			ReadConsoleInputA(hStdin, &irInputRecord , 1, &dwEventsRead);
-			return cChar;
-		}
-	}
-
-	return EOF;
-}
-#else
 static int history_getch2(int *alt)
 {
 	if (alt) *alt = '\0';
@@ -73,7 +43,6 @@ static int history_getch2(int *alt)
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
 	return ch;
 }
-#endif
 
 int history_getch(void)
 {
@@ -97,7 +66,6 @@ static void output(const char *fmt, const char *prompt, const char *line)
 	{
 		if (key_words && (ispunct(last_ch) || isspace(last_ch)))
 		{
-#ifndef _WIN32
 			for (int i = 0; key_words[i]; i++)
 			{
 				if (!strncmp(src, key_words[i], strlen(key_words[i])))
@@ -114,7 +82,6 @@ static void output(const char *fmt, const char *prompt, const char *line)
 					}
 				}
 			}
-#endif
 		}
 
 		last_ch = *src;
@@ -155,11 +122,7 @@ char *history_readline_eol(const char* prompt, char eol)
 
 		//printf("%02X (%02X) ", tmp, (char)alt);
 
-#ifdef _WIN32
-		if (ch == VK_BACK)
-#else
 		if ((ch == 0x7f) || (ch == 0x08))
-#endif
 		{
 			if (dst != line)
 			{
@@ -196,13 +159,11 @@ char *history_readline_eol(const char* prompt, char eol)
 			continue;
 		}
 
-#ifndef _WIN32
 		if (ch == '\e')
 		{
 			escdst = escbuf;
 			escape = 1;
 		}
-#endif
 
 		if (!escape && (ch == '\x04'))						// CTRL-D (kill)
 			continue;
@@ -268,11 +229,7 @@ char *history_readline_eol(const char* prompt, char eol)
 
 		if (reverse_search)
 		{
-#ifdef _WIN32
-			if (ch == VK_RETURN)
-#else
 			if (ch == '\n')
-#endif
 			{
 				prompt = save_prompt;
 				reverse_search = 0;
@@ -311,18 +268,7 @@ char *history_readline_eol(const char* prompt, char eol)
 
 			free(line);
 			line = strdup(last->line);
-#ifdef _WIN32
-			int curr_len = strlen(line);
-			output("\r%s%s", prompt, line);
-
-			for (int i = 0; i < curr_len; i++)
-				putchar(' ');
-
-			for (int i = 0; i < curr_len; i++)
-				putchar('\b');
-#else
 			output("\r%s%s\e[K", prompt, line);
-#endif
 			fflush(stdout);
 			dst = line+strlen(line);
 			continue;
@@ -330,29 +276,17 @@ char *history_readline_eol(const char* prompt, char eol)
 
 		if (!escape)
 		{
-#ifdef _WIN32
-			if (ch == VK_RETURN)
-				ch = '\n';
-#endif
 			char tmpbuf[20];
 			put_char_utf8(tmpbuf, ch);
 			printf("%s", tmpbuf);
 			fflush(stdout);
 		}
 
-#ifdef _WIN32
-		if ((ch == VK_RETURN) &&
-#else
 		if ((ch == '\n') &&
-#endif
 			(!eol || (line[strlen(line)-1] == eol)))
 			break;
 
-#ifdef _WIN32
-		if (ch == VK_RETURN)
-#else
 		if (ch == '\n')
-#endif
 		{
 			*dst++ = '\n';
 			printf(" |\t");
@@ -364,18 +298,14 @@ char *history_readline_eol(const char* prompt, char eol)
 		{
 			int len = put_len_utf8(ch);
 			int bytes = strlen(dst);
-			char *end = line+strlen(line)+len-1;
 			char *src = line+strlen(line)-1;
+			char *end = line+strlen(line)+len-1;
 			end[1] = '\0';
 
-			while (bytes--)
+			for (int i = 0; i < bytes; i++)
 				*end-- = *src--;
 
-			printf("%s", dst+1);
-
-			for (int i = 0; i < strcount_utf8(dst+1); i++)
-				putchar('\b');
-
+			printf("\e[s%s\e[u", dst+len);
 			fflush(stdout);
 		}
 
@@ -402,30 +332,6 @@ char *history_readline_eol(const char* prompt, char eol)
 				*dst = '\0';
 		}
 
-#ifdef _WIN32
-		if (!ch && (alt == VK_DELETE))						// DELETE
-		{
-			escape = 0;
-
-			if (!is_insert)
-				continue;
-
-			if (dst == (line+strlen(line)))
-				continue;
-
-			for (int i = 0; i < strlen(dst+1); i++)
-				dst[i] = dst[i+1];
-
-			dst[strlen(dst)-1] = '\0';
-			printf("%s ", dst);
-
-			for (int i = 0; i < (strlen_utf8(dst)+1); i++)
-				putchar('\b');
-
-			fflush(stdout);
-			continue;
-		}
-#else
 		if (escape && !strcmp(escbuf, "\e[3~"))				// DELETE
 		{
 			escape = 0;
@@ -448,23 +354,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			fflush(stdout);
 			continue;
 		}
-#endif
 
-#ifdef _WIN32
-		if (!ch && (alt == VK_HOME))
-		{
-			escape = 0;
-			int len = (int)(dst-line);
-
-			for (int i = 0; i < len; i++)
-				putchar('\b');
-
-			fflush(stdout);
-			dst = line;
-			is_insert = 1;
-			continue;
-		}
-#else
 		if (escape && !strcmp(escbuf, "\e[H"))				// HOME
 		{
 			escape = 0;
@@ -488,23 +378,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 1;
 			continue;
 		}
-#endif
 
-#ifdef _WIN32
-		if (!ch && (alt == VK_END))							// END
-		{
-			escape = 0;
-			int len = (int)strlen(dst);
-
-			for (int i = 0; i < len; i++)
-				putchar(*dst++);
-
-			fflush(stdout);
-			dst = line+strlen(line);
-			is_insert = 0;
-			continue;
-		}
-#else
 		if (escape && !strcmp(escbuf, "\e[F"))				// END
 		{
 			escape = 0;
@@ -514,42 +388,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 0;
 			continue;
 		}
-#endif
 
-#ifdef _WIN32
-		if (!ch && (alt == VK_UP))							// UP
-		{
-			escape = 0;
-
-			if (!g_history)
-				continue;
-
-			if (!last)
-				last = g_history;
-			else if (!last->next)
-				continue;
-			else
-				last = last->next;
-
-			free(line);
-			line = (char*)malloc(strlen(last->line)+block_size);
-			strcpy(line, last->line);
-			int curr_len = strlen(line);
-			output("\r%s%s", prompt, line);
-
-			for (int i = 0; i < curr_len; i++)
-				putchar(' ');
-
-			curr_len = strlen_utf8(line);
-
-			for (int i = 0; i < curr_len; i++)
-				putchar('\b');
-
-			fflush(stdout);
-			dst = line+strlen(line);
-			continue;
-		}
-#else
 		if (escape && !strcmp(escbuf, "\e[A"))				// UP
 		{
 			escape = 0;
@@ -572,39 +411,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			dst = line+strlen(line);
 			continue;
 		}
-#endif
 
-#ifdef _WIN32
-		if (!ch && (alt == VK_DOWN))						// DOWN
-		{
-			escape = 0;
-
-			if (!g_history)
-				continue;
-
-			if (!last)
-				last = g_history;
-			else if (!last->prev)
-				continue;
-			else
-				last = last->prev;
-
-			free(line);
-			line = (char*)malloc(strlen(last->line)+block_size);
-			int curr_len = strlen(line);
-			output("\r%s%s", prompt, line);
-
-			for (int i = 0; i < curr_len; i++)
-				putchar(' ');
-
-			for (int i = 0; i < curr_len; i++)
-				putchar('\b');
-
-			fflush(stdout);
-			dst = line+strlen(line);
-			continue;
-		}
-#else
 		if (escape && !strcmp(escbuf, "\e[B"))				// DOWN
 		{
 			escape = 0;
@@ -627,21 +434,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			dst = line+strlen(line);
 			continue;
 		}
-#endif
 
-#ifdef _WIN32
-		if (!ch && (alt == VK_RIGHT))						// RIGHT
-		{
-			escape = 0;
-
-			if (dst == (line+strlen(line)))
-				continue;
-
-			putchar(*dst++);
-			fflush(stdout);
-			continue;
-		}
-#else
 		if (escape && !strcmp(escbuf, "\e[C"))				// RIGHT
 		{
 			escape = 0;
@@ -669,23 +462,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			fflush(stdout);
 			continue;
 		}
-#endif
 
-#ifdef _WIN32
-		if (!ch && (alt == VK_LEFT))						// LEFT
-		{
-			escape = 0;
-
-			if (dst == line)
-				continue;
-
-			dst--;
-			putchar('\b');
-			fflush(stdout);
-			is_insert = 1;
-			continue;
-		}
-#else
 		if (escape && !strcmp(escbuf, "\e[D"))				// LEFT
 		{
 			escape = 0;
@@ -711,9 +488,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 1;
 			continue;
 		}
-#endif
 
-#ifndef _WIN32
 		if (escape && !strcmp(escbuf, "\e[1;5C"))			// CTRL-RIGHT
 		{
 			escape = 0;
@@ -784,7 +559,6 @@ char *history_readline_eol(const char* prompt, char eol)
 			is_insert = 1;
 			continue;
 		}
-#endif
 
 	}
 
