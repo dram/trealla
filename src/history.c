@@ -187,10 +187,7 @@ char *history_readline_eol(const char* prompt, char eol)
 				else
 				{
 					*dst = '\0';
-					printf("\b \b");
-
-					if (--len)
-						printf("\b \b");
+					printf("\b\e[s%s\e[K\e[u", dst);
 				}
 
 				fflush(stdout);
