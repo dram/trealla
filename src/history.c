@@ -137,6 +137,9 @@ char *history_readline_eol(const char* prompt, char eol)
 				}
 				 while (is_char_utf8(dst));
 
+				if (--len)
+					putchar('\b');
+
 				if (is_insert)
 				{
 					char *end = dst;
