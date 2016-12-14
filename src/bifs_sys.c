@@ -54,13 +54,6 @@ static char *strndup (const char *s, size_t n)
 }
 #endif
 
-static int bif_sys_now0(tpl_query *q)
-{
-	q->nv.val_i = time(NULL);
-	q->nv.type = NUM_INTEGER;
-	return 1;
-}
-
 static int bif_sys_system1(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -469,6 +462,13 @@ static int bif_sys_exit1(tpl_query *q)
 	q->halt = 1;
 	q->halt_s = strdup(term1->val_s);
 	return 1;
+}
+
+static int bif_sys_now0(tpl_query *q)
+{
+	q->nv.val_i = time(NULL);
+	q->nv.type = NUM_INTEGER;
+	return 0;
 }
 
 static int bif_sys_now1(tpl_query *q)

@@ -444,6 +444,12 @@ int call(tpl_query *q)
 
 	if (is_builtin(q->curr_term))
 	{
+		if (!q->curr_term->bifptr)
+		{
+			{ QABORT(ABORT_INVALIDARGS); return 0; }
+			return 0;
+		}
+
 		status = q->curr_term->bifptr(q);
 		g_s_resolves++;
 	}
