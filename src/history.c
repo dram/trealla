@@ -164,6 +164,8 @@ char *history_readline_eol(const char* prompt, char eol)
 			if (dst != line)
 			{
 				int len = 0;
+				char *src = dst;
+				int remlen = strlen(src);
 
 				do
 				{
@@ -175,16 +177,12 @@ char *history_readline_eol(const char* prompt, char eol)
 				if (is_insert)
 				{
 					char *end = dst;
-					char *src = dst+1;
 
-					while (src != (line+strlen(line)))
+					while (remlen--)
 						*end++ = *src++;
 
 					*end = '\0';
-					printf("\b%s ", dst);
-
-					for (int i = 0; i < (strlen_utf8(dst)+1); i++)
-						putchar('\b');
+					printf("\b\e[s%s\e[K\e[u", dst);
 				}
 				else
 				{
