@@ -2416,12 +2416,18 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 		if (sl_get(&l->pl->mods, tmpbuf2, (void**)&db))
 		{
+			if (!db)
+			{
+				printf("WARN: in '%s', not exported '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
+				return NULL;
+			}
+
 			char tmpbuf[FUNCTOR_SIZE+10];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 
 			if (!sl_get(&db->exports, tmpbuf, NULL))
 			{
-				printf("WARN: in '%s', not exported  '%s:%s'\n", l->db->name, db->name, tmpbuf);
+				printf("WARN: in '%s', not exported '%s:%s'\n", l->db->name, db->name, tmpbuf);
 				return NULL;
 			}
 
