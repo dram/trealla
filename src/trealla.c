@@ -3402,7 +3402,6 @@ void trealla_destroy(trealla *self)
 		handler_shutdown(self->h);
 		handler_destroy(self->h);
 	}
-
 #endif
 
 	db_done(&self->db);
