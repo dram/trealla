@@ -157,10 +157,12 @@ inline static node *get_arg(tpl_query *q, node *term, unsigned frame)
 
 inline static node *get_next_arg(tpl_query *q, node **term)
 {
+	static node dummy = {{0}};
+
 	if ((*term = NLIST_NEXT(*term)) != NULL)
 		return get_arg(q, *term, q->curr_frame);
 	else
-		return NULL;
+		return &dummy;
 }
 
 extern int bif_asserta(tpl_query *q, node *r);
