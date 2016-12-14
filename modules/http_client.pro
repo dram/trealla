@@ -50,7 +50,7 @@ put11_file(Host,Path,Filename) :-
 get10_internal(S,Path,Data) :-
 	http:get10(S,Path,Status),
 	Status = 200,
-	stash_get(S,'HTTP_CONTENT_LENGTH',LenStr,'0'),
+	stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
 	atom_number(LenStr,Len),
 	(Len > 0 -> bread(S,Len,Data) ; get10_block(S,'',Data)),
 	true.
@@ -65,7 +65,7 @@ get10_block(S,Data,Data).
 get11_internal(S,Path,Data) :-
 	http:get11(S,Path,Status),
 	Status = 200,
-	stash_get(S,'HTTP_CONTENT_LENGTH',LenStr,'0'),
+	stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
 	atom_number(LenStr,Len),
 	(Len > 0 -> bread(S,Len,Data) ; get11_chunk(S,'',Data)),
 	true.

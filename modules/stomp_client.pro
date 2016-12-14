@@ -71,11 +71,11 @@ wait_receipt({S,Pid}) :-
 		Cmd = 'MESSAGE' -> forward({S,Pid},Cmd); true.
 
 forward({S,Pid},Cmd) :-
-	stash_get(S,'STOMP_CONTENT_TYPE',Ct,'text/plain'),
-	stash_get(S,'STOMP_CONTENT_LENGTH',LenStr,'0'),
-	stash_get(S,'STOMP_MESSAGE_ID',Mid,''),
-	stash_get(S,'STOMP_SUBSCRIPTION',Sub,''),
-	stash_get(S,'STOMP_DESTINATION',Dest,''),
+	stash_get(S,'CONTENT_TYPE',Ct,'text/plain'),
+	stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
+	stash_get(S,'Message-Id',Mid,''),
+	stash_get(S,'Subscription',Sub,''),
+	stash_get(S,'Destination',Dest,''),
 	atom_number(LenStr,Len),
 	bread(S,Len,Data),
 	send(Pid,{Cmd,Mid,Sub,Dest,Ct,Data}),

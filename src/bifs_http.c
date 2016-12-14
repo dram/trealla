@@ -278,7 +278,10 @@ static void parse_header(session *s, char *bufptr, int len)
 		src++;
 
 	while (*src && !isspace(*src) && (*src != ':'))
-		*dst++ = *src++;
+	{
+		*dst++ = tolower(*src);
+		src++;
+	}
 
 	*dst = '\0';
 
@@ -352,30 +355,35 @@ static int bif_http_parse4(tpl_query *q)
 			const char *ptr = strchr(full_path, '?');
 
 			if (session_is_tls((session*)sp->sptr))
-				session_set_stash((session*)sp->sptr, "HTTP_SCHEME", "https");
+				session_set_stash((session*)sp->sptr, "SERVER_PROTOCOL", "https");
 			else
-				session_set_stash((session*)sp->sptr, "HTTP_SCHEME", "http");
+				session_set_stash((session*)sp->sptr, "SERVER_PROTOCOL", "http");
 
-			session_set_stash((session*)sp->sptr, "HTTP_REQUEST_METHOD", cmd);
-			session_set_stash((session*)sp->sptr, "HTTP_VERSION", ver);
-			session_set_stash((session*)sp->sptr, "HTTP_PATH", path);
-			session_set_stash((session*)sp->sptr, "HTTP_QUERY_STRING", ptr?ptr:"");
+			session_set_stash((session*)sp->sptr, "REQUEST_METHOD", cmd);
+			session_set_stash((session*)sp->sptr, "HTTP", ver);
+			session_set_stash((session*)sp->sptr, "PATH_INFO", path);
+			session_set_stash((session*)sp->sptr, "PATH_TRANSLATED", path);
+			session_set_stash((session*)sp->sptr, "QUERY_STRING", ptr?ptr:"");
 
 			if (session_is_ipv6((session*)sp->sptr))
 			{
 				snprintf(tmpbuf, sizeof(tmpbuf), "[%s]", session_get_remote_addr((session*)sp->sptr, 0));
-				session_set_stash((session*)sp->sptr, "HTTP_REMOTE_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "REMOTE_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "REMOTE_HOST", tmpbuf);
 				snprintf(tmpbuf, sizeof(tmpbuf), "[%s]", session_get_local_addr((session*)sp->sptr, 0));
-				session_set_stash((session*)sp->sptr, "HTTP_LOCAL_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "LOCAL_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "LOCAL_HOST", tmpbuf);
 			}
 			else
 			{
-				session_set_stash((session*)sp->sptr, "HTTP_REMOTE_ADDR", session_get_remote_addr((session*)sp->sptr, 0));
-				session_set_stash((session*)sp->sptr, "HTTP_LOCAL_ADDR", session_get_local_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "REMOTE_ADDR", session_get_remote_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "REMOTE_HOST", session_get_remote_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "LOCAL_ADDR", session_get_local_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "LOCAL_HOST", session_get_local_addr((session*)sp->sptr, 0));
 			}
 
-			session_set_stash_int((session*)sp->sptr, "HTTP_REMOTE_PORT", session_get_remote_port((session*)sp->sptr));
-			session_set_stash_int((session*)sp->sptr, "HTTP_LOCAL_PORT", session_get_local_port((session*)sp->sptr));
+			session_set_stash_int((session*)sp->sptr, "REMOTE_PORT", session_get_remote_port((session*)sp->sptr));
+			session_set_stash_int((session*)sp->sptr, "LOCAL_PORT", session_get_local_port((session*)sp->sptr));
 
 			if (ptr)
 			{
@@ -434,14 +442,14 @@ static int bif_http_parse4(tpl_query *q)
 			tmpbuf2[sizeof(tmpbuf2)-1] = tmpbuf3[sizeof(tmpbuf3)-1] = '\0';
 
 			if (tmpbuf2[0])
-				session_set_stash((session*)sp->sptr, "HTTP_HOST", http_cleanup(tmpbuf2, tmpbuf));
+				session_set_stash((session*)sp->sptr, "SERVER_NAME", http_cleanup(tmpbuf2, tmpbuf));
 			else
-				session_set_stash((session*)sp->sptr, "HTTP_HOST", session_get_stash((session*)sp->sptr, "HTTP_LOCAL_ADDRESS"));
+				session_set_stash((session*)sp->sptr, "SERVER_NAME", session_get_stash((session*)sp->sptr, "LOCAL_ADDRESS"));
 
 			if (tmpbuf3[0])
-				session_set_stash((session*)sp->sptr, "HTTP_PORT", http_cleanup(tmpbuf3, tmpbuf));
+				session_set_stash((session*)sp->sptr, "SERVER_PORT", http_cleanup(tmpbuf3, tmpbuf));
 			else
-				session_set_stash((session*)sp->sptr, "HTTP_PORT", session_get_stash((session*)sp->sptr, "HTTP_LOCAL_PORT"));
+				session_set_stash((session*)sp->sptr, "SERVER_PORT", session_get_stash((session*)sp->sptr, "LOCAL_PORT"));
 
 			if (strlen(session_get_stash((session*)sp->sptr, "Authorization")))
 			{
@@ -493,30 +501,26 @@ static int bif_http_parse4(tpl_query *q)
 				}
 			}
 
-			if (strlen(session_get_stash((session*)sp->sptr, "WWW-Authenticate"))) session_set_stash((session*)sp->sptr, "HTTP_WWW_AUTHENTICATE", http_cleanup(session_get_stash((session*)sp->sptr, "WWW-Authenticate"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "Authorization"))) session_set_stash((session*)sp->sptr, "HTTP_AUTHORIZATION", http_cleanup(session_get_stash((session*)sp->sptr, "Authorization"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "Referer"))) session_set_stash((session*)sp->sptr, "HTTP_REFERER", http_cleanup(session_get_stash((session*)sp->sptr, "Referer"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "User-Agent"))) session_set_stash((session*)sp->sptr, "HTTP_USER_AGENT", http_cleanup(session_get_stash((session*)sp->sptr, "User-Agent"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "Upgrade"))) session_set_stash((session*)sp->sptr, "HTTP_UPGRADE", http_cleanup(session_get_stash((session*)sp->sptr, "Upgrade"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "Origin"))) session_set_stash((session*)sp->sptr, "HTTP_ORIGIN", http_cleanup(session_get_stash((session*)sp->sptr, "Origin"), tmpbuf));
+			if (strlen(session_get_stash((session*)sp->sptr, "WWW-Authenticate"))) session_set_stash((session*)sp->sptr, "WWW_AUTHENTICATE", http_cleanup(session_get_stash((session*)sp->sptr, "WWW-Authenticate"), tmpbuf));
+			if (strlen(session_get_stash((session*)sp->sptr, "Authorization"))) session_set_stash((session*)sp->sptr, "AUTHORIZATION", http_cleanup(session_get_stash((session*)sp->sptr, "Authorization"), tmpbuf));
+			if (strlen(session_get_stash((session*)sp->sptr, "Referer"))) session_set_stash((session*)sp->sptr, "REFERER", http_cleanup(session_get_stash((session*)sp->sptr, "Referer"), tmpbuf));
+			if (strlen(session_get_stash((session*)sp->sptr, "User-Agent"))) session_set_stash((session*)sp->sptr, "USER_AGENT", http_cleanup(session_get_stash((session*)sp->sptr, "User-Agent"), tmpbuf));
+			if (strlen(session_get_stash((session*)sp->sptr, "Upgrade"))) session_set_stash((session*)sp->sptr, "UPGRADE", http_cleanup(session_get_stash((session*)sp->sptr, "Upgrade"), tmpbuf));
+			if (strlen(session_get_stash((session*)sp->sptr, "Origin"))) session_set_stash((session*)sp->sptr, "ORIGIN", http_cleanup(session_get_stash((session*)sp->sptr, "Origin"), tmpbuf));
 
 			if (strlen(session_get_stash((session*)sp->sptr, "Connection")))
-				session_set_stash((session*)sp->sptr, "HTTP_CONNECTION", http_cleanup(session_get_stash((session*)sp->sptr, "Connection"), tmpbuf));
-			else if (atof(session_get_stash((session*)sp->sptr, "HTTP_VERSION")) < 1.1)
-				session_set_stash((session*)sp->sptr, "HTTP_CONNECTION", "close");
+				;
+			else if (atof(session_get_stash((session*)sp->sptr, "HTTP")) < 1.1)
+				session_set_stash((session*)sp->sptr, "Connection", "close");
 			else
-				session_set_stash((session*)sp->sptr, "HTTP_CONNECTION", "keep-alive");
+				session_set_stash((session*)sp->sptr, "Connection", "keep-alive");
 
-			if (strlen(session_get_stash((session*)sp->sptr, "If-Modified-Since"))) session_set_stash((session*)sp->sptr, "HTTP_IF_MODIFIED_SINCE", http_cleanup(session_get_stash((session*)sp->sptr, "If-Modified-Since"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "Content-Length"))) session_set_stash((session*)sp->sptr, "HTTP_CONTENT_LENGTH", session_get_stash((session*)sp->sptr, "Content-Length"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Content-Type"))) session_set_stash((session*)sp->sptr, "HTTP_CONTENT_TYPE", session_get_stash((session*)sp->sptr, "Content-Type"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Cache-Control"))) session_set_stash((session*)sp->sptr, "HTTP_CACHE_CONTROL", session_get_stash((session*)sp->sptr, "Cache-Control"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Transfer-Encoding"))) session_set_stash((session*)sp->sptr, "HTTP_TRANSFER_ENCODING", session_get_stash((session*)sp->sptr, "Transfer-Encoding"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Accept-Encoding"))) session_set_stash((session*)sp->sptr, "HTTP_ACCEPT_ENCODING", session_get_stash((session*)sp->sptr, "Accept-Encoding"));
+			if (strlen(session_get_stash((session*)sp->sptr, "Content-Length"))) session_set_stash((session*)sp->sptr, "CONTENT_LENGTH", session_get_stash((session*)sp->sptr, "Content-Length"));
+			if (strlen(session_get_stash((session*)sp->sptr, "Content-Type"))) session_set_stash((session*)sp->sptr, "CONTENT_TYPE", session_get_stash((session*)sp->sptr, "Content-Type"));
 
-			put_float(q, q->curr_frame+term2->slot, (double)atof(session_get_stash((session*)sp->sptr, "HTTP_VERSION")));
-			put_atom(q, q->curr_frame+term3->slot, strdup(session_get_stash((session*)sp->sptr, "HTTP_REQUEST_METHOD")), 1);
-			put_atom(q, q->curr_frame+term4->slot, strdup(session_get_stash((session*)sp->sptr, "HTTP_PATH")), 1);
+			put_float(q, q->curr_frame+term2->slot, (double)atof(session_get_stash((session*)sp->sptr, "HTTP")));
+			put_atom(q, q->curr_frame+term3->slot, strdup(session_get_stash((session*)sp->sptr, "REQUEST_METHOD")), 1);
+			put_atom(q, q->curr_frame+term4->slot, strdup(session_get_stash((session*)sp->sptr, "PATH_INFO")), 1);
 			return 1;
 		}
 
@@ -529,7 +533,7 @@ static int bif_http_parse4(tpl_query *q)
 
 int http_get10(session *s, const char *path, int keep, int *status)
 {
-	const char *host = session_get_stash(s, "HOST");
+	const char *host = session_get_stash(s, "SERVER_NAME");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024*8];
@@ -567,8 +571,8 @@ int http_get10(session *s, const char *path, int keep, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "HTTP_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP_VERSION", ver);
+			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
 
@@ -576,8 +580,8 @@ int http_get10(session *s, const char *path, int keep, int *status)
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -639,8 +643,8 @@ static int http_head10(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "HTTP_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP_VERSION", ver);
+			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
 
@@ -648,8 +652,8 @@ static int http_head10(session *s, const char *path, int *status)
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -716,8 +720,8 @@ static int http_get11(session *s, const char *path, int *status)
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -742,7 +746,7 @@ static int bif_http_get113(tpl_query *q)
 
 static int http_head11(session *s, const char *path, int *status)
 {
-	const char *host = session_get_stash(s, "HOST");
+	const char *host = session_get_stash(s, "SERVER_NAME");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024*8];
@@ -784,8 +788,8 @@ static int http_head11(session *s, const char *path, int *status)
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -1046,7 +1050,7 @@ static int bif_http_put_file2(tpl_query *q)
 
 static int http_put10(session *s, const char *path, const char *cttype, int64_t ctlen, int *status)
 {
-	const char *host = session_get_stash(s, "HOST");
+	const char *host = session_get_stash(s, "SERVER_NAME");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024*8];
@@ -1088,8 +1092,8 @@ static int http_put10(session *s, const char *path, const char *cttype, int64_t 
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "HTTP_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP_VERSION", ver);
+			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
 
@@ -1097,8 +1101,8 @@ static int http_put10(session *s, const char *path, const char *cttype, int64_t 
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -1125,7 +1129,7 @@ static int bif_http_put105(tpl_query *q)
 
 static int http_put11(session *s, const char *path, int *status)
 {
-	const char *host = session_get_stash(s, "HOST");
+	const char *host = session_get_stash(s, "SERVER_NAME");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024*8];
@@ -1163,8 +1167,8 @@ static int http_put11(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "HTTP_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP_VERSION", ver);
+			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
 
@@ -1172,8 +1176,8 @@ static int http_put11(session *s, const char *path, int *status)
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -1198,7 +1202,7 @@ static int bif_http_put113(tpl_query *q)
 
 static int http_delete10(session *s, const char *path, int *status)
 {
-	const char *host = session_get_stash(s, "HOST");
+	const char *host = session_get_stash(s, "SERVER_NAME");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024*8];
@@ -1235,8 +1239,8 @@ static int http_delete10(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "HTTP_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP_VERSION", ver);
+			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
 
@@ -1244,8 +1248,8 @@ static int http_delete10(session *s, const char *path, int *status)
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -1270,7 +1274,7 @@ static int bif_http_delete105(tpl_query *q)
 
 static int http_delete11(session *s, const char *path, int *status)
 {
-	const char *host = session_get_stash(s, "HOST");
+	const char *host = session_get_stash(s, "SERVER_NAME");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024*8];
@@ -1307,8 +1311,8 @@ static int http_delete11(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "HTTP_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP_VERSION", ver);
+			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
 
@@ -1316,8 +1320,8 @@ static int http_delete11(session *s, const char *path, int *status)
 		{
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "HTTP_CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "HTTP_CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			if (strlen(session_get_stash(s, "Content-Length"))) session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type"))) session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 			return 1;
 		}
 
@@ -1388,7 +1392,7 @@ static int ws_request(session *s, const char *path, const char *prots, int *stat
 	char *ptr = key;
 	b64_encode(tmpbuf, strlen(tmpbuf), &ptr, 0, 0);
 
-	const char *host = session_get_stash(s, "HOST");
+	const char *host = session_get_stash(s, "SERVER_NAME");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024*8];
@@ -1626,7 +1630,7 @@ static int bif_h2_request3(tpl_query *q)
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
 	stream *sp = term1->val_str;
-	const char *host = session_get_stash((session*)sp->sptr, "HOST");
+	const char *host = session_get_stash((session*)sp->sptr, "SERVER_NAME");
 	const char *user = session_get_stash((session*)sp->sptr, "USER");
 	const char *pass = session_get_stash((session*)sp->sptr, "PASS");
 	size_t mlen = strlen(term2->val_s)+strlen(host)+1024;
@@ -1832,24 +1836,28 @@ static int bif_stomp_parse3(tpl_query *q)
 			free(bufptr);
 			cmd[sizeof(cmd)-1] = '\0';
 			put_atom(q, q->curr_frame+term3->slot, strdup(cmd), 1);
-			session_set_stash((session*)sp->sptr, "STOMP_REQUEST_METHOD", cmd);
+			session_set_stash((session*)sp->sptr, "REQUEST_METHOD", cmd);
 			char tmpbuf[256];
 
 			if (session_is_ipv6((session*)sp->sptr))
 			{
 				snprintf(tmpbuf, sizeof(tmpbuf), "[%s]", session_get_remote_addr((session*)sp->sptr, 0));
-				session_set_stash((session*)sp->sptr, "STOMP_REMOTE_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "REMOTE_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "REMOTE_HOST", tmpbuf);
 				snprintf(tmpbuf, sizeof(tmpbuf), "[%s]", session_get_local_addr((session*)sp->sptr, 0));
-				session_set_stash((session*)sp->sptr, "STOMP_LOCAL_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "LOCAL_ADDR", tmpbuf);
+				session_set_stash((session*)sp->sptr, "LOCAL_HOST", tmpbuf);
 			}
 			else
 			{
-				session_set_stash((session*)sp->sptr, "STOMP_REMOTE_ADDR", session_get_remote_addr((session*)sp->sptr, 0));
-				session_set_stash((session*)sp->sptr, "STOMP_LOCAL_ADDR", session_get_local_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "REMOTE_ADDR", session_get_remote_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "REMOTE_HOST", session_get_remote_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "LOCAL_ADDR", session_get_local_addr((session*)sp->sptr, 0));
+				session_set_stash((session*)sp->sptr, "LOCAL_HOST", session_get_local_addr((session*)sp->sptr, 0));
 			}
 
-			session_set_stash_int((session*)sp->sptr, "STOMP_REMOTE_PORT", session_get_remote_port((session*)sp->sptr));
-			session_set_stash_int((session*)sp->sptr, "STOMP_LOCAL_PORT", session_get_local_port((session*)sp->sptr));
+			session_set_stash_int((session*)sp->sptr, "REMOTE_PORT", session_get_remote_port((session*)sp->sptr));
+			session_set_stash_int((session*)sp->sptr, "LOCAL_PORT", session_get_local_port((session*)sp->sptr));
 			continue;
 		}
 
@@ -1864,14 +1872,14 @@ static int bif_stomp_parse3(tpl_query *q)
 			tmpbuf2[sizeof(tmpbuf2)-1] = tmpbuf3[sizeof(tmpbuf3)-1] = '\0';
 
 			if (tmpbuf2[0])
-				session_set_stash((session*)sp->sptr, "STOMP_HOST", stomp_deescape(tmpbuf2, tmpbuf));
+				session_set_stash((session*)sp->sptr, "SERVER_NAME", stomp_deescape(tmpbuf2, tmpbuf));
 			else
-				session_set_stash((session*)sp->sptr, "STOMP_HOST", session_get_stash((session*)sp->sptr, "STOMP_LOCAL_ADDRESS"));
+				session_set_stash((session*)sp->sptr, "SERVER_NAME", session_get_stash((session*)sp->sptr, "LOCAL_ADDRESS"));
 
 			if (tmpbuf3[0])
-				session_set_stash((session*)sp->sptr, "STOMP_PORT", stomp_deescape(tmpbuf3, tmpbuf));
+				session_set_stash((session*)sp->sptr, "SERVER_PORT", stomp_deescape(tmpbuf3, tmpbuf));
 			else
-				session_set_stash((session*)sp->sptr, "STOMP_PORT", session_get_stash((session*)sp->sptr, "STOMP_LOCAL_PORT"));
+				session_set_stash((session*)sp->sptr, "SERVER_PORT", session_get_stash((session*)sp->sptr, "LOCAL_PORT"));
 
 			if (strlen(session_get_stash((session*)sp->sptr, "Authorization")))
 			{
@@ -1923,21 +1931,13 @@ static int bif_stomp_parse3(tpl_query *q)
 				}
 			}
 
-			if (strlen(session_get_stash((session*)sp->sptr, "WWW-Authenticate"))) session_set_stash((session*)sp->sptr, "HTTP_WWW_AUTHENTICATE", http_cleanup(session_get_stash((session*)sp->sptr, "WWW-Authenticate"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "Authorization"))) session_set_stash((session*)sp->sptr, "HTTP_AUTHORIZATION", http_cleanup(session_get_stash((session*)sp->sptr, "Authorization"), tmpbuf));
-			if (strlen(session_get_stash((session*)sp->sptr, "Content-Length"))) session_set_stash((session*)sp->sptr, "STOMP_CONTENT_LENGTH", session_get_stash((session*)sp->sptr, "Content-Length"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Content-Type"))) session_set_stash((session*)sp->sptr, "STOMP_CONTENT_TYPE", session_get_stash((session*)sp->sptr, "Content-Type"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Message-Id"))) session_set_stash((session*)sp->sptr, "STOMP_MESSAGE_ID", session_get_stash((session*)sp->sptr, "Message-Id"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Id"))) session_set_stash((session*)sp->sptr, "STOMP_ID", session_get_stash((session*)sp->sptr, "Id"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Subscription"))) session_set_stash((session*)sp->sptr, "STOMP_SUBSCRIPTION", session_get_stash((session*)sp->sptr, "Subscription"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Description"))) session_set_stash((session*)sp->sptr, "STOMP_DESCRIPTION", session_get_stash((session*)sp->sptr, "Description"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Receipt"))) session_set_stash((session*)sp->sptr, "STOMP_RECEIPT", session_get_stash((session*)sp->sptr, "Receipt"));
-			if (strlen(session_get_stash((session*)sp->sptr, "Accept-Version"))) session_set_stash((session*)sp->sptr, "STOMP_ACCEPT_VERSION", session_get_stash((session*)sp->sptr, "Accept-Version"));
+			if (strlen(session_get_stash((session*)sp->sptr, "Content-Length"))) session_set_stash((session*)sp->sptr, "CONTENT_LENGTH", session_get_stash((session*)sp->sptr, "Content-Length"));
+			if (strlen(session_get_stash((session*)sp->sptr, "Content-Type"))) session_set_stash((session*)sp->sptr, "CONTENT_TYPE", session_get_stash((session*)sp->sptr, "Content-Type"));
 
 			if (strlen(session_get_stash((session*)sp->sptr, "Version")))
 			{
 				put_float(q, q->curr_frame+term2->slot, atof(session_get_stash((session*)sp->sptr, "Version")));
-				session_set_stash((session*)sp->sptr, "STOMP_VERSION", session_get_stash((session*)sp->sptr, "Version"));
+				session_set_stash((session*)sp->sptr, "STOMP", session_get_stash((session*)sp->sptr, "Version"));
 			}
 			else if (strlen(session_get_stash((session*)sp->sptr, "Accept-Version")))
 			{
@@ -1948,7 +1948,7 @@ static int bif_stomp_parse3(tpl_query *q)
 				else put_float(q, q->curr_frame+term2->slot, ver=1.0);
 				char tmpbuf[256];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%.1f", ver);
-				session_set_stash((session*)sp->sptr, "STOMP_VERSION", tmpbuf);
+				session_set_stash((session*)sp->sptr, "STOMP", tmpbuf);
 			}
 
 			return 1;
