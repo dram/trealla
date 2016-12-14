@@ -1840,7 +1840,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 		static const char seps[] = ".!()[]{}_\"'` \t\r\n";
 
-		if (strchr(seps, ch) || strchr(seps, *s) || isalnum(*s))
+		if (strchr(seps, ch) || strchr(seps, *s) || isdigit(*s) || isalpha_utf8(*s))
 			break;
 	}
 

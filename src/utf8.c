@@ -34,13 +34,13 @@ size_t strcount_utf8(const char *s)
 
 int isalpha_utf8(int _ch)
 {
-	unsigned ch = (unsigned)_ch;
-	return isalpha(ch) || (ch > 0x7F);
+	unsigned int ch = (unsigned int)_ch;
+	return isalpha(_ch) || (ch > 0x7F);
 }
 
 int is_char_utf8(const char *src)
 {
-	unsigned ch = *(const unsigned char*)src;
+	unsigned int ch = *(const unsigned char*)src;
 	return (ch >= 0x80) && (ch <= 0xBF);
 }
 
