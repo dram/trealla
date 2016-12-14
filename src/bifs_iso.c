@@ -794,7 +794,7 @@ static int bif_iso_open4(tpl_query *q)
 static int bif_iso_close(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 
 #ifndef ISO_ONLY
@@ -819,7 +819,7 @@ static int bif_iso_close(tpl_query *q)
 static int bif_iso_write_term3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_atom_or_list(term3);
 	stream *sp = term1->val_str;
@@ -962,7 +962,7 @@ static int bif_iso_write_term(tpl_query *q)
 static int bif_iso_write_canonical2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;
@@ -1004,7 +1004,7 @@ static int bif_iso_write_canonical(tpl_query *q)
 static int bif_iso_writeq2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;
@@ -1046,7 +1046,7 @@ static int bif_iso_writeq(tpl_query *q)
 static int bif_iso_write2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	char *tmpbuf;
@@ -1123,7 +1123,7 @@ static int bif_iso_write(tpl_query *q)
 static int bif_iso_nl1(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 	int ok;
 
@@ -1146,7 +1146,7 @@ static int bif_iso_nl(tpl_query *q)
 static int bif_iso_read2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	char *line = NULL;
@@ -1230,7 +1230,7 @@ static int bif_iso_read(tpl_query *q)
 static int bif_iso_read_term3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_atom_or_list(term3);
 	stream *sp = term1->val_str;
@@ -1316,7 +1316,7 @@ static int bif_iso_read_term(tpl_query *q)
 static int bif_iso_flush_output1(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 	if (is_file(term1)) fflush(sp->fptr);
 	return 1;
@@ -1331,7 +1331,7 @@ static int bif_iso_flush_output(tpl_query *q)
 static int bif_iso_at_end_of_stream1(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 
 #ifndef ISO_ONLY
@@ -1411,7 +1411,7 @@ static int bif_iso_put_char(tpl_query *q)
 static int bif_iso_put_char2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
 	int ok;
@@ -1442,7 +1442,7 @@ static int bif_iso_put_byte(tpl_query *q)
 static int bif_iso_put_byte2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
 	int ok;
@@ -1470,7 +1470,7 @@ static int bif_iso_put_code(tpl_query *q)
 static int bif_iso_put_code2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
 	int ok;
@@ -4627,7 +4627,7 @@ static int bif_sys_writeln(tpl_query *q)
 static int bif_sys_writeln2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;

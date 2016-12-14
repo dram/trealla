@@ -115,7 +115,7 @@ static int bif_sys_write_file2(tpl_query *q)
 		var = get_stream(var);
 	}
 
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str, *sp2;
 
@@ -342,7 +342,7 @@ static int bif_sys_getline1(tpl_query *q)
 static int bif_sys_bwrite2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
 	size_t len = LEN(term2);
@@ -364,7 +364,7 @@ static int bif_sys_bwrite2(tpl_query *q)
 static int bif_sys_bread3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file_or_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_int_or_var(term2);
 	node *term3 = get_var(term3);
 	stream *sp = term1->val_str;

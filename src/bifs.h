@@ -33,9 +33,7 @@
 
 #ifndef ISO_ONLY
 #define get_socket(t) get_next_arg(q, &args); if (!is_socket(t)) { QABORT(ABORT_INVALIDARGNOTSOCKET); return 0; }
-#define get_file_or_socket(t) get_next_arg(q, &args); if (!is_file(t)&&!is_socket(t)) { QABORT(ABORT_INVALIDARGNOTFILE); return 0; }
 #else
-#define get_file_or_socket(t) get_next_arg(q, &args); if (!is_file(t)) { QABORT(ABORT_INVALIDARGNOTFILE); return 0; }
 #endif
 
 #ifndef ISO_ONLY
