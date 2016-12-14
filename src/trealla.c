@@ -1765,7 +1765,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			{
 				ch = get_char_utf8(&s);
 
-				if (!isalpha_utf8(ch) && !isdigit(ch) && (ch != '_'))
+				if (!isalnum_utf8(ch) && (ch != '_'))
 				{
 #ifndef ISO_ONLY
 					if ((ch == ':') && get_ns(l, t.buf))
@@ -1840,7 +1840,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 		static const char seps[] = ".!()[]{}_\"'` \t\r\n";
 
-		if (strchr(seps, ch) || strchr(seps, *s) || isdigit(*s) || isalpha_utf8(*s))
+		if (strchr(seps, ch) || strchr(seps, *s) || isalnum_utf8(*s))
 			break;
 	}
 
@@ -2247,7 +2247,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			attach_vars(self, n);
 		}
 		else if (!self->quoted && !is_op(self->db, self->tok) &&
-			!isalpha_utf8(self->tok[0]) && !isdigit(self->tok[0]) && strcmp(self->tok, "!"))
+			!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!"))
 		{
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
