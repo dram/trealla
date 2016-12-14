@@ -396,7 +396,7 @@ static int bif_http_parse4(tpl_query *q)
 				{
 					if (*src == '=')
 					{
-						*dst = '\0';d
+						*dst = '\0';
 						dst = value;
 						src++;
 					}
