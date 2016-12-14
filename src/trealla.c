@@ -1209,7 +1209,7 @@ static void dir_op(lexer *l, node *n)
 
 static int dir_initialization(lexer *l, node *n)
 {
-	char tmpbuf[1024];
+	char tmpbuf[FUNCTOR_SIZE];
 	sprint_term(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 1);
 	l->init = strdup(tmpbuf);
 	return 1;
@@ -1255,8 +1255,10 @@ static int dir_module(lexer *l, node *n)
 			else if (is_compound(n2))
 			{
 				node *n3 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
+				const char *functor = n3->val_s;
+				int arity = (int)NLIST_NEXT(n3)->val_i;
 				char tmpbuf[FUNCTOR_SIZE+10];
-				snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", n3->val_s, ARITY_CHAR, (int)NLIST_NEXT(n3)->val_i);
+				snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
 				//printf("DEBUG: export %s\n", tmpbuf);
 			}
@@ -1268,7 +1270,7 @@ static int dir_module(lexer *l, node *n)
 		}
 	}
 
-	char filename[1024];
+	char filename[FUNCTOR_SIZE];
 	snprintf(filename, sizeof(filename), "%s.conf", name);
 	struct stat st = {0};
 	if (stat(filename, &st) != 0) return 1;
@@ -1320,7 +1322,6 @@ static int dir_module(lexer *l, node *n)
 static int dir_export(lexer *l, node *n)
 {
 	node *term1 = n;
-	char tmpbuf[FUNCTOR_SIZE+10];
 
 	if (!is_list(term1))
 		return 0;
@@ -1337,7 +1338,10 @@ static int dir_export(lexer *l, node *n)
 		else if (is_compound(n2))
 		{
 			node *n3 = NLIST_NEXT(NLIST_FRONT(&n2->val_l));
-			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", n3->val_s, ARITY_CHAR, (int)NLIST_NEXT(n3)->val_i);
+			const char *functor = n3->val_s;
+			int arity = (int)NLIST_NEXT(n3)->val_i;
+			char tmpbuf[FUNCTOR_SIZE+10];
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 			sl_set(&l->db->exports, strdup(tmpbuf), NULL);
 			//printf("DEBUG: export %s\n", tmpbuf);
 		}
@@ -1414,7 +1418,7 @@ int dir_use_module(lexer *l, node *n)
 	}
 
 	DBSUNLOCK(l->pl);
-
+	module *save = l->db;
 	struct library *lib = libs;
 
 	while (lib->name != NULL)
@@ -1424,13 +1428,16 @@ int dir_use_module(lexer *l, node *n)
 			char *src = strndup((const char*)lib->code, (size_t)lib->len);
 			trealla_consult_text(l->pl, src, name);
 			free(src);
+			l->db = save;
 			return 1;
 		}
 
 		lib++;
 	}
 
-	return trealla_consult_file(l->pl, name);
+	int ok = trealla_consult_file(l->pl, name);
+	l->db = save;
+	return ok;
 }
 
 int dir_unload_file(lexer *l, node *n)
@@ -2418,7 +2425,10 @@ rule *xref_term(lexer *l, node *term, int arity)
 		{
 			if (!db)
 			{
-				printf("WARN: in '%s', not exported '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
+				if (l->db)
+					printf("WARN: in '%s', not exported '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
+
+				l->pl->abort = ABORT_NOTDYNAMIC;
 				return NULL;
 			}
 

@@ -381,7 +381,6 @@ static int dynamic(tpl_query *q)
 	}
 
 	const char *functor = n->val_s;
-
 	char tmpbuf2[FUNCTOR_SIZE+10];
 	const char *src = strchr(functor, ':');
 
