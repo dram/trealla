@@ -64,7 +64,7 @@ start_server(Bind,Root) :-
 process_request(S,Log,Root,Ver,Cmd,Path) :-
 	Ver =< 1.1, !,
 	security(S,Log,Path),
-	stash_get(S,'HTTP_HOST',Host,''),
+	stash_get(S,'SERVER_NAME',Host,''),
 	concat(Root,'/',Host,?DirFiles,Path,Path2),
 	check_method(S,Log,Ver,Cmd,Path,Path2).
 
@@ -76,10 +76,10 @@ security(S,Log,Path) :-
 	?PreferHttps = true, !,
 	Code = 301,
 	ErrMsg = 'MOVED PERMANENTLY',
-	stash_get(S,'HTTP_VERSION',Ver,''),
-	stash_get(S,'HTTP_HOST',Host,''),
-	stash_get(S,'HTTP_PORT',Port,''),
-	stash_set(S,'HTTP_CONNECTION',_,'close'),
+	stash_get(S,'HTTP',Ver,''),
+	stash_get(S,'SERVER_NAME',Host,''),
+	stash_get(S,'SERVER_PORT',Port,''),
+	stash_set(S,'Connection',_,'close'),
 	concat('HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\n',Msg1),
 	concat(Msg1,'Location: https://',Host,Path,'\r\n',Msg2),
 	concat(Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n',Msg),
@@ -96,9 +96,9 @@ authorize(S,Log,Path) :-
 	!.
 
 authorize(S,Log,Path) :-
-	stash_get(S,'HTTP_VERSION',Ver,''),
-	stash_set(S,'HTTP_CONNECTION',_,'close'),
-	stash_get(S,'HTTP_HOST',Host,''),
+	stash_get(S,'HTTP',Ver,''),
+	stash_set(S,'Connection',_,'close'),
+	stash_get(S,'SERVER_NAME',Host,''),
 	Code = 401,
 	concat('HTTP/',Ver,' ',Code,' Unauthorized\r\n',Msg1),
 	concat(Msg1,'WWW-Authenticate: Basic realm="',Host,'"\r\n',Msg2),
@@ -109,7 +109,7 @@ authorize(S,Log,Path) :-
 
 check_method(S,Log,Ver,Cmd,Path,FullPath) :-
 	member(Cmd,['GET','HEAD']), !,
-	stash_get(S,'HTTP_CONTENT-LENGTH',CtLenStr,'0'),
+	stash_get(S,'CONTENT_LENGTH',CtLenStr,'0'),
 	atom_number(CtLenStr,CtLen),
 	(CtLen > 0 -> error_message(S,Log,400,'BAD REQUEST'); true),
 	process_get(S,Log,Ver,Cmd,Path,FullPath).
@@ -158,8 +158,8 @@ process_delete(S,Log,Ver,Path,FullPath) :-
 	error_message(S,Log,501,'NOT IMPLEMENTED').
 
 check_modified(S,Log,Ver,Lmod,Len,Cmd,Path,FullPath) :-
-	stash_get(S,'HTTP_IF_MODIFIED_SINCE',Lmod,''),
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'If-Modified-Since',Lmod,''),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat('HTTP/',Ver,' 304 NOT MODIFIED\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nConnection: ',Conn3,'\r\nContent-Length: 0\r\n\r\n',Msg),
@@ -171,7 +171,7 @@ check_modified(S,Log,Ver,Lmod,Len,Cmd,Path,FullPath) :-
 	log_message(S,Log,200,Len).
 
 process_file(S,Ver,Lmod,Len,'HEAD',FullPath) :- !,
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat('HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Length: ',Len,'\r\n\r\n',Msg),
@@ -180,7 +180,7 @@ process_file(S,Ver,Lmod,Len,'HEAD',FullPath) :- !,
 
 process_file(S,Ver,Lmod,Len,'GET',FullPath) :-
 	Ver = 1.1, !,
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	(right(FullPath,5,'.html') -> Ct = 'text/html' ; Ct = 'application/octet-stream'),
@@ -189,7 +189,7 @@ process_file(S,Ver,Lmod,Len,'GET',FullPath) :-
 	http:put_file(S,FullPath).
 
 process_file(S,Ver,Lmod,Len,'GET',FullPath) :-
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	(right(FullPath,5,'.html') -> Ct = 'text/html' ; Ct = 'application/octet-stream'),
@@ -200,8 +200,8 @@ process_file(S,Ver,Lmod,Len,'GET',FullPath) :-
 info_message(S,Log,Code,InfoMsg) :-
 	concat('<html><body><h1>',InfoMsg,'</h1></body></html>\r\n',Body),
 	atom_length(Body,Len),
-	stash_get(S,'HTTP_VERSION',Ver,''),
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'HTTP',Ver,''),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat('HTTP/',Ver,' ',Code,' ',InfoMsg,'\r\nServer: Trealla\r\nConnection: ',Conn3,'\r\nContent-Type: text/html\r\nContent-Length: ',Len,'\r\n\r\n',Body,Msg),
@@ -209,8 +209,8 @@ info_message(S,Log,Code,InfoMsg) :-
 	log_message(S,Log,Code,0).
 
 error_message(S,Log,Code,ErrMsg) :-
-	stash_get(S,'HTTP_VERSION',Ver,''),
-	stash_set(S,'HTTP_CONNECTION',_,'close'),
+	stash_get(S,'HTTP',Ver,''),
+	stash_set(S,'Connection',_,'close'),
 	concat('HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0),
@@ -218,15 +218,15 @@ error_message(S,Log,Code,ErrMsg) :-
 
 log_message(S,Log,Status,Len) :-
 	now(Now),format_rfcdate(Now,Date),
-	stash_get(S,'HTTP_REQUEST_METHOD',Cmd,''),
-	stash_get(S,'HTTP_VERSION',Ver,''),
-	stash_get(S,'HTTP_PATH',Path,''),
-	stash_get(S,'HTTP_REMOTE_ADDR',Addr,''),
-	stash_get(S,'HTTP_REFERER',Refer,''),
-	stash_get(S,'HTTP_HOST',Host,''),
+	stash_get(S,'REQUEST_METHOD',Cmd,''),
+	stash_get(S,'HTTP',Ver,''),
+	stash_get(S,'PATH_INFO',Path,''),
+	stash_get(S,'REMOTE_ADDR',Addr,''),
+	stash_get(S,'Referer',Refer,''),
+	stash_get(S,'SERVER_NAME',Host,''),
 	concat('"',Date,'","',Addr,'","HTTP/',Ver,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"\n',Msg),
 	write(Log,Msg),
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> close(S); true).
 

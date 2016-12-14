@@ -63,10 +63,10 @@ security(S,Log,Path) :-
 	?PreferHttps = true, !,
 	Code = 301,
 	Msg = 'MOVED PERMANENTLY',
-	stash_get(S,'HTTP_VERSION',VerStr,''),
-	stash_get(S,'HTTP_HOST',Host,''),
-	stash_get(S,'HTTP_PORT',Port,''),
-	stash_set(S,'HTTP_CONNECTION',_,'close'),
+	stash_get(S,'HTTP',VerStr,''),
+	stash_get(S,'SERVER_NAME',Host,''),
+	stash_get(S,'SERVER_PORT',Port,''),
+	stash_set(S,'Connection',_,'close'),
 	concat(S,'HTTP/',VerStr,' ',Code,' ',Msg,'\r\nLocation: https://',Host,Path,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0),
@@ -76,7 +76,7 @@ security(S,Log,Path).
 
 check_method(S,Log,Ver,Cmd,Path) :-
 	Cmd = 'GET', !,
-	stash_get(S,'HTTP_CONTENT-LENGTH',CtLenStr,'0'),
+	stash_get(S,'CONTENT-LENGTH',CtLenStr,'0'),
 	atom_number(CtLenStr,CtLen),
 	(CtLen > 0 -> error_message(S,Log,400,'BAD REQUEST'); true),
 	process_get(S,Log,Ver,Cmd,Path).
@@ -85,8 +85,8 @@ check_method(S,Log,Ver,Cmd,Path) :-
 	error_message(S,Log,501,'NOT IMPLEMENTED').
 
 process_get(S,Log,Ver,Cmd,Path) :- !,
-	stash_get(S,'HTTP_UPGRADE','websocket',''),
-	stash_get(S,'HTTP_CONNECTION','Upgrade',''),
+	stash_get(S,'Upgrade','websocket',''),
+	stash_get(S,'Connection','Upgrade',''),
 	ws:upgrade(S,?Protocol),
 	log_message(S,Log,101,0).
 
@@ -97,8 +97,8 @@ warn_message(S,Log,Ver,Code,Msg) :-
 	concat('<html><body><h1>',Msg,Msg1),
 	concat(Msg1,'</h1></body></html>\r\n',Msg2),
 	atom_length(Msg2,Len2),
-	stash_get(S,'HTTP_VERSION',VerStr,''),
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'HTTP',VerStr,''),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 = 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat(S,'HTTP/',VerStr,' ',Code,' ',Msg,'\r\nServer: Trealla\r\nConnection: ',Conn3,'\r\nContent-Type: text/html\r\nContent-Length: ',Len2,'\r\n\r\n',Msg2,Msg3),
@@ -106,8 +106,8 @@ warn_message(S,Log,Ver,Code,Msg) :-
 	log_message(S,Log,Code,0).
 
 error_message(S,Log,Code,Msg) :-
-	stash_get(S,'HTTP_VERSION',VerStr,''),
-	stash_set(S,'HTTP_CONNECTION',_,'close'),
+	stash_get(S,'HTTP',VerStr,''),
+	stash_set(S,'Connection',_,'close'),
 	concat('HTTP/',VerStr,' ',Code,' ',Msg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0),
@@ -115,15 +115,15 @@ error_message(S,Log,Code,Msg) :-
 
 log_message(S,Log,Status,Len) :-
 	now(Now),format_rfcdate(Now,Date),
-	stash_get(S,'HTTP_REQUEST_METHOD',Cmd,''),
-	stash_get(S,'HTTP_VERSION',VerStr,''),
-	stash_get(S,'HTTP_PATH',Path,''),
-	stash_get(S,'HTTP_REMOTE_ADDR',Addr,''),
-	stash_get(S,'HTTP_REFERER',Refer,''),
-	stash_get(S,'HTTP_HOST',Host,''),
+	stash_get(S,'REQUEST_METHOD',Cmd,''),
+	stash_get(S,'HTTP',VerStr,''),
+	stash_get(S,'PATH_INFO',Path,''),
+	stash_get(S,'REMOTE_ADDR',Addr,''),
+	stash_get(S,'Referer',Refer,''),
+	stash_get(S,'SERVER_NAME',Host,''),
 	concat('"',Date,'","',Addr,'","HTTP/',VerStr,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"',Msg),
 	writeln(Log,Msg),
-	stash_get(S,'HTTP_CONNECTION',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 = 'close' -> close(S); true).
 

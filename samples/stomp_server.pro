@@ -45,23 +45,23 @@ process_request(S,Log,Param,Ver,'DISCONNECT') :-
 	close(S).
 
 process_request(S,Log,Param,Ver,'SUBSCRIBE') :-
-	stash_get(S,'STOMP_DESTINATION',Dest,_),
-	stash_get(S,'STOMP_ID',Id,_),
+	stash_get(S,'Destination',Dest,_),
+	stash_get(S,'Id',Id,_),
 	stash_set(S,Id,Dest),
 	lput(Dest,Old,[S|Old]),
 	process_receipt(S),
 	log_message(S,Log,1).
 
 process_request(S,Log,Param,Ver,'UNSUBSCRIBE') :-
-	stash_get(S,'STOMP_ID',Id,_),
+	stash_get(S,'Id',Id,_),
 	stash_get(S,Id,Dest),
 	lerase(Dest,S),
 	process_receipt(S),
 	log_message(S,Log,1).
 
 process_request(S,Log,Param,Ver,'SEND') :-
-	stash_get(S,'STOMP_DESTINATION',Dest,_),
-	stash_get(S,'STOMP_CONTENT_LENGTH',LenStr,0),
+	stash_get(S,'Destination',Dest,_),
+	stash_get(S,'CONTENT_LENGTH',LenStr,0),
 	atom_integer(LenStr,Len),
 	bread(S,LenStr,Data),
 	lget(Dest,Subs),
@@ -74,9 +74,9 @@ process_request(S,Log,Param,Ver,'SEND') :-
 send_message(S,[],Mid,Data) :- !.
 
 send_message(S,[Who|Rest],Mid,Data) :-
-	stash_get(S,'STOMP_DESTINATION',Dest,_),
-	stash_get(S,'STOMP_CONTENT_TYPE',Ct,'text/plain'),
-	stash_get(S,'STOMP_CONTENT_LENGTH',Len,0),
+	stash_get(S,'Destination',Dest,_),
+	stash_get(S,'CONTENT_TYPE',Ct,'text/plain'),
+	stash_get(S,'CONTENT_LENGTH',Len,0),
 	concat('destination:',Dest,'\ncontent-type:',Ct,'\ncontent-length:',Len,'\nmessage-id:',Mid,'\n',Hdrs),
 	msg(Who,'MESSAGE',Hdrs,Data),
 	send_message(S,Rest,Mid,Data).
@@ -116,7 +116,7 @@ process_receipt(S) :-
 	process_receipt(S,'').
 
 process_receipt(S,Hdrs) :-
-	stash_get(S,'STOMP_RECEIPT',Rcpt,_),
+	stash_get(S,'Receipt',Rcpt,_),
 	nonvar(Rcpt),
 	concat('receipt:',Rcpt,'\n',Hdrs,Hdrs2),
 	msg(S,'RECEIPT',Hdrs2,'').
@@ -125,11 +125,11 @@ process_receipt(S,Hdrs).
 
 log_message(S,Log,Status) :-
 	now(Now),format_rfcdate(Now,Date),
-	stash_get(S,'STOMP_REQUEST_METHOD',Cmd,''),
-	stash_get(S,'STOMP_VERSION',VerStr,''),
-	stash_get(S,'STOMP_REMOTE_ADDR',Addr,''),
-	stash_get(S,'STOMP_HOST',Host,''),
-	stash_get(S,'STOMP_CONTENT_LENGTH',Len,'0'),
+	stash_get(S,'REQUEST_METHOD',Cmd,''),
+	stash_get(S,'STOMP',VerStr,''),
+	stash_get(S,'REMOTE_ADDR',Addr,''),
+	stash_get(S,'SERVER_NAME',Host,''),
+	stash_get(S,'CONTENT_LENGTH',Len,'0'),
 	Path = '',
 	Refer = '',
 	concat('"',Date,'","',Addr,'","STOMP/',VerStr,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"',Msg),
