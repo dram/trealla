@@ -2425,9 +2425,6 @@ rule *xref_term(lexer *l, node *term, int arity)
 		{
 			if (!db)
 			{
-				if (l->db)
-					printf("WARN: in '%s', not exported '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
-
 				l->pl->abort = ABORT_NOTDYNAMIC;
 				return NULL;
 			}
