@@ -396,7 +396,7 @@ static int bif_http_parse4(tpl_query *q)
 				{
 					if (*src == '=')
 					{
-						*dst = '\0';
+						*dst = '\0';d
 						dst = value;
 						src++;
 					}
@@ -571,7 +571,7 @@ int http_get10(session *s, const char *path, int keep, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "X_STATUS", tmpbuf);
 			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
@@ -643,7 +643,7 @@ static int http_head10(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "X_STATUS", tmpbuf);
 			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
@@ -1092,7 +1092,7 @@ static int http_put10(session *s, const char *path, const char *cttype, int64_t 
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "X_STATUS", tmpbuf);
 			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
@@ -1167,7 +1167,7 @@ static int http_put11(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "X_STATUS", tmpbuf);
 			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
@@ -1239,7 +1239,7 @@ static int http_delete10(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "X_STATUS", tmpbuf);
 			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
@@ -1311,7 +1311,7 @@ static int http_delete11(session *s, const char *path, int *status)
 			ver[sizeof(ver)-1] = '\0';
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "STATUS", tmpbuf);
+			session_set_stash(s, "X_STATUS", tmpbuf);
 			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
