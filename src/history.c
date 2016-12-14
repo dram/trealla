@@ -480,7 +480,7 @@ char *history_readline_eol(const char* prompt, char eol)
 				}
 				 while (is_char_utf8(dst));
 
-				printf("\e[%dD", len);
+				printf("\e[%dD", --len);
 			}
 
 			fflush(stdout);
