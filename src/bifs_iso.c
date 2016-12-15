@@ -261,6 +261,7 @@ static int bif_iso_halt(tpl_query *q)
 {
 	QABORT(ABORT_HALT);
 	q->halt = ABORT_HALT;
+	q->halt_code = 0;
 	return 0;
 }
 
@@ -269,7 +270,7 @@ static int bif_iso_halt1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
 	QABORT(ABORT_HALT);
-	q->halt = term1->val_i;
+	q->halt_code = term1->val_i;
 	return 1;
 }
 

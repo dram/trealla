@@ -341,8 +341,6 @@ int main(int ac, char *av[])
 			init = strdup("listing_canonical");
 	}
 
-	int status = 0;
-
 	if (init)
 	{
 		tpl_query *q = trealla_create_query(pl);
@@ -354,7 +352,6 @@ int main(int ac, char *av[])
 		query_destroy(q);
 		free(init);
 		if (p1) free(p1);
-		status = !ok;
 	}
 	else if (!noquery && !pl->abort)
 	{
@@ -408,6 +405,7 @@ int main(int ac, char *av[])
 		history_save();
 	}
 
+	int halt_code = pl->halt_code;
 	trealla_destroy(pl);
 
 #ifndef ISO_ONLY
@@ -428,5 +426,8 @@ int main(int ac, char *av[])
 	if (p2) free(p2);
 #endif
 
-	return status;
+	if (halt_code != 0)
+		exit(halt_code);
+
+	return 1;
 }
