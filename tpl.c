@@ -426,8 +426,5 @@ int main(int ac, char *av[])
 	if (p2) free(p2);
 #endif
 
-	if (halt_code != 0)
-		exit(halt_code);
-
-	return 1;
+	return halt_code;
 }
