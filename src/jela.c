@@ -366,21 +366,22 @@ static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 static int dynamic(tpl_query *q)
 {
 	int status = 0;
-	node *args;
+	node *n;
 	int arity;
 
 	if (is_compound(q->curr_term))
 	{
-		args = get_args(q);
+		node *args = get_args(q);
+		n = args;
 		arity = get_arity(q);
 	}
 	else
 	{
-		args = q->curr_term;
+		n = q->curr_term;
 		arity = 0;
 	}
 
-	const char *functor = args->val_s;
+	const char *functor = n->val_s;
 	const char *src = strchr(functor, ':');
 
 	if (src)
@@ -390,7 +391,7 @@ static int dynamic(tpl_query *q)
 		functor = src+1;
 
 #if 0
-		if (sl_get(&q->pl->mods, tmpbuf2, NULL))
+		if (sl_get(&q->pl->mods, tmpbuf2, (void**)q->lex->db))
 		{
 			char *save = n->val_s;
 			n->val_s = strdup(functor);
@@ -406,12 +407,12 @@ static int dynamic(tpl_query *q)
 
 	//printf("DEBUG: dynamic %s/%d\n", functor, arity);
 
-	rule *r = xref_term(q->lex, args, arity);
+	rule *r = xref_term(q->lex, n, arity);
 
-	if (is_builtin(args))
+	if (is_builtin(n))
 	{
 		g_s_resolves++;
-		return args->bifptr(q);
+		return n->bifptr(q);
 	}
 
 	if (r == NULL)
