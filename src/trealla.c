@@ -2393,6 +2393,9 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 	if (!strcmp(functor, "[]") || !strcmp(functor, g_list_cons) || (term->flags&FLAG_QUOTED))
 		return NULL;
 
+	if (!db)
+		return NULL;
+
 	char tmpbuf[FUNCTOR_SIZE+10];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s%c%d", functor, ARITY_CHAR, arity);
 	rule *r = NULL;
