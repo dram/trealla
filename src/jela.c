@@ -395,6 +395,7 @@ static int dynamic(tpl_query *q)
 	{
 		char tmpbuf2[FUNCTOR_SIZE+10];
 		strncpy(tmpbuf2, functor, src-functor);
+		tmpbuf2[src-functor] = '\0';
 		functor = src+1;
 
 #if 0
