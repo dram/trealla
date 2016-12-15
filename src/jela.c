@@ -390,7 +390,7 @@ static int dynamic(tpl_query *q)
 		functor = src+1;
 
 #if 0
-		if (sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db))
+		if (sl_get(&q->pl->mods, tmpbuf2, NULL))
 		{
 			char *save = n->val_s;
 			n->val_s = strdup(functor);
