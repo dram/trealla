@@ -1666,6 +1666,9 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 
 static const char *get_token(lexer *l, const char *s, char **line)
 {
+	if (!s)
+		return NULL;
+
 	while (isspace(*s))
 		s++;
 
@@ -2314,8 +2317,11 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		if (self->error) return src;
 		if (!src) free(*line);
 	}
-	else if (self->depth)
+	else if (self->depth != 0)
+	{
+		printf("ERROR: check parentheses, brackets or braces\n");
 		self->error = 1;
+	}
 
 	return src;
 }
