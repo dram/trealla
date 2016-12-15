@@ -2390,10 +2390,10 @@ int lexer_consult_file(lexer *self, const char *filename)
 
 static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, int arity)
 {
-	if (!strcmp(functor, "[]") || !strcmp(functor, g_list_cons) || (term->flags&FLAG_QUOTED))
+	if (!db)
 		return NULL;
 
-	if (!db)
+	if (!strcmp(functor, "[]") || !strcmp(functor, g_list_cons) || (term->flags&FLAG_QUOTED))
 		return NULL;
 
 	char tmpbuf[FUNCTOR_SIZE+10];
