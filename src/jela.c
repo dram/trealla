@@ -381,18 +381,17 @@ static int dynamic(tpl_query *q)
 	}
 
 	const char *functor = args->val_s;
-	char tmpbuf2[FUNCTOR_SIZE+10];
 	const char *src = strchr(functor, ':');
 
 	if (src)
 	{
-		//printf("*** dynamic %s\n", functor);
+		char tmpbuf2[FUNCTOR_SIZE+10];
 		strncpy(tmpbuf2, functor, src-functor);
 		functor = src+1;
 
+#if 0
 		if (sl_get(&q->pl->mods, tmpbuf2, (void**)&q->lex->db))
 		{
-#if 0
 			char *save = n->val_s;
 			n->val_s = strdup(functor);
 
@@ -401,8 +400,8 @@ static int dynamic(tpl_query *q)
 
 			n->flags &= ~FLAG_CONST;
 			functor = n->val_s;
-#endif
 		}
+#endif
 	}
 
 	//printf("DEBUG: dynamic %s/%d\n", functor, arity);
