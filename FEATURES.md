@@ -236,10 +236,7 @@ the current Pid. For example:
 
 Wherever *Pid* is used *Name* can also be used for local named processes.
 
-Message passing between processes is fast but does use copy_term/2. On
-an average desktop PC two local processes can rendezvous at the rate
-of about 50K/sec. A Raspberry Pi at just under 10K/sec. For example,
-spawn 100K child processes and rendezvous with them:
+For example, spawn 100K child processes and rendezvous with them:
 
 	:-use_module(proc).
 
