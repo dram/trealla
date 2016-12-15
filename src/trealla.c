@@ -3115,7 +3115,9 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 
 	if (!lexer_consult_fp(&l, fp))
 	{
-		if (l.init) free (l.init);
+		if (l.init)
+			free (l.init);
+
 		l.init = NULL;
 		lexer_done(&l);
 		return 0;
@@ -3123,7 +3125,7 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 
 	add_clauses(&l, 0);
 
-	if (l.init)
+	if (l.init && !l.error)
 	{
 		if (!trealla_run_query(self, l.init))
 			self->abort = 1;
@@ -3131,8 +3133,13 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 		free(l.init);
 	}
 
+	int error = l.error;
+
+	if (l.init)
+		free(l.init);
+
 	lexer_done(&l);
-	return 1;
+	return !error;
 }
 
 int trealla_consult_file(trealla *self, const char *name)
@@ -3154,8 +3161,7 @@ int trealla_consult_file(trealla *self, const char *name)
 		return 0;
 	}
 
-	if (!l.error)
-		add_clauses(&l, 0);
+	add_clauses(&l, 0);
 
 	if (l.init && !l.error)
 	{
