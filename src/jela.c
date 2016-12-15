@@ -382,6 +382,13 @@ static int dynamic(tpl_query *q)
 	}
 
 	const char *functor = n->val_s;
+
+	if (strlen(functor) > FUNCTOR_SIZE)
+	{
+		printf("ERROR: functor too large '%s'\n", functor);
+		return 0;
+	}
+
 	const char *src = strchr(functor, ':');
 
 	if (src)

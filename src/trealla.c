@@ -1209,7 +1209,7 @@ static void dir_op(lexer *l, node *n)
 
 static int dir_initialization(lexer *l, node *n)
 {
-	char tmpbuf[FUNCTOR_SIZE];
+	char tmpbuf[FUNCTOR_SIZE+10];
 	sprint_term(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 1);
 	l->init = strdup(tmpbuf);
 	return 1;
@@ -1270,7 +1270,7 @@ static int dir_module(lexer *l, node *n)
 		}
 	}
 
-	char filename[FUNCTOR_SIZE];
+	char filename[FUNCTOR_SIZE+10];
 	snprintf(filename, sizeof(filename), "%s.conf", name);
 	struct stat st = {0};
 	if (stat(filename, &st) != 0) return 1;
@@ -2420,6 +2420,13 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 rule *xref_term(lexer *l, node *term, int arity)
 {
 	const char *functor = term->val_s;
+
+	if (strlen(functor) > FUNCTOR_SIZE)
+	{
+		printf("ERROR: functor too large '%s'\n", functor);
+		return NULL;
+	}
+
 	const char *src = strchr(functor, ':');
 	rule *r = NULL;
 
