@@ -3113,24 +3113,17 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 	lexer_init(&l, self);
 	l.consult = 1;
 
-	if (!lexer_consult_fp(&l, fp))
+	if (lexer_consult_fp(&l, fp))
 	{
-		if (l.init)
-			free (l.init);
+		add_clauses(&l, 0);
 
-		l.init = NULL;
-		lexer_done(&l);
-		return 0;
-	}
+		if (l.init && !l.error)
+		{
+			if (!trealla_run_query(self, l.init))
+				self->abort = 1;
 
-	add_clauses(&l, 0);
-
-	if (l.init && !l.error)
-	{
-		if (!trealla_run_query(self, l.init))
-			self->abort = 1;
-
-		free(l.init);
+			free(l.init);
+		}
 	}
 
 	int error = l.error;
@@ -3151,22 +3144,15 @@ int trealla_consult_file(trealla *self, const char *name)
 	lexer_init(&l, self);
 	l.consult = 1;
 
-	if (!lexer_consult_file(&l, name))
+	if (lexer_consult_file(&l, name))
 	{
-		if (l.init)
-			free (l.init);
+		add_clauses(&l, 0);
 
-		l.init = NULL;
-		lexer_done(&l);
-		return 0;
-	}
-
-	add_clauses(&l, 0);
-
-	if (l.init && !l.error)
-	{
-		if (!trealla_run_query(self, l.init))
-			self->abort = 1;
+		if (l.init && !l.error)
+		{
+			if (!trealla_run_query(self, l.init))
+				self->abort = 1;
+		}
 	}
 
 	int error = l.error;
