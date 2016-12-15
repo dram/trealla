@@ -378,9 +378,8 @@ extern struct library libs[];
 
 inline static node *new_node(void)
 {
-	node* n = MALLOC(node);
+	node* n = CALLOC(node);
 	n->flags = FLAG_HEAP;
-	n->match = NULL;
 	n->refcnt = 1;
 	g_heap_used++;
 	return n;
