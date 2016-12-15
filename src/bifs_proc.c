@@ -118,7 +118,10 @@ static int process_enqueue(tpl_query *q, tpl_query *who, node *term, int noerror
 
 	if (term != NULL)
 	{
-		term = clone_term(q, term);
+		node *orig = term;
+		orig->refcnt++;
+		term = new_node();
+		term->val_ptr = orig;
 		term->pid = q;
 		q->refcnt++;
 		who->refcnt++;
@@ -172,7 +175,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 		if (n->flags & FLAG_SKIPPED)
 			continue;
 
-		if (!unify_term(q, term, n, q->curr_frame))
+		if (!unify_term(q, term, n->val_ptr, q->curr_frame))
 		{
 			reallocate_frame(q);
 			continue;
@@ -184,6 +187,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 		q->refcnt--;
 		n->pid->refcnt--;
 		set_curr_pid(q, n->pid);
+		term_heapcheck(n->val_ptr);
 		term_heapcheck(n);
 		return 1;
 	}
