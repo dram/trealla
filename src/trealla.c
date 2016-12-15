@@ -2379,6 +2379,7 @@ int lexer_consult_file(lexer *self, const char *filename)
 	if (!fp)
 	{
 		printf("ERROR: consult '%s': %s\n", filename, strerror(errno));
+		self->error = 1;
 		return 0;
 	}
 
@@ -2424,6 +2425,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 	if (strlen(functor) > FUNCTOR_SIZE)
 	{
 		printf("ERROR: functor too large '%s'\n", functor);
+		l->error = 1;
 		return NULL;
 	}
 
@@ -2442,7 +2444,8 @@ rule *xref_term(lexer *l, node *term, int arity)
 		{
 			if (!db)
 			{
-				printf("WARN: not exported '%s:%s/%d'\n", tmpbuf2, functor, arity);
+				printf("ERROR: in '%s', not exported '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
+				l->error = 1;
 				return NULL;
 			}
 
@@ -2451,7 +2454,8 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 			if (!sl_get(&db->exports, tmpbuf, NULL))
 			{
-				printf("WARN: in '%s', not exported '%s:%s'\n", l->db->name, db->name, tmpbuf);
+				printf("ERROR: in '%s', not exported '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
+				l->error = 1;
 				return NULL;
 			}
 
@@ -2625,7 +2629,7 @@ static int trealla_make_rule(trealla *self, const char *src)
 	if (lexer_parse(&l, l.r, src, NULL) != NULL)
 	{
 		term_heapcheck(NLIST_FRONT(&l.clauses));
-		printf("WARN: error make_rule\n");
+		printf("ERROR: error make_rule\n");
 		ok = 0;
 	}
 	else
@@ -2661,7 +2665,7 @@ int query_parse(tpl_query *self, const char *src)
 		return 0;
 	}
 
-	if (!xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses)))
+	if (!xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses)) || self->lex->error)
 	{
 		self->halt = 0; self->line_nbr = __LINE__;
 		return 0;
@@ -2737,7 +2741,7 @@ int query_run(tpl_query *self)
 	if (!self->is_yielded && self->halt)
 	{
 		if (!self->pl->abort && (self->halt > ABORT_HALT))
-			printf("WARN: ERROR %s\n", self->halt_s?self->halt_s:"ABORT");
+			printf("ERROR: ERROR %s\n", self->halt_s?self->halt_s:"ABORT");
 		else if (!self->pl->abort && (self->halt == ABORT_HALT))
 			printf("Halted\n");
 
@@ -3142,24 +3146,30 @@ int trealla_consult_file(trealla *self, const char *name)
 
 	if (!lexer_consult_file(&l, name))
 	{
-		if (l.init) free (l.init);
+		if (l.init)
+			free (l.init);
+
 		l.init = NULL;
 		lexer_done(&l);
 		return 0;
 	}
 
-	add_clauses(&l, 0);
+	if (!l.error)
+		add_clauses(&l, 0);
 
-	if (l.init)
+	if (l.init && !l.error)
 	{
 		if (!trealla_run_query(self, l.init))
 			self->abort = 1;
-
-		free(l.init);
 	}
 
+	int error = l.error;
+
+	if (l.init)
+		free(l.init);
+
 	lexer_done(&l);
-	return 1;
+	return !error;
 }
 
 int trealla_consult_text(trealla *self, const char *src, const char *name)

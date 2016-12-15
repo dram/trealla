@@ -319,10 +319,18 @@ int main(int ac, char *av[])
 
 #endif
 
+	int error = 0;
+
 	for (int i = 1; i < ac; i++)
 	{
 		if ((av[i][0] != '-') && !get)
-			trealla_consult_file(pl, av[i]);
+		{
+			if (!trealla_consult_file(pl, av[i]))
+			{
+				error = 1;
+				break;
+			}
+		}
 		else if (!strcmp(av[i], "--consult"))
 			trealla_consult_fp(pl, stdin);
 		else if (!strcmp(av[i], "--noquery"))
@@ -341,7 +349,7 @@ int main(int ac, char *av[])
 			init = strdup("listing_canonical");
 	}
 
-	if (init)
+	if (init && !error)
 	{
 		tpl_query *q = trealla_create_query(pl);
 		if (!q) return 1;

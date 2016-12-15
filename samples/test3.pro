@@ -1,3 +1,3 @@
-:-initialization(main).
+test1 :- net:foo.
 
-main :- net:foo, halt.
+test2 :- (write(1), write(2)), nl.
