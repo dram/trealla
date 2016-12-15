@@ -252,8 +252,7 @@ typedef struct
 	module *db;
 	char *init, *tok;
 	int depth, anons, vars, numeric;
-	uint8_t fact, consult;
-	uint8_t quoted, error;
+	int fact, consult, quoted, error;
 }
  lexer;
 
