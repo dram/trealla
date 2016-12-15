@@ -6,7 +6,7 @@
 #include "utf8.h"
 
 #define get_arity(q) (NLIST_COUNT(&q->curr_term->val_l)-1)
-#define get_args(q) NLIST_FRONT(&q->curr_term->val_l)
+#define get_args(q) NLIST_FRONT(&q->curr_term->val_l); 	if (!NLIST_COUNT(&q->curr_term->val_l)) { QABORT(ABORT_INVALIDARGMISSING); return 0; }
 
 #define get_atomic(t) get_next_arg(q, &args); if (!is_atomic(t)) { QABORT(ABORT_INVALIDARGNOTATOMIC); return 0; }
 #define get_atom(t) get_next_arg(q, &args); if (!is_atom(t)) { QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
@@ -155,12 +155,10 @@ inline static node *get_arg(tpl_query *q, node *term, unsigned frame)
 
 inline static node *get_next_arg(tpl_query *q, node **term)
 {
-	static node dummy = {{0}};
-
 	if ((*term = NLIST_NEXT(*term)) != NULL)
 		return get_arg(q, *term, q->curr_frame);
 	else
-		return &dummy;
+		return NULL;
 }
 
 extern int bif_asserta(tpl_query *q, node *r);
