@@ -615,7 +615,7 @@ char *trealla_readline(FILE *fp)
 					continue;
 
 				*dst = '\0';
-				//printf("*** GOT (%d): '%s'\n", (int)(dst-line), line);
+				//printf("*** GOT1 (%d): '%s'\n", (int)(dst-line), line);
 				return line;
 			}
 
@@ -631,7 +631,7 @@ char *trealla_readline(FILE *fp)
 				if (isspace(ch2))
 				{
 					*dst = '\0';
-					//printf("*** GOT (%d): '%s'\n", (int)(dst-line), line);
+					//printf("*** GOT2 (%d): '%s'\n", (int)(dst-line), line);
 					return line;
 				}
 			}
@@ -1989,7 +1989,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			if (self->error)
 				return src;
 
-			continue;
+			self->depth--;
+			return src;
 		}
 
 		if (!self->quoted && !strcmp(self->tok, "-") && first)
@@ -2271,7 +2272,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 	self->depth--;
 
-	if (self->depth && self->fp && line)
+	if (self->fp && line)
 	{
 		free(*line);
 		*line = trealla_readline(self->fp);
@@ -2589,7 +2590,9 @@ static int trealla_make_rule(trealla *self, const char *src)
 	lexer_init(&l, self);
 	int ok;
 
-	if (lexer_parse(&l, l.r, src, NULL) != NULL)
+	lexer_parse(&l, l.r, src, NULL);
+
+	if (l.error)
 	{
 		term_heapcheck(NLIST_FRONT(&l.clauses));
 		printf("ERROR: error make_rule\n");

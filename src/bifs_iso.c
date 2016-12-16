@@ -1294,7 +1294,8 @@ static int bif_iso_read2(tpl_query *q)
 
 		lexer l;
 		lexer_init(&l, q->pl);
-		lexer_parse(&l, l.r, src, NULL);
+		l.fp = sp->fptr;
+		lexer_parse(&l, l.r, src, &line);
 		free(line);
 		term = NLIST_FRONT(&l.clauses);
 

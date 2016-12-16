@@ -236,7 +236,7 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 		dst += sprint2_term(dstbuf, bufsize, &dst, pl, q, term, listing>0?listing:1);
 		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "}");
 	}
-	else if ((listing < 2) && is_infix(&pl->db, functor) && (arity != 1))
+	else if ((listing < 2) && is_infix(&pl->db, functor) && (arity > 1))
 	{
 		if (!strcmp(functor,",")||!strcmp(functor,";"))
 			dst += snprintf(dst, *bufsize-(dst-*dstbuf), "(");
