@@ -282,9 +282,6 @@ node *make_structure(void)
 {
 	node *n = new_node();
 	n->flags |= TYPE_COMPOUND;
-	n->frame_size = 0;
-	n->bifptr = NULL;
-	NLIST_INIT(&n->val_l);
 	return n;
 }
 
@@ -3121,8 +3118,6 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 		{
 			if (!trealla_run_query(self, l.init))
 				self->abort = 1;
-
-			free(l.init);
 		}
 	}
 
