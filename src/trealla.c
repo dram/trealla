@@ -610,7 +610,6 @@ char *trealla_readline(FILE *fp)
 
 		size_t len = strlen(block);
 
-#if 0
 		if ((strchr(block, '\n') != NULL))
 		{
 			if ((block[len-1] == '\n') &&
@@ -619,7 +618,6 @@ char *trealla_readline(FILE *fp)
 
 			break;
 		}
-#endif
 
 		if ((strchr(block, '\n') != NULL))
 		{
