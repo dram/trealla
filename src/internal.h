@@ -434,7 +434,6 @@ extern uint64_t gettimeofday_usec(void);
 extern void term_heapcheck(node *n);
 extern void term_destroy(node *n);
 extern char *trealla_readline(FILE *fp);
-extern char *trealla_readstring(FILE *fp);
 
 #ifndef ISO_ONLY
 extern void dbs_save_node(module *db, FILE* fp, char **dstbuf, size_t *buflen, node *n);

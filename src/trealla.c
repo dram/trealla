@@ -581,8 +581,9 @@ char *trealla_readline(FILE *fp)
 	if ((fp == stdin) && isatty(0))
 		return history_readline_eol("|: ", '.');
 
-	size_t maxlen = 0, blocksize = 1024;
+	size_t maxlen = 0, blocksize = 1024*8;
 	char *line = NULL;
+	char *dst = NULL;
 
 	while (!feof(fp))
 	{
@@ -594,91 +595,56 @@ char *trealla_readline(FILE *fp)
 
 		line = newline;
 		char *block = (line + maxlen) - blocksize;
+		dst = block;
 
-		LOOP:
-
-		if (fgets(block, blocksize+1, fp) == NULL)
+		for (;;)
 		{
-			if (block == line)
+			int ch = fgetc(fp);
+
+			if (ch == EOF)
 			{
-				free(line);
-				line = NULL;
+				if (block == line)
+					free(line);
+
+				return NULL;
 			}
 
-			break;
-		}
+			if (ch == '\n')
+			{
+				if (dst == line)
+					continue;
 
-		size_t len = strlen(block);
+				*dst = '\0';
+				//printf("*** GOT (%d): '%s'\n", (int)(dst-line), line);
+				return line;
+			}
 
-		if ((strchr(block, '\n') != NULL))
-		{
-			if ((block[len-1] == '\n') &&
-				(block[len-2] == '.'))
-				block[--len] = '\0';
+			*dst++ = ch;
 
-			break;
-		}
+			if (ch == '.')
+			{
+				int ch2 = fgetc(fp);
 
-		if ((strchr(block, '\n') != NULL))
-		{
-			while (isspace(block[len-1]))
-				block[--len] = '\0';
+				if (ch2 != EOF)
+					ungetc(ch2, fp);
 
-			if (block[len-1] == '.')
+				if (isspace(ch2))
+				{
+					*dst = '\0';
+					//printf("*** GOT (%d): '%s'\n", (int)(dst-line), line);
+					return line;
+				}
+			}
+
+			if (dst == (line+maxlen))
 				break;
-
-			block = block + len;
-			goto LOOP;
 		}
 
 		blocksize *= 2;
 	}
 
-	return line;
-}
-
-char *trealla_readstring(FILE *fp)
-{
-	if ((fp == stdin) && isatty(0))
-		return history_readline_eol("|: ", '\0');
-
-	size_t maxlen = 0, blocksize = 1024;
-	char *line = NULL;
-
-	while (!feof(fp))
-	{
-		maxlen += blocksize;
-		char *newline;
-
-		if ((newline = (char*)realloc(line, maxlen+1)) == NULL)
-			break;
-
-		line = newline;
-		char *block = (line + maxlen) - blocksize;
-
-		if (fgets(block, blocksize+1, fp) == NULL)
-		{
-			if (block == line)
-			{
-				free(line);
-				line = NULL;
-			}
-
-			break;
-		}
-
-		if (strchr(block, '\n') != NULL)	// FIXME
-		{
-			size_t len = strlen(block);
-
-			if (block[len-1] == '\n')
-				block[--len] = '\0';
-
-			break;
-		}
-
-		blocksize *= 2;
-	}
+	if (dst)
+		*dst = '\0';
 
 	return line;
 }

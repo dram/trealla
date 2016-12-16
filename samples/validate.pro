@@ -2,7 +2,6 @@
 
 % This is just a bunch of conformance tests.
 % Hopefully more will get added over time.
-
 %   swipl -q -l samples/validate.pro --traditional
 %   yap -q -l samples/validate.pro
 %   tpl -q -l samples/validate.pro
