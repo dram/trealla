@@ -610,7 +610,8 @@ char *trealla_readline(FILE *fp)
 
 		size_t len = strlen(block);
 
-		if ((strchr(block, '\n') != NULL) && isatty(0))
+#if 0
+		if ((strchr(block, '\n') != NULL))
 		{
 			if ((block[len-1] == '\n') &&
 				(block[len-2] == '.'))
@@ -618,8 +619,9 @@ char *trealla_readline(FILE *fp)
 
 			break;
 		}
+#endif
 
-		if ((strchr(block, '\n') != NULL) && !isatty(0))
+		if ((strchr(block, '\n') != NULL))
 		{
 			while (isspace(block[len-1]))
 				block[--len] = '\0';

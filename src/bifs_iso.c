@@ -53,6 +53,46 @@ void reset_arg(tpl_query *q, const node *term, unsigned frame)
 	e->binding = 0;
 }
 
+static void expand_frame(tpl_query *q, unsigned cnt)
+{
+	prepare_frame(q, cnt);
+	q->env_point += cnt;
+	choice *c = &q->choices[q->choice_point];
+	c->frame_size += cnt;
+	c->env_point += cnt;
+}
+
+static int collect_vars2(tpl_query *q, node *n, int depth)
+{
+	if (depth > MAX_UNIFY_DEPTH) { QABORT2(ABORT_MAXDEPTH,"COLLECT_VARS"); return 0; }
+	n = get_arg(q, n, q->latest_context);
+	int cnt = 0;
+
+	if (is_compound(n))
+	{
+		for (n = NLIST_FRONT(&n->val_l); n; n = NLIST_NEXT(n))
+			cnt += collect_vars2(q, n, depth+1);
+	}
+	else if (is_var(n))
+	{
+		env *e = get_env(q, q->latest_context+n->slot);
+
+		if (!sl_get(q->d, (char*)e, NULL))
+		{
+			sl_set(q->d, (char*)e, n);
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
+static int collect_vars(tpl_query *q, node *n)
+{
+	q->latest_context = q->curr_frame;
+	return collect_vars2(q, n, 1);
+}
+
 static node *copy_nbr(tpl_query *q, node *from)
 {
 	node *n = new_node();
@@ -155,6 +195,57 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	{
 		node *from2 = get_arg(q, from, this_context);
 		node *tmp = copy_term2(q, from2, clone, depth+1);
+		NLIST_PUSH_BACK(&n->val_l, tmp);
+		from = NLIST_NEXT(from);
+	}
+
+	return n;
+}
+
+static node *copy_term3(tpl_query *q, node *from, int depth)
+{
+	if (depth > (1024*1024))
+		{ QABORT2(ABORT_MAXDEPTH,"COPY_TERM"); return 0; }
+
+	if (is_number(from))
+		return copy_nbr(q, from);
+
+	if (is_atom(from))
+		return copy_atom(q, from);
+
+	if (is_var(from))
+	{
+		env *e = &q->envs[q->latest_context+from->slot];
+		node *tmp;
+
+		if (!q->d)
+			{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
+
+		if (!sl_get(q->d, (char*)e, (void**)&tmp))
+		{
+			node *save = from;
+			sl_set(q->d, (char*)e, tmp=make_var(q));
+			tmp->flags &= ~FLAG_ANON;
+			tmp->val_s = strdup(save->val_s);
+		}
+		else
+			tmp = copy_var(q, tmp);
+
+		return tmp;
+	}
+
+	if (!is_compound(from))
+	{ QABORT(ABORT_INVALIDARGMISSING); return 0; }
+
+	node *n = make_structure();
+	n->flags |= from->flags;
+	n->bifptr = from->bifptr;
+	n->frame_size = from->frame_size;
+	from = NLIST_FRONT(&from->val_l);
+
+	while (from)
+	{
+		node *tmp = copy_term3(q, from, depth+1);
 		NLIST_PUSH_BACK(&n->val_l, tmp);
 		from = NLIST_NEXT(from);
 	}
@@ -1155,46 +1246,81 @@ static int bif_iso_read2(tpl_query *q)
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	char *line = NULL;
+	node *term = NULL;
 
+	for (;;)
+	{
 #ifndef ISO_ONLY
-	if (is_socket(term1))
-	{
-		if (!session_readmsg((session*)sp->sptr, &line))
+		if (is_socket(term1))
 		{
-			q->is_yielded = 1;
-			return 0;
-		}
+			if (!session_readmsg((session*)sp->sptr, &line))
+			{
+				q->is_yielded = 1;
+				return 0;
+			}
 
-		if (session_on_disconnect((session*)sp->sptr))
-		{
-			put_const_atom(q, q->curr_frame+term2->slot, END_OF_FILE, 0);
-			return 1;
+			if (session_on_disconnect((session*)sp->sptr))
+			{
+				put_const_atom(q, q->curr_frame+term2->slot, END_OF_FILE, 0);
+				return 1;
+			}
 		}
-	}
-	else
+		else
 #endif
-	{
-		if ((line = trealla_readline(sp->fptr)) == NULL)
 		{
-			put_const_atom(q, q->curr_frame+term2->slot, END_OF_FILE, 0);
-			return 1;
+			if ((line = trealla_readline(sp->fptr)) == NULL)
+			{
+				put_const_atom(q, q->curr_frame+term2->slot, END_OF_FILE, 0);
+				return 1;
+			}
 		}
+
+		if (!line[0])
+			return 0;
+
+		const char *src = line;
+
+		while (isspace(*src))
+			src++;
+
+		if (*src == '%')
+		{
+			while (*src != '\n')
+				src++;
+
+			free(line);
+			continue;
+		}
+
+		lexer l;
+		lexer_init(&l, q->pl);
+		lexer_parse(&l, l.r, src, NULL);
+		free(line);
+		term = NLIST_FRONT(&l.clauses);
+
+		if (!is_rule(term))
+		{
+			lexer_done(&l);
+			continue;
+		}
+
+		skiplist vars;
+		sl_init(&vars, 0, NULL, NULL);
+		q->d = &vars;
+		int cnt = collect_vars(q, term);
+		sl_clear(&vars, NULL);
+		if (q->halt) return 0;
+		if (cnt) expand_frame(q, cnt);
+		term = copy_term3(q, term, 0);
+		sl_done(&vars, NULL);
+		q->d = NULL;
+
+		xref_rule(&l, term);
+		lexer_done(&l);
+		break;
 	}
 
-	if (!line[0]) return 0;
-	char *tmpbuf = (char*)malloc(strlen(line)+10);
-	sprintf(tmpbuf, "?- %s", line);
-	free(line);
-	lexer l;
-	lexer_init(&l, q->pl);
-	lexer_parse(&l, l.r, tmpbuf, NULL);
-	free(tmpbuf);
-	xref_rule(&l, l.r);
-	node *term = NLIST_FRONT(&l.r->val_l);
-	term = copy_term(q, NLIST_NEXT(term));
-	term_heapcheck(l.r);
-	lexer_done(&l);
-	int ok = unify_term(q, term1, term, q->curr_frame);
+	int ok = unify_term(q, term2, term, q->curr_frame);
 	term_heapcheck(term);
 	if (ok) q->is_det = 1;
 	return ok;
@@ -1205,113 +1331,61 @@ static int bif_iso_read(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	char *line;
+	node *term = NULL;
 
-	if ((line = trealla_readline(stdin)) == NULL)
+	for (;;)
 	{
-		put_const_atom(q, q->curr_frame+term1->slot, END_OF_FILE, 0);
-		return 1;
-	}
-
-	line[strlen(line)-1] = '\0';
-	if (!line[0]) return 0;
-	char *tmpbuf = (char*)malloc(strlen(line)+10);
-	sprintf(tmpbuf, "?- %s", line);
-	free(line);
-	lexer l;
-	lexer_init(&l, q->pl);
-	lexer_parse(&l, l.r, tmpbuf, NULL);
-	free(tmpbuf);
-	xref_rule(&l, l.r);
-	node *term = NLIST_FRONT(&l.r->val_l);
-	term = copy_term(q, NLIST_NEXT(term));
-	term_heapcheck(l.r);
-	lexer_done(&l);
-	int ok = unify_term(q, term1, term, q->curr_frame);
-	term_heapcheck(term);
-	if (ok) q->is_det = 1;
-	return ok;
-}
-
-static int bif_iso_read_term3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_stream(term1);
-	node *term2 = get_term(term2);
-	node *term3 = get_atom_or_list(term3);
-	stream *sp = term1->val_str;
-	char *line = NULL;
-
-#ifndef ISO_ONLY
-	if (is_socket(term1))
-	{
-		if (!session_readmsg((session*)sp->sptr, &line))
+		if ((line = trealla_readline(stdin)) == NULL)
 		{
-			q->is_yielded = 1;
+			put_const_atom(q, q->curr_frame+term1->slot, END_OF_FILE, 0);
+			return 1;
+		}
+
+		if (!line[0])
 			return 0;
-		}
 
-		if (session_on_disconnect((session*)sp->sptr))
+		const char *src = line;
+
+		while (isspace(*src))
+			src++;
+
+		if (*src == '%')
 		{
-			put_const_atom(q, q->curr_frame+term2->slot, END_OF_FILE, 0);
-			return 1;
+			while (*src != '\n')
+				src++;
+
+			free(line);
+			continue;
 		}
-	}
-	else
-#endif
-	{
-		if ((line = trealla_readline(sp->fptr)) == NULL)
+
+		lexer l;
+		lexer_init(&l, q->pl);
+		lexer_parse(&l, l.r, src, NULL);
+		free(line);
+		term = NLIST_FRONT(&l.clauses);
+
+		if (!is_rule(term))
 		{
-			put_const_atom(q, q->curr_frame+term2->slot, END_OF_FILE, 0);
-			return 1;
+			lexer_done(&l);
+			continue;
 		}
+
+		skiplist vars;
+		sl_init(&vars, 0, NULL, NULL);
+		q->d = &vars;
+		int cnt = collect_vars(q, term);
+		sl_clear(&vars, NULL);
+		if (q->halt) return 0;
+		if (cnt) expand_frame(q, cnt);
+		term = copy_term3(q, term, 0);
+		sl_done(&vars, NULL);
+		q->d = NULL;
+
+		xref_rule(&l, term);
+		lexer_done(&l);
+		break;
 	}
 
-	if (!line[0]) return 0;
-	char *tmpbuf = (char*)malloc(strlen(line)+10);
-	sprintf(tmpbuf, "?- %s", line);
-	free(line);
-	lexer l;
-	lexer_init(&l, q->pl);
-	lexer_parse(&l, l.r, tmpbuf, NULL);
-	free(tmpbuf);
-	xref_rule(&l, l.r);
-	node *term = NLIST_FRONT(&l.r->val_l);
-	term = copy_term(q, NLIST_NEXT(term));
-	term_heapcheck(l.r);
-	lexer_done(&l);
-	int ok = unify_term(q, term1, term, q->curr_frame);
-	term_heapcheck(term);
-	if (ok) q->is_det = 1;
-	return ok;
-}
-
-static int bif_iso_read_term(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_var(term1);
-	node *term2 = get_atom_or_list(term2);
-	char *line;
-
-	if ((line = trealla_readline(stdin)) == NULL)
-	{
-		put_const_atom(q, q->curr_frame+term1->slot, END_OF_FILE, 0);
-		return 1;
-	}
-
-	line[strlen(line)-1] = '\0';
-	if (!line[0]) return 0;
-	char *tmpbuf = (char*)malloc(strlen(line)+10);
-	sprintf(tmpbuf, "?- %s", line);
-	free(line);
-	lexer l;
-	lexer_init(&l, q->pl);
-	lexer_parse(&l, l.r, tmpbuf, NULL);
-	free(tmpbuf);
-	xref_rule(&l, l.r);
-	node *term = NLIST_FRONT(&l.r->val_l);
-	term = copy_term(q, NLIST_NEXT(term));
-	term_heapcheck(l.r);
-	lexer_done(&l);
 	int ok = unify_term(q, term1, term, q->curr_frame);
 	term_heapcheck(term);
 	if (ok) q->is_det = 1;
@@ -2114,46 +2188,6 @@ static int bif_iso_sub_atom(tpl_query *q)
 	//node *term4 = get_term(term4);
 	//node *term5 = get_term(term5);
 	return 0;
-}
-
-static void expand_frame(tpl_query *q, unsigned cnt)
-{
-	prepare_frame(q, cnt);
-	q->env_point += cnt;
-	choice *c = &q->choices[q->choice_point];
-	c->frame_size += cnt;
-	c->env_point += cnt;
-}
-
-static int collect_vars2(tpl_query *q, node *n, int depth)
-{
-	if (depth > MAX_UNIFY_DEPTH) { QABORT2(ABORT_MAXDEPTH,"COLLECT_VARS"); return 0; }
-	n = get_arg(q, n, q->latest_context);
-	int cnt = 0;
-
-	if (is_compound(n))
-	{
-		for (n = NLIST_FRONT(&n->val_l); n; n = NLIST_NEXT(n))
-			cnt += collect_vars2(q, n, depth+1);
-	}
-	else if (is_var(n))
-	{
-		env *e = get_env(q, q->latest_context+n->slot);
-
-		if (!sl_get(q->d, (char*)e, NULL))
-		{
-			sl_set(q->d, (char*)e, n);
-			cnt++;
-		}
-	}
-
-	return cnt;
-}
-
-static int collect_vars(tpl_query *q, node *n)
-{
-	q->latest_context = q->curr_frame;
-	return collect_vars2(q, n, 1);
 }
 
 static int bif_iso_copy_term(tpl_query *q)
@@ -4809,8 +4843,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("nl", 1, bif_iso_nl1);
 	DEFINE_BIF("read", 1, bif_iso_read);
 	DEFINE_BIF("read", 2, bif_iso_read2);
-	DEFINE_BIF("read_term", 2, bif_iso_read_term);
-	DEFINE_BIF("read_term", 3, bif_iso_read_term3);
+	DEFINE_BIF("read_term", 2, bif_iso_read);
+	DEFINE_BIF("read_term", 3, bif_iso_read2);
 	DEFINE_BIF("put_char", 1, bif_iso_put_char);
 	DEFINE_BIF("put_char", 2, bif_iso_put_char2);
 	DEFINE_BIF("put_byte", 1, bif_iso_put_byte);
