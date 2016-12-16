@@ -207,6 +207,7 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 	char tmpbuf[KEY_SIZE];
 	tmpbuf[0] = 0;
 	node *nf = NLIST_FRONT(&n->val_l);
+	int arity = NLIST_COUNT(&n->val_l) - 1;
 
 	if (is_atom(nf) && !(is_op(&pl->db, nf->val_s)))
 	{
@@ -235,7 +236,7 @@ static size_t sprint2_compound(char **dstbuf, size_t *bufsize, char **_dst, trea
 		dst += sprint2_term(dstbuf, bufsize, &dst, pl, q, term, listing>0?listing:1);
 		dst += snprintf(dst, *bufsize-(dst-*dstbuf), "}");
 	}
-	else if ((listing < 2) && is_infix(&pl->db, functor))
+	else if ((listing < 2) && is_infix(&pl->db, functor) && (arity != 1))
 	{
 		if (!strcmp(functor,",")||!strcmp(functor,";"))
 			dst += snprintf(dst, *bufsize-(dst-*dstbuf), "(");
