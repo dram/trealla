@@ -599,8 +599,11 @@ void history_keywords(const char **word_array)
 void history_load(const char *filename)
 {
 	g_histfile = fopen(filename, "a+");
-	if (!g_histfile) return;
-	char line[1024*8];
+
+	if (!g_histfile)
+		return;
+
+	char line[1024*8];		// FIXME
 
 	while (fgets(line, sizeof(line), g_histfile) > 0)
 	{
@@ -631,7 +634,9 @@ void history_save(void)
 	if (g_histfile)
 		fclose(g_histfile);
 
-	if (g_last) free(g_last);
+	if (g_last)
+		free(g_last);
+
 	g_histfile = NULL;
 	g_history = NULL;
 	g_last = NULL;
