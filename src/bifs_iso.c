@@ -202,6 +202,7 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	return n;
 }
 
+#if 0
 static node *copy_term3(tpl_query *q, node *from, int depth)
 {
 	if (depth > (1024*1024))
@@ -252,6 +253,7 @@ static node *copy_term3(tpl_query *q, node *from, int depth)
 
 	return n;
 }
+#endif
 
 const funcs *get_bif(lexer *l, const char *functor)
 {
@@ -1297,7 +1299,7 @@ static int bif_iso_read2(tpl_query *q)
 		l.fp = sp->fptr;
 		lexer_parse(&l, l.r, src, &line);
 		free(line);
-		term = NLIST_FRONT(&l.clauses);
+		term = NLIST_POP_FRONT(&l.clauses);
 
 		if (!is_rule(term))
 		{
@@ -1305,23 +1307,22 @@ static int bif_iso_read2(tpl_query *q)
 			continue;
 		}
 
-		skiplist vars;
-		sl_init(&vars, 0, NULL, NULL);
-		q->d = &vars;
-		int cnt = collect_vars(q, term);
-		sl_clear(&vars, NULL);
-		if (q->halt) return 0;
-		if (cnt) expand_frame(q, cnt);
-		term = copy_term3(q, term, 0);
-		sl_done(&vars, NULL);
-		q->d = NULL;
+		//skiplist vars;
+		//sl_init(&vars, 0, NULL, NULL);
+		//q->d = &vars;
+		//int cnt = collect_vars(q, term);
+		//sl_clear(&vars, NULL);
+		//if (cnt) expand_frame(q, cnt);
+		//term = copy_term3(q, term, 0);
+		//sl_done(&vars, NULL);
+		//q->d = NULL;
 
 		xref_rule(&l, term);
 		lexer_done(&l);
 		break;
 	}
 
-	int ok = unify_term(q, term2, term, q->curr_frame);
+	int ok = unify_term(q, term2, term, q->env_point);
 	term_heapcheck(term);
 	if (ok) q->is_det = 1;
 	return ok;
@@ -1361,6 +1362,7 @@ static int bif_iso_read(tpl_query *q)
 
 		lexer l;
 		lexer_init(&l, q->pl);
+		l.fp = stdin;
 		lexer_parse(&l, l.r, src, NULL);
 		free(line);
 		term = NLIST_FRONT(&l.clauses);
@@ -1371,23 +1373,23 @@ static int bif_iso_read(tpl_query *q)
 			continue;
 		}
 
-		skiplist vars;
-		sl_init(&vars, 0, NULL, NULL);
-		q->d = &vars;
-		int cnt = collect_vars(q, term);
-		sl_clear(&vars, NULL);
-		if (q->halt) return 0;
-		if (cnt) expand_frame(q, cnt);
-		term = copy_term3(q, term, 0);
-		sl_done(&vars, NULL);
-		q->d = NULL;
+		//skiplist vars;
+		//sl_init(&vars, 0, NULL, NULL);
+		//q->d = &vars;
+		//int cnt = collect_vars(q, term);
+		//sl_clear(&vars, NULL);
+		//if (q->halt) return 0;
+		//if (cnt) expand_frame(q, cnt);
+		//term = copy_term3(q, term, 0);
+		//sl_done(&vars, NULL);
+		//q->d = NULL;
 
 		xref_rule(&l, term);
 		lexer_done(&l);
 		break;
 	}
 
-	int ok = unify_term(q, term1, term, q->curr_frame);
+	int ok = unify_term(q, term1, term, q->env_point);
 	term_heapcheck(term);
 	if (ok) q->is_det = 1;
 	return ok;
