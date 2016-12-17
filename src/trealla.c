@@ -604,9 +604,12 @@ char *trealla_readline(FILE *fp)
 			if (ch == EOF)
 			{
 				if (block == line)
+				{
 					free(line);
+					line = NULL;
+				}
 
-				return NULL;
+				return line;
 			}
 
 			if ((ch == '\n') && isatty(0))
