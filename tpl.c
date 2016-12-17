@@ -405,7 +405,8 @@ int main(int ac, char *av[])
 				}
 			}
 
-			printf("\n(%.3lf s) %s\n", query_elapsed(q), ok?"yes":"no");
+			if (!quiet) printf("\n(%.3lf) ", query_elapsed(q));
+			printf("%s.\n", ok?"true":"false");
 			if (stats) query_stats(q);
 			query_destroy(q);
 		}
