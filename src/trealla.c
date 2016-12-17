@@ -609,7 +609,7 @@ char *trealla_readline(FILE *fp)
 				return NULL;
 			}
 
-			if (ch == '\n')
+			if ((ch == '\n') && isatty(0))
 			{
 				if (dst == line)
 					continue;
