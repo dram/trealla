@@ -605,10 +605,9 @@ char *trealla_readline(FILE *fp)
 			{
 				if (block == line)
 				{
-					*dst++ = '\n';
-					*dst = '\0';
+					free(line);
+					line = NULL;
 				}
-
 				return line;
 			}
 
@@ -628,14 +627,15 @@ char *trealla_readline(FILE *fp)
 			{
 				int ch2 = fgetc(fp);
 
-				if (ch2 != EOF)
-					ungetc(ch2, fp);
-
-				if (isspace(ch2))
+				if (ch2 == EOF || isspace(ch2))
 				{
 					*dst = '\0';
 					//printf("*** GOT2 (%d): '%s'\n", (int)(dst-line), line);
 					return line;
+				}
+				else
+				{
+					ungetc(ch2, fp);
 				}
 			}
 
