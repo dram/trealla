@@ -612,16 +612,6 @@ char *trealla_readline(FILE *fp)
 				return line;
 			}
 
-			if ((ch == '\n') && isatty(0))
-			{
-				if (dst == line)
-					continue;
-
-				*dst = '\0';
-				//printf("*** GOT1 (%d): '%s'\n", (int)(dst-line), line);
-				return line;
-			}
-
 			*dst++ = ch;
 
 			if (ch == '.')
