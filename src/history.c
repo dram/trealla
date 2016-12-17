@@ -285,8 +285,7 @@ char *history_readline_eol(const char* prompt, char eol)
 			fflush(stdout);
 		}
 
-		if ((ch == '\n') &&
-			(!eol || (line[strlen(line)-1] == eol)))
+		if (isspace(ch) && (line[strlen(line)-1] == eol))
 			break;
 
 		if (ch == '\n')
