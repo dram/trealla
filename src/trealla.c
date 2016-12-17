@@ -605,8 +605,8 @@ char *trealla_readline(FILE *fp)
 			{
 				if (block == line)
 				{
-					free(line);
-					line = NULL;
+					*dst++ = '\n';
+					*dst = '\0';
 				}
 
 				return line;
