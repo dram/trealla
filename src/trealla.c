@@ -588,12 +588,10 @@ char *trealla_readline(lexer *l, FILE *fp)
 	while (!feof(fp))
 	{
 		maxlen += blocksize;
-		char *newline;
 
-		if ((newline = (char*)realloc(line, maxlen+1)) == NULL)
+		if ((line = (char*)realloc(line, maxlen+1)) == NULL)
 			break;
 
-		line = newline;
 		char *block = (line + maxlen) - blocksize;
 		dst = block;
 
@@ -605,6 +603,8 @@ char *trealla_readline(lexer *l, FILE *fp)
 			{
 				if (dst == line)
 				{
+					l->finalized = 1;
+					l->error = 1;
 					free(line);
 					return NULL;
 				}
@@ -629,7 +629,7 @@ char *trealla_readline(lexer *l, FILE *fp)
 		blocksize *= 2;
 	}
 
-	return line;
+	return NULL;
 }
 
 #ifdef _WIN32
@@ -1809,7 +1809,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 	l->tok = token_take(&t);
 
-	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> %s\n", l->tok, l->numeric, l->quoted, s);
+	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\"\n", l->tok, l->numeric, l->quoted, s);
 
 #ifndef ISO_ONLY
 	if (l->tok && is_def)
@@ -1961,13 +1961,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			if (self->depth > 1)
 				continue;
 
-			lexer_finalize(self);
-
-			if (self->error)
-				return src;
-
-			self->depth--;
-			return src;
+			self->finalized = 1;
+			break;
 		}
 
 		if (!self->quoted && !strcmp(self->tok, "-") && first)
@@ -2247,13 +2242,24 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		NLIST_PUSH_BACK(&term->val_l, n);
 	}
 
+	if (self->finalized)
+	{
+		lexer_finalize(self);
+
+		if (self->error)
+			return src;
+
+		self->depth--;
+		return src;
+	}
+
 	self->depth--;
 
 	if (self->fp && line)
 	{
 		free(*line);
 		*line = trealla_readline(self, self->fp);
-		if (!*line) return NULL;
+		//if (!*line) return NULL;
 		src = lexer_parse(self, term, *line, line);
 		if (self->error) return src;
 		if (!src) free(*line);
@@ -2608,14 +2614,14 @@ int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 	src = line;
 
 	while ((src = lexer_parse(self->lex, self->lex->r, src, &line)) != NULL)
-		if (self->lex->finalized)
+		if (self->lex->finalized || self->lex->error)
 			break;
 
 	free(line);
 
 	if (self->lex->error)
 	{
-		printf("ERROR: parse -> %s\n", src);
+		printf("ERROR: parse -> %s\n", (src?src:"EOF"));
 		lexer_done(self->lex);
 		return 0;
 	}
