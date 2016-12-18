@@ -21,7 +21,7 @@ extern void trealla_destroy(trealla *pl);
 // Create a Query instance
 
 extern tpl_query *trealla_create_query(trealla *pl);
-extern int query_parse_stdin(tpl_query *q, const char *s);
+extern int query_parse_file(tpl_query *q, const char *s, FILE *fp);
 extern int query_parse(tpl_query *q, const char *s);
 extern int query_run(tpl_query *q);						// Initial solution
 extern int query_continue(tpl_query *q);				// Next solution
