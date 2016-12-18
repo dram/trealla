@@ -603,7 +603,7 @@ char *trealla_readline(lexer *l, FILE *fp)
 
 			if (ch == EOF)
 			{
-				if (block == line)
+				if (dst == line)
 				{
 					free(line);
 					line = NULL;
@@ -615,14 +615,11 @@ char *trealla_readline(lexer *l, FILE *fp)
 				return line;
 			}
 
-			if (ch == '\n')
-				l->line_nbr++;
-
 			if (ch != '\n')
 				*dst++ = ch;
-
-			if (ch == '\n')
+			else
 			{
+				l->line_nbr++;
 				*dst = '\0';
 				//printf("*** GOT2 (%d): '%s'\n", (int)(dst-line), line);
 				return line;
@@ -633,12 +630,6 @@ char *trealla_readline(lexer *l, FILE *fp)
 		}
 
 		blocksize *= 2;
-	}
-
-	if (dst)
-	{
-		*dst = '\0';
-		//printf("*** GOT3 (%d): '%s'\n", (int)(dst-line), line);
 	}
 
 	return line;
