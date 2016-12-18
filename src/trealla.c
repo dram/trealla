@@ -1158,6 +1158,7 @@ static int dir_initialization(lexer *l, node *n)
 {
 	char tmpbuf[FUNCTOR_SIZE+10];
 	sprint_term(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 1);
+	strcat(tmpbuf, ".");
 	l->init = strdup(tmpbuf);
 	return 1;
 }
@@ -2602,7 +2603,7 @@ int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 
 	char *line = (char*)malloc(strlen(src)+10);
 	sprintf(line, "?- %s", src);
-	if (src[strlen(src)-1] != '.') strcat(line, ".");	// FIXME
+	//if (src[strlen(src)-1] != '.') strcat(line, ".");	// FIXME
 	src = line;
 
 	while ((src = lexer_parse(self->lex, self->lex->r, src, &line)) != NULL)

@@ -301,7 +301,7 @@ int main(int ac, char *av[])
 			p2 = strdup(tmpbuf2+1);
 
 		char tmpbuf[sizeof(tmpbuf1)+(sizeof(tmpbuf2)*2)+100];
-		snprintf(tmpbuf, sizeof(tmpbuf), "http_client:get10_file('%s://%s','%s','%s')",
+		snprintf(tmpbuf, sizeof(tmpbuf), "http_client:get10_file('%s://%s','%s','%s').",
 			scheme, tmpbuf1, tmpbuf2, p2);
 		init = strdup(tmpbuf);
 	}
@@ -309,12 +309,12 @@ int main(int ac, char *av[])
 	if (startapp)
 	{
 		trealla_consult_file(pl, "app");
-		init = strdup("app_server:start");
+		init = strdup("app_server:start.");
 	}
 	else if (testapp)
 	{
 		trealla_consult_file(pl, "app");
-		init = strdup("app_server:test");
+		init = strdup("app_server:test.");
 	}
 
 #endif
@@ -336,17 +336,25 @@ int main(int ac, char *av[])
 		else if (!strcmp(av[i], "--noquery"))
 			noquery = 1;
 		else if (!strncmp(av[i], "--goal=", 7))
-			init = strdup(av[i]+7);
+		{
+			char tmpbuf[1024];
+			sprintf(tmpbuf, "%s.", av[i]+7);
+			init = strdup(tmpbuf);
+		}
 		else if (!strncmp(av[i], "-g=", 3))
-			init = strdup(av[i]+3);
+		{
+			char tmpbuf[1024];
+			sprintf(tmpbuf, "%s.", av[i]+3);
+			init = strdup(tmpbuf);
+		}
 		else if (!strcmp(av[i], "--start"))
-			init = strdup("start");
+			init = strdup("start.");
 		else if (!strcmp(av[i], "--test"))
-			init = strdup("test");
+			init = strdup("test.");
 		else if (!strcmp(av[i], "--listing"))
-			init = strdup("listing");
+			init = strdup("listing.");
 		else if (!strcmp(av[i], "--listing_canonical"))
-			init = strdup("listing_canonical");
+			init = strdup("listing_canonical.");
 	}
 
 	if (init && !error)
