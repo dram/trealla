@@ -596,8 +596,6 @@ char *trealla_readline(lexer *l, FILE *fp)
 		line = newline;
 		char *block = (line + maxlen) - blocksize;
 		dst = block;
-		int quoted = 0, comment = 0;
-		char quote = '\'';
 
 		for (;;)
 		{
@@ -620,45 +618,14 @@ char *trealla_readline(lexer *l, FILE *fp)
 			if (ch == '\n')
 				l->line_nbr++;
 
-			if (!quoted && (ch == '%'))
-				comment = 1;
+			if (ch != '\n')
+				*dst++ = ch;
 
-			if (comment && (ch == '\n'))
+			if (ch == '\n')
 			{
-				comment = 0;
-				continue;
-			}
-
-			if (comment)
-				continue;
-
-			*dst++ = ch;
-
-			if (!quoted && ((ch == '\'') || (ch == '"') || (ch == '`')))
-			{
-				quoted = 1;
-				quote = ch;
-			}
-			else if (quoted && (ch == quote))
-				quoted = 0;
-
-			if (ch == '.')
-			{
-				ch = fgetc(fp);
-
-				if ((ch == EOF) || (!quoted && isspace(ch)) || (ch == '\n'))
-				{
-					if (ch == '\n')
-						l->line_nbr++;
-
-					*dst = '\0';
-					//printf("*** GOT2 (%d): '%s'\n", (int)(dst-line), line);
-					return line;
-				}
-				else
-				{
-					ungetc(ch, fp);
-				}
+				*dst = '\0';
+				//printf("*** GOT2 (%d): '%s'\n", (int)(dst-line), line);
+				return line;
 			}
 
 			if (dst == (line+maxlen))
@@ -1657,6 +1624,8 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 
 static const char *get_token(lexer *l, const char *s, char **line)
 {
+	l->tok = NULL;
+
 	if (!s)
 		return NULL;
 
@@ -1665,13 +1634,8 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 	if (*s == '%')
 	{
-		char ch;
-
-		while ((ch = *s++) != 0)
-		{
-			if (ch == '\n')
-				break;
-		}
+		while (*s++)
+			;
 
 		return NULL;
 	}
@@ -1726,14 +1690,16 @@ static const char *get_token(lexer *l, const char *s, char **line)
 					if (l->pl->flag_character_escapes &&
 						(l->quoted <= 2) && (ch == '\\'))
 					{
-						if (*s == '\n')
-							s++;
-						else
+						if (!*s)
 						{
-							const char *ptr = strchr(g_anti_escapes, ch = *s++);
-							if (ptr) token_put(&t, g_escapes[ptr-g_anti_escapes]);
-							else token_put(&t, ch);
+							token_put(&t, '\n');
+							ch = '\0';
+							break;
 						}
+
+						const char *ptr = strchr(g_anti_escapes, ch = *s++);
+						if (ptr) token_put(&t, g_escapes[ptr-g_anti_escapes]);
+						else token_put(&t, ch);
 					}
 					else
 						token_put(&t, ch);
@@ -1839,27 +1805,15 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			token_put(&t, ch = *s++);
 		}
 
-		static const char seps[] = ".!()[]{}_\"'` \t\r\n";
+		static const char seps[] = "%.!()[]{}_\"'` \t\r\n";
 
 		if (strchr(seps, ch) || strchr(seps, *s) || isalnum_utf8(*s))
 			break;
 	}
 
-	while (isspace(*s))
-		s++;
-
-	if (*s == '%')
-	{
-		char ch;
-
-		while ((ch = *s++) != 0)
-		{
-			if (ch == '\n')
-				break;
-		}
-	}
-
 	l->tok = token_take(&t);
+
+	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> %s\n", l->tok, l->numeric, l->quoted, s);
 
 #ifndef ISO_ONLY
 	if (l->tok && is_def)
@@ -1914,7 +1868,6 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	}
 #endif
 
-	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\"\n", l->tok, l->numeric, l->quoted, s);
 	return s;
 }
 
@@ -2004,8 +1957,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ".") &&
-			(!*src || isspace(*src)))
+		if (!self->quoted && !strcmp(self->tok, "."))
 		{
 			free(self->tok);
 
@@ -2336,21 +2288,24 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 			(line[1] == '!'))
 			continue;
 
-		const char *src = lexer_parse(self, self->r, line, &line);
-		free(line);
+		const char *src = line;
+
+		while ((src = lexer_parse(self, self->r, src, &line)) != NULL)
+			;
 
 		if (self->error)
 		{
 			printf("ERROR: consult '%s'\n>>> "
 				"Syntax error,"
 				"line=%d\n>>> %s\n", self->name, self->line_nbr, src);
-			return 0;
 		}
+
+		free(line);
 	}
 
 	self->fp = save_fp;
 	self->r = save_rule;
-	return 1;
+	return !self->error;
 }
 
 int lexer_consult_file(lexer *self, const char *filename)
