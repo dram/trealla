@@ -610,7 +610,6 @@ char *trealla_readline(lexer *l, FILE *fp)
 				}
 
 				*dst = '\0';
-				//printf("*** GOT1 (%d): '%s'\n", (int)(dst-line), line);
 				return line;
 			}
 
@@ -620,7 +619,6 @@ char *trealla_readline(lexer *l, FILE *fp)
 			{
 				l->line_nbr++;
 				*dst = '\0';
-				//printf("*** GOT2 (%d): '%s'\n", (int)(dst-line), line);
 				return line;
 			}
 
