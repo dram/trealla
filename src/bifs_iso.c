@@ -1270,7 +1270,7 @@ static int bif_iso_read2(tpl_query *q)
 		else
 #endif
 		{
-			if ((line = trealla_readline(sp->fptr)) == NULL)
+			if ((line = trealla_readline(q->lex, sp->fptr)) == NULL)
 			{
 				put_const_atom(q, q->curr_frame+term2->slot, END_OF_FILE, 0);
 				return 1;
@@ -1337,7 +1337,7 @@ static int bif_iso_read(tpl_query *q)
 
 	for (;;)
 	{
-		if ((line = trealla_readline(stdin)) == NULL)
+		if ((line = trealla_readline(q->lex, stdin)) == NULL)
 		{
 			put_const_atom(q, q->curr_frame+term1->slot, END_OF_FILE, 0);
 			return 1;

@@ -291,7 +291,7 @@ static int bif_sys_getline2(tpl_query *q)
 	stream *sp = term1->val_str;
 	char *line;
 
-	if ((line = trealla_readline(sp->fptr)) == NULL)
+	if ((line = trealla_readline(q->lex, sp->fptr)) == NULL)
 		line = strdup(END_OF_FILE);
 	else
 	{
@@ -318,7 +318,7 @@ static int bif_sys_getline1(tpl_query *q)
 	node *term1 = get_var(term1);
 	char *line;
 
-	if ((line = trealla_readline(stdin)) == NULL)
+	if ((line = trealla_readline(q->lex, stdin)) == NULL)
 		line = strdup(END_OF_FILE);
 	else
 	{

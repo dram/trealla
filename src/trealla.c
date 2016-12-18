@@ -576,7 +576,7 @@ void retract_index(lexer *l, node *n, int *persist)
 	NLIST_REMOVE(&r->clauses, n);
 }
 
-char *trealla_readline(FILE *fp)
+char *trealla_readline(lexer *l, FILE *fp)
 {
 	if ((fp == stdin) && isatty(0))
 		return history_readline_eol("|: ", '.');
@@ -607,25 +607,35 @@ char *trealla_readline(FILE *fp)
 				{
 					free(line);
 					line = NULL;
+					return NULL;
 				}
+
+				*dst = '\0';
+				//printf("*** GOT1 (%d): '%s'\n", (int)(dst-line), line);
 				return line;
 			}
+
+			if (ch == '\n')
+				l->line_nbr++;
 
 			*dst++ = ch;
 
 			if (ch == '.')
 			{
-				int ch2 = fgetc(fp);
+				ch = fgetc(fp);
 
-				if (ch2 == EOF || isspace(ch2))
+				if (ch == EOF || isspace(ch))
 				{
+					if (ch == '\n')
+						l->line_nbr++;
+
 					*dst = '\0';
 					//printf("*** GOT2 (%d): '%s'\n", (int)(dst-line), line);
 					return line;
 				}
 				else
 				{
-					ungetc(ch2, fp);
+					ungetc(ch, fp);
 				}
 			}
 
@@ -637,7 +647,10 @@ char *trealla_readline(FILE *fp)
 	}
 
 	if (dst)
+	{
 		*dst = '\0';
+		//printf("*** GOT3 (%d): '%s'\n", (int)(dst-line), line);
+	}
 
 	return line;
 }
@@ -1706,7 +1719,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 				if (!ch && l->fp)
 				{
-					char *newline = trealla_readline(l->fp);
+					char *newline = trealla_readline(l, l->fp);
 
 					if (newline)
 					{
@@ -2268,7 +2281,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 	if (self->fp && line)
 	{
 		free(*line);
-		*line = trealla_readline(self->fp);
+		*line = trealla_readline(self, self->fp);
 		if (!*line) return NULL;
 		src = lexer_parse(self, term, *line, line);
 		if (self->error) return src;
@@ -2292,11 +2305,11 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 	self->r = NULL;
 	self->fp = fp;
 	char *line;
-	int nbr = 1;
+	self->line_nbr = 0;
 
-	while ((line = trealla_readline(fp)) != NULL)
+	while ((line = trealla_readline(self, fp)) != NULL)
 	{
-		if ((nbr == 1) &&
+		if ((self->line_nbr == 1) &&
 			(line[0] == '#') &&
 			(line[1] == '!'))
 			continue;
@@ -2308,11 +2321,9 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 		{
 			printf("ERROR: consult '%s'\n>>> "
 				"Syntax error,"
-				"line=%d\n>>> %s\n", self->name, nbr, src);
+				"line=%d\n>>> %s\n", self->name, self->line_nbr, src);
 			return 0;
 		}
-
-		nbr++;
 	}
 
 	self->fp = save_fp;

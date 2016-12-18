@@ -368,7 +368,7 @@ int main(int ac, char *av[])
 
 		while ((line = (pl->tty ?
 				history_readline_eol("?- ", '.') :
-				trealla_readline(stdin))) != NULL)
+				trealla_readline(&pl->lex, stdin))) != NULL)
 		{
 			const char *src = line;
 

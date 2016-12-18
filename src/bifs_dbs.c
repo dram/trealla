@@ -130,7 +130,7 @@ void dbs_save_node(module *db, FILE *fp, char **dstbuf, size_t *buflen, node *n)
 node *dbs_read_entry(module* db, nbr_t fpos)
 {
 	fseek(db->fp, fpos, SEEK_SET);
-	char *line = trealla_readline(db->fp);
+	char *line = trealla_readline(&db->pl->lex, db->fp);
 
 	if (line == NULL)
 		return NULL;
@@ -172,7 +172,7 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 	do
 	{
 		while (db->last_fpos = ftell(db->fp),
-			((line = trealla_readline(db->fp)) != NULL))
+			((line = trealla_readline(&lex, db->fp)) != NULL))
 		{
 			line_nbr++;
 
