@@ -1930,6 +1930,7 @@ static void lexer_finalize(lexer *self)
 	term_heapcheck(self->r);
 	self->r = NULL;
 	sl_clear(&self->symtab, NULL);
+	self->finalized = 1;
 }
 
 const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
@@ -2607,7 +2608,8 @@ int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 	src = line;
 
 	while ((src = lexer_parse(self->lex, self->lex->r, src, &line)) != NULL)
-		;
+		if (self->lex->finalized)
+			break;
 
 	free(line);
 

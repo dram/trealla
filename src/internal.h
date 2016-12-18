@@ -252,7 +252,7 @@ typedef struct
 	module *db;
 	char *init, *tok;
 	int depth, anons, vars, numeric, line_nbr;
-	int fact, consult, quoted, error;
+	int fact, consult, quoted, error, finalized;
 }
  lexer;
 
