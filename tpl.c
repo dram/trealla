@@ -377,7 +377,7 @@ int main(int ac, char *av[])
 
 			tpl_query *q = trealla_create_query(pl);
 			if (!q) break;
-			int ok = query_parse(q, src);
+			int ok = query_parse_stdin(q, src);
 			if (ok) ok = query_run(q);
 			if (ok) query_dump(q);
 			free(line);

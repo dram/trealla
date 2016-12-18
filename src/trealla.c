@@ -2597,7 +2597,49 @@ int query_parse(tpl_query *self, const char *src)
 	char *line = (char*)malloc(strlen(src)+10);
 	sprintf(line, "?- %s", src);
 	if (src[strlen(src)-1] != '.') strcat(line, ".");	// FIXME
-	lexer_parse(self->lex, self->lex->r, line, NULL);
+	src = line;
+
+	while ((src = lexer_parse(self->lex, self->lex->r, src, &line)) != NULL)
+		;
+
+	free(line);
+
+	if (self->lex->error)
+	{
+		printf("ERROR: parse -> %s\n", src);
+		lexer_done(self->lex);
+		return 0;
+	}
+
+	if (!xref_rule(self->lex, NLIST_FRONT(&self->lex->clauses)) || self->lex->error)
+	{
+		self->halt = 0; self->line_nbr = __LINE__;
+		return 0;
+	}
+
+	begin_query(self, NLIST_FRONT(&self->lex->clauses));
+	return 1;
+}
+
+int query_parse_stdin(tpl_query *self, const char *src)
+{
+	lexer_init(self->lex, self->pl);
+	self->lex->fp = stdin;
+
+	if (self->lex->clauses.cnt)
+	{
+		term_heapcheck(NLIST_FRONT(&self->lex->clauses));
+		NLIST_INIT(&self->lex->clauses);
+	}
+
+	char *line = (char*)malloc(strlen(src)+10);
+	sprintf(line, "?- %s", src);
+	if (src[strlen(src)-1] != '.') strcat(line, ".");	// FIXME
+	src = line;
+
+	while ((src = lexer_parse(self->lex, self->lex->r, src, &line)) != NULL)
+		;
+
 	free(line);
 
 	if (self->lex->error)
