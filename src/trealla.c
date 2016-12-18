@@ -632,8 +632,8 @@ char *trealla_readline(lexer *l, FILE *fp)
 	return line;
 }
 
-uint64_t gettimeofday_usec(void)
 #ifdef _WIN32
+uint64_t gettimeofday_usec(void)
 {
 	static const uint64_t epoch = 116444736000000000ULL;
 	FILETIME file_time;
@@ -646,6 +646,7 @@ uint64_t gettimeofday_usec(void)
 	return (u.QuadPart-epoch)/10 + (1000ULL*system_time.wMilliseconds);
 }
 #else
+uint64_t gettimeofday_usec(void)
 {
 	struct timeval tp;
 	gettimeofday(&tp, NULL);
