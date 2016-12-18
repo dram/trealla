@@ -606,7 +606,6 @@ char *trealla_readline(lexer *l, FILE *fp)
 				if (dst == line)
 				{
 					free(line);
-					line = NULL;
 					return NULL;
 				}
 
