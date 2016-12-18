@@ -597,7 +597,7 @@ char *trealla_readline(lexer *l, FILE *fp)
 		char *block = (line + maxlen) - blocksize;
 		dst = block;
 		int quoted = 0, comment = 0;
-		char quote;
+		char quote = '\'';
 
 		for (;;)
 		{
@@ -620,6 +620,18 @@ char *trealla_readline(lexer *l, FILE *fp)
 			if (ch == '\n')
 				l->line_nbr++;
 
+			if (!quoted && (ch == '%'))
+				comment = 1;
+
+			if (comment && (ch == '\n'))
+			{
+				comment = 0;
+				continue;
+			}
+
+			if (comment)
+				continue;
+
 			*dst++ = ch;
 
 			if (!quoted && ((ch == '\'') || (ch == '"') || (ch == '`')))
@@ -629,17 +641,8 @@ char *trealla_readline(lexer *l, FILE *fp)
 			}
 			else if (quoted && (ch == quote))
 				quoted = 0;
-			else if (!quoted && (ch == '%'))
-				comment = 1;
 
-			if (comment && (ch == '\n'))
-			{
-				comment = 0;
-				dst = line;
-				continue;
-			}
-
-			if (!comment && (ch == '.'))
+			if (ch == '.')
 			{
 				ch = fgetc(fp);
 
