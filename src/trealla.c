@@ -2258,7 +2258,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		src = lexer_parse(self, term, *line, line);
 
-		if (feof(self->fp))
+		if (!self->finalized && feof(self->fp))
 			self->error = 1;
 
 		if (!src)
