@@ -2258,6 +2258,9 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		src = lexer_parse(self, term, *line, line);
 
+		if (!*line)
+			return NULL;
+
 		if (!self->finalized && feof(self->fp))
 			self->error = 1;
 
