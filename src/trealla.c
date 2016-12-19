@@ -619,7 +619,10 @@ char *trealla_readline(lexer *l, FILE *fp)
 				*dst = '\0';
 
 				while (ch = fgetc(fp), isspace(ch))
-					;
+				{
+					if (ch == '\n')
+						l->line_nbr++;
+				}
 
 				ungetc(ch, fp);
 				clearerr(fp);
