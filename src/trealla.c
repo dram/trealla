@@ -1950,6 +1950,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		if (!self->r)
 		{
 			self->r = term = make_structure();
+			term->flags |= FLAG_BARE;
 			self->term = NULL;
 			self->vars = self->anons = 0;
 			self->fact = 1;
