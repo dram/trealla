@@ -617,6 +617,12 @@ char *trealla_readline(lexer *l, FILE *fp)
 			{
 				l->line_nbr++;
 				*dst = '\0';
+
+				while (ch = fgetc(fp), isspace(ch))
+					;
+
+				ungetc(ch, fp);
+				clearerr(fp);
 				return line;
 			}
 
@@ -2257,9 +2263,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			return NULL;
 
 		src = lexer_parse(self, term, *line, line);
-
-		if (!*line)
-			return NULL;
 
 		if (!self->finalized && feof(self->fp))
 			self->error = 1;
