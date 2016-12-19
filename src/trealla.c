@@ -2305,8 +2305,9 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 
 		if (self->error)
 		{
-			printf("ERROR: consult '%s'\n>>> "
-				"Error, line=%d\n>>> %s\n", self->name, self->line_nbr, line);
+			printf("ERROR: consult '%s', "
+				"line=%d, '%s'\n",
+				(self->name?self->name:"console"), self->line_nbr, (line?line:"end_of_file reached unexpectedly"));
 			break;
 		}
 
