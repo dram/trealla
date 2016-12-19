@@ -2248,7 +2248,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		return src;
 	}
 
-#if 1
 	if (self->fp && !feof(self->fp) && line)
 	{
 		free(*line);
@@ -2277,7 +2276,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		printf("ERROR: check parentheses, brackets or braces\n");
 		self->error = 1;
 	}
-#endif
 
 	return src;
 }
@@ -2631,10 +2629,10 @@ int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 	if (self->lex->error)
 	{
 		printf("ERROR: parse -> %s\n", (src?src:"end_of_file"));
-
-		if (NLIST_COUNT(&self->lex->clauses))
-			term_destroy(NLIST_FRONT(&self->lex->clauses));
-
+		node *n = NLIST_FRONT(&self->lex->clauses);
+		if (n != NULL) term_heapcheck(n);
+		NLIST_INIT(&self->lex->clauses);
+		term_heapcheck(self->lex->r);
 		lexer_done(self->lex);
 		return 0;
 	}
