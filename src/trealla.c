@@ -2306,11 +2306,22 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 		if (self->error)
 		{
 			printf("ERROR: consult '%s'\n>>> "
-				"Syntax error,"
-				"line=%d\n>>> %s\n", self->name, self->line_nbr, src);
+				"Error, line=%d\n>>> %s\n", self->name, self->line_nbr, line);
+			break;
 		}
 
-		free(line);
+		if (line)
+			free(line);
+	}
+
+	if (self->error)
+	{
+		node *n = NLIST_FRONT(&self->clauses);
+		if (n != NULL) term_heapcheck(n);
+		NLIST_INIT(&self->clauses);
+		term_heapcheck(self->r);
+		lexer_done(self);
+		return 0;
 	}
 
 	self->fp = save_fp;
