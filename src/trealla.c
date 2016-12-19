@@ -2626,7 +2626,7 @@ int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 
 	free(line);
 
-	if (self->lex->error)
+	if (!self->lex->finalized || self->lex->error)
 	{
 		printf("ERROR: parse -> %s\n", (src?src:"end_of_file"));
 		node *n = NLIST_FRONT(&self->lex->clauses);
