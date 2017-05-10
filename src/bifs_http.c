@@ -87,7 +87,7 @@ static char *http_cleanup(const char *path, char *path2)
 	return path2;
 }
 
-static int bif_http_query3(tpl_query *q)
+static int bif_http_query_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -101,7 +101,7 @@ static int bif_http_query3(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_form3(tpl_query *q)
+static int bif_http_form_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -115,7 +115,7 @@ static int bif_http_form3(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_www_form1(tpl_query *q)
+static int bif_http_www_form_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -188,7 +188,7 @@ static int bif_http_www_form1(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_cookie3(tpl_query *q)
+static int bif_http_cookie_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -305,7 +305,7 @@ static void parse_header(session *s, char *bufptr, int len)
 	free(value);
 }
 
-static int bif_http_parse4(tpl_query *q)
+static int bif_http_parse_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -587,7 +587,7 @@ int http_get10(session *s, const char *path, int keep, int *status)
 	return 0;
 }
 
-static int bif_http_get103(tpl_query *q)
+static int bif_http_get10_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -600,7 +600,7 @@ static int bif_http_get103(tpl_query *q)
 	return ok;
 }
 
-static int bif_http_get104(tpl_query *q)
+static int bif_http_get10_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -675,7 +675,7 @@ static int http_head10(session *s, const char *path, int *status)
 	return 0;
 }
 
-static int bif_http_head103(tpl_query *q)
+static int bif_http_head10_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -746,7 +746,7 @@ int http_get11(session *s, const char *path, int keep, int *status)
 	return 0;
 }
 
-static int bif_http_get113(tpl_query *q)
+static int bif_http_get11_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -759,7 +759,7 @@ static int bif_http_get113(tpl_query *q)
 	return ok;
 }
 
-static int bif_http_get114(tpl_query *q)
+static int bif_http_get11_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -830,7 +830,7 @@ static int http_head11(session *s, const char *path, int *status)
 	return 0;
 }
 
-static int bif_http_head113(tpl_query *q)
+static int bif_http_head11_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -843,7 +843,7 @@ static int bif_http_head113(tpl_query *q)
 	return ok;
 }
 
-static int bif_http_get_chunk3(tpl_query *q)
+static int bif_http_get_chunk_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -911,7 +911,7 @@ static int bif_http_get_chunk3(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_put_chunk3(tpl_query *q)
+static int bif_http_put_chunk_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -947,7 +947,7 @@ static int bif_http_put_chunk3(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_put_chunk2(tpl_query *q)
+static int bif_http_put_chunk_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -980,7 +980,7 @@ static int bif_http_put_chunk2(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_put_file2(tpl_query *q)
+static int bif_http_put_file_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *var; // FLAG_HIDDEN
@@ -1137,7 +1137,7 @@ static int http_put10(session *s, const char *path, const char *cttype, int64_t 
 	return 0;
 }
 
-static int bif_http_put105(tpl_query *q)
+static int bif_http_put10_5(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1215,7 +1215,7 @@ static int http_put11(session *s, const char *path, int *status)
 	return 0;
 }
 
-static int bif_http_put113(tpl_query *q)
+static int bif_http_put11_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1289,7 +1289,7 @@ static int http_delete10(session *s, const char *path, int *status)
 	return 0;
 }
 
-static int bif_http_delete105(tpl_query *q)
+static int bif_http_delete10_5(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1363,7 +1363,7 @@ static int http_delete11(session *s, const char *path, int *status)
 	return 0;
 }
 
-static int bif_http_delete113(tpl_query *q)
+static int bif_http_delete11_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1376,7 +1376,7 @@ static int bif_http_delete113(tpl_query *q)
 	return ok;
 }
 
-static int bif_ws_msg3(tpl_query *q)
+static int bif_ws_msg_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1516,7 +1516,7 @@ static int ws_upgrade(session *s, const char *prot)
 	return 1;
 }
 
-static int bif_ws_request5(tpl_query *q)
+static int bif_ws_request_5(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1559,7 +1559,7 @@ static int bif_ws_request5(tpl_query *q)
 	return 1;
 }
 
-static int bif_ws_request3(tpl_query *q)
+static int bif_ws_request_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1573,7 +1573,7 @@ static int bif_ws_request3(tpl_query *q)
 	return 1;
 }
 
-static int bif_ws_upgrade2(tpl_query *q)
+static int bif_ws_upgrade_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1584,7 +1584,7 @@ static int bif_ws_upgrade2(tpl_query *q)
 }
 #endif
 
-static int bif_ws_parse3(tpl_query *q)
+static int bif_ws_parse_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1647,7 +1647,7 @@ static int bif_ws_is_ws(tpl_query *q)
 	return ok;
 }
 
-static int bif_h2_request3(tpl_query *q)
+static int bif_h2_request_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1711,7 +1711,7 @@ static int bif_h2_request3(tpl_query *q)
 	return 0;
 }
 
-static int bif_h2_upgrade2(tpl_query *q)
+static int bif_h2_upgrade_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1729,7 +1729,7 @@ static int bif_h2_upgrade2(tpl_query *q)
 	return 1;
 }
 
-static int bif_h2_msg3(tpl_query *q)
+static int bif_h2_msg_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1740,7 +1740,7 @@ static int bif_h2_msg3(tpl_query *q)
 	return 0;
 }
 
-static int bif_h2_parse3(tpl_query *q)
+static int bif_h2_parse_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1754,7 +1754,7 @@ static int bif_h2_parse3(tpl_query *q)
 	return 0;
 }
 
-static int bif_h2_is_h2(tpl_query *q)
+static int bif_h2_is_h2_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1831,7 +1831,7 @@ static char *stomp_deescape(const char *path, char *path2)
 	return path2;
 }
 
-static int bif_stomp_parse3(tpl_query *q)
+static int bif_stomp_parse_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1982,7 +1982,7 @@ static int bif_stomp_parse3(tpl_query *q)
 	return 0;
 }
 
-static int bif_stomp_msg4(tpl_query *q)
+static int bif_stomp_msg_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -2042,49 +2042,49 @@ static int bif_stomp_msg4(tpl_query *q)
 
 void bifs_load_http(void)
 {
-	DEFINE_BIF("http:parse", 4, bif_http_parse4);
-	DEFINE_BIF("http:www_form", 1, bif_http_www_form1);
-	DEFINE_BIF("http:query", 3, bif_http_query3);
-	DEFINE_BIF("http:form", 3, bif_http_form3);
-	DEFINE_BIF("http:cookie", 3, bif_http_cookie3);
-	DEFINE_BIF("http:get10", 3, bif_http_get103);
-	DEFINE_BIF("http:get10", 4, bif_http_get104);
-	DEFINE_BIF("http:head10", 3, bif_http_head103);
-	DEFINE_BIF("http:delete10", 5, bif_http_delete105);
-	DEFINE_BIF("http:put10", 5, bif_http_put105);
+	DEFINE_BIF("http:parse", 4, bif_http_parse_4);
+	DEFINE_BIF("http:www_form", 1, bif_http_www_form_1);
+	DEFINE_BIF("http:query", 3, bif_http_query_3);
+	DEFINE_BIF("http:form", 3, bif_http_form_3);
+	DEFINE_BIF("http:cookie", 3, bif_http_cookie_3);
+	DEFINE_BIF("http:get10", 3, bif_http_get10_3);
+	DEFINE_BIF("http:get10", 4, bif_http_get10_4);
+	DEFINE_BIF("http:head10", 3, bif_http_head10_3);
+	DEFINE_BIF("http:delete10", 5, bif_http_delete10_5);
+	DEFINE_BIF("http:put10", 5, bif_http_put10_5);
 
-	DEFINE_BIF("http:get11", 3, bif_http_get113);
-	DEFINE_BIF("http:get11", 4, bif_http_get114);
-	DEFINE_BIF("http:head11", 3, bif_http_head113);
-	DEFINE_BIF("http:delete11", 3, bif_http_delete113);
-	DEFINE_BIF("http:put11", 3, bif_http_put113);
-	DEFINE_BIF("http:get_chunk", 3, bif_http_get_chunk3);
-	DEFINE_BIF("http:put_chunk", 3, bif_http_put_chunk3);
-	DEFINE_BIF("http:put_chunk", 2, bif_http_put_chunk2);
-	DEFINE_BIF("http:put_file", 1 + 2, bif_http_put_file2);
+	DEFINE_BIF("http:get11", 3, bif_http_get11_3);
+	DEFINE_BIF("http:get11", 4, bif_http_get11_4);
+	DEFINE_BIF("http:head11", 3, bif_http_head11_3);
+	DEFINE_BIF("http:delete11", 3, bif_http_delete11_3);
+	DEFINE_BIF("http:put11", 3, bif_http_put11_3);
+	DEFINE_BIF("http:get_chunk", 3, bif_http_get_chunk_3);
+	DEFINE_BIF("http:put_chunk", 3, bif_http_put_chunk_3);
+	DEFINE_BIF("http:put_chunk", 2, bif_http_put_chunk_2);
+	DEFINE_BIF("http:put_file", 1 + 2, bif_http_put_file_2);
 
-	DEFINE_BIF("h2:is_h2", 2, bif_h2_is_h2);
-	DEFINE_BIF("h2:request", 3, bif_h2_request3);
-	DEFINE_BIF("h2:upgrade", 2, bif_h2_upgrade2);
-	DEFINE_BIF("h2:parse", 3, bif_h2_parse3);
-	DEFINE_BIF("h2:msg", 3, bif_h2_msg3);
+	DEFINE_BIF("h2:is_h2", 2, bif_h2_is_h2_2);
+	DEFINE_BIF("h2:request", 3, bif_h2_request_3);
+	DEFINE_BIF("h2:upgrade", 2, bif_h2_upgrade_2);
+	DEFINE_BIF("h2:parse", 3, bif_h2_parse_3);
+	DEFINE_BIF("h2:msg", 3, bif_h2_msg_3);
 };
 
 void bifs_load_ws(void)
 {
 #if USE_SSL
-	DEFINE_BIF("ws:request", 5, bif_ws_request5);
-	DEFINE_BIF("ws:request", 3, bif_ws_request3);
-	DEFINE_BIF("ws:upgrade", 2, bif_ws_upgrade2);
+	DEFINE_BIF("ws:request", 5, bif_ws_request_5);
+	DEFINE_BIF("ws:request", 3, bif_ws_request_3);
+	DEFINE_BIF("ws:upgrade", 2, bif_ws_upgrade_2);
 #endif
 
-	DEFINE_BIF("ws:parse", 3, bif_ws_parse3);
-	DEFINE_BIF("ws:msg", 3, bif_ws_msg3);
+	DEFINE_BIF("ws:parse", 3, bif_ws_parse_3);
+	DEFINE_BIF("ws:msg", 3, bif_ws_msg_3);
 	DEFINE_BIF("ws:is_ws", 2, bif_ws_is_ws);
 };
 
 void bifs_load_stomp(void)
 {
-	DEFINE_BIF("stomp:parse", 3, bif_stomp_parse3);
-	DEFINE_BIF("stomp:msg", 4, bif_stomp_msg4);
+	DEFINE_BIF("stomp:parse", 3, bif_stomp_parse_3);
+	DEFINE_BIF("stomp:msg", 4, bif_stomp_msg_4);
 };

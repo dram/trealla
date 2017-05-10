@@ -348,13 +348,13 @@ static int dbs_end(tpl_query *q, int do_sync)
 	return 1;
 }
 
-static int bif_dbs_end0(tpl_query *q)
+static int bif_dbs_end_0(tpl_query *q)
 {
 	dbs_end(q, 1);
 	return 1;
 }
 
-static int bif_dbs_end1(tpl_query *q)
+static int bif_dbs_end_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_int(term1);
@@ -387,7 +387,7 @@ static void dbs_bail(tpl_query *q)
 	DBUNLOCK(q->curr_db);
 }
 
-int bif_dbs_begin(tpl_query *q)
+int bif_dbs_begin_0(tpl_query *q)
 {
 	if (q->retry) {
 		dbs_bail(q);
@@ -404,7 +404,7 @@ int bif_dbs_begin(tpl_query *q)
 	return 1;
 }
 
-static int bif_dbs_log(tpl_query *q)
+static int bif_dbs_log_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -417,7 +417,7 @@ static int bif_dbs_log(tpl_query *q)
 	return 1;
 }
 
-int bif_dbs_load(tpl_query *q)
+int bif_dbs_load_0(tpl_query *q)
 {
 	if (!q->curr_db->loaded)
 		dbs_load(q->curr_db, 0, 1);
@@ -425,7 +425,7 @@ int bif_dbs_load(tpl_query *q)
 	return 1;
 }
 
-int bif_dbs_init(tpl_query *q)
+int bif_dbs_init_0(tpl_query *q)
 {
 	if (!q->curr_db->loaded)
 		dbs_load(q->curr_db, 0, 0);
@@ -433,7 +433,7 @@ int bif_dbs_init(tpl_query *q)
 	return 1;
 }
 
-int bif_dbs_tail(tpl_query *q)
+int bif_dbs_tail_0(tpl_query *q)
 {
 	if (!q->curr_db->loaded)
 		dbs_load(q->curr_db, 1, 1);
@@ -443,11 +443,11 @@ int bif_dbs_tail(tpl_query *q)
 
 void bifs_load_dbs(void)
 {
-	DEFINE_BIF("dbs:load", 0, bif_dbs_load);
-	DEFINE_BIF("dbs:init", 0, bif_dbs_init);
-	DEFINE_BIF("dbs:tail", 0, bif_dbs_tail);
-	DEFINE_BIF("dbs:log", 1, bif_dbs_log);
-	DEFINE_BIF("dbs:begin", 0, bif_dbs_begin);
-	DEFINE_BIF("dbs:end", 0, bif_dbs_end0);
-	DEFINE_BIF("dbs:end", 1, bif_dbs_end1);
+	DEFINE_BIF("dbs:load", 0, bif_dbs_load_0);
+	DEFINE_BIF("dbs:init", 0, bif_dbs_init_0);
+	DEFINE_BIF("dbs:tail", 0, bif_dbs_tail_0);
+	DEFINE_BIF("dbs:log", 1, bif_dbs_log_1);
+	DEFINE_BIF("dbs:begin", 0, bif_dbs_begin_0);
+	DEFINE_BIF("dbs:end", 0, bif_dbs_end_0);
+	DEFINE_BIF("dbs:end", 1, bif_dbs_end_1);
 }
