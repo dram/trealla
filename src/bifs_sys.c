@@ -56,7 +56,7 @@ static char *strndup(const char *s, size_t n)
 }
 #endif
 
-static int bif_sys_exists_file1(tpl_query *q)
+static int bif_sys_exists_file_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -72,7 +72,7 @@ static int bif_sys_exists_file1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_exists_dir1(tpl_query *q)
+static int bif_sys_exists_dir_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -88,7 +88,7 @@ static int bif_sys_exists_dir1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_make_dir1(tpl_query *q)
+static int bif_sys_make_dir_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -101,7 +101,7 @@ static int bif_sys_make_dir1(tpl_query *q)
 	return !mkdir(filename, 0777);
 }
 
-static int bif_sys_make_dir2(tpl_query *q)
+static int bif_sys_make_dir_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -115,7 +115,7 @@ static int bif_sys_make_dir2(tpl_query *q)
 	return !mkdir(filename, term2->val_u);
 }
 
-static int bif_sys_exists_file3(tpl_query *q)
+static int bif_sys_exists_file_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -135,7 +135,7 @@ static int bif_sys_exists_file3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_write_file2(tpl_query *q)
+static int bif_sys_write_file_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *var; // FLAG_HIDDEN
@@ -219,7 +219,7 @@ static int bif_sys_write_file2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_remove_file1(tpl_query *q)
+static int bif_sys_remove_file_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -227,7 +227,7 @@ static int bif_sys_remove_file1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_save_file2(tpl_query *q)
+static int bif_sys_save_file_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -244,7 +244,7 @@ static int bif_sys_save_file2(tpl_query *q)
 	return len == LEN(term2);
 }
 
-static int bif_sys_append_file2(tpl_query *q)
+static int bif_sys_append_file_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -261,7 +261,7 @@ static int bif_sys_append_file2(tpl_query *q)
 	return len == LEN(term2);
 }
 
-static int bif_sys_load_file2(tpl_query *q)
+static int bif_sys_load_file_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -290,7 +290,7 @@ static int bif_sys_load_file2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_concat(tpl_query *q)
+static int bif_sys_concat_N(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_next_arg(q, &args);
@@ -342,7 +342,7 @@ static int bif_sys_concat(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_getline2(tpl_query *q)
+static int bif_sys_getline_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_file(term1);
@@ -369,7 +369,7 @@ static int bif_sys_getline2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_getline1(tpl_query *q)
+static int bif_sys_getline_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
@@ -394,7 +394,7 @@ static int bif_sys_getline1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_bwrite2(tpl_query *q)
+static int bif_sys_bwrite_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_stream(term1);
@@ -418,7 +418,7 @@ static int bif_sys_bwrite2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_bread3(tpl_query *q)
+static int bif_sys_bread_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_stream(term1);
@@ -501,7 +501,7 @@ static int bif_sys_bread3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_exit1(tpl_query *q)
+static int bif_sys_exit_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -517,7 +517,7 @@ static int bif_sys_now0(tpl_query *q)
 	return 0;
 }
 
-static int bif_sys_now1(tpl_query *q)
+static int bif_sys_now_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
@@ -526,7 +526,7 @@ static int bif_sys_now1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_timestamp1(tpl_query *q)
+static int bif_sys_timestamp_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
@@ -534,7 +534,7 @@ static int bif_sys_timestamp1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_hsleep1(tpl_query *q)
+static int bif_sys_hsleep_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -542,7 +542,7 @@ static int bif_sys_hsleep1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_hdelay1(tpl_query *q)
+static int bif_sys_hdelay_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -550,7 +550,7 @@ static int bif_sys_hdelay1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_sleep1(tpl_query *q)
+static int bif_sys_sleep_1(tpl_query *q)
 {
 	if (!q->retry)
 		allocate_frame(q);
@@ -583,7 +583,7 @@ static int bif_sys_sleep1(tpl_query *q)
 	return process_yield_locked(q);
 }
 
-static int bif_sys_delay1(tpl_query *q)
+static int bif_sys_delay_1(tpl_query *q)
 {
 	if (!q->retry)
 		allocate_frame(q);
@@ -616,7 +616,7 @@ static int bif_sys_delay1(tpl_query *q)
 	return process_yield_locked(q);
 }
 
-static int bif_sys_jsonq3(tpl_query *q)
+static int bif_sys_jsonq_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -635,7 +635,7 @@ static int bif_sys_jsonq3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_jsonq4(tpl_query *q)
+static int bif_sys_jsonq_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -655,7 +655,7 @@ static int bif_sys_jsonq4(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_xmlq4(tpl_query *q)
+static int bif_sys_xmlq_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *var = get_var(var); // FLAG_HIDDEN
@@ -676,7 +676,7 @@ static int bif_sys_xmlq4(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_xmlq3(tpl_query *q)
+static int bif_sys_xmlq_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *orig_var = term_next(args);
@@ -714,7 +714,7 @@ static int bif_sys_xmlq3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_upper2(tpl_query *q)
+static int bif_sys_upper_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -734,7 +734,7 @@ static int bif_sys_upper2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_lower2(tpl_query *q)
+static int bif_sys_lower_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -765,7 +765,7 @@ static char *format_rfcdate(char *dst, time_t when)
 	return dst;
 }
 
-static int bif_sys_format_rfcdate2(tpl_query *q)
+static int bif_sys_format_rfcdate_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -776,7 +776,7 @@ static int bif_sys_format_rfcdate2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_parse_rfcdate2(tpl_query *q)
+static int bif_sys_parse_rfcdate_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -807,7 +807,7 @@ static int bif_sys_parse_rfcdate2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_atom_timestamp2(tpl_query *q)
+static int bif_sys_atom_timestamp_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -830,7 +830,7 @@ static int bif_sys_atom_timestamp2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_atom_number2(tpl_query *q)
+static int bif_sys_atom_number_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -859,7 +859,7 @@ static int bif_sys_atom_number2(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_read_term_from_atom3(tpl_query *q)
+static int bif_sys_read_term_from_atom_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -884,7 +884,7 @@ static int bif_sys_read_term_from_atom3(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_splitl4(tpl_query *q)
+static int bif_sys_splitl_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -945,7 +945,7 @@ static int bif_sys_splitl4(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_split4(tpl_query *q)
+static int bif_sys_split_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -997,7 +997,7 @@ static int bif_sys_split4(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_split3(tpl_query *q)
+static int bif_sys_split_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1043,7 +1043,7 @@ static int bif_sys_split3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_replace4(tpl_query *q)
+static int bif_sys_replace_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1095,7 +1095,7 @@ static int bif_sys_replace4(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_begins2(tpl_query *q)
+static int bif_sys_begins_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1118,7 +1118,7 @@ static int bif_sys_begins2(tpl_query *q)
 	return 0;
 }
 
-static int bif_sys_left3(tpl_query *q)
+static int bif_sys_left_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1148,7 +1148,7 @@ static int bif_sys_left3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_right3(tpl_query *q)
+static int bif_sys_right_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1178,7 +1178,7 @@ static int bif_sys_right3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_rand1(tpl_query *q)
+static int bif_sys_rand_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
@@ -1187,7 +1187,7 @@ static int bif_sys_rand1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_munge2(tpl_query *q)
+static int bif_sys_munge_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1213,7 +1213,7 @@ static int bif_sys_munge2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_getenv2(tpl_query *q)
+static int bif_sys_getenv_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1229,7 +1229,7 @@ static int bif_sys_getenv2(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_setenv2(tpl_query *q)
+static int bif_sys_setenv_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1247,7 +1247,7 @@ static int bif_sys_setenv2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_unsetenv1(tpl_query *q)
+static int bif_sys_unsetenv_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1255,7 +1255,7 @@ static int bif_sys_unsetenv1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_system2(tpl_query *q)
+static int bif_sys_system_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1267,7 +1267,7 @@ static int bif_sys_system2(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_system1(tpl_query *q)
+static int bif_sys_system_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1275,7 +1275,7 @@ static int bif_sys_system1(tpl_query *q)
 	return ok < 0 ? 0 : 1;
 }
 
-static int bif_sys_uuid1(tpl_query *q)
+static int bif_sys_uuid_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
@@ -1288,7 +1288,7 @@ static int bif_sys_uuid1(tpl_query *q)
 }
 
 #if USE_SSL
-static int bif_sys_sha1(tpl_query *q)
+static int bif_sys_sha1_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1305,7 +1305,7 @@ static int bif_sys_sha1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_sha256(tpl_query *q)
+static int bif_sys_sha256_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1322,7 +1322,7 @@ static int bif_sys_sha256(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_sha512(tpl_query *q)
+static int bif_sys_sha512_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1356,7 +1356,7 @@ static uint32_t jenkins_one_at_a_time_hash(char *key)
 	return hash;
 }
 
-static int bif_sys_hash2(tpl_query *q)
+static int bif_sys_hash_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1408,7 +1408,7 @@ char *url_decode(const char *src, char *dstbuf)
 	return dstbuf;
 }
 
-static int bif_sys_url_encode2(tpl_query *q)
+static int bif_sys_url_encode_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1421,7 +1421,7 @@ static int bif_sys_url_encode2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_url_decode2(tpl_query *q)
+static int bif_sys_url_decode_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1434,7 +1434,7 @@ static int bif_sys_url_decode2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_b64_encode2(tpl_query *q)
+static int bif_sys_b64_encode_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1447,7 +1447,7 @@ static int bif_sys_b64_encode2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_b64_decode2(tpl_query *q)
+static int bif_sys_b64_decode_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1461,7 +1461,7 @@ static int bif_sys_b64_decode2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_parse_csv(tpl_query *q)
+static int bif_sys_parse_csv_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1561,7 +1561,7 @@ static int bif_sys_parse_csv(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_parse_tab(tpl_query *q)
+static int bif_sys_parse_tab_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1661,7 +1661,7 @@ static int bif_sys_parse_tab(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_stream1(tpl_query *q)
+static int bif_sys_stream_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_var(term0);
@@ -1672,7 +1672,7 @@ static int bif_sys_stream1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_erase1(tpl_query *q)
+static int bif_sys_erase_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1687,7 +1687,7 @@ static int bif_sys_erase1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_erase2(tpl_query *q)
+static int bif_sys_erase_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1706,7 +1706,7 @@ static int bif_sys_erase2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_lput4(tpl_query *q)
+static int bif_sys_lput_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1750,7 +1750,7 @@ static int bif_sys_lput4(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_put4(tpl_query *q)
+static int bif_sys_put_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1794,7 +1794,7 @@ static int bif_sys_put4(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_put3(tpl_query *q)
+static int bif_sys_put_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1823,7 +1823,7 @@ static int bif_sys_put3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_get3(tpl_query *q)
+static int bif_sys_get_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1844,7 +1844,7 @@ static int bif_sys_get3(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_lget3(tpl_query *q)
+static int bif_sys_lget_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1865,7 +1865,7 @@ static int bif_sys_lget3(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_get_keys3(tpl_query *q)
+static int bif_sys_get_keys_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1916,7 +1916,7 @@ static int bif_sys_get_keys3(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_get2(tpl_query *q)
+static int bif_sys_get_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term0 = get_stream(term0);
@@ -1968,78 +1968,78 @@ static int bif_sys_get2(tpl_query *q)
 
 void bifs_load_sys(void)
 {
-	DEFINE_BIF("sys:concat", -1, bif_sys_concat);
-	DEFINE_BIF("sys:system", 2, bif_sys_system2);
-	DEFINE_BIF("sys:system", 1, bif_sys_system1);
-	DEFINE_BIF("sys:load_file", 2, bif_sys_load_file2);
-	DEFINE_BIF("sys:save_file", 2, bif_sys_save_file2);
-	DEFINE_BIF("sys:append_file", 2, bif_sys_append_file2);
-	DEFINE_BIF("sys:remove_file", 1, bif_sys_remove_file1);
-	DEFINE_BIF("sys:make_dir", 1, bif_sys_make_dir1);
-	DEFINE_BIF("sys:make_dir", 2, bif_sys_make_dir2);
-	DEFINE_BIF("sys:exists_dir", 1, bif_sys_exists_dir1);
-	DEFINE_BIF("sys:exists_file", 1, bif_sys_exists_file1);
-	DEFINE_BIF("sys:exists_file", 3, bif_sys_exists_file3);
-	DEFINE_BIF("sys:write_file", 1 + 2, bif_sys_write_file2);
-	DEFINE_BIF("sys:getline", 1, bif_sys_getline1);
-	DEFINE_BIF("sys:getline", 2, bif_sys_getline2);
+	DEFINE_BIF("sys:concat", -1, bif_sys_concat_N);
+	DEFINE_BIF("sys:system", 2, bif_sys_system_2);
+	DEFINE_BIF("sys:system", 1, bif_sys_system_1);
+	DEFINE_BIF("sys:load_file", 2, bif_sys_load_file_2);
+	DEFINE_BIF("sys:save_file", 2, bif_sys_save_file_2);
+	DEFINE_BIF("sys:append_file", 2, bif_sys_append_file_2);
+	DEFINE_BIF("sys:remove_file", 1, bif_sys_remove_file_1);
+	DEFINE_BIF("sys:make_dir", 1, bif_sys_make_dir_1);
+	DEFINE_BIF("sys:make_dir", 2, bif_sys_make_dir_2);
+	DEFINE_BIF("sys:exists_dir", 1, bif_sys_exists_dir_1);
+	DEFINE_BIF("sys:exists_file", 1, bif_sys_exists_file_1);
+	DEFINE_BIF("sys:exists_file", 3, bif_sys_exists_file_3);
+	DEFINE_BIF("sys:write_file", 1 + 2, bif_sys_write_file_2);
+	DEFINE_BIF("sys:getline", 1, bif_sys_getline_1);
+	DEFINE_BIF("sys:getline", 2, bif_sys_getline_2);
 	DEFINE_BIF("sys:now", 0, bif_sys_now0);
-	DEFINE_BIF("sys:now", 1, bif_sys_now1);
-	DEFINE_BIF("sys:exit", 1, bif_sys_exit1);
-	DEFINE_BIF("sys:timestamp", 1, bif_sys_timestamp1);
-	DEFINE_BIF("sys:jsonq", 3, bif_sys_jsonq3);
-	DEFINE_BIF("sys:jsonq", 4, bif_sys_jsonq4);
-	DEFINE_BIF("sys:xmlq", 1 + 4, bif_sys_xmlq4);
-	DEFINE_BIF("sys:xmlq", 1 + 3, bif_sys_xmlq3);
-	DEFINE_BIF("sys:sleep", 1, bif_sys_sleep1);
-	DEFINE_BIF("sys:delay", 1, bif_sys_delay1);
-	DEFINE_BIF("sys:hsleep", 1, bif_sys_hsleep1);
-	DEFINE_BIF("sys:hdelay", 1, bif_sys_hdelay1);
-	DEFINE_BIF("sys:rand", 1, bif_sys_rand1);
-	DEFINE_BIF("sys:uuid", 1, bif_sys_uuid1);
-	DEFINE_BIF("sys:getenv", 2, bif_sys_getenv2);
-	DEFINE_BIF("sys:setenv", 2, bif_sys_setenv2);
-	DEFINE_BIF("sys:unsetenv", 1, bif_sys_unsetenv1);
-	DEFINE_BIF("sys:stream", 1, bif_sys_stream1);
+	DEFINE_BIF("sys:now", 1, bif_sys_now_1);
+	DEFINE_BIF("sys:exit", 1, bif_sys_exit_1);
+	DEFINE_BIF("sys:timestamp", 1, bif_sys_timestamp_1);
+	DEFINE_BIF("sys:jsonq", 3, bif_sys_jsonq_3);
+	DEFINE_BIF("sys:jsonq", 4, bif_sys_jsonq_4);
+	DEFINE_BIF("sys:xmlq", 1 + 4, bif_sys_xmlq_4);
+	DEFINE_BIF("sys:xmlq", 1 + 3, bif_sys_xmlq_3);
+	DEFINE_BIF("sys:sleep", 1, bif_sys_sleep_1);
+	DEFINE_BIF("sys:delay", 1, bif_sys_delay_1);
+	DEFINE_BIF("sys:hsleep", 1, bif_sys_hsleep_1);
+	DEFINE_BIF("sys:hdelay", 1, bif_sys_hdelay_1);
+	DEFINE_BIF("sys:rand", 1, bif_sys_rand_1);
+	DEFINE_BIF("sys:uuid", 1, bif_sys_uuid_1);
+	DEFINE_BIF("sys:getenv", 2, bif_sys_getenv_2);
+	DEFINE_BIF("sys:setenv", 2, bif_sys_setenv_2);
+	DEFINE_BIF("sys:unsetenv", 1, bif_sys_unsetenv_1);
+	DEFINE_BIF("sys:stream", 1, bif_sys_stream_1);
 
-	DEFINE_BIF("sys:lput", 4, bif_sys_lput4);
-	DEFINE_BIF("sys:put", 4, bif_sys_put4);
-	DEFINE_BIF("sys:put", 3, bif_sys_put3);
-	DEFINE_BIF("sys:get", 3, bif_sys_get3);
-	DEFINE_BIF("sys:get", 2, bif_sys_get2);
-	DEFINE_BIF("sys:get_keys", 3, bif_sys_get_keys3);
-	DEFINE_BIF("sys:lget", 3, bif_sys_lget3);
-	DEFINE_BIF("sys:erase", 2, bif_sys_erase2);
-	DEFINE_BIF("sys:erase", 1, bif_sys_erase1);
+	DEFINE_BIF("sys:lput", 4, bif_sys_lput_4);
+	DEFINE_BIF("sys:put", 4, bif_sys_put_4);
+	DEFINE_BIF("sys:put", 3, bif_sys_put_3);
+	DEFINE_BIF("sys:get", 3, bif_sys_get_3);
+	DEFINE_BIF("sys:get", 2, bif_sys_get_2);
+	DEFINE_BIF("sys:get_keys", 3, bif_sys_get_keys_3);
+	DEFINE_BIF("sys:lget", 3, bif_sys_lget_3);
+	DEFINE_BIF("sys:erase", 2, bif_sys_erase_2);
+	DEFINE_BIF("sys:erase", 1, bif_sys_erase_1);
 
 #if USE_SSL
-	DEFINE_BIF("sys:sha1", 2, bif_sys_sha1);
-	DEFINE_BIF("sys:sha256", 2, bif_sys_sha256);
-	DEFINE_BIF("sys:sha512", 2, bif_sys_sha512);
+	DEFINE_BIF("sys:sha1", 2, bif_sys_sha1_2);
+	DEFINE_BIF("sys:sha256", 2, bif_sys_sha256_2);
+	DEFINE_BIF("sys:sha512", 2, bif_sys_sha512_2);
 #endif
 
-	DEFINE_BIF("sys:hash", 2, bif_sys_hash2);
-	DEFINE_BIF("sys:bread", 3, bif_sys_bread3);
-	DEFINE_BIF("sys:bwrite", 2, bif_sys_bwrite2);
-	DEFINE_BIF("sys:munge", 2, bif_sys_munge2);
-	DEFINE_BIF("sys:upper", 2, bif_sys_upper2);
-	DEFINE_BIF("sys:lower", 2, bif_sys_lower2);
-	DEFINE_BIF("sys:splitl", 4, bif_sys_splitl4);
-	DEFINE_BIF("sys:split", 4, bif_sys_split4);
-	DEFINE_BIF("sys:split", 3, bif_sys_split3);
-	DEFINE_BIF("sys:replace", 4, bif_sys_replace4);
-	DEFINE_BIF("sys:begins", 2, bif_sys_begins2);
-	DEFINE_BIF("sys:left", 3, bif_sys_left3);
-	DEFINE_BIF("sys:right", 3, bif_sys_right3);
-	DEFINE_BIF("sys:read_term_from_atom", 3, bif_sys_read_term_from_atom3);
-	DEFINE_BIF("sys:atom_number", 2, bif_sys_atom_number2);
-	DEFINE_BIF("sys:atom_timestamp", 2, bif_sys_atom_timestamp2);
-	DEFINE_BIF("sys:format_rfcdate", 2, bif_sys_format_rfcdate2);
-	DEFINE_BIF("sys:parse_rfcdate", 2, bif_sys_parse_rfcdate2);
-	DEFINE_BIF("sys:url_encode", 2, bif_sys_url_encode2);
-	DEFINE_BIF("sys:url_decode", 2, bif_sys_url_decode2);
-	DEFINE_BIF("sys:b64_encode", 2, bif_sys_b64_encode2);
-	DEFINE_BIF("sys:b64_decode", 2, bif_sys_b64_decode2);
-	DEFINE_BIF("sys:parse_csv", 2, bif_sys_parse_csv);
-	DEFINE_BIF("sys:parse_tab", 2, bif_sys_parse_tab);
+	DEFINE_BIF("sys:hash", 2, bif_sys_hash_2);
+	DEFINE_BIF("sys:bread", 3, bif_sys_bread_3);
+	DEFINE_BIF("sys:bwrite", 2, bif_sys_bwrite_2);
+	DEFINE_BIF("sys:munge", 2, bif_sys_munge_2);
+	DEFINE_BIF("sys:upper", 2, bif_sys_upper_2);
+	DEFINE_BIF("sys:lower", 2, bif_sys_lower_2);
+	DEFINE_BIF("sys:splitl", 4, bif_sys_splitl_4);
+	DEFINE_BIF("sys:split", 4, bif_sys_split_4);
+	DEFINE_BIF("sys:split", 3, bif_sys_split_3);
+	DEFINE_BIF("sys:replace", 4, bif_sys_replace_4);
+	DEFINE_BIF("sys:begins", 2, bif_sys_begins_2);
+	DEFINE_BIF("sys:left", 3, bif_sys_left_3);
+	DEFINE_BIF("sys:right", 3, bif_sys_right_3);
+	DEFINE_BIF("sys:read_term_from_atom", 3, bif_sys_read_term_from_atom_3);
+	DEFINE_BIF("sys:atom_number", 2, bif_sys_atom_number_2);
+	DEFINE_BIF("sys:atom_timestamp", 2, bif_sys_atom_timestamp_2);
+	DEFINE_BIF("sys:format_rfcdate", 2, bif_sys_format_rfcdate_2);
+	DEFINE_BIF("sys:parse_rfcdate", 2, bif_sys_parse_rfcdate_2);
+	DEFINE_BIF("sys:url_encode", 2, bif_sys_url_encode_2);
+	DEFINE_BIF("sys:url_decode", 2, bif_sys_url_decode_2);
+	DEFINE_BIF("sys:b64_encode", 2, bif_sys_b64_encode_2);
+	DEFINE_BIF("sys:b64_decode", 2, bif_sys_b64_decode_2);
+	DEFINE_BIF("sys:parse_csv", 2, bif_sys_parse_csv_2);
+	DEFINE_BIF("sys:parse_tab", 2, bif_sys_parse_tab_2);
 }
