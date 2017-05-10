@@ -1,0 +1,16 @@
+localhost
+html
+samples/test.pro
+tpl
+apps
+yahoo
+trealla-tests
+*.a
+*.o
+*.exe
+*.lib
+*.obj
+*.log
+*.out
+*.kvs
+*.dbs
