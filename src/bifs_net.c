@@ -190,7 +190,7 @@ static int net_callback(session *s, void *data)
 	return 0;
 }
 
-static int bif_net_server2(tpl_query *q)
+static int bif_net_server_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_list(term1);
@@ -231,7 +231,7 @@ static int bif_net_server2(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_server4(tpl_query *q)
+static int bif_net_server_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_list(term1);
@@ -273,7 +273,7 @@ static int bif_net_server4(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_handler(tpl_query *q)
+static int bif_net_handler_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -292,7 +292,7 @@ static int bif_net_handler(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_client(tpl_query *q)
+static int bif_net_client_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -422,7 +422,7 @@ static int bif_net_client(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_service(tpl_query *q)
+static int bif_net_service_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -433,7 +433,7 @@ static int bif_net_service(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_local_port(tpl_query *q)
+static int bif_net_local_port_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -444,7 +444,7 @@ static int bif_net_local_port(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_remote_port(tpl_query *q)
+static int bif_net_remote_port_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -455,7 +455,7 @@ static int bif_net_remote_port(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_local_addr(tpl_query *q)
+static int bif_net_local_addr_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -466,7 +466,7 @@ static int bif_net_local_addr(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_remote_addr(tpl_query *q)
+static int bif_net_remote_addr_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -477,7 +477,7 @@ static int bif_net_remote_addr(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_local_host(tpl_query *q)
+static int bif_net_local_host_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -488,7 +488,7 @@ static int bif_net_local_host(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_remote_host(tpl_query *q)
+static int bif_net_remote_host_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -499,7 +499,7 @@ static int bif_net_remote_host(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_ipv4(tpl_query *q)
+static int bif_net_ipv4_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -512,9 +512,12 @@ static int bif_net_ipv4(tpl_query *q)
 	return ok;
 }
 
-static int bif_net_ipv6(tpl_query *q) { return !bif_net_ipv4(q); }
+static int bif_net_ipv6_2(tpl_query *q)
+{
+	return !bif_net_ipv4_2(q);
+}
 
-static int bif_net_udp(tpl_query *q)
+static int bif_net_udp_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -527,9 +530,12 @@ static int bif_net_udp(tpl_query *q)
 	return ok;
 }
 
-static int bif_net_tcp(tpl_query *q) { return !bif_net_udp(q); }
+static int bif_net_tcp_2(tpl_query *q)
+{
+	return !bif_net_udp_2(q);
+}
 
-static int bif_net_tls(tpl_query *q)
+static int bif_net_tls_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -542,7 +548,7 @@ static int bif_net_tls(tpl_query *q)
 	return ok;
 }
 
-int bif_net_stash_get4(tpl_query *q)
+int bif_net_stash_get_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -563,7 +569,7 @@ int bif_net_stash_get4(tpl_query *q)
 	return ok;
 }
 
-int bif_net_stash_get3(tpl_query *q)
+int bif_net_stash_get_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -579,7 +585,7 @@ int bif_net_stash_get3(tpl_query *q)
 	return ok;
 }
 
-int bif_net_stash_set4(tpl_query *q)
+int bif_net_stash_set_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -605,7 +611,7 @@ int bif_net_stash_set4(tpl_query *q)
 	return ok;
 }
 
-int bif_net_stash_set3(tpl_query *q)
+int bif_net_stash_set_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -623,7 +629,7 @@ int bif_net_stash_set3(tpl_query *q)
 	return 1;
 }
 
-int bif_net_stash_clr3(tpl_query *q)
+int bif_net_stash_clr_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -645,7 +651,7 @@ int bif_net_stash_clr3(tpl_query *q)
 	return ok;
 }
 
-static int bif_net_start_tls(tpl_query *q)
+static int bif_net_start_tls_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -653,7 +659,7 @@ static int bif_net_start_tls(tpl_query *q)
 	return session_enable_tls((session *)sp->sptr, NULL, 0);
 }
 
-static int bif_net_readmsg(tpl_query *q)
+static int bif_net_readmsg_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -673,7 +679,7 @@ static int bif_net_readmsg(tpl_query *q)
 	return 1;
 }
 
-static int bif_net_is_socket(tpl_query *q)
+static int bif_net_is_socket_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -682,28 +688,28 @@ static int bif_net_is_socket(tpl_query *q)
 
 void bifs_load_net(void)
 {
-	DEFINE_BIF("net:server", 4, bif_net_server4);
-	DEFINE_BIF("net:server", 2, bif_net_server2);
-	DEFINE_BIF("net:client", 2, bif_net_client);
-	DEFINE_BIF("net:handler", 3, bif_net_handler);
-	DEFINE_BIF("net:service", 2, bif_net_service);
-	DEFINE_BIF("net:local_port", 2, bif_net_local_port);
-	DEFINE_BIF("net:remote_port", 2, bif_net_remote_port);
-	DEFINE_BIF("net:local_addr", 2, bif_net_local_addr);
-	DEFINE_BIF("net:remote_addr", 2, bif_net_remote_addr);
-	DEFINE_BIF("net:local_host", 2, bif_net_local_host);
-	DEFINE_BIF("net:remote_host", 2, bif_net_remote_host);
-	DEFINE_BIF("net:ipv4", 2, bif_net_ipv4);
-	DEFINE_BIF("net:ipv6", 2, bif_net_ipv6);
-	DEFINE_BIF("net:tcp", 2, bif_net_tcp);
-	DEFINE_BIF("net:udp", 2, bif_net_udp);
-	DEFINE_BIF("net:tls", 2, bif_net_tls);
-	DEFINE_BIF("sys:is_socket", 1, bif_net_is_socket);
-	DEFINE_BIF("net:readmsg", 2, bif_net_readmsg);
-	DEFINE_BIF("net:stash_get", 4, bif_net_stash_get4);
-	DEFINE_BIF("net:stash_get", 3, bif_net_stash_get3);
-	DEFINE_BIF("net:stash_set", 4, bif_net_stash_set4);
-	DEFINE_BIF("net:stash_set", 3, bif_net_stash_set3);
-	DEFINE_BIF("net:stash_clr", 3, bif_net_stash_clr3);
-	DEFINE_BIF("net:start_tls", 1, bif_net_start_tls);
+	DEFINE_BIF("net:server", 4, bif_net_server_4);
+	DEFINE_BIF("net:server", 2, bif_net_server_2);
+	DEFINE_BIF("net:client", 2, bif_net_client_2);
+	DEFINE_BIF("net:handler", 3, bif_net_handler_3);
+	DEFINE_BIF("net:service", 2, bif_net_service_2);
+	DEFINE_BIF("net:local_port", 2, bif_net_local_port_2);
+	DEFINE_BIF("net:remote_port", 2, bif_net_remote_port_2);
+	DEFINE_BIF("net:local_addr", 2, bif_net_local_addr_2);
+	DEFINE_BIF("net:remote_addr", 2, bif_net_remote_addr_2);
+	DEFINE_BIF("net:local_host", 2, bif_net_local_host_2);
+	DEFINE_BIF("net:remote_host", 2, bif_net_remote_host_2);
+	DEFINE_BIF("net:ipv4", 2, bif_net_ipv4_2);
+	DEFINE_BIF("net:ipv6", 2, bif_net_ipv6_2);
+	DEFINE_BIF("net:tcp", 2, bif_net_tcp_2);
+	DEFINE_BIF("net:udp", 2, bif_net_udp_2);
+	DEFINE_BIF("net:tls", 2, bif_net_tls_2);
+	DEFINE_BIF("sys:is_socket", 1, bif_net_is_socket_1);
+	DEFINE_BIF("net:readmsg", 2, bif_net_readmsg_2);
+	DEFINE_BIF("net:stash_get", 4, bif_net_stash_get_4);
+	DEFINE_BIF("net:stash_get", 3, bif_net_stash_get_3);
+	DEFINE_BIF("net:stash_set", 4, bif_net_stash_set_4);
+	DEFINE_BIF("net:stash_set", 3, bif_net_stash_set_3);
+	DEFINE_BIF("net:stash_clr", 3, bif_net_stash_clr_3);
+	DEFINE_BIF("net:start_tls", 1, bif_net_start_tls_1);
 };
