@@ -245,7 +245,7 @@ static tpl_query *guess_who(tpl_query *q, node *term)
 	return who;
 }
 
-static int bif_proc_fork0(tpl_query *q)
+static int bif_proc_fork_0(tpl_query *q)
 {
 	if (!q->pl->tp)
 		q->pl->tp = tpool_create(g_tpool_size);
@@ -272,7 +272,7 @@ static int bif_proc_fork0(tpl_query *q)
 	return 0;
 }
 
-static int bif_proc_procinfo2(tpl_query *q)
+static int bif_proc_procinfo_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -290,7 +290,7 @@ static int bif_proc_procinfo2(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_procinfo3(tpl_query *q)
+static int bif_proc_procinfo_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -312,7 +312,7 @@ static int bif_proc_procinfo3(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_spawn2(tpl_query *q)
+static int bif_proc_spawn_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_int(term1);
@@ -354,7 +354,7 @@ static int bif_proc_spawn2(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_spawn1(tpl_query *q)
+static int bif_proc_spawn_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -386,7 +386,7 @@ static int bif_proc_spawn1(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_spawn_link2(tpl_query *q)
+static int bif_proc_spawn_link_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_int(term1);
@@ -428,7 +428,7 @@ static int bif_proc_spawn_link2(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_spawn_link1(tpl_query *q)
+static int bif_proc_spawn_link_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -538,7 +538,7 @@ static int proc_callback3(session *s, void *data)
 	return proc_callback(q, s, goal, term3);
 }
 
-static int bif_proc_server3(tpl_query *q)
+static int bif_proc_server_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_list(term1);
@@ -635,7 +635,7 @@ static int proc_callback2(session *s, void *data)
 	return proc_callback(q, s, goal, term2);
 }
 
-static int bif_proc_server2(tpl_query *q)
+static int bif_proc_server_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_list(term1);
@@ -759,7 +759,7 @@ static int start_netwait(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_abort1(tpl_query *q)
+static int bif_proc_abort_1(tpl_query *q)
 {
 	if (!q->parent)
 		return 0;
@@ -785,7 +785,7 @@ static int bif_proc_abort1(tpl_query *q)
 	return who != q ? 1 : 0;
 }
 
-static int bif_proc_pid2(tpl_query *q)
+static int bif_proc_pid_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_int(term1);
@@ -916,7 +916,7 @@ static int bif_proc_pid2(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_pid1(tpl_query *q)
+static int bif_proc_pid_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
@@ -935,7 +935,7 @@ static int bif_proc_pid1(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_send2(tpl_query *q)
+static int bif_proc_send_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -986,7 +986,7 @@ static int bif_proc_send2(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_send1(tpl_query *q)
+static int bif_proc_send_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term2 = get_nonvar(term2);
@@ -1000,7 +1000,7 @@ static int bif_proc_send1(tpl_query *q)
 	return process_enqueue(q->pl, q, who, term2, 0);
 }
 
-static int bif_proc_recv2(tpl_query *q)
+static int bif_proc_recv_2(tpl_query *q)
 {
 	if (!q->retry)
 		allocate_frame(q);
@@ -1028,7 +1028,7 @@ static int bif_proc_recv2(tpl_query *q)
 	return process_check(q, who, term2);
 }
 
-static int bif_proc_recv1(tpl_query *q)
+static int bif_proc_recv_1(tpl_query *q)
 {
 	if (!q->retry)
 		allocate_frame(q);
@@ -1038,7 +1038,7 @@ static int bif_proc_recv1(tpl_query *q)
 	return process_check(q, NULL, term1);
 }
 
-static int bif_proc_undo1(tpl_query *q)
+static int bif_proc_undo_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -1051,7 +1051,7 @@ static int bif_proc_undo1(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_rsvp3(tpl_query *q)
+static int bif_proc_rsvp_3(tpl_query *q)
 {
 	if (!q->retry)
 		allocate_frame(q);
@@ -1109,7 +1109,7 @@ static int bif_proc_rsvp3(tpl_query *q)
 	return process_check(q, who, term3);
 }
 
-static int bif_proc_rsvp2(tpl_query *q)
+static int bif_proc_rsvp_2(tpl_query *q)
 {
 	if (!q->retry)
 		allocate_frame(q);
@@ -1134,7 +1134,7 @@ static int bif_proc_rsvp2(tpl_query *q)
 	return process_check(q, who, term2);
 }
 
-static int bif_proc_tmo1(tpl_query *q)
+static int bif_proc_tmo_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_int(term1);
@@ -1153,9 +1153,12 @@ static int bif_proc_tmo1(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_after(tpl_query *q) { return q->timed_out; }
+static int bif_proc_after_0(tpl_query *q)
+{
+	return q->timed_out;
+}
 
-static int bif_proc_erase0(tpl_query *q)
+static int bif_proc_erase_0(tpl_query *q)
 {
 	if (q->kvs)
 		sl_clear(q->kvs, (void (*)(void *)) & term_heapcheck);
@@ -1163,7 +1166,7 @@ static int bif_proc_erase0(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_erase1(tpl_query *q)
+static int bif_proc_erase_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1178,7 +1181,7 @@ static int bif_proc_erase1(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_lput3(tpl_query *q)
+static int bif_proc_lput_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1214,7 +1217,7 @@ static int bif_proc_lput3(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_put3(tpl_query *q)
+static int bif_proc_put_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1250,7 +1253,7 @@ static int bif_proc_put3(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_put2(tpl_query *q)
+static int bif_proc_put_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1274,7 +1277,7 @@ static int bif_proc_put2(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_get2(tpl_query *q)
+static int bif_proc_get_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1291,7 +1294,7 @@ static int bif_proc_get2(tpl_query *q)
 	return ok;
 }
 
-static int bif_proc_lget2(tpl_query *q)
+static int bif_proc_lget_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1308,7 +1311,7 @@ static int bif_proc_lget2(tpl_query *q)
 	return ok;
 }
 
-static int bif_proc_get_keys2(tpl_query *q)
+static int bif_proc_get_keys_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -1354,7 +1357,7 @@ static int bif_proc_get_keys2(tpl_query *q)
 	return ok;
 }
 
-static int bif_proc_get1(tpl_query *q)
+static int bif_proc_get_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -1399,7 +1402,7 @@ static int bif_proc_get1(tpl_query *q)
 	return ok;
 }
 
-static int bif_proc_until2(tpl_query *q)
+static int bif_proc_until_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -1425,7 +1428,7 @@ static int bif_proc_until2(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_end_wait(tpl_query *q)
+static int bif_proc_end_wait_0(tpl_query *q)
 {
 	q->pl->end_wait = 1;
 
@@ -1435,7 +1438,7 @@ static int bif_proc_end_wait(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_wait(tpl_query *q)
+static int bif_proc_wait_0(tpl_query *q)
 {
 	skiplist tmplist;
 	sl_init(&tmplist, 0, NULL, NULL);
@@ -1496,7 +1499,7 @@ static int bif_proc_wait(tpl_query *q)
 	return 1;
 }
 
-static int bif_linda_init0(tpl_query *q)
+static int bif_linda_init_0(tpl_query *q)
 {
 	extern int bif_dbs_load(tpl_query *q);
 
@@ -1516,7 +1519,7 @@ static int bif_linda_init0(tpl_query *q)
 	return bif_dbs_load(q);
 }
 
-static int bif_linda_init1(tpl_query *q)
+static int bif_linda_init_1(tpl_query *q)
 {
 	extern int bif_dbs_load(tpl_query *q);
 	node *args = get_args(q);
@@ -1560,12 +1563,12 @@ static int bif_linda_init1(tpl_query *q)
 	return bif_dbs_load(q);
 }
 
-static int bif_linda_eval1(tpl_query *q)
+static int bif_linda_eval_1(tpl_query *q)
 {
-	return bif_proc_spawn_link1(q);
+	return bif_proc_spawn_link_1(q);
 }
 
-static int bif_linda_out1(tpl_query *q)
+static int bif_linda_out_1(tpl_query *q)
 {
 	extern int bif_iso_assertz(tpl_query *q);
 	node *args = get_args(q);
@@ -1573,25 +1576,25 @@ static int bif_linda_out1(tpl_query *q)
 	return bif_iso_assertz(q);
 }
 
-static int bif_linda_in1(tpl_query *q)
+static int bif_linda_in_1(tpl_query *q)
 {
 	extern int bif_xtra_retractw(tpl_query *q);
 	return bif_xtra_retractw(q);
 }
 
-static int bif_linda_inp1(tpl_query *q)
+static int bif_linda_inp_1(tpl_query *q)
 {
 	extern int bif_iso_retract(tpl_query *q);
 	return bif_iso_retract(q);
 }
 
-static int bif_linda_rd1(tpl_query *q)
+static int bif_linda_rd_1(tpl_query *q)
 {
 	extern int bif_xtra_clausew(tpl_query *q);
 	return bif_xtra_clausew(q);
 }
 
-static int bif_linda_rdp1(tpl_query *q)
+static int bif_linda_rdp_1(tpl_query *q)
 {
 	extern int bif_iso_clause(tpl_query *q);
 	return bif_iso_clause(q);
@@ -1599,50 +1602,50 @@ static int bif_linda_rdp1(tpl_query *q)
 
 void bifs_load_proc(void)
 {
-	DEFINE_BIF("proc:lput", 3, bif_proc_lput3);
-	DEFINE_BIF("proc:put", 3, bif_proc_put3);
-	DEFINE_BIF("proc:put", 2, bif_proc_put2);
-	DEFINE_BIF("proc:get_keys", 2, bif_proc_get_keys2);
-	DEFINE_BIF("proc:get", 2, bif_proc_get2);
-	DEFINE_BIF("proc:get", 1, bif_proc_get1);
-	DEFINE_BIF("proc:lget", 2, bif_proc_lget2);
-	DEFINE_BIF("proc:erase", 1, bif_proc_erase1);
-	DEFINE_BIF("proc:erase", 0, bif_proc_erase0);
+	DEFINE_BIF("proc:lput", 3, bif_proc_lput_3);
+	DEFINE_BIF("proc:put", 3, bif_proc_put_3);
+	DEFINE_BIF("proc:put", 2, bif_proc_put_2);
+	DEFINE_BIF("proc:get_keys", 2, bif_proc_get_keys_2);
+	DEFINE_BIF("proc:get", 2, bif_proc_get_2);
+	DEFINE_BIF("proc:get", 1, bif_proc_get_1);
+	DEFINE_BIF("proc:lget", 2, bif_proc_lget_2);
+	DEFINE_BIF("proc:erase", 1, bif_proc_erase_1);
+	DEFINE_BIF("proc:erase", 0, bif_proc_erase_0);
 
-	DEFINE_BIF("proc:after", 0, bif_proc_after);
-	DEFINE_BIF("proc:wait", 0, bif_proc_wait);
-	DEFINE_BIF("proc:end_wait", 0, bif_proc_end_wait);
-	DEFINE_BIF("proc:until", 1 + 1, bif_proc_until2);
-	DEFINE_BIF("proc:fork", 0, bif_proc_fork0);
-	DEFINE_BIF("proc:procinfo", 2, bif_proc_procinfo2);
-	DEFINE_BIF("proc:procinfo", 3, bif_proc_procinfo3);
-	DEFINE_BIF("proc:tmo", 1, bif_proc_tmo1);
-	DEFINE_BIF("proc:spawn", 2, bif_proc_spawn2);
-	DEFINE_BIF("proc:spawn", 1, bif_proc_spawn1);
-	DEFINE_BIF("proc:spawn_link", 2, bif_proc_spawn_link2);
-	DEFINE_BIF("proc:spawn_link", 1, bif_proc_spawn_link1);
-	DEFINE_BIF("proc:pid", 2, bif_proc_pid2);
-	DEFINE_BIF("proc:pid", 1, bif_proc_pid1);
-	DEFINE_BIF("proc:abort", 1, bif_proc_abort1);
-	DEFINE_BIF("proc:rsvp", 3, bif_proc_rsvp3);
-	DEFINE_BIF("proc:rsvp", 2, bif_proc_rsvp2);
-	DEFINE_BIF("proc:send", 2, bif_proc_send2);
-	DEFINE_BIF("proc:send", 1, bif_proc_send1);
-	DEFINE_BIF("proc:recv", 2, bif_proc_recv2);
-	DEFINE_BIF("proc:recv", 1, bif_proc_recv1);
-	DEFINE_BIF("proc:receive", 1, bif_proc_recv1);
-	DEFINE_BIF("proc:undo", 1, bif_proc_undo1);
-	DEFINE_BIF("proc:server", 3, bif_proc_server3);
-	DEFINE_BIF("proc:server", 2, bif_proc_server2);
+	DEFINE_BIF("proc:after", 0, bif_proc_after_0);
+	DEFINE_BIF("proc:wait", 0, bif_proc_wait_0);
+	DEFINE_BIF("proc:end_wait", 0, bif_proc_end_wait_0);
+	DEFINE_BIF("proc:until", 1 + 1, bif_proc_until_2);
+	DEFINE_BIF("proc:fork", 0, bif_proc_fork_0);
+	DEFINE_BIF("proc:procinfo", 2, bif_proc_procinfo_2);
+	DEFINE_BIF("proc:procinfo", 3, bif_proc_procinfo_3);
+	DEFINE_BIF("proc:tmo", 1, bif_proc_tmo_1);
+	DEFINE_BIF("proc:spawn", 2, bif_proc_spawn_2);
+	DEFINE_BIF("proc:spawn", 1, bif_proc_spawn_1);
+	DEFINE_BIF("proc:spawn_link", 2, bif_proc_spawn_link_2);
+	DEFINE_BIF("proc:spawn_link", 1, bif_proc_spawn_link_1);
+	DEFINE_BIF("proc:pid", 2, bif_proc_pid_2);
+	DEFINE_BIF("proc:pid", 1, bif_proc_pid_1);
+	DEFINE_BIF("proc:abort", 1, bif_proc_abort_1);
+	DEFINE_BIF("proc:rsvp", 3, bif_proc_rsvp_3);
+	DEFINE_BIF("proc:rsvp", 2, bif_proc_rsvp_2);
+	DEFINE_BIF("proc:send", 2, bif_proc_send_2);
+	DEFINE_BIF("proc:send", 1, bif_proc_send_1);
+	DEFINE_BIF("proc:recv", 2, bif_proc_recv_2);
+	DEFINE_BIF("proc:recv", 1, bif_proc_recv_1);
+	DEFINE_BIF("proc:receive", 1, bif_proc_recv_1);
+	DEFINE_BIF("proc:undo", 1, bif_proc_undo_1);
+	DEFINE_BIF("proc:server", 3, bif_proc_server_3);
+	DEFINE_BIF("proc:server", 2, bif_proc_server_2);
 	DEFINE_BIF("proc:server", 5, bif_proc_server5);
 	DEFINE_BIF("proc:server", 4, bif_proc_server4);
 
-	DEFINE_BIF("linda:init", 0, bif_linda_init0);
-	DEFINE_BIF("linda:init", 1, bif_linda_init1);
-	DEFINE_BIF("linda:out", 1, bif_linda_out1);
-	DEFINE_BIF("linda:in", 1, bif_linda_in1);
-	DEFINE_BIF("linda:inp", 1, bif_linda_inp1);
-	DEFINE_BIF("linda:rd", 1, bif_linda_rd1);
-	DEFINE_BIF("linda:rdp", 1, bif_linda_rdp1);
-	DEFINE_BIF("linda:eval", 1, bif_linda_eval1);
+	DEFINE_BIF("linda:init", 0, bif_linda_init_0);
+	DEFINE_BIF("linda:init", 1, bif_linda_init_1);
+	DEFINE_BIF("linda:out", 1, bif_linda_out_1);
+	DEFINE_BIF("linda:in", 1, bif_linda_in_1);
+	DEFINE_BIF("linda:inp", 1, bif_linda_inp_1);
+	DEFINE_BIF("linda:rd", 1, bif_linda_rd_1);
+	DEFINE_BIF("linda:rdp", 1, bif_linda_rdp_1);
+	DEFINE_BIF("linda:eval", 1, bif_linda_eval_1);
 }

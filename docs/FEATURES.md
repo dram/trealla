@@ -119,6 +119,8 @@ found in other Prolog implementations:
 	writeln(+S,+Term1)          - does buffered write/2 + nl/1 to stream
 	random(-Float)              - random float value >= 0.0 and <= 1.0
 
+These are used to build the linda nowait read/input predicates:
+
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
 
@@ -289,11 +291,11 @@ between cooperating processes.
 	init/0				- initialization
 	init(+List)			- initialization with dynamic modifiers
 	eval(+Goal)			- create concurrent worker process
-	out(+Tuple)			- assert new tuple (and notify)
-	in(-Tuple)			- destructive read or wait for notify
-	inp(-Tuple)			- ... nowait
-	rd(-Tuple)			- read or wait for notify
-	rdp(-Tuple)			- ... nowait
+	out(+Tuple)			- assert new tuple
+	in(-Tuple)			- retract tuple (blocking)
+	inp(-Tuple)			- ... (non-blocking)
+	rd(-Tuple)			- match tuple (blocking)
+	rdp(-Tuple)			- ... (non-blocking)
 
 Note: 'linda:init/0' does an implied call to:
 
@@ -302,7 +304,9 @@ Note: 'linda:init/0' does an implied call to:
 in the current module, while 'linda:init/1' allows adding extra modifiers (eg. for persistence).
 The first argument of the tuple, as with all dynamics, is indexed.
 
-All of the input predicates will attempt to resatisfy on backtracking.
+All of the input predicates will attempt to resatisfy on backtracking. The blocking predicates
+will be notified (awoken) on a relevant assert or out. The non-blocking predicates can be
+used to implement polling.
 
 Note: a worker process can use the per-process dictionary.
 
