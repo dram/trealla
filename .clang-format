@@ -1,6 +1,0 @@
-BasedOnStyle: llvm
-IndentWidth: 4
-TabWidth: 4
-UseTab: ForIndentation
-ColumnLimit: 80
-BreakBeforeBraces: Stroustrup
