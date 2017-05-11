@@ -559,7 +559,7 @@ static int dir_module(lexer *l, node *n)
 	size_t len = fread(dstbuf, 1, st.st_size, fp);
 	dstbuf[len] = '\0';
 	fclose(fp);
-	char nambuf[256], tmpbuf[1024 * 4];
+	char nambuf[256], tmpbuf[1024 * 8];
 	char *dstbuf2 = (char *)malloc(st.st_size + 1);
 	char *dst = dstbuf2;
 	const char *src = dstbuf;
@@ -740,7 +740,7 @@ int dir_use_module(lexer *l, node *n)
 		lib++;
 	}
 
-	char tmpbuf[1024];
+	char tmpbuf[FUNCTOR_SIZE];
 
 	if (use_lib) {
 		const char *path = getenv("TREALLA_LIBRARY_PATH");
@@ -2326,7 +2326,7 @@ int lexer_consult_file(lexer *self, const char *orig_filename)
 	size_t i = 0;
 
 	while ((fp == NULL) && exts[i]) {
-		char tmpbuf[1024];
+		char tmpbuf[1024 * 2];
 		strncpy(tmpbuf, filename, sizeof(tmpbuf) - 10);
 		strcat(tmpbuf, exts[i++]);
 		fp = fopen(tmpbuf, "rb");
