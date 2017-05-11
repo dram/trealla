@@ -1502,7 +1502,6 @@ static int bif_proc_wait_0(tpl_query *q)
 static int bif_linda_init_0(tpl_query *q)
 {
 	extern int bif_dbs_load_0(tpl_query *q);
-
 	node *tmp = make_compound();
 	term_append(tmp, make_const_atom("dynamic", 0));
 	node *tmp2 = make_compound();
@@ -1516,7 +1515,7 @@ static int bif_linda_init_0(tpl_query *q)
 	term_append(tmp, tmp3);
 	dir_dynamic(q->lex, tmp2);
 	term_heapcheck(tmp);
-	return bif_dbs_load_0(q);
+	return 1;
 }
 
 static int bif_linda_init_1(tpl_query *q)
@@ -1560,7 +1559,7 @@ static int bif_linda_init_1(tpl_query *q)
 	term_append(tmp3, make_const_atom("[]", 0));
 	dir_dynamic(q->lex, tmp2);
 	term_heapcheck(tmp);
-	return bif_dbs_load_0(q);
+	return 1;
 }
 
 static int bif_linda_eval_1(tpl_query *q)

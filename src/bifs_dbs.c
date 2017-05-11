@@ -224,7 +224,7 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 
 		if (tail) {
 			clearerr(db->fp);
-			msleep(100);
+			msleep(tail);
 		}
 	}
 	 while (tail);
@@ -417,14 +417,6 @@ static int bif_dbs_log_1(tpl_query *q)
 	return 1;
 }
 
-int bif_dbs_load_0(tpl_query *q)
-{
-	if (!q->curr_db->loaded)
-		dbs_load(q->curr_db, 0, 1);
-
-	return 1;
-}
-
 int bif_dbs_init_0(tpl_query *q)
 {
 	if (!q->curr_db->loaded)
@@ -433,10 +425,29 @@ int bif_dbs_init_0(tpl_query *q)
 	return 1;
 }
 
+int bif_dbs_load_0(tpl_query *q)
+{
+	if (!q->curr_db->loaded)
+		dbs_load(q->curr_db, 0, 1);
+
+	return 1;
+}
+
 int bif_dbs_tail_0(tpl_query *q)
 {
 	if (!q->curr_db->loaded)
-		dbs_load(q->curr_db, 1, 1);
+		dbs_load(q->curr_db, 1000, 1);
+
+	return 1;
+}
+
+int bif_dbs_tail_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+
+	if (!q->curr_db->loaded)
+		dbs_load(q->curr_db, term1->val_i, 1);
 
 	return 1;
 }
@@ -446,6 +457,7 @@ void bifs_load_dbs(void)
 	DEFINE_BIF("dbs:load", 0, bif_dbs_load_0);
 	DEFINE_BIF("dbs:init", 0, bif_dbs_init_0);
 	DEFINE_BIF("dbs:tail", 0, bif_dbs_tail_0);
+	DEFINE_BIF("dbs:tail", 1, bif_dbs_tail_1);
 	DEFINE_BIF("dbs:log", 1, bif_dbs_log_1);
 	DEFINE_BIF("dbs:begin", 0, bif_dbs_begin_0);
 	DEFINE_BIF("dbs:end", 0, bif_dbs_end_0);

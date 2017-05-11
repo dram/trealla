@@ -1,8 +1,8 @@
 :-initialization(main).
 
 main :-
-	proc:fork, !,
-	linda:init([]),
+	proc:fork,
+	linda:init,
 	linda:eval(consumer('A')),
 	linda:eval(consumer('B')),
 	producer.
@@ -21,8 +21,12 @@ producer :-
 
 consumer(N) :-
 	linda:in({msg:Y}),
-		write('consumer '),write(N),write(' got = '),writeln(Y),
+		write('consumer '),
+		write(N),
+		write(' got = '),
+		writeln(Y),
 		fail.
 consumer(N) :-
-	sys:concat('Done ',N,Msg),writeln(Msg).
+	sys:concat('Done ',N,Msg),
+	writeln(Msg).
 

@@ -42,10 +42,13 @@ Will substitute during load a defined value from the namespace. The name *?MODUL
 module name. This is a lexical pasting of the value. Other pre-defined names are *?RANDOM*,
 *?RANDOMSTR*, *?TIME* and *?TIMESTR*.
 
-Use the module (by loading if necessary) and add the export-list to the current namespace:
+To load a module and make its exported predicates availbale for use:
 
 	:-use_module(+Name).
 	:-use_module(library(+Name)).
+	:-use_module(+Name,+ImportList).
+
+The *ImportList* arg is currently ignored.
 
 The *include/1* directive loads a file that is lexically pasted into the source. Use the
 *unload_file/1* directive to remove a module from the system.
@@ -118,9 +121,6 @@ found in other Prolog implementations:
 	writeln(+Term1)             - does buffered write/1 + nl/0 to stdout
 	writeln(+S,+Term1)          - does buffered write/2 + nl/1 to stream
 	random(-Float)              - random float value >= 0.0 and <= 1.0
-
-These are used to build the linda nowait read/input predicates:
-
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
 
@@ -220,8 +220,8 @@ stored length. Atoms are assumed UTF-8.
 Database store: namespace 'dbs'
 ------------------------------
 
-The rule database will index on the first argument any asserted clauses that have first been
-declared dynamic:
+The rule database exists per module (or *'default'*) and will index on the first argument any
+asserted clauses that have first been declared dynamic:
 
 	:-dynamic(+Name/Arity).
 	:-dynamic(+Name/Arity,+List).
@@ -251,12 +251,14 @@ databases far larger than physical memory can be accessed, especially useful if 
 (for example: you no longer need to store a name to an external file). The *'persist'* modifier
 is implied and doesn't need to be specified.
 
-To initialize DB and prepare for access:
+To access the persistent database:
 
-	init/0               - init only
-	load/0               - init & load existing data
+	init/0               - prepare only
+	load/0               - prepare & load existing data
+	tail/0               - load and tail for new data (every 1000ms)
+	tail(+Msecs)         - load and tail for new data (every N ms)
 
-first time only (subsequent will have no effect).
+first time only (subsequent calls will have no effect).
 
 Transactions within the same database can be done via bracketing a series of one or more updates
 with *begin/end* calls:
@@ -266,11 +268,11 @@ with *begin/end* calls:
 	end(+Boolean)        - commit changes optional fsync
 
 and occurs as a single (all-or-nothing) update to the rule database and (if persistent) write to
-the transaction logfile. A transaction locks out any other transactions on the module for the
+the transaction log. A transaction locks out any other transactions on the module for the
 duration. The *begin/0* call creates a choicepoint and backtracking will cause it to rollback the
 transaction. The *end* call does a cut. Inside a transaction changes to the database are not visible.
 
-To write to the log only, without updating the database:
+To write to the transaction log only, without updating the database:
 
 	log(:Term)
 
@@ -290,19 +292,20 @@ between cooperating processes.
 
 	init/0				- initialization
 	init(+List)			- initialization with dynamic modifiers
-	eval(+Goal)			- create concurrent worker process
+	eval(+Goal)			- create concurrent worker process (spawn)
 	out(+Tuple)			- assert new tuple
 	in(-Tuple)			- retract tuple (blocking)
 	inp(-Tuple)			- ... (non-blocking)
 	rd(-Tuple)			- match tuple (blocking)
 	rdp(-Tuple)			- ... (non-blocking)
 
-Note: 'linda:init/0' does an implied call to:
+Note: 'linda:init/0' does a call to:
 
 	dynamic({}/1,[notify])
 
-in the current module, while 'linda:init/1' allows adding extra modifiers (eg. for persistence).
-The first argument of the tuple, as with all dynamics, is indexed.
+in the current module, while *linda:init/1* allows adding extra modifiers (eg. for persistence).
+The first argument of the tuple, as with all dynamics, is indexed. When creating persistent tuples
+use the *dbs:init/0* or *dbs:load/0* etc calls to access the database log.
 
 All of the input predicates will attempt to resatisfy on backtracking. The blocking predicates
 will be notified (awoken) on a relevant assert or out. The non-blocking predicates can be
