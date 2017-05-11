@@ -16,6 +16,8 @@ extern int trealla_consult_file(trealla *pl, const char *filename);
 extern int trealla_consult_fp(trealla *pl, FILE *fp);
 extern int trealla_consult_text(trealla *pl, const char *s, const char *pseudo_filename);
 extern int trealla_deconsult(trealla *pl, const char *filename);
+extern int trealla_is_abort(trealla *pl);
+extern int trealla_get_haltcode(trealla *pl);
 extern int trealla_run_query(trealla *pl, const char *s);	// 4 in one
 extern void trealla_destroy(trealla *pl);
 
@@ -34,6 +36,7 @@ extern double query_elapsed(tpl_query *q);
 extern double query_get_float(tpl_query *q, unsigned idx);
 extern long long query_get_integer(tpl_query *q, unsigned idx);
 extern char *query_get_text(tpl_query *q, unsigned idx);	// MUST free
+extern int query_get_haltcode(tpl_query *q);
 extern void query_abort(tpl_query *q);
 extern void query_destroy(tpl_query *q);
 

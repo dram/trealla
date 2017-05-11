@@ -154,14 +154,6 @@ int main(int ac, char *av[])
 #endif
 
 	for (int i = 1; i < ac; i++) {
-		if (!strcmp(av[i], "--sizes")) {
-			printf("sizeof int=%d\n", (int)sizeof(int)*8);
-			printf("sizeof long=%d\n", (int)sizeof(long)*8);
-			printf("sizeof long long=%d\n", (int)sizeof(long long)*8);
-			printf("sizeof void*=%d\n", (int)sizeof(void *)*8);
-			printf("sizeof nbr_t=%d\n", (int)sizeof(nbr_t)*8);
-		}
-
 		if (!strcmp(av[i], "-d") || !strcmp(av[i], "--daemon"))
 			daemon = 1;
 #ifndef ISO_ONLY
@@ -419,11 +411,11 @@ int main(int ac, char *av[])
 		if (p1)
 			free(p1);
 	}
-	else if (!error && !noquery && !pl->abort && !ns) {
+	else if (!error && !noquery && !trealla_is_abort(pl) && !ns) {
 		if (!quiet)
 			printf("Trealla v%s, %s\n", g_trealla_version, __DATE__);
 
-		if (pl->tty)
+		if (isatty(0))
 			history_load(histfile);
 
 		lexer l;
@@ -441,12 +433,12 @@ int main(int ac, char *av[])
 			if (ok)
 				query_dump(q);
 
-			if (pl->abort || (q->halt == ABORT_HALT)) {
+			if (trealla_is_abort(pl) || (query_get_haltcode(q) == ABORT_HALT)) {
 				query_destroy(q);
 				break;
 			}
 
-			while (ok && pl->tty && query_choices(q)) {
+			while (ok && isatty(0) && query_choices(q)) {
 				printf("%s", " (abort=a,trace=t,next=;): ");
 				int ch = history_getch();
 				printf("\n");
@@ -481,11 +473,11 @@ int main(int ac, char *av[])
 
 		lexer_done(&l);
 
-		if (pl->tty)
+		if (isatty(0))
 			history_save();
 	}
 
-	int halt_code = pl->halt_code;
+	int halt_code = trealla_get_haltcode(pl);
 	trealla_destroy(pl);
 
 #ifndef ISO_ONLY

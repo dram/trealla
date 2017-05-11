@@ -984,6 +984,11 @@ int query_choices(tpl_query *self)
 	return self->choice_point > 1;
 }
 
+int query_get_haltcode(tpl_query *self)
+{
+	return self->halt_code;
+}
+
 static void collect_vars(tpl_query *q, node *n)
 {
 	if (is_compound(n)) {
@@ -1408,6 +1413,16 @@ void trealla_trace(trealla *self, int mode)
 void trealla_optimize(trealla *self, int mode)
 {
 	self->optimize = mode;
+}
+
+int trealla_is_abort(trealla *self)
+{
+	return self->abort;
+}
+
+int trealla_get_haltcode(trealla *self)
+{
+	return self->halt_code;
 }
 
 #ifndef ISO_ONLY
