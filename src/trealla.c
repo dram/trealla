@@ -1349,7 +1349,6 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 
 	q->parent = parent;
 	q->pl = self;
-	q->tmo_msecs = -1;
 	q->optimize = self->optimize;
 	q->trace = self->trace;
 
@@ -1377,6 +1376,7 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 
 	q->refcnt = 1;
 	q->curr_pid = parent;
+	q->tmo_msecs = -1;
 #endif
 
 	q->def_trail = q->def_choice = q->def_env = 1;

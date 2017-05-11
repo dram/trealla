@@ -294,7 +294,6 @@ struct tpl_query_
 	uint32_t trails_used, trails_possible, trail_point;
 	uint32_t curr_context, latest_context;
 	uint32_t curr_frame, prev_choice, print_depth;
-	int tmo_msecs;
 	FILE *curr_stdin, *curr_stdout;
 	uint16_t unify_depth;
 	uint8_t frame_size, trail_size, fail_arg;
@@ -308,6 +307,7 @@ struct tpl_query_
 	tpl_query *curr_pid;
 	skiplist *kvs;
 	char *name;
+	int tmo_msecs;
 	uint8_t linked, is_forked, is_proc, is_dead, is_busy, is_idle;
 	atomic uint32_t refcnt;
 #endif
