@@ -25,7 +25,12 @@
 #include "history.h"
 
 #ifndef ISO_ONLY
-#include "internal.h"
+#include "network.h"
+#endif
+
+#ifndef ISO_ONLY
+extern int http_get10(session *s, const char *path, int keep, int *status);
+extern int http_get11(session *s, const char *path, int keep, int *status);
 #endif
 
 static void sigfn(int s)
@@ -295,18 +300,12 @@ int main(int ac, char *av[])
 	}
 
 	if (get) {
-		library *lib = g_libs;
 		const char *name = "http_client";
+		char *src = trealla_find_library(name);
 
-		while (lib->name != NULL) {
-			if (!strcmp(lib->name, name)) {
-				char *src = strndup((const char *)lib->start, (lib->end-lib->start));
-				trealla_consult_text(pl, src, name);
-				free(src);
-				break;
-			}
-
-			lib++;
+		if (src != NULL) {
+			trealla_consult_text(pl, src, name);
+			free(src);
 		}
 
 		char scheme[10], tmpbuf1[256], tmpbuf2[256];

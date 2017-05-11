@@ -1430,6 +1430,22 @@ int trealla_get_haltcode(trealla *self)
 	return self->halt_code;
 }
 
+char *trealla_find_library(const char *name)
+{
+#ifndef ISO_ONLY
+	library *lib = g_libs;
+
+	while (lib->name != NULL) {
+		if (!strcmp(lib->name, name)) {
+			return strndup((const char *)lib->start, (lib->end-lib->start));
+		}
+
+		lib++;
+	}
+#endif
+	return NULL;
+}
+
 #ifndef ISO_ONLY
 static int tmocmp(const char *k1, const char *k2)
 {

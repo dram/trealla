@@ -22,6 +22,7 @@ extern int trealla_is_halt(trealla *pl);
 extern int trealla_get_haltcode(trealla *pl);
 extern int trealla_run_query(trealla *pl, const char *s);	// 4 in one
 extern char *trealla_readline(lexer *l, FILE *fp, int more);
+extern char *trealla_find_library(const char *name);
 extern void trealla_destroy(trealla *pl);
 
 // Create a Query instance
