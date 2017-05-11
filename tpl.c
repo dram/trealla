@@ -77,16 +77,20 @@ static void manifest_file(session *s, const char *branch, const char *appname, c
 	mkdir(tmpbuf2, 0777);
 
 	FILE *fp = fopen(tmpbuf, "wb");
+
 	if (!fp)
 		printf("ERROR: Can't create '%s'\n", tmpbuf);
 	else
 		printf("INFO: GET %s/%s\n", appname, filename);
+
 	char *bufptr[1024 * 4];
 
 	while ((len > 0) && !session_on_disconnect(s)) {
 		int rlen = session_read(s, &bufptr, len > sizeof(bufptr) ? sizeof(bufptr) : len);
+
 		if (rlen <= 0)
 			break;
+
 		if (fp)
 			fwrite(bufptr, 1, rlen, fp);
 		len -= rlen;
@@ -267,7 +271,6 @@ int main(int ac, char *av[])
 			return 1;
 		}
 		session_set_stash(s, "HOST", host);
-		// printf("INFO: Connected https://%s\n", host);
 		char tmpbuf[256];
 		sprintf(tmpbuf, "/trealla-lang/apps/%s/%s/MANIFEST", branch, p1);
 		int status = 0, keep_alive = 1;
@@ -283,8 +286,6 @@ int main(int ac, char *av[])
 		}
 
 		int len = (int)atoi(session_get_stash(s, "HTTP_CONTENT_LENGTH"));
-		// printf("INFO: GET %s HTTP/1.0\n", tmpbuf);
-		// printf("INFO: HTTP Status=%d, Content-Length=%d\n", status, len);
 		const char *appname = p1;
 		manifest(s, branch, appname, len);
 		session_close(s);
