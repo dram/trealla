@@ -5,6 +5,7 @@
 
 typedef struct trealla_ trealla;
 typedef struct tpl_query_ tpl_query;
+typedef struct lexer_ lexer;
 
 // Create a Prolog instance
 

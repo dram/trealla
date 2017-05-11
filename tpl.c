@@ -418,11 +418,10 @@ int main(int ac, char *av[])
 		if (isatty(0))
 			history_load(histfile);
 
-		lexer l;
-		lexer_init(&l, pl);
+		lexer *l = lexer_create(pl);
 		char *line;
 
-		while ((line = trealla_readline(&l, stdin, 0)) != NULL) {
+		while ((line = trealla_readline(l, stdin, 0)) != NULL) {
 			tpl_query *q = trealla_create_query(pl);
 			int ok = query_parse_file(q, line, stdin);
 			free(line);
@@ -471,7 +470,7 @@ int main(int ac, char *av[])
 			query_destroy(q);
 		}
 
-		lexer_done(&l);
+		lexer_destroy(l);
 
 		if (isatty(0))
 			history_save();

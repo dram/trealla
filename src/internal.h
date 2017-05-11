@@ -209,7 +209,7 @@ struct stream_
 	void *sptr;
 };
 
-typedef struct
+struct lexer_
 {
 	list val_l;
 	skiplist symtab, ns;
@@ -227,8 +227,7 @@ typedef struct
 	uint32_t cpos;
 	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized;
 	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, neg, vars;
-}
- lexer;
+};
 
 // If 'term' set then  'context' is an actual env point (or -1).
 // If it is NULL then 'binding' is an offset.
@@ -350,6 +349,9 @@ extern const char *lexer_parse(lexer *l, node *term, const char *src, char **lin
 extern int lexer_consult_file(lexer *self, const char *filename);
 extern int lexer_consult_fp(lexer *self, FILE *fp);
 extern void lexer_done(lexer *l);
+
+extern lexer *lexer_create(trealla *pl);
+extern void lexer_destroy(lexer *l);
 
 #ifndef ISO_ONLY
 extern int http_get10(session *s, const char *path, int keep, int *status);

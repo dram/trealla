@@ -1737,6 +1737,19 @@ void attach_vars(lexer *self, node *var)
 	sl_set(&self->symtab, VAL_S(var), (void *)(size_t)var->slot);
 }
 
+lexer *lexer_create(trealla *pl)
+{
+	lexer *l = (lexer *)calloc(1, sizeof(lexer));
+	lexer_init(l, pl);
+	return l;
+}
+
+void lexer_destroy(lexer *self)
+{
+	lexer_done(self);
+	free(self);
+}
+
 void lexer_init(lexer *self, trealla *pl)
 {
 	memset(self, 0, sizeof(lexer));
