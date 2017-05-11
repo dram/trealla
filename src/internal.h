@@ -340,7 +340,7 @@ typedef struct
 }
  library;
 
-extern library libs[];
+extern library g_libs[];
 extern atomic uint64_t g_allocs;
 
 extern void lexer_init(lexer *l, trealla *pl);

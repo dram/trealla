@@ -726,7 +726,7 @@ int dir_use_module(lexer *l, node *n)
 
 	SYSUNLOCK(l->pl);
 	module *save = l->db;
-	library *lib = libs;
+	library *lib = g_libs;
 
 	while (use_lib && lib->name != NULL) {
 		if (!strcmp(lib->name, name)) {

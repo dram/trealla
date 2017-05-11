@@ -295,7 +295,7 @@ int main(int ac, char *av[])
 	}
 
 	if (get) {
-		library *lib = libs;
+		library *lib = g_libs;
 		const char *name = "http_client";
 
 		while (lib->name != NULL) {

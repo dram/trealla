@@ -30,7 +30,7 @@ extern uint8_t _binary_library_yahoo_pro_end[];
 extern uint8_t _binary_library_mime_pro_start[];
 extern uint8_t _binary_library_mime_pro_end[];
 
-library libs[] = {
+library g_libs[] = {
 	{"auth", _binary_library_auth_pro_start, _binary_library_auth_pro_end},
 	{"blog", _binary_library_blog_pro_start, _binary_library_blog_pro_end},
 	{"dict", _binary_library_dict_pro_start, _binary_library_dict_pro_end},
