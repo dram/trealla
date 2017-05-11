@@ -266,10 +266,12 @@ int main(int ac, char *av[])
 		const char *host = "raw.githubusercontent.com";
 		int port = 443, tcp = 1, ssl = 1;
 		session *s = session_open(host, port, tcp, ssl);
+
 		if (!s) {
 			printf("ERROR: can't connect 'https://%s", host);
 			return 1;
 		}
+
 		session_set_stash(s, "HOST", host);
 		char tmpbuf[256];
 		sprintf(tmpbuf, "/trealla-lang/apps/%s/%s/MANIFEST", branch, p1);
