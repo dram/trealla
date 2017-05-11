@@ -69,7 +69,7 @@ static void lock_done(lock *l)
 #endif
 }
 
-lock *lock_create()
+lock *lock_create(void)
 {
 	lock *l = (lock *)calloc(1, sizeof(lock));
 	lock_init(l);

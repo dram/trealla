@@ -5,7 +5,7 @@ typedef struct lock_ lock;
 typedef struct tpool_ tpool;
 typedef int thread_function(void*);
 
-extern lock *lock_create(void);						// calls lock_init
+extern lock *lock_create(void);
 extern void lock_lock(lock *l);
 extern void lock_unlock(lock *l);
 extern void lock_destroy(lock *l);
