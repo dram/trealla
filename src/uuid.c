@@ -44,8 +44,9 @@ uint64_t uuid_ts(const uuid *u) { return u->u1; }
 
 char *uuid_to_string(const uuid *u, char *buf)
 {
-	sprintf(buf, "%016llX:%04llX:%012llX", (unsigned long long)u->u1, (unsigned long long)(u->u2 >> 48),
-	        (unsigned long long)(u->u2 & MASK_FINAL));
+	sprintf(buf, "%016llX:%04llX:%012llX",
+		(unsigned long long)u->u1, (unsigned long long)(u->u2 >> 48),
+		(unsigned long long)(u->u2 & MASK_FINAL));
 
 	return buf;
 }
@@ -54,6 +55,7 @@ uuid *uuid_from_string(const char *s, uuid *u)
 {
 	if (!s)
 		return u;
+
 	unsigned long long p1 = 0, p2 = 0, p3 = 0;
 	sscanf(s, "%llX:%llX:%llX", &p1, &p2, &p3);
 	u->u1 = p1;
@@ -62,7 +64,10 @@ uuid *uuid_from_string(const char *s, uuid *u)
 	return u;
 }
 
-void uuid_seed(uint64_t v) { s_seed = v & MASK_FINAL; }
+void uuid_seed(uint64_t v)
+{
+	s_seed = v & MASK_FINAL;
+}
 
 static uint64_t gettimeofday_usec(void)
 #ifdef _WIN32
@@ -124,4 +129,7 @@ int uuid_compare(const uuid *v1, const uuid *v2)
 	return 1;
 }
 
-int uuid_is_zero(const uuid *u) { return !u->u1 && !u->u2; }
+int uuid_is_zero(const uuid *u)
+{
+	return !u->u1 && !u->u2;
+}
