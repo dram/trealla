@@ -18,8 +18,10 @@ extern int trealla_consult_fp(trealla *pl, FILE *fp);
 extern int trealla_consult_text(trealla *pl, const char *s, const char *pseudo_filename);
 extern int trealla_deconsult(trealla *pl, const char *filename);
 extern int trealla_is_abort(trealla *pl);
+extern int trealla_is_halt(trealla *pl);
 extern int trealla_get_haltcode(trealla *pl);
 extern int trealla_run_query(trealla *pl, const char *s);	// 4 in one
+extern char *trealla_readline(lexer *l, FILE *fp, int more);
 extern void trealla_destroy(trealla *pl);
 
 // Create a Query instance
@@ -41,8 +43,20 @@ extern int query_get_haltcode(tpl_query *q);
 extern void query_abort(tpl_query *q);
 extern void query_destroy(tpl_query *q);
 
+// Miscelaneous
+
+extern lexer *lexer_create(trealla *pl);
+extern void lexer_destroy(lexer *l);
+
+extern const char *g_list_cons;
 extern int g_trealla_memlimit_mb;
 extern const char *g_trealla_version;
 extern volatile int g_abort;
+
+#ifndef ISO_ONLY
+extern int g_dbs_merge;
+extern int g_tpool_size;
+extern const char *g_dbdir;
+#endif
 
 #endif

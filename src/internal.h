@@ -342,16 +342,12 @@ typedef struct
 
 extern library libs[];
 extern atomic uint64_t g_allocs;
-extern char *trealla_readline(lexer *l, FILE *fp, int more);
 
 extern void lexer_init(lexer *l, trealla *pl);
 extern const char *lexer_parse(lexer *l, node *term, const char *src, char **line);
 extern int lexer_consult_file(lexer *self, const char *filename);
 extern int lexer_consult_fp(lexer *self, FILE *fp);
 extern void lexer_done(lexer *l);
-
-extern lexer *lexer_create(trealla *pl);
-extern void lexer_destroy(lexer *l);
 
 #ifndef ISO_ONLY
 extern int http_get10(session *s, const char *path, int keep, int *status);
@@ -432,7 +428,5 @@ enum
 	ABORT_INVALIDARGNOTPID,
 	ABORT_END
 };
-
-extern const char *g_list_cons;
 
 #endif

@@ -1420,6 +1420,11 @@ int trealla_is_abort(trealla *self)
 	return self->abort;
 }
 
+int trealla_is_halt(trealla *self)
+{
+	return self->halt_code == ABORT_HALT;
+}
+
 int trealla_get_haltcode(trealla *self)
 {
 	return self->halt_code;

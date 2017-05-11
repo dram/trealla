@@ -23,12 +23,9 @@
 
 #include "daemon.h"
 #include "history.h"
-#include "internal.h"
 
 #ifndef ISO_ONLY
-extern int g_dbs_merge;
-extern int g_tpool_size;
-extern const char *g_dbdir;
+#include "internal.h"
 #endif
 
 static void sigfn(int s)
@@ -432,7 +429,7 @@ int main(int ac, char *av[])
 			if (ok)
 				query_dump(q);
 
-			if (trealla_is_abort(pl) || (query_get_haltcode(q) == ABORT_HALT)) {
+			if (trealla_is_abort(pl) || trealla_is_halt(pl)) {
 				query_destroy(q);
 				break;
 			}
@@ -476,7 +473,7 @@ int main(int ac, char *av[])
 			history_save();
 	}
 
-	int halt_code = trealla_get_haltcode(pl);
+	const int halt = trealla_get_haltcode(pl);
 	trealla_destroy(pl);
 
 #ifndef ISO_ONLY
@@ -496,5 +493,5 @@ int main(int ac, char *av[])
 		free(p2);
 #endif
 
-	return halt_code;
+	return halt;
 }
