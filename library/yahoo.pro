@@ -2,7 +2,7 @@
 :-export([get_chart/2,get_quote/2]).
 :-import(library(http_client)).
 :-define(CHART_SERVER,'https://ichart.finance.yahoo.com').
-:-define(QUOTE_SERVER,'http://download.finance.yahoo.com').
+:-define(QUOTE_SERVER,'https://download.finance.yahoo.com').
 
 :-using([sys]).
 
