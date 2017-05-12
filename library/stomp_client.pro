@@ -1,6 +1,8 @@
 :-module(stomp_client).
 :-export([test/1,connect/2,disconnect/1]).
 
+% Does this still work???
+
 :-using([sys,net]).
 
 test(Host) :-
