@@ -6,28 +6,28 @@
 :-define(ConnKeep,1).
 :-define(ConnClose,0).
 
-:-using([sys,net]).
+:-using([sys]).
 
 get10_data(Host,Path,Data) :-
-	client(Host,S),
+	net:client(Host,S),
 	get10_internal(S,Path,?ConnClose,Data),
 	close(S).
 
 get10_file(Host,Path,Filename) :-
-	client(Host,S),
+	net:client(Host,S),
 	get10_internal(S,Path,?ConnClose,Data),
 	close(S),
 	save_file(Filename,Data).
 
 get10_data(Host,Path,Data,S) :-
-	client(Host,S),
+	net:client(Host,S),
 	get10_internal(S,Path,?ConnKeep,Data).
 
 get10_more(S,Path,Data) :-
 	get10_internal(S,Path,?ConnKeep,Data).
 
 put10_file(Host,Path,Filename) :-
-	client(Host,S),
+	net:client(Host,S),
 	exists_file(Filename,Len,_Mod),
 	mime:mime_type(Filename,MimeType),
 	http:put10(S,Path,MimeType,Len,Status),
@@ -36,25 +36,25 @@ put10_file(Host,Path,Filename) :-
 	close(S).
 
 get11_data(Host,Path,Data) :-
-	client(Host,S),
+	net:client(Host,S),
 	get11_internal(S,Path,?ConnClose,Data),
 	close(S).
 
 get11_data(Host,Path,Data,S) :-
-	client(Host,S),
+	net:client(Host,S),
 	get11_internal(S,Path,?ConnKeep,Data).
 
 get11_more(S,Path,Data) :-
 	get11_internal(S,Path,?ConnKeep,Data).
 
 get11_file(Host,Path,Filename) :-
-	client(Host,S),
+	net:client(Host,S),
 	get11_internal(S,Path,?ConnClose,Data),
 	close(S),
 	save_file(Filename,Data).
 
 put11_file(Host,Path,Filename) :-
-	client(Host,S),
+	net:client(Host,S),
 	mime:mime_type(Filename,MimeType),
 	http:put11(S,Path,MimeType,Status),
 	Status = 200,
@@ -66,7 +66,7 @@ put11_file(Host,Path,Filename) :-
 get10_internal(S,Path,Keep,Data) :-
 	http:get10(S,Path,Keep,Status),
 	Status = 200,
-	stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
+	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
 	atom_number(LenStr,Len),
 	(Len > 0 -> bread(S,Len,Data) ; get10_block(S,'',Data)),
 	true.
@@ -81,7 +81,7 @@ get10_block(S,Data,Data).
 get11_internal(S,Path,Keep,Data) :-
 	http:get11(S,Path,Keep,Status),
 	Status = 200,
-	stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
+	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
 	atom_number(LenStr,Len),
 	(Len > 0 -> bread(S,Len,Data) ; get11_chunk(S,'',Data)),
 	true.

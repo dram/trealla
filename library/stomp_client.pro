@@ -3,15 +3,15 @@
 
 % Does this still work???
 
-:-using([sys,net]).
+:-using([sys]).
 
 test(Host) :-
-	connect(Host,S),
-	disconnect(S).
+	net:connect(Host,S),
+	net:disconnect(S).
 
 connect(Host,S) :-
-	client(Host,S),
-	split(Host,':',Name,Rest),
+	net:client(Host,S),
+	split(Host,':',Name,_),
 	concat('host:',Name,'\naccept-version:1.0,1.1,1.2\n',Hdrs),
 	stomp:msg(S,'CONNECT',Hdrs,''),
 	stomp:parse(S,Ver,Cmd),
@@ -73,11 +73,11 @@ wait_receipt({S,Pid}) :-
 		Cmd = 'MESSAGE' -> forward({S,Pid},Cmd); true.
 
 forward({S,Pid},Cmd) :-
-	stash_get(S,'CONTENT_TYPE',Ct,'text/plain'),
-	stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
-	stash_get(S,'Message-Id',Mid,''),
-	stash_get(S,'Subscription',Sub,''),
-	stash_get(S,'Destination',Dest,''),
+	net:stash_get(S,'CONTENT_TYPE',Ct,'text/plain'),
+	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
+	net:stash_get(S,'Message-Id',Mid,''),
+	net:stash_get(S,'Subscription',Sub,''),
+	net:stash_get(S,'Destination',Dest,''),
 	atom_number(LenStr,Len),
 	bread(S,Len,Data),
 	proc:send(Pid,{Cmd,Mid,Sub,Dest,Ct,Data}),

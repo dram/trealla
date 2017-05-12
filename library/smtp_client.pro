@@ -4,7 +4,7 @@
 :-export([send/6]).
 :-define(Server,'localhost:25').
 
-:-using([sys,net]).
+:-using([sys]).
 
 send_plain(From,To,Subject,Body) :-
 	replace(Body,'\n.','\n..',Body2),
@@ -32,17 +32,17 @@ send_base64(Server,From,To,Subject,Body) :-
 
 reply(S,Code) :-
 	term_to_atom(Code,Code2),
-	readmsg(S,Resp),
+	net:readmsg(S,Resp),
 	left(Resp,_,Code2),
 	%write(Resp),
 	true.
 
 send(Server,From,To,Subject,Body,ContentType) :-
 
-	client(Server,S),
+	net:client(Server,S),
 	reply(S,220),
 
-	local_host(S,Name),
+	net:local_host(S,Name),
 	concat('HELO ',Name,'\r\n',Helo),
 	write(S,Helo),
 	reply(S,250),
