@@ -21,7 +21,7 @@ connect(Host,S) :-
 disconnect(S) :-
 	uuid(Id),
 	concat('receipt:',Id,'\n',Hdrs),
-	msg(S,'DISCONNECT',Hdrs,''),
+	stomp:msg(S,'DISCONNECT',Hdrs,''),
 	repeat,
 		stomp:parse(S,_,Cmd),
 		Cmd = 'RECEIPT',
