@@ -39,6 +39,7 @@ static op g_ops[] = {
 	{"undo", "fy", 900},
 	{"public", "fy", 1050},
 	{"export", "fy", 1050},
+	{"import", "fy", 1050},
 	{"use_module", "fy", 1050},
 	{"module", "fy", 1050},
 #endif
@@ -875,9 +876,7 @@ static void directive(lexer *l, node *n)
 		dir_define(l, n3);
 	else if (!strcmp(functor, "function"))
 		dir_function(l, n3);
-	else if (!strcmp(functor, "ensure_loaded"))
-		dir_use_module(l, n3);
-	else if (!strcmp(functor, "use_module"))
+	else if (!strcmp(functor, "ensure_loaded") || !strcmp(functor, "import") || !strcmp(functor, "use_module"))
 		dir_use_module(l, n3);
 	else if (!strcmp(functor, "unload_file"))
 		dir_unload_file(l, n3);

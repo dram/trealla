@@ -42,13 +42,13 @@ Will substitute during load a defined value from the namespace. The name *?MODUL
 module name. This is a lexical pasting of the value. Other pre-defined names are *?RANDOM*,
 *?RANDOMSTR*, *?TIME* and *?TIMESTR*.
 
-To load a module and make its exported predicates availbale for use:
+To load a module and make its exported predicates available for use:
 
-	:-use_module(+Name).
-	:-use_module(library(+Name)).
-	:-use_module(+Name,+ImportList).
+	:-import(+Name).
+	:-import(library(+Name)).
+	:-import(+Name,+ImportList).
 
-The *ImportList* arg is currently ignored.
+The *ImportList* arg is currently ignored. The directive *use_module* is a synonym for *import*.
 
 The *include/1* directive loads a file that is lexically pasted into the source. Use the
 *unload_file/1* directive to remove a module from the system.
