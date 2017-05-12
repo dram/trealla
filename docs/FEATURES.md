@@ -48,7 +48,8 @@ To load a module and make its exported predicates available for use:
 	:-import(library(+Name)).
 	:-import(+Name,+ImportList).
 
-The *ImportList* arg is currently ignored. The directive *use_module* is a synonym for *import*.
+The *ImportList* arg is currently ignored. The directive *use_module* is a common Prolog synonym
+for *import*.
 
 The *include/1* directive loads a file that is lexically pasted into the source. Use the
 *unload_file/1* directive to remove a module from the system.
@@ -669,7 +670,7 @@ Dictionary library module: namespace  'dict'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(dict)).
+	:-import(library(dict)).
 
 Provides control over name-value pairs in a list:
 
@@ -685,7 +686,7 @@ Auth library module: namespace 'auth'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(auth)).
+	:-import(library(auth)).
 
 The following provide user control:
 
@@ -710,7 +711,7 @@ Blog library module: namespace 'blog'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(blog)).
+	:-import(library(blog)).
 
 The following provide for posting:
 
@@ -736,7 +737,7 @@ SMTP client library module: namespace 'smtp_client'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(smtp_client)).
+	:-import(library(smtp_client)).
 
 Provides basic mail sending functionality:
 
@@ -751,7 +752,7 @@ HTTP client library module: namespace 'http_client'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(http_client)).
+	:-import(library(http_client)).
 
 Provides basic HTTP/1.0 client functionality:
 
@@ -776,7 +777,7 @@ STOMP library module: namespace 'stomp'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(stomp_client)).
+	:-import(library(stomp_client)).
 
 The Simple(/Streaming) Text Oriented Messaging Protocol:
 
@@ -793,7 +794,7 @@ MIME library module: namespace 'mime'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(mime)).
+	:-import(library(mime)).
 
 	mime_type(+Filename,-MimeType)
 
@@ -802,7 +803,7 @@ YAHOO library module: namespace 'yahoo'
 
 This is a compiled-in module that must be imported:
 
-	:-use_module(library(yahoo)).
+	:-import(library(yahoo)).
 
 	get_chart(+Symbol,-Data)
 

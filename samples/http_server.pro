@@ -17,10 +17,7 @@
 
 :-module(http_server).
 :-export([test/0,start/0,start/1,start/2]).
-
-:-use_module(library(mime)).
-
-:-using([sys,net]).
+:-import(library(mime)).
 
 % Note: defined values can also be supplied in a 'http_server.conf'
 % config file in the current directory, which will override the
@@ -38,6 +35,8 @@
 :-define(KeyFile,'key.pem').       % TLS private key
 :-define(CertFile,'cert.pem').     % TLS fullchain of certificates
 
+:-using([sys,net]).
+
 test :- start_server([':8080',':8443;+tls'],?DirRoot).
 start :- start_server([?BindHttp,?BindHttps],?DirRoot).
 
@@ -49,7 +48,7 @@ start(Bind,Root) :- start_server(Bind,Root).
 start_server(Bind,Root) :-
 	write('Started: '), write(?AdminPass), nl,
 	open('http.log','append',Log),
-	net:server(Bind,S,?KeyFile,?CertFile),
+	server(Bind,S,?KeyFile,?CertFile),
 	repeat,
 		http:parse(S,Ver,Cmd,Path),
 		process_request(S,Log,Root,Ver,Cmd,Path),
@@ -57,7 +56,7 @@ start_server(Bind,Root) :-
 
 process_request(S,Log,Root,Ver,Cmd,Path) :- !,
 	security(S,Log,Path),
-	net:stash_get(S,'SERVER_NAME',Host,''),
+	stash_get(S,'SERVER_NAME',Host,''),
 	concat(Root,'/',Host,?DirFiles,Path,Path2),
 	check_method(S,Log,Ver,Cmd,Path,Path2).
 
@@ -65,14 +64,14 @@ process_request(S,Log,Root,Ver,Cmd,Path) :-
 	error_message(S,Log,505,'HTTP VERSION NOT SUPPORTED').
 
 security(S,Log,Path) :-
-	net:tls(S,false),
+	tls(S,false),
 	?PreferHttps = true, !,
 	Code = 301,
 	ErrMsg = 'MOVED PERMANENTLY',
-	net:stash_get(S,'HTTP',Ver,''),
-	net:stash_get(S,'SERVER_NAME',Host,''),
-	net:stash_get(S,'SERVER_PORT',Port,''),
-	net:stash_set(S,'Connection',_,'close'),
+	stash_get(S,'HTTP',Ver,''),
+	stash_get(S,'SERVER_NAME',Host,''),
+	stash_get(S,'SERVER_PORT',Port,''),
+	stash_set(S,'Connection',_,'close'),
 	concat('HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\n',Msg1),
 	concat(Msg1,'Location: https://',Host,Path,'\r\n',Msg2),
 	concat(Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n',Msg),
@@ -83,15 +82,15 @@ security(S,Log,Path) :-
 security(S,Log,Path) :- !.
 
 authorize(S,Log,Path) :-
-	net:stash_get(S,'USER',User,''),
-	net:stash_get(S,'PASS',Pass,''),
+	stash_get(S,'USER',User,''),
+	stash_get(S,'PASS',Pass,''),
 	{User,Pass} == {?AdminUser,?AdminPass},
 	!.
 
 authorize(S,Log,Path) :-
-	net:stash_get(S,'HTTP',Ver,''),
-	net:stash_set(S,'Connection',_,'close'),
-	net:stash_get(S,'SERVER_NAME',Host,''),
+	stash_get(S,'HTTP',Ver,''),
+	stash_set(S,'Connection',_,'close'),
+	stash_get(S,'SERVER_NAME',Host,''),
 	Code = 401,
 	concat('HTTP/',Ver,' ',Code,' Unauthorized\r\n',Msg1),
 	concat(Msg1,'WWW-Authenticate: Basic realm="',Host,'"\r\n',Msg2),
@@ -102,7 +101,7 @@ authorize(S,Log,Path) :-
 
 check_method(S,Log,Ver,Cmd,Path,FullPath) :-
 	member(Cmd,['GET','HEAD']), !,
-	net:stash_get(S,'CONTENT_LENGTH',CtLenStr,'0'),
+	stash_get(S,'CONTENT_LENGTH',CtLenStr,'0'),
 	atom_number(CtLenStr,CtLen),
 	(CtLen > 0 -> error_message(S,Log,400,'BAD REQUEST'); true),
 	process_get(S,Log,Ver,Cmd,Path,FullPath).
@@ -151,8 +150,8 @@ process_delete(S,Log,Ver,Path,FullPath) :-
 	error_message(S,Log,501,'NOT IMPLEMENTED').
 
 check_modified(S,Log,Ver,Lmod,Len,Cmd,Path,FullPath) :-
-	net:stash_get(S,'If-Modified-Since',Lmod,''),
-	net:stash_get(S,'Connection',Conn,'keep-alive'),
+	stash_get(S,'If-Modified-Since',Lmod,''),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat('HTTP/',Ver,' 304 NOT MODIFIED\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nConnection: ',Conn3,'\r\nContent-Length: 0\r\n\r\n',Msg),
@@ -164,7 +163,7 @@ check_modified(S,Log,Ver,Lmod,Len,Cmd,Path,FullPath) :-
 	log_message(S,Log,200,Len).
 
 process_file(S,Ver,Lmod,Len,'HEAD',FullPath) :- !,
-	net:stash_get(S,'Connection',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat('HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Length: ',Len,'\r\n\r\n',Msg),
@@ -173,7 +172,7 @@ process_file(S,Ver,Lmod,Len,'HEAD',FullPath) :- !,
 
 process_file(S,Ver,Lmod,Len,'GET',FullPath) :-
 	Ver=1.1, !,
-	net:stash_get(S,'Connection',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	mime:mime_type(FullPath,Ct),
@@ -182,7 +181,7 @@ process_file(S,Ver,Lmod,Len,'GET',FullPath) :-
 	http:put_file(S,FullPath).
 
 process_file(S,Ver,Lmod,Len,'GET',FullPath) :- !,
-	net:stash_get(S,'Connection',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	mime:mime_type(FullPath,Ct),
@@ -193,8 +192,8 @@ process_file(S,Ver,Lmod,Len,'GET',FullPath) :- !,
 info_message(S,Log,Code,InfoMsg) :-
 	concat('<html><body><h1>',InfoMsg,'</h1></body></html>\r\n',Body),
 	atom_length(Body,Len),
-	net:stash_get(S,'HTTP',Ver,''),
-	net:stash_get(S,'Connection',Conn,'keep-alive'),
+	stash_get(S,'HTTP',Ver,''),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat('HTTP/',Ver,' ',Code,' ',InfoMsg,'\r\nServer: Trealla\r\nConnection: ',Conn3,'\r\nContent-Type: text/html\r\nContent-Length: ',Len,'\r\n\r\n',Body,Msg),
@@ -202,8 +201,8 @@ info_message(S,Log,Code,InfoMsg) :-
 	log_message(S,Log,Code,0).
 
 error_message(S,Log,Code,ErrMsg) :-
-	net:stash_get(S,'HTTP',Ver,''),
-	net:stash_set(S,'Connection',_,'close'),
+	stash_get(S,'HTTP',Ver,''),
+	stash_set(S,'Connection',_,'close'),
 	concat('HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0),
@@ -212,14 +211,14 @@ error_message(S,Log,Code,ErrMsg) :-
 log_message(S,Log,Status,Len) :-
 	now(Now),
 	format_rfcdate(Now,Date),
-	net:stash_get(S,'REQUEST_METHOD',Cmd,''),
-	net:stash_get(S,'HTTP',Ver,''),
-	net:stash_get(S,'PATH_INFO',Path,''),
-	net:stash_get(S,'REMOTE_ADDR',Addr,''),
-	net:stash_get(S,'Referer',Refer,''),
-	net:stash_get(S,'SERVER_NAME',Host,''),
+	stash_get(S,'REQUEST_METHOD',Cmd,''),
+	stash_get(S,'HTTP',Ver,''),
+	stash_get(S,'PATH_INFO',Path,''),
+	stash_get(S,'REMOTE_ADDR',Addr,''),
+	stash_get(S,'Referer',Refer,''),
+	stash_get(S,'SERVER_NAME',Host,''),
 	concat('"',Date,'","',Addr,'","HTTP/',Ver,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"\n',Msg),
 	write(Log,Msg),
-	net:stash_get(S,'Connection',Conn,'keep-alive'),
+	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> close(S); true).

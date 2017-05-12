@@ -6,15 +6,11 @@
 
 :-module(stomp_server).
 :-export([start/0]).
-
-:-use_module(sys).
-:-use_module(net).
-:-use_module(proc).
-:-use_module(stomp).
-
 :-define(BindStomp,':9000').
 :-define(BindStomps,':9001;+tls').
 :-define(Params,[]).
+
+:-using([sys,net,proc]).
 
 start :-
 	start_server([?BindStomp,?BindStomps],?Params).
@@ -23,20 +19,14 @@ start_server(Bind,Param) :-
 	open('stomp.log','append',Log),
 	server(Bind,S),
 	repeat,
-		parse(S,Ver,Cmd),
+		stomp:parse(S,Ver,Cmd),
 		process_request(S,Log,Param,Ver,Cmd),
 		fail.
-
-on_connect(S) :-
-	true.
-
-on_disconnect(S) :-
-	true.
 
 process_request(S,Log,Param,Ver,Cmd) :-
 	member(Cmd,['CONNECT','STOMP']),
 	concat('server:trealla\nversion:',Ver,'\n',Hdrs),
-	msg(S,'CONNECTED',Hdrs,''),
+	stomp:msg(S,'CONNECTED',Hdrs,''),
 	log_message(S,Log,1).
 
 process_request(S,Log,Param,Ver,'DISCONNECT') :-
@@ -78,7 +68,7 @@ send_message(S,[Who|Rest],Mid,Data) :-
 	stash_get(S,'CONTENT_TYPE',Ct,'text/plain'),
 	stash_get(S,'CONTENT_LENGTH',Len,0),
 	concat('destination:',Dest,'\ncontent-type:',Ct,'\ncontent-length:',Len,'\nmessage-id:',Mid,'\n',Hdrs),
-	msg(Who,'MESSAGE',Hdrs,Data),
+	stomp:msg(Who,'MESSAGE',Hdrs,Data),
 	send_message(S,Rest,Mid,Data).
 
 process_request(S,Log,Param,Ver,'ACK') :-
@@ -108,7 +98,7 @@ process_request(S,Log,Param,Ver,'ABORT') :-
 
 process_request(S,Log,Param,Ver,Cmd) :-
 	concat('server:trealla\nversion:',Ver,'\n',Hdrs),
-	msg(S,'ERROR',Hdrs,''),
+	stomp:msg(S,'ERROR',Hdrs,''),
 	log_message(S,Log,0),
 	close(S).
 
@@ -119,7 +109,7 @@ process_receipt(S,Hdrs) :-
 	stash_get(S,'Receipt',Rcpt,_),
 	nonvar(Rcpt),
 	concat('receipt:',Rcpt,'\n',Hdrs,Hdrs2),
-	msg(S,'RECEIPT',Hdrs2,'').
+	stomp:msg(S,'RECEIPT',Hdrs2,'').
 
 process_receipt(S,Hdrs).
 
