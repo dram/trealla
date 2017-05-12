@@ -872,7 +872,7 @@ int query_run(tpl_query *self)
 		else if (!self->pl->abort && (self->halt == ABORT_HALT))
 			printf("Halted\n");
 
-		self->pl->halt_code = self->halt_code;
+		self->pl->halt_code = self->halt;
 		self->ok = 0;
 	}
 
