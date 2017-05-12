@@ -1,5 +1,5 @@
 :-initialization(main).
-:-use_module(library(yahoo)).
+:-import(library(yahoo)).
 
 main :-
 	yahoo:get_quote('GOOG,IBM,AAPL,MSFT',Data),
