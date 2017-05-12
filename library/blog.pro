@@ -3,9 +3,7 @@
 :-export([getpost/8,getposts/2]).
 :-export([addcomment/4,modcomment/2,replycomment/2,delcomment/1,undelcomment/1]).
 :-export([getcomment/7,getcomments/2]).
-
-:-use_module(library(dict)).
-:-using([sys]).
+:-import(library(dict)).
 
 :-define(FieldCreated,created).
 :-define(FieldModified,modified).
@@ -26,6 +24,8 @@
 :-dynamic(blog_comments/2,[persist]).
 :-dynamic(blog_comment/2,[storage]).
 :-dynamic(blog_reply/3,[persist]).
+
+:-using([sys]).
 
 % At the moment we are creating blogs on demand. To rename a
 % blog you can just alter the BlogName -> BlogId mapping in the

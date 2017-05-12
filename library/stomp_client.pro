@@ -10,7 +10,7 @@ test(Host) :-
 connect(Host,S) :-
 	client(Host,S),
 	split(Host,':',Name,Rest),
-	awrite(Hdrs,'host:',Name,'\naccept-version:1.0,1.1,1.2\n'),
+	concat('host:',Name,'\naccept-version:1.0,1.1,1.2\n',Hdrs),
 	msg(S,'CONNECT',Hdrs,''),
 	parse(S,Ver,Cmd),
 	Cmd = 'CONNECTED',
@@ -18,7 +18,7 @@ connect(Host,S) :-
 
 disconnect(S) :-
 	uuid(Id),
-	awrite(Hdrs,'receipt:',Id,'\n'),
+	concat('receipt:',Id,'\n',Hdrs),
 	msg(S,'DISCONNECT',Hdrs,''),
 	repeat,
 		parse(S,_,Cmd),
@@ -29,7 +29,7 @@ disconnect(S) :-
 % Send blindly:
 
 send(S,Dest,Ct,Data) :-
-	awrite(Hdrs,'destination:',Dest,'\ncontent-type:',Ct,'\n'),
+	concat('destination:',Dest,'\ncontent-type:',Ct,'\n',Hdrs),
 	msg(S,'SEND',Hdrs,Data).
 
 % Send and ask for a receipt, which will be processed internally. Any
@@ -37,7 +37,7 @@ send(S,Dest,Ct,Data) :-
 
 send_with_receipt({S,Pid},Dest,Ct,Data,Id) :-
 	uuid(Id),
-	awrite(Hdrs,'receipt:',Id,'\ndestination:',Dest,'\ncontent-type:',Ct,'\n'),
+	concat('receipt:',Id,'\ndestination:',Dest,'\ncontent-type:',Ct,'\n',Hdrs),
 	msg(S,'SEND',Hdrs,Data),
 	wait_receipt({S,Pid}).
 
@@ -45,21 +45,21 @@ send_with_receipt({S,Pid},Dest,Ct,Data,Id) :-
 
 subscribe(S,Dest,Id) :-
 	uuid(Id),
-	awrite(Hdrs,'id:',Id,'\ndestination:',Dest,'\n'),
+	concat('id:',Id,'\ndestination:',Dest,'\n',Hdrs),
 	msg(S,'SUBSCRIBE',Hdrs,'').
 
 subscribe_with_receipt({S,Pid},Dest,Id) :-
 	uuid(Id),
-	awrite(Hdrs,'id:',Id,'\nreceipt:',Id,'\ndestination:',Dest,'\n'),
+	concat('id:',Id,'\nreceipt:',Id,'\ndestination:',Dest,'\n',Hdrs),
 	msg(S,'SUBSCRIBE',Hdrs,''),
 	wait_receipt({S,Pid}).
 
 unsubscribe(S,Id) :-
-	awrite(Hdrs,'id:',Id,'\n'),
+	concat('id:',Id,'\n',Hdrs),
 	msg(S,'UNSUBSCRIBE',Hdrs,'').
 
 unsubscribe_with_receipt({S,Pid},Id) :-
-	awrite(Hdrs,'id:',Id,'receipt:',Id,'\n'),
+	concat('id:',Id,'receipt:',Id,'\n',Hdrs),
 	msg(S,'UNSUBSCRIBE',Hdrs,''),
 	wait_receipt({S,Pid}).
 

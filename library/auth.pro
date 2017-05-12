@@ -5,9 +5,7 @@
 :-export([setuser_nick/2,getuser_nick/2]).
 :-export([setuser_locked/2,getuser_locked/2]).
 :-export([setuser_pass/2,getuser_uuid/2]).
-
-:-use_module(library(dict)).
-:-using([sys]).
+:-import(library(dict)).
 
 % Note: defined values can also be supplied in an 'auth.conf'
 % config file in the current directory, which will override the
@@ -33,6 +31,8 @@
 
 :-dynamic(auth_user/2,[persist]).
 :-dynamic(auth_session/2).
+
+:-using([sys]).
 
 init :-
 	dbs:load.
