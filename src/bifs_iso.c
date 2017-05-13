@@ -5230,8 +5230,11 @@ static int bif_xtra_maplist_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	node *term2 = get_list(term2);
+	node *term2 = get_atom_or_list(term2);
 	node *l2 = term2;
+
+	if (is_atom(term2) && !strcmp(VAL_S(term2), "[]"))
+		return 1;
 
 	while (is_list(l2) && !g_abort) {
 		tpl_query *subq = query_create_subquery(q);
@@ -5276,10 +5279,16 @@ static int bif_xtra_maplist_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	node *term2 = get_list(term2);
-	node *term3 = get_list(term3);
+	node *term2 = get_atom_or_list(term2);
+	node *term3 = get_atom_or_list(term3);
 	node *l2 = term2;
 	node *l3 = term3;
+
+	if (is_atom(term2) && !strcmp(VAL_S(term2), "[]"))
+		return 1;
+
+	if (is_atom(term3) && !strcmp(VAL_S(term3), "[]"))
+		return 1;
 
 	while (is_list(l2) && is_list(l3) && !g_abort) {
 		tpl_query *subq = query_create_subquery(q);
