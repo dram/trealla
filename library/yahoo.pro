@@ -8,10 +8,12 @@
 
 get_chart(Symbol,Data) :-
 	atom(Symbol),
-	concat('/table.csv?s=',Symbol,Path),
+	url_encode(Symbol,Symbol2),
+	concat('/table.csv?s=',Symbol2,Path),
 	http_client:get11_data(?CHART_SERVER,Path,Data).
 
-get_quote(Symbol,Data) :-
-	atom(Symbol),
-	concat('/d/quotes?s=',Symbol,'&d=t&f=spol1vbad1t1',Path),
+get_quote(Symbols,Data) :-
+	atom(Symbols),
+	url_encode(Symbols,Symbols2),
+	concat('/d/quotes?s=',Symbols2,'&d=t&f=spol1vbad1t1',Path),
 	http_client:get11_data(?QUOTE_SERVER,Path,Data).
