@@ -5606,7 +5606,7 @@ static int bif_xtra_using(tpl_query *q)
 static int bif_xtra_use_module(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
+	node *term1 = get_callable(term1);
 	dir_use_module(q->lex, term1);
 	return 1;
 }
@@ -5786,6 +5786,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("unload_file", 1, bif_xtra_unload_file);
 	DEFINE_BIF("using", 1, bif_xtra_using);
 	DEFINE_BIF("use_module", 1, bif_xtra_use_module);
+	DEFINE_BIF("import", 1, bif_xtra_use_module);
 	DEFINE_BIF("retractw", 1, bif_xtra_retractw);
 	DEFINE_BIF("clausew", 2, bif_xtra_clausew);
 	DEFINE_BIF("listing_canonical", 0, bif_xtra_listing_canonical);
