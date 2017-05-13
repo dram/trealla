@@ -807,12 +807,14 @@ This is a compiled-in module that must be imported:
 
 	get_chart(+Symbol,-Data)
 
-Where 'Symbol' must be an atom such as 'GOOG' or 'IBM'. The result in 'Data' is multiple CSV lines,
+Where *Symbol must be an atom such as 'GOOG' or 'IBM'. The result in *Data* is multiple CSV lines,
 one per date entry.
 
-	get_quote(+Symbol,-Data)
+	get_name(+Symbols,-Data)				- get_fields(Symbols,'n',Data)
+	get_quote(+Symbols,-Data)				- get_fields(Symbols,'spol1vbad1t1',Data)
+	get_fields(+Symbols,+Fields,-Data)		- field names supplied
 
-Where 'Symbol' must be an atom such as 'GOOG' or 'IBM' or multiples can be requested together such as
-'GOOG,IBM,AAPL,MSFT'. The result in 'Data' is one more CSV lines (one per requested symbol). There
+Where *Symbol* must be an atom such as 'GOOG' or 'IBM' or multiples can be requested together such as
+'GOOG,IBM,AAPL,MSFT'. The result in *Data* is one more CSV lines (one per requested symbol). There
 is a Yahoo applied limit of 100 (?) symbols per request.
 
