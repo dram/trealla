@@ -1011,6 +1011,12 @@ static int bif_sys_split_3(tpl_query *q)
 	while (isspace(*src))
 		src++;
 
+	if (!*src) {
+		node *tmp = make_const_atom("[]", 0);
+		put_env(q, q->curr_frame + term3->slot, tmp, q->curr_frame);
+		term_heapcheck(tmp);
+	}
+
 	while (*src) {
 		char *dst = dstbuf;
 
