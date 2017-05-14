@@ -54,7 +54,7 @@ start_server(Bind,Root) :-
 		process_request(S,Log,Root,Ver,Cmd,Path),
 		fail.
 
-process_request(S,Log,Root,Ver,Cmd,Path) :- !,
+process_request(S,Log,Root,Ver,Cmd,Path) :-
 	security(S,Log,Path),
 	stash_get(S,'SERVER_NAME',Host,''),
 	concat(Root,'/',Host,?DirFiles,Path,Path2),
@@ -79,7 +79,7 @@ security(S,Log,Path) :-
 	log_message(S,Log,Code,0),
 	fail.                          % NOTE
 
-security(S,Log,Path) :- !.
+security(S,Log,Path).
 
 authorize(S,Log,Path) :-
 	stash_get(S,'USER',User,''),
@@ -187,7 +187,7 @@ process_file(S,Ver,Lmod,Len,'GET',FullPath) :- !,
 	mime:mime_type(FullPath,Ct),
 	concat('HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Type: ',Ct,'\r\nContent-Length: ',Len,'\r\n\r\n',Msg),
 	write(S,Msg),
-	sys:write_file(S,FullPath).
+	write_file(S,FullPath).
 
 info_message(S,Log,Code,InfoMsg) :-
 	concat('<html><body><h1>',InfoMsg,'</h1></body></html>\r\n',Body),
