@@ -1,4 +1,4 @@
-% A grammar in DCG Prolog
+% A grammar in DCG
 
 :-initialization(main).
 
