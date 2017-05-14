@@ -1010,7 +1010,7 @@ static void collect_vars(tpl_query *q, node *n)
 void query_dump(tpl_query *self)
 {
 	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
+	sl_init(&vars, 0, &strcmp, NULL);
 	self->d = &vars;
 	collect_vars(self, NLIST_FRONT(&self->lex->val_l));
 	self->d = NULL;
@@ -1030,8 +1030,8 @@ void query_dump(tpl_query *self)
 
 			char tmpbuf[PRINTBUF_SIZE];
 			self->latest_context = FUDGE_FACTOR;
-			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
-			printf(" %s: %s", VAL_S(n), tmpbuf);
+			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 0);
+			printf(" %s:\t%s\n", VAL_S(n), tmpbuf);
 			any++;
 		}
 	}

@@ -4,17 +4,22 @@
 
 :-define(CHART_SERVER,'https://ichart.finance.yahoo.com').
 :-define(QUOTE_SERVER,'https://download.finance.yahoo.com').
-:-define(DEFAULT_FIELDS,'spol1vbad1t1').
+:-define(DEFAULT_FIELDS,'spol1vbad1t1m').
+
 :-define(FIELD_SYMBOL,'s').
 :-define(FIELD_PREVIOUS_CLOSE,'p').
-:-define(FIELD_OPEN_PRICE,'o').
-:-define(FIELD_LAST_PRICE,'l1').
+:-define(FIELD_OPEN,'o').
+:-define(FIELD_LAST_TRADE,'l1').
 :-define(FIELD_VOLUME,'v').
 :-define(FIELD_BID,'b').
+:-define(FIELD_BID_SIZE,'b6').
 :-define(FIELD_ASK,'a').
-:-define(FIELD_LAST_DATE,'d1').
-:-define(FIELD_LAST_TIME,'t1').
+:-define(FIELD_ASK_SIZE,'a5').
+:-define(FIELD_LAST_TRADE_DATE,'d1').
+:-define(FIELD_LAST_TRADE_TIME,'t1').
+:-define(FIELD_LAST_TRADE_SIZE,'k3').
 :-define(FIELD_NAME,'n').
+:-define(FIELD_DAYS_RANGE,'m').
 
 get_chart(Symbol,Data) :-
 	atom(Symbol),
