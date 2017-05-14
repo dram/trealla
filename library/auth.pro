@@ -5,13 +5,14 @@
 :-export([setuser_nick/2,getuser_nick/2]).
 :-export([setuser_locked/2,getuser_locked/2]).
 :-export([setuser_pass/2,getuser_uuid/2]).
+:-export([session_set/3,session_get/3]).
 :-import(library(dict)).
 
 % Note: defined values can also be supplied in an 'auth.conf'
 % config file in the current directory, which will override the
 % following values:
 
-:-define(MaxAge,300).
+:-define(MaxAge,600).			% 10 mins
 :-define(KeepDays,7).
 
 :-define(FieldNick,nick).
@@ -102,22 +103,6 @@ checkin(SessId,ValidatedUser,NewExpires) :-
 logout(SessId) :-
 	retract(auth_session(SessId,_)).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-listusers(L) :-
-	findall(User,auth_user(User,_),L).
-
-dumpuser([]).
-dumpuser([User|Tail]) :-
-	writeln(User),
-	dumpuser(Tail).
-
-dumpusers :-
-	listusers(L),
-	dumpuser(L).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 setuser_email(User,Email) :-
 	now(Now),
 	dbs:begin,
@@ -180,3 +165,32 @@ setuser_pass(User,Pass) :-
 getuser_uuid(User,Uuid) :-
 	auth_user(User,D),
 	dict:get(D,?FieldUuid,Uuid).
+
+session_set(SessId,Name,Value) :-
+	dbs:begin,
+	retract(auth_session(SessId,D)),
+	concat('user$',Name,ActualName),
+	dict:set(D,ActualName,Value,D1),
+	assertz(auth_session(SessId,D1)),
+	dbs:end.
+
+session_get(SessId,Name,Value) :-
+	auth_session(SessId,D),
+	concat('user$',Name,ActualName),
+	dict:get(D,ActualName,Value).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+listusers(L) :-
+	findall(User,auth_user(User,_),L).
+
+dumpuser([]).
+dumpuser([User|Tail]) :-
+	writeln(User),
+	dumpuser(Tail).
+
+dumpusers :-
+	listusers(L),
+	dumpuser(L).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -704,6 +704,8 @@ The following provide session control:
 
 	login(+User,+Passwd,-SessId,+Keep,-Expires)
 	checkin(+SessId,-User,-Expires)
+	session_set(+SessId,+Name,+Value)		% name-value pair
+	session_get(+SessId,+Name,-Value)		% name-value pair
 	logout(+SessId)
 
 Blog library module: namespace 'blog'
