@@ -50,7 +50,7 @@ typedef nbr_t mask_t;
 #define FLAG_HEAP				(1ULL << 10)
 #define FLAG_ATTACHED			(1ULL << 11)
 #define FLAG_TAILRECURSIVE		(1ULL << 12)
-#define FLAG_CUT				(1ULL << 13)
+#define FLAG_ISCUT				(1ULL << 13)
 #define FLAG_FACT				(1ULL << 14)
 #define FLAG_BUILTIN			(1ULL << 15)
 #define FLAG_CONSING			(1ULL << 16)

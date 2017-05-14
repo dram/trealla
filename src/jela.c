@@ -773,7 +773,7 @@ int match(tpl_query *q)
 		}
 
 		node *body = term_next(head);
-		int is_cut = body->bifptr == bif_iso_cut;
+		int is_cut = body->flags & FLAG_ISCUT;
 		int is_lastmatch = (term_next(q->curr_match) == NULL) || is_cut;
 		int is_lastcall = term_next(q->curr_term) == NULL;
 

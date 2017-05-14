@@ -662,6 +662,7 @@ int xref_clause(lexer *l, node *term)
 	// point to the actual index rule to allow for assert etc.
 
 	node *head = term_firstarg(term);
+	node *body = term_next(head);
 
 	if (!head)
 		return 0;
@@ -689,6 +690,10 @@ int xref_clause(lexer *l, node *term)
 		node *s = make_compound();
 		s->flags |= FLAG_BUILTIN | FLAG_HIDDEN;
 		s->bifptr = &bif_xtra_enter;
+
+		//if (body->bifptr == bif_iso_cut)
+		//	s->flags |= FLAG_ISCUT;
+
 		node *tmp = make_const_atom("enter", 0);
 		tmp->flags |= FLAG_BUILTIN;
 		tmp->bifptr = &bif_xtra_enter;
@@ -701,7 +706,7 @@ int xref_clause(lexer *l, node *term)
 
 	int is_last = !term_next(term);
 
-	for (node *n = term_next(head); n != NULL; n = term_next(n))
+	for (node *n = body; n != NULL; n = term_next(n))
 		xref_body(l, n, head_functor, is_last);
 
 	return 1;
