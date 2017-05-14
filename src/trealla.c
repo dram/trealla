@@ -872,7 +872,8 @@ int query_run(tpl_query *self)
 		else if (!self->pl->abort && (self->halt == ABORT_HALT))
 			printf("Halted\n");
 
-		self->pl->halt_code = self->halt;
+		self->pl->halt_code = self->halt_code;
+		self->pl->halt = self->halt;
 		self->ok = 0;
 	}
 
@@ -1422,7 +1423,7 @@ int trealla_is_abort(trealla *self)
 
 int trealla_is_halt(trealla *self)
 {
-	return self->halt_code == ABORT_HALT;
+	return self->halt == ABORT_HALT;
 }
 
 int trealla_get_haltcode(trealla *self)

@@ -319,7 +319,7 @@ struct trealla_
 	skiplist mods;
 	module db;
 	const char *keywords[MAX_BIFS+20];
-	volatile int abort, end_wait, halt_code;
+	volatile int abort, end_wait, halt_code, halt;
 	uint8_t trace, optimize, tty, quiet;
 	uint8_t flag_char_conversion, flag_debug, flag_character_escapes;
 	uint8_t flag_unknown, flag_double_quotes;
