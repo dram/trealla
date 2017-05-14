@@ -2168,8 +2168,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				self->tok = dstbuf;
 			}
 #endif
-			if (self->quoted < 2)
-			{
+			if (self->quoted < 2) {
 				if ((n->bifptr = get_bif(self, self->tok)->bifptr) != NULL)
 					n->flags |= FLAG_BUILTIN;
 			}
