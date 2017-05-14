@@ -1031,7 +1031,7 @@ void query_dump(tpl_query *self)
 			char tmpbuf[PRINTBUF_SIZE];
 			self->latest_context = FUDGE_FACTOR;
 			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 0);
-			printf(" %s:\t%s\n", VAL_S(n), tmpbuf);
+			printf(" %s: %s\n", VAL_S(n), tmpbuf);
 			any++;
 		}
 	}

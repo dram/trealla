@@ -453,7 +453,7 @@ int main(int ac, char *av[])
 				}
 			}
 
-			putchar('\n');
+			//putchar('\n');
 
 			if (verbose)
 				printf("(%.3lf) ", query_elapsed(q));
