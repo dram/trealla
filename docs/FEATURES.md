@@ -147,6 +147,7 @@ These are an assortment of utilities:
 	remove_file(+File)          - delete named file
 	append_file(+File,+Atom)    - append to named file
 	write_file(+S,+File)        - write contents of named file to stream
+	write_file(+S,+File,+From,+To) - write ranged contents of named file to stream
 	bread(+S,?len,-Blob)        - block read from stream
 	bwrite(+S,+Atom)            - block write to stream
 	rand(-Int)                  - random int value >= 0 and < RAND_MAX
@@ -819,4 +820,3 @@ one per date entry.
 Where *Symbol* must be an atom such as 'GOOG' or 'IBM' or multiples can be requested together such as
 'GOOG,IBM,AAPL,MSFT'. The result in *Data* is one more CSV lines (one per requested symbol). There
 is a Yahoo applied limit of 100 (?) symbols per request.
-

@@ -135,22 +135,10 @@ static int bif_sys_exists_file_3(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_write_file_2(tpl_query *q)
+static int sys_write_file(tpl_query *q, node *var, node *term1, node *term2, nbr_t from, nbr_t to)
 {
-	node *args = get_args(q);
-	node *var; // FLAG_HIDDEN
-	FILE *fp;
-
-	if (!q->retry) {
-		var = get_var(var);
-	}
-	else {
-		var = get_stream(var);
-	}
-
-	node *term1 = get_stream(term1);
-	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str, *sp2;
+	FILE *fp;
 
 	if (!q->retry) {
 		fp = fopen(VAL_S(term2), "rb");
@@ -160,6 +148,7 @@ static int bif_sys_write_file_2(tpl_query *q)
 			return 0;
 		}
 
+		fseeko(fp, from, SEEK_SET);
 		sp2 = calloc(1, sizeof(stream));
 		sp2->fptr = fp;
 		node *n = make_stream(sp2);
@@ -172,9 +161,13 @@ static int bif_sys_write_file_2(tpl_query *q)
 		fp = sp2->fptr;
 	}
 
-	size_t buflen = 1024 * 64;
+	size_t buflen = 1024 * 8;
+	size_t rlen, rem = to + 1 - ftello(fp);
+
+	if (rem < buflen)
+		buflen = rem;
+
 	char *tmpbuf = malloc(buflen);
-	size_t rlen;
 
 	while ((rlen = fread(tmpbuf, 1, buflen, fp)) > 0) {
 		if (is_socket(term1)) {
@@ -211,12 +204,74 @@ static int bif_sys_write_file_2(tpl_query *q)
 				return 0;
 			}
 		}
+
+	size_t rem = to + 1 - ftello(fp);
+
+	if (rem < buflen)
+		buflen = rem;
 	}
 
 	free(tmpbuf);
 	fclose(fp);
 	sp2->fptr = NULL;
 	return 1;
+}
+
+static int bif_sys_write_file_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *var; // FLAG_HIDDEN
+
+	if (!q->retry) {
+		var = get_var(var);
+	}
+	else {
+		var = get_stream(var);
+	}
+
+	node *term1 = get_stream(term1);
+	node *term2 = get_atom(term2);
+	struct stat st;
+
+	if (stat(VAL_S(term2), &st)) {
+		QABORT(ABORT_NOFILEACCESS);
+		return 0;
+	}
+
+	if (!st.st_size)
+		return 0;
+
+	return sys_write_file(q, var, term1, term2, 0, st.st_size-1);
+}
+
+static int bif_sys_write_file_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *var; // FLAG_HIDDEN
+
+	if (!q->retry) {
+		var = get_var(var);
+	}
+	else {
+		var = get_stream(var);
+	}
+
+	node *term1 = get_stream(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_int(term3);
+	node *term4 = get_int(term4);
+	nbr_t from = term3->val_i, to = term4->val_i;
+
+	if (to == -1) {
+		struct stat st = {0};
+		stat(VAL_S(term2), &st);
+		to = st.st_size - 1;
+	}
+
+	if ((term3 < 0) || (term4 <= term3))
+		return 0;
+
+	return sys_write_file(q, var, term1, term2, from, to);
 }
 
 static int bif_sys_remove_file_1(tpl_query *q)
@@ -1987,6 +2042,7 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:exists_file", 1, bif_sys_exists_file_1);
 	DEFINE_BIF("sys:exists_file", 3, bif_sys_exists_file_3);
 	DEFINE_BIF("sys:write_file", 1 + 2, bif_sys_write_file_2);
+	DEFINE_BIF("sys:write_file", 1 + 4, bif_sys_write_file_4);
 	DEFINE_BIF("sys:getline", 1, bif_sys_getline_1);
 	DEFINE_BIF("sys:getline", 2, bif_sys_getline_2);
 	DEFINE_BIF("sys:now", 0, bif_sys_now0);

@@ -13,8 +13,9 @@
 #ifdef _WIN32
 #include <io.h>
 #include <winsock2.h>
-#define msleep Sleep
 #define snprintf _snprintf
+#define fseeko _fseeki64
+#define msleep Sleep
 #else
 #include <arpa/inet.h>
 #include <netinet/in.h>

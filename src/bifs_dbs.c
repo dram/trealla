@@ -12,6 +12,8 @@
 #include <io.h>
 #define fsync _commit
 #define snprintf _snprintf
+#define fseeko _fseeki64
+#define ftello _ftelli64
 #define msleep Sleep
 #else
 #include <unistd.h>
@@ -140,13 +142,13 @@ void dbs_save_node(module *db, FILE *fp, char **dstbuf, size_t *buflen, node *n,
 
 node *dbs_read_entry(module *db, nbr_t fpos)
 {
-	nbr_t save_fpos = ftell(db->fp);
-	fseek(db->fp, fpos, SEEK_SET);
+	nbr_t save_fpos = ftello(db->fp);
+	fseeko(db->fp, fpos, SEEK_SET);
 	lexer l;
 	lexer_init(&l, db->pl);
 	l.db = db;
 	char *line = trealla_readline(&l, db->fp, 0);
-	fseek(db->fp, save_fpos, SEEK_SET);
+	fseeko(db->fp, save_fpos, SEEK_SET);
 
 	int len = strlen(line);
 
@@ -196,7 +198,7 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 	do {
 		char *line;
 
-		while (db->last_fpos = ftell(db->fp), ((line = trealla_readline(&lex, db->fp, 0)) != NULL)) {
+		while (db->last_fpos = ftello(db->fp), ((line = trealla_readline(&lex, db->fp, 0)) != NULL)) {
 			line_nbr++;
 
 			if (!isalpha(line[0]) && (line[0] != '_'))
@@ -291,14 +293,14 @@ static void dbs_load(module *db, int tail, int load)
 
 nbr_t dbs_get_fpos(module *db)
 {
-	return db->loading ? db->last_fpos : ftell(db->fp);
+	return db->loading ? db->last_fpos : ftello(db->fp);
 }
 
 int dbs_done(module *db)
 {
 	if (db->fp) {
-		fseek(db->fp, 0, SEEK_END);
-		nbr_t save_fpos = ftell(db->fp);
+		fseeko(db->fp, 0, SEEK_END);
+		nbr_t save_fpos = ftello(db->fp);
 		fclose(db->fp);
 		db->fp = NULL;
 
