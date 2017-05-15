@@ -7,5 +7,5 @@ main :-
 
 chart(Symbol) :-
 	yahoo:get_chart(Symbol,Data),
-	write(Data), nl.
+	writeln(Data).
 
