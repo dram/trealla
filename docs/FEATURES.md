@@ -477,20 +477,20 @@ Network Processes: namespace 'proc'
 A process can be created as a network server, to which a client process connects and they can
 exchange messages just as above:
 
-	server(+NameList,-Pid)            - fork as named network process
-	server(+NameList,-Pid,+Key,+Cert) - ditto & specify KEY & CERT .pem files
+	server(+BindList,-Pid)            - fork as named network process
+	server(+BindList,-Pid,+Key,+Cert) - ditto & specify KEY & CERT .pem files
 
-The *netproc/2* call just creates a named network server which then creates a process for each
-client connection (with TCP only). The name refers to a named service for sharing with discovery.
-When multiple bindings are provided they all funnel into the same receive queue for the process. An
-ephemeral port is allocated automatically by the system. The process terminates on a client
-disconnect.
+The *server/2* call just creates a named network server (or servers) which waits and then spawns a
+light-weight process for every client connection (with TCP only). The name (if present) refers to a
+named service for sharing with discovery. When multiple bindings are provided they all funnel into
+the same receive queue for the process. An ephemeral port is allocated automatically by the system.
+The spawned process exits on a client disconnect.
 
 Use the *pid/2* call to connect a network client, where Name may refer to a named service to be found
 using discovery. If a local process of that name is found, it will be used first, otherwise a network
 process will be sought using discovery.
 
-Both *netproc/* and *pid/2* may take bind attributes (as outlined in the next section). For example,
+Both *server/* and *pid/2* may take bind attributes (as outlined in the next section). For example,
 a simple echo server and client:
 
 	:-using([proc,net]).
@@ -546,11 +546,11 @@ upgrade need be negotiated.
 Optional attributes are allowed of the form 'key=value' such as 'scope=TEST' which names a scope for
 discovery purposes, and 'name=QUOTES' which specifies a named service.
 
-If no port (or port=0) is specified then one is assigned by the system. For named services with
-discovery this is usually sufficient.
+If no port (or port=0) is specified then an ephemeral one is assigned by the system. For named
+services with discovery this is usually sufficient.
 
 For SSL servers files *key.pem* and *cert.pem* are looked for, which contain the private key and
-certificate(s) (see LetEncrypt note above). Default ones for testing are provided.
+certificate(s). Default ones for testing are provided.
 
 	server(+BindList,-S)            - listen for and accept connections
 	server(+BindList,-S,+Key,+Cert) - ditto & specify KEY & CERT .pem files
@@ -577,9 +577,11 @@ certificate(s) (see LetEncrypt note above). Default ones for testing are provide
 	ipv6(+S,?V)                     - unifies with 'true/false'
 	is_socket(+Term)                - is the arg a socket?
 
-With *server/3* a listener is started which waits for incoming connections. Whenever an event is
-detected on a socket a thread continues as an independent sub-query. The attributes 'mcast6=addr'
-adds multicast IPV6 membership to the group-address supplied, and 'mcast4=addr' adds IPV4.
+With *server/2* a listener is started which waits for incoming connections. A new light-weight
+process is started per connection.
+
+The attributes 'mcast6=addr' adds multicast IPV6 membership to the group-address supplied, and
+'mcast4=addr' adds IPV4.
 
 With *client/2* it either succeeds once or fails. Client can also take a URI format specifiying
 either http:, https:, ws: or wss: schemes. If ws: or wss: then an immediate protocol upgrade should
@@ -587,15 +589,18 @@ be requested. The attribute 'loop=[1|0]' adds UDP multicast loopback and 'ttl=[N
 TTLs (aka hops). Clients can also specify userid and password in the URL for HTTP 'Basic'
 authorization (preferably only over SSL/TLS).
 
-With *readmsg/2* the stream is read until a trailing new-line.
+With *readmsg/2* the stream is read until a trailing new-line. In other words: a complete message.
 
 With *bread/3* an ungrounded length specification causes a non-blocking read that returns whatever
 is currently available, otherwise it blocks until it can return the specified length.
 
 Note: regular streams I/O can be used over sockets.
 
-Note: writes to sockets are normally blocking but *sys:write_file/2* can yield internally when
-called by a process. Use *tmo/1* to set a timeout.
+Note: writes to sockets are normally blocking but *sys:write_file/2* can yield internally when an
+operation would cause blocking. Use *tmo/1* to set a timeout. Most (?) read operations with sockets
+will yield when waiting for data that would cause blocking. This way it is possible to write simple
+repeat/read/write loops and not worry about thread starvation.
+
 
 HTTP processing: namespace 'http'
 ---------------------------------
