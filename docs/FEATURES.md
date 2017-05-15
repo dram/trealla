@@ -146,8 +146,12 @@ These are an assortment of utilities:
 	save_file(+File,+Atom)      - create named file
 	remove_file(+File)          - delete named file
 	append_file(+File,+Atom)    - append to named file
-	write_file(+S,+File)        - write contents of named file to stream
-	write_file(+S,+File,+From,+To) - write ranged contents of named file to stream
+
+	write_file(+S,+File,+From,+To) - write ranged contents of named file to stream. Range is in
+									offsets starting at 0. A *to* offset of -1 means to the end.
+
+	write_file(+S,+File)        - equivalent to write_file(S,File,0,-1)
+
 	bread(+S,?len,-Blob)        - block read from stream
 	bwrite(+S,+Atom)            - block write to stream
 	rand(-Int)                  - random int value >= 0 and < RAND_MAX
@@ -175,9 +179,11 @@ These are an assortment of utilities:
 	replace(+Atom,+S1,+S2,-Atom) - replace every occurrance of S1 with S2
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 	atom_number(+A,?V)          - convert atom to Int or Float
+
 	atom_timestamp(+A,-Usecs)   - atom is YYYY-MM-DD!HH:MM:SS.SSS
 								   (Note: the actual separators can be
 								   any character at all) to usecs.
+
 	format_rfcdate(+Int,-Atom)  - format C-epoch to RFC datetime
 	parse_rfcdate(+Atom,-Int)   - parse RFC datetime to C-epoch
 	parse_csv(+Atom,-List)      - parse comma-separated variables into list
