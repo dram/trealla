@@ -56,7 +56,7 @@ get11_file(Host,Path,Filename) :-
 put11_file(Host,Path,Filename) :-
 	net:client(Host,S),
 	mime:mime_type(Filename,MimeType),
-	http:put11(S,Path,MimeType,Status),
+	http:put11(S,Path,MimeType,?ConnClose,Status),
 	Status = 200,
 	http:put_file(S,Filename),
 	close(S).
@@ -81,9 +81,9 @@ get10_block(S,Data,Data).
 get11_internal(S,Path,Keep,Data) :-
 	http:get11(S,Path,Keep,Status),
 	Status = 200,
-	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
+	net:stash_get(S,'CONTENT_LENGTH',LenStr,'-1'),
 	atom_number(LenStr,Len),
-	(Len > 0 -> bread(S,Len,Data) ; get11_chunk(S,'',Data)),
+	(Len >= 0 -> bread(S,Len,Data) ; get11_chunk(S,'',Data)),
 	true.
 
 get11_chunk(S,Running,Data) :-
