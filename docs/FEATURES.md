@@ -618,13 +618,17 @@ Hyper-Text Transfer Protocol:
 	get10(+S,+Path,+Keep,-Status)	- with optional boolean keep-alive
 	head10(+S,+Path,-Status)
 	del10(+S,+Path,-Status)
+	del10(+S,+Path,+Keep,-Status)
 	put10(+S,+Path,+Type,+Len,-Status)
+	put10(+S,+Path,+Type,+Len,+Keep,-Status)
 
 	get11(+S,+Path,-Status)
 	get11(+S,+Path,+Keep,-Status)	- with optional boolean keep-alive
 	head11(+S,+Path,-Status)
 	del11(+S,+Path,-Status)
+	del11(+S,+Path,+Keep,-Status)
 	put11(+S,+Path,+Type,-Status)
+	put11(+S,+Path,+Type,+Keep,-Status)
 	get_chunk(+S,-Blob,-Len)
 	put_chunk(+S,+Atom,+Len)
 	put_chunk(+S,+Atom)
