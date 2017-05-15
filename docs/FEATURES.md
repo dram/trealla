@@ -768,19 +768,15 @@ Provides basic HTTP/1.0 client functionality:
 
 	get10_data(+Host,+Path,-Data)
 	get10_file(+Host,+Path,+Filename)
+	put10_data(+Host,+Path,+MimeType,+Data)
 	put10_file(+Host,+Path,+Filename)
-
-	get10_data(+Host,+Path,-Data,-S)   - keep-alive stream
-	get10_more(+S,Path,-Data)          - re-use stream
 
 Provides basic HTTP/1.1 client functionality:
 
 	get11_data(+Host,+Path,-Data)
 	get11_file(+Host,+Path,+Filename)
+	put11_data(+Host,+Path,+MimeType,+Data)
 	put11_file(+Host,+Path,+Filename)
-
-	get11_data(+Host,+Path,-Data,-S)   - keep-alive stream
-	get11_more(+S,Path,-Data)          - re-use stream
 
 STOMP library module: namespace 'stomp'
 -------------------------------------
