@@ -599,7 +599,7 @@ Note: regular streams I/O can be used over sockets.
 Note: writes to sockets are normally blocking but *sys:write_file/2* can yield internally when an
 operation would cause blocking. Use *tmo/1* to set a timeout. Most (?) read operations with sockets
 will yield when waiting for data that would cause blocking. This way it is possible to write simple
-repeat/read/write loops and not worry about thread starvation.
+repeat/read/write loops and not worry about thread starvation with many connections.
 
 
 HTTP processing: namespace 'http'
@@ -635,9 +635,6 @@ with cookie crumbs. With *parse/4* query args can also be accessed by name. Thes
 only when all headers have been consumed and content (if any) is ready for reading. Stash keys are
 case-insensitive. The path and query values are URL-decoded. Currently only the HEAD and GET methods
 are supported.
-
-Note: writes to sockets are normally blocking but *put_file/2* can yield internally when called by
-a process. Use *tmo/1* to set a timeout.
 
 See *samples/http_server.pro* & *samples/http_client.pro* for guidance.
 
