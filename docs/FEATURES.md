@@ -222,7 +222,7 @@ back-quotes in which case the enclosed characters are output base64-encoded, eg.
 
 	`SGVsbG8sIHdvcmxkIQ==` == 'Hello, world!'
 
-Also, *atom_length/2* returns the number of UTF-8 characters in an atom while for BLOBs it's the
+Note: *atom_length/2* returns the number of UTF-8 characters in an atom while for BLOBs it's the
 stored length. Atoms are assumed UTF-8.
 
 Database store: namespace 'dbs'
@@ -614,25 +614,20 @@ Hyper-Text Transfer Protocol:
 	cookie(+S,+Name,-Atom)       - get named cookie value (or '' if non-exist)
 	basic_auth(+S,-User,-Pass)   - decode Basic auth token (if present)
 
-	get10(+S,+Path,-Status)
-	get10(+S,+Path,+Keep,-Status)	- with optional boolean keep-alive
-	head10(+S,+Path,-Status)
-	del10(+S,+Path,-Status)
+	head10(+S,+Path,+Keep,-Status)
+	get10(+S,+Path,+Keep,-Status)
 	del10(+S,+Path,+Keep,-Status)
-	put10(+S,+Path,+Type,+Len,-Status)
 	put10(+S,+Path,+Type,+Len,+Keep,-Status)
 
-	get11(+S,+Path,-Status)
-	get11(+S,+Path,+Keep,-Status)	- with optional boolean keep-alive
-	head11(+S,+Path,-Status)
-	del11(+S,+Path,-Status)
+	head11(+S,+Path,+Keep,-Status)
+	get11(+S,+Path,+Keep,-Status)
 	del11(+S,+Path,+Keep,-Status)
-	put11(+S,+Path,+Type,-Status)
-	put11(+S,+Path,+Type,+Keep,-Status)
-	get_chunk(+S,-Blob,-Len)
-	put_chunk(+S,+Atom,+Len)
-	put_chunk(+S,+Atom)
-	put_file(+S,+Filename)			- DEPRECATED (use *sys:write_file/2*)
+	put11(+S,+Path,+Type,+Len,+Keep,-Status)
+
+If *Len* is -1 then using put11_chunk:
+
+	put11_chunk(+S,+Atom)
+	get11_chunk(+S,-Blob,-Len)
 
 With *parse/4* and *get/3* header values are saved to the stash and can be accessed by name. Ditto
 with cookie crumbs. With *parse/4* query args can also be accessed by name. These functions succeed

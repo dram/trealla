@@ -588,19 +588,6 @@ int http_get10(session *s, const char *path, int keep, int *status)
 	return 0;
 }
 
-static int bif_http_get10_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_get10((session *)sp->sptr, VAL_S(term2), 0, &status);
-	put_int(q, q->curr_frame + term3->slot, status);
-	return ok;
-}
-
 static int bif_http_get10_4(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -615,9 +602,8 @@ static int bif_http_get10_4(tpl_query *q)
 	return ok;
 }
 
-static int http_head10(session *s, const char *path, int *status)
+static int http_head10(session *s, const char *path, int keep, int *status)
 {
-	const int keep = 0;
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
@@ -676,16 +662,17 @@ static int http_head10(session *s, const char *path, int *status)
 	return 0;
 }
 
-static int bif_http_head10_3(tpl_query *q)
+static int bif_http_head10_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
 	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
+	node *term3 = get_int(term3);
+	node *term4 = get_var(term4);
 	stream *sp = term1->val_str;
 	int status = 0;
-	int ok = http_head10((session *)sp->sptr, VAL_S(term2), &status);
-	put_int(q, q->curr_frame + term3->slot, status);
+	int ok = http_head10((session *)sp->sptr, VAL_S(term2), term3->val_i, &status);
+	put_int(q, q->curr_frame + term4->slot, status);
 	return ok;
 }
 
@@ -747,19 +734,6 @@ int http_get11(session *s, const char *path, int keep, int *status)
 	return 0;
 }
 
-static int bif_http_get11_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_get11((session *)sp->sptr, VAL_S(term2), 0, &status);
-	put_int(q, q->curr_frame + term3->slot, status);
-	return ok;
-}
-
 static int bif_http_get11_4(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -774,9 +748,8 @@ static int bif_http_get11_4(tpl_query *q)
 	return ok;
 }
 
-static int http_head11(session *s, const char *path, int *status)
+static int http_head11(session *s, const char *path, int keep, int *status)
 {
-	const int keep = 0;
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
@@ -831,20 +804,21 @@ static int http_head11(session *s, const char *path, int *status)
 	return 0;
 }
 
-static int bif_http_head11_3(tpl_query *q)
+static int bif_http_head11_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
 	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
+	node *term3 = get_int(term3);
+	node *term4 = get_var(term4);
 	stream *sp = term1->val_str;
 	int status = 0;
-	int ok = http_head11((session *)sp->sptr, VAL_S(term2), &status);
-	put_int(q, q->curr_frame + term3->slot, status);
+	int ok = http_head11((session *)sp->sptr, VAL_S(term2), term3->val_i, &status);
+	put_int(q, q->curr_frame + term4->slot, status);
 	return ok;
 }
 
-static int bif_http_get_chunk_3(tpl_query *q)
+static int bif_http_get11_chunk_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -912,43 +886,7 @@ static int bif_http_get_chunk_3(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_put_chunk_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_int(term3);
-	stream *sp = term1->val_str;
-
-	session_set_cork((session *)sp->sptr, 1);
-
-	char tmpbuf[256];
-	snprintf(tmpbuf, sizeof(tmpbuf), "%x\r\n", (unsigned)term3->val_i);
-
-	if (!session_writemsg((session *)sp->sptr, tmpbuf)) {
-		session_set_cork((session *)sp->sptr, 0);
-		return 0;
-	}
-
-	if (term3->val_i > 0) {
-		if (!session_write((session *)sp->sptr, VAL_S(term2), term3->val_i)) {
-			session_set_cork((session *)sp->sptr, 0);
-			return 0;
-		}
-	}
-
-	snprintf(tmpbuf, sizeof(tmpbuf), "\r\n");
-
-	if (!session_writemsg((session *)sp->sptr, tmpbuf)) {
-		session_set_cork((session *)sp->sptr, 0);
-		return 0;
-	}
-
-	session_set_cork((session *)sp->sptr, 0);
-	return 1;
-}
-
-static int bif_http_put_chunk_2(tpl_query *q)
+static int bif_http_put11_chunk_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -965,9 +903,11 @@ static int bif_http_put_chunk_2(tpl_query *q)
 		return 0;
 	}
 
-	if (!session_write((session *)sp->sptr, VAL_S(term2), LEN(term2))) {
-		session_set_cork((session *)sp->sptr, 0);
-		return 0;
+	if (LEN(term2) > 0) {
+		if (!session_write((session *)sp->sptr, VAL_S(term2), LEN(term2))) {
+			session_set_cork((session *)sp->sptr, 0);
+			return 0;
+		}
 	}
 
 	snprintf(tmpbuf, sizeof(tmpbuf), "\r\n");
@@ -981,6 +921,7 @@ static int bif_http_put_chunk_2(tpl_query *q)
 	return 1;
 }
 
+#if 0
 static int bif_http_put_file_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1071,6 +1012,7 @@ static int bif_http_put_file_2(tpl_query *q)
 
 	return 1;
 }
+#endif
 
 static int http_put10(session *s, const char *path, const char *cttype, int64_t ctlen, int keep, int *status)
 {
@@ -1138,21 +1080,6 @@ static int http_put10(session *s, const char *path, const char *cttype, int64_t 
 	return 0;
 }
 
-static int bif_http_put10_5(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_atom(term3);
-	node *term4 = get_int(term4);
-	node *term5 = get_var(term5);
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_put10((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, 1, &status);
-	put_int(q, q->curr_frame + term5->slot, status);
-	return ok;
-}
-
 static int bif_http_put10_6(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1169,7 +1096,7 @@ static int bif_http_put10_6(tpl_query *q)
 	return ok;
 }
 
-static int http_put11(session *s, const char *path, const char *cttype, int keep, int *status)
+static int http_put11(session *s, const char *path, const char *cttype, int ctlen, int keep, int *status)
 {
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
@@ -1190,7 +1117,10 @@ static int http_put11(session *s, const char *path, const char *cttype, int keep
 	if (cttype[0])
 		dst += snprintf(dst, 256, "Content-Type: %s\r\n", cttype);
 
-	dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
+	if (ctlen >= 0)
+		dst += sprintf(dst, "Content-Length: %lu\r\n", (long unsigned)ctlen);
+	else
+		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
 
 	if (!keep)
 		dst += sprintf(dst, "Connection: %s\r\n", "close");
@@ -1234,32 +1164,19 @@ static int http_put11(session *s, const char *path, const char *cttype, int keep
 	return 0;
 }
 
-static int bif_http_put11_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_atom(term3);
-	node *term4 = get_var(term4);
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_put11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), 1, &status);
-	put_int(q, q->curr_frame + term4->slot, status);
-	return ok;
-}
-
-static int bif_http_put11_5(tpl_query *q)
+static int bif_http_put11_6(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_atom(term3);
 	node *term4 = get_int(term4);
-	node *term5 = get_var(term5);
+	node *term5 = get_int(term5);
+	node *term6 = get_var(term6);
 	stream *sp = term1->val_str;
 	int status = 0;
-	int ok = http_put11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, &status);
-	put_int(q, q->curr_frame + term5->slot, status);
+	int ok = http_put11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, &status);
+	put_int(q, q->curr_frame + term6->slot, status);
 	return ok;
 }
 
@@ -1321,19 +1238,6 @@ static int http_delete10(session *s, const char *path, int keep, int *status)
 	}
 
 	return 0;
-}
-
-static int bif_http_delete10_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_delete10((session *)sp->sptr, VAL_S(term2), 1, &status);
-	put_int(q, q->curr_frame + term3->slot, status);
-	return ok;
 }
 
 static int bif_http_delete10_4(tpl_query *q)
@@ -1408,19 +1312,6 @@ static int http_delete11(session *s, const char *path, int keep, int *status)
 	}
 
 	return 0;
-}
-
-static int bif_http_delete11_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_delete11((session *)sp->sptr, VAL_S(term2), 1, &status);
-	put_int(q, q->curr_frame + term3->slot, status);
-	return ok;
 }
 
 static int bif_http_delete11_4(tpl_query *q)
@@ -2108,25 +1999,19 @@ void bifs_load_http(void)
 	DEFINE_BIF("http:query", 3, bif_http_query_3);
 	DEFINE_BIF("http:form", 3, bif_http_form_3);
 	DEFINE_BIF("http:cookie", 3, bif_http_cookie_3);
-	DEFINE_BIF("http:get10", 3, bif_http_get10_3);
+
+	DEFINE_BIF("http:head10", 4, bif_http_head10_4);
 	DEFINE_BIF("http:get10", 4, bif_http_get10_4);
-	DEFINE_BIF("http:head10", 3, bif_http_head10_3);
-	DEFINE_BIF("http:delete10", 3, bif_http_delete10_3);
 	DEFINE_BIF("http:delete10", 4, bif_http_delete10_4);
-	DEFINE_BIF("http:put10", 5, bif_http_put10_5);
 	DEFINE_BIF("http:put10", 6, bif_http_put10_6);
 
-	DEFINE_BIF("http:get11", 3, bif_http_get11_3);
+	DEFINE_BIF("http:head11", 4, bif_http_head11_4);
 	DEFINE_BIF("http:get11", 4, bif_http_get11_4);
-	DEFINE_BIF("http:head11", 3, bif_http_head11_3);
-	DEFINE_BIF("http:delete11", 3, bif_http_delete11_3);
 	DEFINE_BIF("http:delete11", 4, bif_http_delete11_4);
-	DEFINE_BIF("http:put11", 4, bif_http_put11_4);
-	DEFINE_BIF("http:put11", 5, bif_http_put11_5);
-	DEFINE_BIF("http:get_chunk", 3, bif_http_get_chunk_3);
-	DEFINE_BIF("http:put_chunk", 3, bif_http_put_chunk_3);
-	DEFINE_BIF("http:put_chunk", 2, bif_http_put_chunk_2);
-	DEFINE_BIF("http:put_file", 1 + 2, bif_http_put_file_2);
+	DEFINE_BIF("http:put11", 6, bif_http_put11_6);
+
+	DEFINE_BIF("http:get11_chunk", 3, bif_http_get11_chunk_3);
+	DEFINE_BIF("http:put11_chunk", 2, bif_http_put11_chunk_2);
 
 	DEFINE_BIF("h2:is_h2", 2, bif_h2_is_h2_2);
 	DEFINE_BIF("h2:request", 3, bif_h2_request_3);
