@@ -142,7 +142,7 @@ These are an assortment of utilities:
 	make_dir(+Path,+Mode)       - make dir if not exists
 	exists_file(+File)          - check if file exists
 	exists_file(+File,-L,-S)    - ... length in bytes and last-modified in seconds (C-epoch)
-	load_file(+File,-Blob)      - read named file into BLOB
+	load_file(+File,-Blob)      - read named file
 	save_file(+File,+Atom)      - create named file
 	remove_file(+File)          - delete named file
 	append_file(+File,+Atom)    - append to named file
