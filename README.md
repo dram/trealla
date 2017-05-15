@@ -59,7 +59,7 @@ Current ISO predicates that are not implemented:
 Usage
 -----
 
-  ./tpl [options]
+  tpl [options]
 
 	Options:
 
@@ -98,16 +98,16 @@ Avoid using *.pl* so as not confuse your text editor (it will think it's Perl so
 	yap -l samples/validate.pro
 	swipl -l samples/validate.pro --traditional
 
-	./tpl -l samples/queens4.pro -g test
-	./tpl -l samples/queens8.pro -g test
-	./tpl -l samples/qsort.pro -g test
-	./tpl -l samples/sieve.pro -g test
-	./tpl -l samples/fac.pro -g test
+	tpl -l samples/queens4.pro -g test
+	tpl -l samples/queens8.pro -g test
+	tpl -l samples/qsort.pro -g test
+	tpl -l samples/sieve.pro -g test
+	tpl -l samples/fac.pro -g test
 
 Consulting from STDIN works as follows:
 
 	ARG=hello
-	./tpl --consult <<EOF
+	tpl --consult <<EOF
 	:-initialization(main).
 	main :- write($ARG), nl.
 	EOF
@@ -117,16 +117,16 @@ and can be useful with scripting.
 Special Usage
 -------------
 
-	./tpl get URL [filename]       	    - download
-	./tpl install URL [filename]   	    - download & then extract
-	./tpl appget NAME                   - download app (from GitHub)
+	tpl get URL [filename]       	    - download
+	tpl install URL [filename]   	    - download & then extract
+	tpl appget NAME                   - download app (from GitHub)
 
 Using the REPL
 --------------
 
 To just get a prompt do not specify a goal:
 
-	> ./tpl
+	> tpl
 	?- Y is 12/4, Z is 12//4.
 	Y: 3.0, Z: 3
 	?- 1/3.
@@ -147,14 +147,14 @@ Benchmarks
 Indicative only, may not be current, and depends highly on compilers
 and compiler options. Made with 'make iso_small' option:
 
-  ./tpl -l samples/hanoi.pro -g 'hanoiq(20)'
+  tpl -l samples/hanoi.pro -g 'hanoiq(20)'
 
 	yap       0.072s
 	swipl     0.213s
 	gprolog   0.388s
 	trealla   0.424s
 
-  ./tpl -l samples/sieve.pro -g 'test4'  // generate 1st 5K primes
+  tpl -l samples/sieve.pro -g 'test4'  // generate 1st 5K primes
 
 	yap       0.052s
 	trealla   0.151s
@@ -162,14 +162,14 @@ and compiler options. Made with 'make iso_small' option:
 	swipl     0.197s
 	gprolog   0.272s
 
-  ./tpl -l samples/sieve.pro -g 'test6'  // generate 1st 50K primes
+  tpl -l samples/sieve.pro -g 'test6'  // generate 1st 50K primes
 
 	yap       2.7s
 	trealla   8.3s
 	swipl     out of memory after 15.7 seconds
 	gprolog   out of memory
 
-  ./tpl -l samples/queens4.pro -g 'test3'  // queens 4x4 10K times
+  tpl -l samples/queens4.pro -g 'test3'  // queens 4x4 10K times
 
 	yap       0.152s
 	swipl     0.608s   (with -O)
@@ -177,7 +177,7 @@ and compiler options. Made with 'make iso_small' option:
 	trealla   1.108s
 	gprolog   1.180s
 
-  ./tpl -l samples/queens12.pro -g 'testq' // queens 12x12 1 times
+  tpl -l samples/queens12.pro -g 'testq' // queens 12x12 1 times
 
 	yap       1.5s
 	swipl     5.7s   (with -O)

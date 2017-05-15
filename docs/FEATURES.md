@@ -672,8 +672,8 @@ BLOBs.
 
 For example:
 
-  ./tpl -l samples/testws.pro "-g echo('ws://echo.websocket.org','Hello, world')"
-  ./tpl -l samples/testws.pro "-g ping('ws://echo.websocket.org','Hello, world')"
+  tpl -l samples/testws.pro "-g echo('ws://echo.websocket.org','Hello, world')"
+  tpl -l samples/testws.pro "-g ping('ws://echo.websocket.org','Hello, world')"
 
 See *'samples/ws_server.pro'* & *'samples/testws.pro'* for guidance.
 
