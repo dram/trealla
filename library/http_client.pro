@@ -28,7 +28,7 @@ get10_more(S,Path,Data) :-
 
 put10_file(Host,Path,Filename) :-
 	net:client(Host,S),
-	exists_file(Filename,Len,_Mod),
+	exists_file(Filename,Len,Mod),
 	mime:mime_type(Filename,MimeType),
 	http:put10(S,Path,MimeType,Len,Status),
 	Status = 200,
