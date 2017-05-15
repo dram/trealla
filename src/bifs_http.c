@@ -1031,7 +1031,7 @@ static int bif_http_put_file_2(tpl_query *q)
 		}
 	}
 
-	size_t buflen = 1024 * 64;
+	size_t buflen = 1024 * 8;
 	char *tmpbuf = malloc(buflen);
 	size_t rlen;
 
