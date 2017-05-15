@@ -170,16 +170,6 @@ process_file(S,Ver,Lmod,Len,'HEAD',FullPath) :- !,
 	write(S,Msg),
 	true.
 
-process_file(S,Ver,Lmod,Len,'GET',FullPath) :-
-	Ver=1.1, !,
-	stash_get(S,'Connection',Conn,'keep-alive'),
-	lower(Conn,Conn2),
-	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
-	mime:mime_type(FullPath,Ct),
-	concat('HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Type: ',Ct,'\r\nTransfer-Encoding: chunked\r\n\r\n',Msg),
-	write(S,Msg),
-	http:put_file(S,FullPath).
-
 process_file(S,Ver,Lmod,Len,'GET',FullPath) :- !,
 	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
