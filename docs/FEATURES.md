@@ -638,7 +638,7 @@ only when all headers have been consumed and content (if any) is ready for readi
 case-insensitive. The path and query values are URL-decoded. Currently only the HEAD and GET methods
 are supported.
 
-See *samples/http_server.pro* & *samples/http_client.pro* for guidance.
+See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
 HTTP2 processing: namespace 'h2'
 ---------------------------------
