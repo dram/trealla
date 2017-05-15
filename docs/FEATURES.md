@@ -624,10 +624,13 @@ Hyper-Text Transfer Protocol:
 	del11(+S,+Path,+Keep,-Status)
 	put11(+S,+Path,+Type,+Len,+Keep,-Status)
 
-If *Len* is -1 then using put11_chunk:
+If *put11/6* arg *Len* is -1 then use *put11_chunk/2* to write:
 
 	put11_chunk(+S,+Atom)
 	get11_chunk(+S,-Blob,-Len)
+
+The *Keep* arg indicates whether to keep alive (persist) the connection. If 0 the connection should
+be closed after the operation is completed. If 1 then the connection may be used mutiple times.
 
 With *parse/4* and *get/3* header values are saved to the stash and can be accessed by name. Ditto
 with cookie crumbs. With *parse/4* query args can also be accessed by name. These functions succeed
