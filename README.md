@@ -137,7 +137,7 @@ To just get a prompt do not specify a goal:
 The REPL supports LEFT/RIGHT arrow keys (move left/right) as well as
 CTRL-LEFT/RIGHT (jump left/right), UP/DOWN for prev/next command in
 history (also CTRL-P/CTRL-N) and CTRL-R for reverse-search in history.
-History is saved in the *'~/.tpl_history'* file. Also HOME (CTRL-A) to
+History is saved in the *~/.tpl_history* file. Also HOME (CTRL-A) to
 go to start of line, END (CTRL-E) for end of line, and CTRK-K to kill
 to end of line.
 

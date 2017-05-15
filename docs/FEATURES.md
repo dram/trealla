@@ -222,13 +222,13 @@ back-quotes in which case the enclosed characters are output base64-encoded, eg.
 
 	`SGVsbG8sIHdvcmxkIQ==` == 'Hello, world!'
 
-Also, *'atom_length/2'* returns the number of UTF-8 characters in an atom while for BLOBs it's the
+Also, *atom_length/2* returns the number of UTF-8 characters in an atom while for BLOBs it's the
 stored length. Atoms are assumed UTF-8.
 
 Database store: namespace 'dbs'
 ------------------------------
 
-The rule database exists per module (or *'default'*) and will index on the first argument any
+The rule database exists per module (or *default*) and will index on the first argument any
 asserted clauses that have first been declared dynamic:
 
 	:-dynamic(+Name/Arity).
@@ -245,18 +245,18 @@ The database will wake any waiting processes that have asked to be notified on n
 	:-dynamic(+Name/Arity,[notify]).
 
 The database will save to the transaction log asserted clauses that have first been declared with
-the *'persist'* modifier:
+the *persist* modifier:
 
 	:-dynamic(+Name/Arity,[persist]).
 
-The alternative declaration with a *'storage'* modifier:
+The alternative declaration with a *storage* modifier:
 
 	:-dynamic(+Name/Arity,[storage]).
 
 means that all args from the second position on are stored in the transaction log only and not in
 memory. Instead a filepos into the log is held and the data is loaded on demand. In this way
 databases far larger than physical memory can be accessed, especially useful if blobs are stored
-(for example: you no longer need to store a name to an external file). The *'persist'* modifier
+(for example: you no longer need to store a name to an external file). The *persist* modifier
 is implied and doesn't need to be specified.
 
 To access the persistent database:
@@ -289,7 +289,7 @@ adapters that need to write to the log what to do, without actually doing it the
 program could then tail the log and update the real database.
 
 Periodically the log and the master are merged and a new master is created, discarding old files.
-This normally happens when the *'--merge'* option is specified on the command-line.
+This normally happens when the *--merge* option is specified on the command-line.
 
 Linda data-coordination: namespace 'linda'
 ------------------------------------------
@@ -321,7 +321,7 @@ used to implement polling.
 
 Note: a worker process can use the per-process dictionary.
 
-See *'samples/testlinda.pro'* for guidance.
+See *samples/testlinda.pro* for guidance.
 
 Concurrent Processes: namespace 'proc'
 --------------------------------------
@@ -392,7 +392,7 @@ After a spawn or fork, both the parent and child can assume the value of the cur
 many processes then the Pid for each child may retrieved and saved. Two child processes may
 communicate by one obtaining the Pid of the other (from the parent). Alternatively spawn may
 register a local named process. Named processes can be located by a call to *pid/2*. A process can
-refer to itself as *'self'* and its parent (if linked) as *'parent'*.
+refer to itself as *self* and its parent (if linked) as *parent*.
 
 A timeout may be set as an int in milliseconds, a value of 0 means no timeout (and so polls) and -1
 means infinite (the default). After a timeout the receive call fails.
@@ -450,7 +450,7 @@ process is linked it will notify its parent.
 
 If a process calls *delay/1* or *sleep/1* then it yields.
 
-The *procinfo/2* named info items may be any of *'pids'*, *'idle'*, *'names'*.
+The *procinfo/2* named info items may be any of *pids*, *idle*, *names*.
 
 Each process has access to it's own private in-memory dictionary:
 
@@ -469,7 +469,7 @@ Hint: use *lput/3* to push or pop a list:
 	lput(Key,Old,[V|Old])      - push V to head
 	lput(Key,[V|New],New)      - pop V from head
 
-See *'samples/testspawn.pro'*, *'samples/skynet.pro'* for further guidance.
+See *samples/testspawn.pro*, *samples/skynet.pro* for further guidance.
 
 Network Processes: namespace 'proc'
 -----------------------------------
@@ -529,7 +529,7 @@ Note: messaging between network processes must always specify the actual Pid, as
 
 Note: there is no facility to directly start remote processes, run directed or arbitrary functions.
 
-See *'samples/echo.pro'* for further guidance.
+See *samples/echo.pro* for further guidance.
 
 Socket Streams: namespace 'net'
 -------------------------------
@@ -539,7 +539,7 @@ Socket streams can be managed simply by using the client/server patterns. Server
 format is 'host:port;attr' or again just ';attr'. Multiple attributes may be included, each
 seaparated by a ';' character.
 
-Attributes can include *'tcp'*, *'udp'*, *'+tls'* or *'+ws'*. If *'udp'* is not present then *'tcp'*
+Attributes can include *tcp*, *udp*, *'+tls'* or *'+ws'*. If *udp* is not present then *tcp*
 is assumed. If *'+ws'* is present this indicates raw WebSockets are in use and no HTTP protocol
 upgrade need be negotiated.
 
@@ -639,7 +639,7 @@ are supported.
 Note: writes to sockets are normally blocking but *put_file/2* can yield internally when called by
 a process. Use *tmo/1* to set a timeout.
 
-See *'samples/http_server.pro'* & *'samples/http_client.pro'* for guidance.
+See *samples/http_server.pro* & *samples/http_client.pro* for guidance.
 
 HTTP2 processing: namespace 'h2'
 ---------------------------------
@@ -658,8 +658,8 @@ WebSocket: namespace 'ws'
 
 	is_ws(+S,?V)               - WebSocket? unifies with 'true/false'
 
-With *'msg/3'* *Op* can be the atom *'more'*, *'data'*, *'ping'* or *'close'*. Note *'parse/3'* will
-return a *'more'*, *'data'* or *'close'*, anything else should be discarded.
+With *msg/3* *Op* can be the atom *more*, *data*, *ping* or *close*. Note *parse/3* will
+return a *more*, *data* or *close*, anything else should be discarded.
 
 Also note data atom will be a BLOB for a binary message and an atom for a text (UTF-8) message.
 
@@ -672,10 +672,10 @@ BLOBs.
 
 For example:
 
-  tpl -l samples/testws.pro "-g echo('ws://echo.websocket.org','Hello, world')"
-  tpl -l samples/testws.pro "-g ping('ws://echo.websocket.org','Hello, world')"
+  tpl -l samples/testws.pro -g "echo('ws://echo.websocket.org','Hello, world')"
+  tpl -l samples/testws.pro -g "ping('ws://echo.websocket.org','Hello, world')"
 
-See *'samples/ws_server.pro'* & *'samples/testws.pro'* for guidance.
+See *samples/ws_server.pro* & *samples/testws.pro* for guidance.
 
 Dictionary library module: namespace  'dict'
 --------------------------------------------
@@ -798,10 +798,10 @@ The Simple(/Streaming) Text Oriented Messaging Protocol:
 	parse(+S,-Cmd,-Len)       - parse message (except content)
 	msg(+S,+Cmd,+Hdrs,+Atom)  - send ANY request ('Data' can be BLOB or atom)
 
-While superficially similar to HTTP, STOMP is actually bidirectional, so *'parse/3'* and *'msg/4'*
+While superficially similar to HTTP, STOMP is actually bidirectional, so *parse/3* and *msg/4*
 are used on both the server & client sides.
 
-See *'samples/stomp_server.pro'* & *'samples/stomp_client.pro'* for guidance.
+See *samples/stomp_server.pro* & *samples/stomp_client.pro* for guidance.
 
 MIME library module: namespace 'mime'
 -------------------------------------
