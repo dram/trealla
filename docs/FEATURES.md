@@ -554,7 +554,7 @@ certificate(s). Default ones for testing are provided.
 
 	server(+BindList,-S)            - listen for and accept connections
 	server(+BindList,-S,+Key,+Cert) - ditto & specify KEY & CERT .pem files
-	handler(+S,:Hello,:Bye)         - on server connection handling
+	handler(+S,:Hello,:Bye)         - on server connection handling (DEPRECATED?)
 	client(+Host,-S)                - connect to server
 	start_tls(+S)                   - enable TLS switchover
 	readmsg(+S,-Atom)               - read up thru LF from socket
@@ -628,7 +628,7 @@ Hyper-Text Transfer Protocol:
 	get_chunk(+S,-Blob,-Len)
 	put_chunk(+S,+Atom,+Len)
 	put_chunk(+S,+Atom)
-	put_file(+S,+Filename)
+	put_file(+S,+Filename)			- DEPRECATED (use *sys:write_file/2*)
 
 With *parse/4* and *get/3* header values are saved to the stash and can be accessed by name. Ditto
 with cookie crumbs. With *parse/4* query args can also be accessed by name. These functions succeed
