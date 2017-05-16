@@ -1430,6 +1430,8 @@ static char *url_encode(const char *src, int len, char *dstbuf)
 {
 	char *dst = dstbuf;
 
+	// As per RFC3986 (2005)
+
 	while (len-- > 0) {
 		if (!isalnum(*src) && (*src != '-') && (*src != '_') && (*src != '.') && (*src != '~'))
 			dst += sprintf(dst, "%%%02X", (unsigned)*src++);
