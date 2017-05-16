@@ -1428,16 +1428,10 @@ static int bif_sys_hash_2(tpl_query *q)
 
 static char *url_encode(const char *src, int len, char *dstbuf)
 {
-	const char *reserved ="!*'();:@&=+$,/?#[]";
-
 	char *dst = dstbuf;
 
 	while (len-- > 0) {
-		if (*src == ' ') {
-			*dst++ = '+';
-			src++;
-		}
-		else if (iscntrl(*src) || strchr(reserved, *src))
+		if (!isalnum(*src) && (*src != '-') && (*src != '_') && (*src != '.') && (*src != '~'))
 			dst += sprintf(dst, "%%%02X", (unsigned)*src++);
 		else
 			*dst++ = *src++;
