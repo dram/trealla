@@ -2155,7 +2155,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 			if ((self->was_paren || self->was_op) &&
 					!self->quoted && is_op(self->db, self->tok) &&
-						strcmp(self->tok, "\\+")) {
+						strcmp(self->tok, "\\+")) {	// HACK
 				n->flags |= FLAG_NOOP;
 				self->quoted = 1;
 			}
