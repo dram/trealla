@@ -911,6 +911,9 @@ static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor)
 	if ((n_prev = term_prev(n)) == NULL)
 		return (l->error = 1, NULL);
 
+	if (!strcmp(VAL_S(n_prev), g_list_cons))
+		return NULL;
+
 	if ((n_next = term_next(n)) == NULL)
 		return (l->error = 1, NULL);
 
