@@ -34,6 +34,7 @@ static op g_ops[] = {
 	{"->", "xfy", 1050},
 	{"*->", "xfy", 1050},
 	{",", "xfy", 1000},
+
 #ifndef ISO_ONLY
 	{"receive", "fy", 900},
 	{"undo", "fy", 900},
@@ -43,6 +44,7 @@ static op g_ops[] = {
 	{"use_module", "fy", 1050},
 	{"module", "fy", 1050},
 #endif
+
 	{"dynamic", "fy", 1050},
 	{"initialization", "fy", 1050},
 
@@ -135,11 +137,13 @@ static nbr_t dec_to_int(const char *src)
 node *term_make(void)
 {
 	node *n = calloc(1, sizeof(node));
+
 #ifdef DEBUG
 	assert(n);
 	g_allocs++;
 	g_heap_used++;
 #endif
+
 	n->flags = FLAG_HEAP;
 	n->refcnt = 1;
 	return n;
