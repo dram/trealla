@@ -915,9 +915,6 @@ static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor)
 	if ((n_prev = term_prev(n)) == NULL)
 		return (l->error = 1, NULL);
 
-	if (!strcmp(VAL_S(n_prev), g_list_cons))
-		return NULL;
-
 	if ((n_next = term_next(n)) == NULL)
 		return (l->error = 1, NULL);
 
@@ -1661,11 +1658,17 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 	l->tok = token_take(&t);
 	l->was_paren = l->is_paren;
+	l->was_op = l->is_op;
 
 	if (!strcmp(l->tok, "("))
 		l->is_paren = 1;
 	else
 		l->is_paren = 0;
+
+	if (!strcmp(l->tok, ","))
+		l->is_op = 1;
+	else
+		l->is_op = 0;
 
 	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\", is=%d, was=%d\n", l->tok, l->numeric, l->quoted, s, l->is_paren, l->was_paren);
 
@@ -2150,7 +2153,9 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			self->was_atom = 1;
 			n->flags |= TYPE_ATOM;
 
-			if (self->was_paren && !self->quoted && is_op(self->db, self->tok)) {
+			if ((self->was_paren || self->was_op) &&
+					!self->quoted && is_op(self->db, self->tok) &&
+						strcmp(self->tok, "\\+")) {
 				n->flags |= FLAG_NOOP;
 				self->quoted = 1;
 			}
