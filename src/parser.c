@@ -1259,11 +1259,7 @@ static void dcg_clause(lexer *l, node *term)
 					i++;
 
 				body = term_next(head);
-
-				if (dcg_term(l, body, i, i+1))
-					i++;
-
-				body = term_next(body);
+				continue;
 			}
 			else
 				body = NULL;
