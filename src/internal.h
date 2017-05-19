@@ -297,7 +297,7 @@ struct tpl_query_
 	uint8_t frame_size, trail_size, fail_arg;
 	uint8_t halt_code, halt, is_running;
 	uint8_t is_yielded, retry, ok, def_choice, def_env, def_trail;
-	uint8_t is_det, timed_out, trace, optimize;
+	uint8_t is_det, timed_out, trace, optimize, dotlists;
 	uint8_t eval, did_getc, in_tran, ignore_ops;
 
 #ifndef ISO_ONLY

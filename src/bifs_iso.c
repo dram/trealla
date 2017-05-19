@@ -950,10 +950,6 @@ static int bif_iso_write_term_3(tpl_query *q)
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
 	int quoted = 0, nl = 0, fs = 0, save_ignore_ops = q->ignore_ops;
-#ifndef ISO_ONLY
-	int dots = 0;
-	const char *save_dots = g_list_cons;
-#endif
 
 	if (is_atom(term2)) {
 		if (strcmp(VAL_S(term2), "[]")) {
@@ -977,26 +973,19 @@ static int bif_iso_write_term_3(tpl_query *q)
 		if (strstr(tmpbuf, "ignore_ops(true)"))
 			q->ignore_ops = 1;
 
-#ifndef ISO_ONLY
 		if (strstr(tmpbuf, "dotlists(true)")) {
-			g_list_cons = ".";
-			dots = 1;
+			q->dotlists = 1;
 		}
-#endif
 	}
 
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, quoted);
 	q->ignore_ops = save_ignore_ops;
+	q->dotlists = 0;
 
 	if (q->halt) {
 		free(tmpbuf);
 		return 0;
 	}
-
-#ifndef ISO_ONLY
-	if (dots)
-		g_list_cons = save_dots;
-#endif
 
 	if (fs) {
 		tmpbuf[len++] = '.';
@@ -1030,10 +1019,6 @@ static int bif_iso_write_term(tpl_query *q)
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
 	int quoted = 0, nl = 0, fs = 0, save_ignore_ops = q->ignore_ops;
-#ifndef ISO_ONLY
-	int dots = 0;
-	const char *save_dots = g_list_cons;
-#endif
 
 	if (is_atom(term2)) {
 		if (strcmp(VAL_S(term2), "[]")) {
@@ -1057,26 +1042,19 @@ static int bif_iso_write_term(tpl_query *q)
 		if (strstr(tmpbuf, "ignore_ops(true)"))
 			q->ignore_ops = 1;
 
-#ifndef ISO_ONLY
 		if (strstr(tmpbuf, "dotlists(true)")) {
-			g_list_cons = ".";
-			dots = 1;
+			q->dotlists = 1;
 		}
-#endif
 	}
 
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, quoted);
 	q->ignore_ops = save_ignore_ops;
+	q->dotlists = 0;
 
 	if (q->halt) {
 		free(tmpbuf);
 		return 0;
 	}
-
-#ifndef ISO_ONLY
-	if (dots)
-		g_list_cons = save_dots;
-#endif
 
 	if (fs) {
 		tmpbuf[len++] = '.';
