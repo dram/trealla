@@ -1042,7 +1042,7 @@ void query_dump(tpl_query *self)
 		}
 	}
 
-	sl_clear(&vars, NULL);
+	sl_done(&vars, NULL);
 }
 
 static tpl_query *trealla_create_query2(trealla *pl, tpl_query *q);
