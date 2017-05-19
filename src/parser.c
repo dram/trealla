@@ -2008,7 +2008,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		if (line)
 			n->cpos = self->cpos;
 
-		//printf("*** tok=%s, is_paren=%d, was_paren=%d\n", self->tok, self->is_paren, self->was_paren);
+		//printf("*** tok='%s' is_paren=%d, was_paren=%d\n", self->tok, self->is_paren, self->was_paren);
 
 		if (!self->quoted && !strcmp(self->tok, "{}")) {
 			free(self->tok);
