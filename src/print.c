@@ -58,7 +58,7 @@ static int needs_quoting(const char *s)
 	while (*s) {
 		unsigned char ch = *s++;
 
-		if ((!isalpha(ch) || isupper(ch)) && !isdigit(ch) && (ch != '_') && (ch < 0x7F))
+		if (!isalpha(ch) && !isdigit(ch) && (ch != '_') && (ch != ':') && (ch < 0x7F))
 			return 1;
 	}
 
