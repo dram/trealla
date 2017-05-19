@@ -949,7 +949,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
-	int quoted = 0, nl = 0, fs = 0, save_ignore_ops = q->ignore_ops;
+	int quoted = 0, nl = 0, fs = 0;
 
 	if (is_atom(term2)) {
 		if (strcmp(VAL_S(term2), "[]")) {
@@ -972,15 +972,10 @@ static int bif_iso_write_term_3(tpl_query *q)
 
 		if (strstr(tmpbuf, "ignore_ops(true)"))
 			q->ignore_ops = 1;
-
-		if (strstr(tmpbuf, "dotlists(true)")) {
-			q->dotlists = 1;
-		}
 	}
 
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, quoted);
-	q->ignore_ops = save_ignore_ops;
-	q->dotlists = 0;
+	q->ignore_ops = 0;
 
 	if (q->halt) {
 		free(tmpbuf);
@@ -1018,7 +1013,7 @@ static int bif_iso_write_term(tpl_query *q)
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
-	int quoted = 0, nl = 0, fs = 0, save_ignore_ops = q->ignore_ops;
+	int quoted = 0, nl = 0, fs = 0;
 
 	if (is_atom(term2)) {
 		if (strcmp(VAL_S(term2), "[]")) {
@@ -1041,15 +1036,10 @@ static int bif_iso_write_term(tpl_query *q)
 
 		if (strstr(tmpbuf, "ignore_ops(true)"))
 			q->ignore_ops = 1;
-
-		if (strstr(tmpbuf, "dotlists(true)")) {
-			q->dotlists = 1;
-		}
 	}
 
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, quoted);
-	q->ignore_ops = save_ignore_ops;
-	q->dotlists = 0;
+	q->ignore_ops = 0;
 
 	if (q->halt) {
 		free(tmpbuf);

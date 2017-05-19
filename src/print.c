@@ -272,7 +272,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, n, listing);
 	}
 	else if (!isop || (nf->flags & FLAG_QUOTED) || (listing == 2) || ignore_ops) {
-		if (!(n->flags & FLAG_CONSING)) {
+		if (!(n->flags & FLAG_CONSING) || (listing >= 2)) {
 			const char *src = functor;
 
 			if (!src || (isop && !ignore_ops))
@@ -361,10 +361,10 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 	int flag_character_escapes = pl ? pl->flag_character_escapes : 1;
 
-	if (is_list(n))
-		dst += sprint2_list(++depth, dstbuf, bufsize, &dst, pl, q, n, listing?listing:1);
+	if (is_list(n) && (listing < 2))
+		dst += sprint2_list(++depth, dstbuf, bufsize, &dst, pl, q, n, listing);
 	else if (is_compound(n))
-		dst += sprint2_compound(++depth, dstbuf, bufsize, &dst, pl, q, n, listing?listing:1);
+		dst += sprint2_compound(++depth, dstbuf, bufsize, &dst, pl, q, n, listing);
 	else if (is_ptr(n) && listing) {
 		*dst++ = '@';
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);

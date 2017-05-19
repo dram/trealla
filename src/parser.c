@@ -224,7 +224,7 @@ node *make_list(void)
 {
 	node *n = make_compound();
 	n->flags |= FLAG_LIST;
-	term_append(n, make_const_atom(g_list_cons, 1));
+	term_append(n, make_const_atom(g_list_cons, 0));
 	return n;
 }
 
@@ -2024,7 +2024,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			free(self->tok);
 			n->flags |= TYPE_COMPOUND | FLAG_LIST | FLAG_CONSING;
 			node *tmp = term_make();
-			tmp->flags |= TYPE_ATOM | FLAG_CONST | FLAG_QUOTED;
+			tmp->flags |= TYPE_ATOM | FLAG_CONST;
 			tmp->val_s = (char *)g_list_cons;
 			term_append(n, tmp);
 			self->was_atomic = 0;
