@@ -68,7 +68,10 @@ det --> [some].
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-test(S) :- phrase(s,S), writeln(ok).
-test(_) :- writeln(nok).
+test(S) :- phrase(s,S), write(S), write(' '), writeln(ok).
+test(S) :- write(S), write(' '), writeln(nok).
 
-main :- test([pickup,the,small,white,box]), halt.
+main :-
+	test([pickup,the,small,white,box]),
+	test([paint,the,small,white,box]),
+	halt.

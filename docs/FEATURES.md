@@ -148,9 +148,9 @@ These are an assortment of utilities:
 	append_file(+File,+Atom)    - append to named file
 
 	write_file(+S,+File,+From,+To) - write ranged contents of named file to stream. Range is in
-									offsets starting at 0. A *to* offset of -1 means to the end.
+								   byte offsets starting at 0. An offset of -1 means to the end.
 
-	write_file(+S,+File)        - equivalent to write_file(S,File,0,-1)
+	write_file(+S,+File)        - is equivalent to write_file(S,File,0,-1)
 
 	bread(+S,?len,-Blob)        - block read from stream
 	bwrite(+S,+Atom)            - block write to stream
@@ -165,7 +165,7 @@ These are an assortment of utilities:
 	xmlq(+Atom,+N,+Idx,-Atom)   - quick get I'th named value from XML source
 	upper(+Atom,-Atom)          - convert to upper-case
 	lower(+Atom,-Atom)          - convert to lower-case
-	sha1(+Atom,-Atom)           - SHA-1 (128-bit) hash     NEW USE DEPRECATED
+	sha1(+Atom,-Atom)           - SHA-1 (128-bit) hash     (NEW USE DEPRECATED)
 	sha256(+Atom,-Atom)         - SHA-256 (256-bit) hash
 	sha512(+Atom,-Atom)         - SHA-512 (512-bit) hash
 	hash(+Atom,-Int)			- 32-bit non-crypto hash

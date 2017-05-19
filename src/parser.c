@@ -1869,7 +1869,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ".")) {
+		if (!self->quoted && !strcmp(self->tok, ".") && (*src != '(')) {
 			free(self->tok);
 			self->finalized = 1;
 			self->was_atomic = 0;
@@ -2146,7 +2146,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			attach_vars(self, n);
 		}
 		else if (!self->error && !self->quoted && !is_op(self->db, self->tok) &&
-				!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!")) {
+				!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!") && strcmp(self->tok, ".")) {
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
 		} else {

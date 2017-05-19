@@ -30,9 +30,8 @@ typedef __uint128_t unbr_t;
 typedef double flt_t;
 
 #ifdef DEBUG
-extern uint64_t
-	g_choicepoints, g_heap_used, g_backtracks, g_executes, g_reexecutes,
-	g_cuts, g_enqueues, g_rescheds, g_u_resolves, g_s_resolves;
+extern uint64_t g_choicepoints, g_heap_used, g_backtracks, g_executes,
+	g_reexecutes, g_cuts, g_enqueues, g_rescheds, g_u_resolves, g_s_resolves;
 #endif
 
 extern uint64_t g_busy;
