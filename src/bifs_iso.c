@@ -3650,7 +3650,7 @@ static int bif_iso_term_variables(tpl_query *q)
 	q->d = NULL;
 	sl_done(&vars, NULL);
 	term_append(l, make_const_atom("[]", 0));
-	put_env(q, q->curr_frame + term2->slot, save_l, -1);
+	put_env(q, q->curr_frame + term2->slot, save_l, q->curr_frame);
 	save_l->refcnt--;
 	return 1;
 }
