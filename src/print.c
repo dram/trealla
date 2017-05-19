@@ -55,6 +55,9 @@ static int needs_quoting(const char *s)
 	if (!*s)
 		return 1;
 
+	if (isupper(*s))
+		return 1;
+
 	while (*s) {
 		unsigned char ch = *s++;
 
