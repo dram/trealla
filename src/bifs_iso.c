@@ -946,16 +946,11 @@ static int bif_iso_write_term_3(tpl_query *q)
 	node *term2 = get_term(term2);
 	node *term3 = get_atom_or_list(term3);
 	stream *sp = term1->val_str;
-	size_t max_len = PRINTBUF_SIZE;
-	char *tmpbuf = (char *)malloc(max_len + 1);
-	char *dst = tmpbuf;
 	int quoted = 0, nl = 0, fs = 0;
 
 	if (is_atom(term2)) {
-		if (strcmp(VAL_S(term2), "[]")) {
-			free(tmpbuf);
+		if (strcmp(VAL_S(term2), "[]"))
 			return 0;
-		}
 	}
 	else {
 		char tmpbuf[1024];
@@ -974,6 +969,9 @@ static int bif_iso_write_term_3(tpl_query *q)
 			q->ignore_ops = 1;
 	}
 
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, quoted);
 	q->ignore_ops = 0;
 
@@ -1010,16 +1008,11 @@ static int bif_iso_write_term(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_atom_or_list(term2);
-	size_t max_len = PRINTBUF_SIZE;
-	char *tmpbuf = (char *)malloc(max_len + 1);
-	char *dst = tmpbuf;
 	int quoted = 0, nl = 0, fs = 0;
 
 	if (is_atom(term2)) {
-		if (strcmp(VAL_S(term2), "[]")) {
-			free(tmpbuf);
+		if (strcmp(VAL_S(term2), "[]"))
 			return 0;
-		}
 	}
 	else {
 		char tmpbuf[1024];
@@ -1038,6 +1031,9 @@ static int bif_iso_write_term(tpl_query *q)
 			q->ignore_ops = 1;
 	}
 
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, quoted);
 	q->ignore_ops = 0;
 
