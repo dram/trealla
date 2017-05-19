@@ -2070,11 +2070,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 						n->cpos = tmp->cpos;
 
 						if (!strcmp(functor, "call") || !strcmp(functor, "phrase") ||
-							!strcmp(functor, "findnsols") ||
 							!strcmp(functor, "bagof") || !strcmp(functor, "setof") ||
 						    !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
 						    !strcmp(functor, "sys:write_file") || !strcmp(functor, "write_file") ||
-						    !strcmp(functor, "http:put_file") || !strcmp(functor, "put_file")) {
+							!strcmp(functor, "findnsols")) {
 							node *tmp = term_make();
 							tmp->flags |= TYPE_VAR | FLAG_ANON | FLAG_HIDDEN | FLAG_CONST;
 							char tmpbuf[40];
