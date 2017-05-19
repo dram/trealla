@@ -1031,9 +1031,6 @@ void query_dump(tpl_query *self)
 			printf(" %.*g", DBL_DIG, (double)self->nv.val_f);
 	} else {
 		while (sl_next(&vars, (void **)&n) != NULL) {
-			if (is_anon(n))
-				continue;
-
 			char tmpbuf[PRINTBUF_SIZE];
 			self->latest_context = FUDGE_FACTOR;
 			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 0);
