@@ -2003,27 +2003,22 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			self->fact = 0;
 		}
 
-		node *n = term_make();
+		node *n = NULL;
 
 		//printf("*** tok='%s' is_paren=%d, was_paren=%d\n", self->tok, self->is_paren, self->was_paren);
 
 		if (!self->quoted && !strcmp(self->tok, "{}")) {
 			free(self->tok);
-			n->flags |= TYPE_ATOM | FLAG_CONST;
-			n->val_s = (char *)"{}";
+			n = make_const_atom("{}", 0);
 		}
 		else if (!self->quoted && !strcmp(self->tok, "[]")) {
 			free(self->tok);
-			n->flags |= TYPE_ATOM | FLAG_CONST;
-			n->val_s = (char *)"[]";
+			n = make_const_atom("[]", 0);
 		}
 		else if (!self->quoted && !strcmp(self->tok, "[")) {
 			free(self->tok);
-			n->flags |= TYPE_COMPOUND | FLAG_LIST | FLAG_CONSING;
-			node *tmp = term_make();
-			tmp->flags |= TYPE_ATOM | FLAG_CONST | FLAG_QUOTED;
-			tmp->val_s = (char *)g_list_cons;
-			term_append(n, tmp);
+			n = make_list();
+			n->flags |= FLAG_CONSING;
 			self->was_atomic = 0;
 			src = lexer_parse(self, n, src, line);
 
@@ -2034,11 +2029,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		}
 		else if (!self->quoted && !strcmp(self->tok, "{")) {
 			free(self->tok);
-			n->flags |= TYPE_COMPOUND | FLAG_TUPLE | FLAG_NOARGS;
-			node *tmp = term_make();
-			tmp->flags |= TYPE_ATOM | FLAG_CONST;
-			tmp->val_s = (char *)"{}";
-			term_append(n, tmp);
+			n = make_tuple();
+			n->flags |= FLAG_NOARGS;
 			self->was_atomic = 0;
 			src = lexer_parse(self, n, src, line);
 
@@ -2049,7 +2041,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		}
 		else if (!self->quoted && !strcmp(self->tok, "(")) {
 			free(self->tok);
-			n->flags |= TYPE_COMPOUND | FLAG_NOARGS;
+			n = make_compound();
+			n->flags |= FLAG_NOARGS;
 
 			if ((term_count(term) != 0) && !self->was_paren) {
 				node *tmp = term_last(term);
@@ -2111,7 +2104,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 		}
 		else if (self->numeric >= 2) {
-			n->flags |= TYPE_INTEGER;
+			n = make_int(dec_to_int(self->tok));
 
 			if (self->numeric == 3)
 				n->flags |= FLAG_BINARY;
@@ -2120,20 +2113,19 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			else if (self->numeric == 5)
 				n->flags |= FLAG_HEX;
 
-			n->val_i = dec_to_int(self->tok);
 			free(self->tok);
 		}
 		else if (self->numeric == 1) {
-			n->flags |= TYPE_FLOAT;
-			n->val_f = (flt_t)strtod(self->tok, NULL);
+			n = make_float(strtod(self->tok, NULL));
 			free(self->tok);
 		}
 		else if (!self->quoted && !strcmp(self->tok, "pi")) {
-			n->flags |= TYPE_FLOAT | FLAG_PI;
-			n->val_f = PI;
+			n = make_float(PI);
+			n->flags |= FLAG_PI;
 			free(self->tok);
 		}
 		else if (!self->quoted && ((self->tok[0] == '_') || isupper(self->tok[0]))) {
+			n = term_make();
 			n->flags |= TYPE_VAR | FLAG_CONST;
 
 			if (!strcmp(self->tok, "_")) {
@@ -2151,10 +2143,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!") && strcmp(self->tok, ".")) {
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
-			term_heapcheck(n);
 			return NULL;
 		} else {
 			self->was_atom = 1;
+			n = term_make();
 			n->flags |= TYPE_ATOM;
 
 			if ((self->was_paren || self->was_op) &&
