@@ -2005,9 +2005,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		node *n = term_make();
 
-		if (line)
-			n->cpos = self->cpos;
-
 		//printf("*** tok='%s' is_paren=%d, was_paren=%d\n", self->tok, self->is_paren, self->was_paren);
 
 		if (!self->quoted && !strcmp(self->tok, "{}")) {
@@ -2030,8 +2027,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			self->was_atomic = 0;
 			src = lexer_parse(self, n, src, line);
 
-			if (self->error)
+			if (self->error) {
+				term_heapcheck(n);
 				return src;
+			}
 		}
 		else if (!self->quoted && !strcmp(self->tok, "{")) {
 			free(self->tok);
@@ -2043,8 +2042,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			self->was_atomic = 0;
 			src = lexer_parse(self, n, src, line);
 
-			if (self->error)
+			if (self->error) {
+				term_heapcheck(n);
 				return src;
+			}
 		}
 		else if (!self->quoted && !strcmp(self->tok, "(")) {
 			free(self->tok);
@@ -2104,8 +2105,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 #endif
 
-			if (self->error)
+			if (self->error) {
+				term_heapcheck(n);
 				return src;
+			}
 		}
 		else if (self->numeric >= 2) {
 			n->flags |= TYPE_INTEGER;
@@ -2148,6 +2151,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!") && strcmp(self->tok, ".")) {
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
+			term_heapcheck(n);
+			return NULL;
 		} else {
 			self->was_atom = 1;
 			n->flags |= TYPE_ATOM;
@@ -2209,11 +2214,15 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		if (!self->error && self->was_atomic && !is_op) {
 			printf("ERROR: operator expected\n");
+			term_heapcheck(n);
 			self->error = 1;
 			return NULL;
 		}
 
 		self->was_atomic = !is_op;
+
+		if (line)
+			n->cpos = self->cpos;
 
 		if (self->dcg_passthru)
 			n->flags |= FLAG_PASSTHRU;
