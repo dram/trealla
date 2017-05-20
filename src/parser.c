@@ -2178,8 +2178,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 
 			if (self->quoted && !*self->tok) {
-				free(self->tok);
 				n->flags |= FLAG_CONST;
+				free(self->tok);
 				self->tok = (char *)"";
 			}
 
@@ -2187,7 +2187,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				char *str = dict(self->db, self->tok);
 				n->flags |= FLAG_CONST;
 				free(self->tok);
-				n->val_s = self->tok = str;
+				n->val_s = str;
 			}
 			else if (*self->tok && (strlen(self->tok) < sizeof(n->val_ch))) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
