@@ -2969,6 +2969,7 @@ static int bif_clause(tpl_query *q, int wait)
 	unsigned context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
 	node *head = NULL;
+	rule *r = NULL;
 
 	if (!q->retry) {
 		const char *functor;
@@ -2985,7 +2986,6 @@ static int bif_clause(tpl_query *q, int wait)
 
 		char tmpbuf[FUNCTOR_SIZE + 10];
 		snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
-		rule *r = NULL;
 		int did_lock = 0;
 
 		if (!q->in_tran) {
@@ -3062,11 +3062,27 @@ static int bif_clause(tpl_query *q, int wait)
 		break;
 	}
 
-	if (!q->curr_match)
+	if (!q->curr_match && !wait)
 		return 0;
 
-	if (term_next(q->curr_match))
+	if (term_next(q->curr_match) || wait)
 		try_me_nofollow(q);
+
+#ifndef ISO_ONLY
+	if (!q->curr_match && wait) {
+		sl_set(&r->procs, (const char *)q, NULL);
+		PIDLOCK(q->pl);
+
+		if (q->tmo_msecs > 0) {
+			q->tmo_when_msecs = gettimeofday_usec() / 1000;
+			q->tmo_when_msecs += q->tmo_msecs;
+			q->is_idle = 1;
+			sl_set(&q->pl->idle, (const char *)q, NULL);
+		}
+
+		return process_yield_locked(q);
+	}
+#endif
 
 	if (!term2)
 		return 1;
