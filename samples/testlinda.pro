@@ -20,11 +20,9 @@ producer :-
 	proc:end_wait.
 
 consumer(N) :-
-	linda:in({msg:Y}),
-		write('consumer '),
-		write(N),
-		write(' got = '),
-		writeln(Y),
+	linda:rd({msg:Y}),
+		sys:concat('consumer ',N,' got = ',Y,Line),
+		writeln(Line),
 		fail.
 consumer(N) :-
 	sys:concat('Done ',N,Msg),

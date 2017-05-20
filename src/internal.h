@@ -303,6 +303,7 @@ struct tpl_query_
 #ifndef ISO_ONLY
 	list queue;								// process queue
 	tpl_query *curr_pid;
+	rule *curr_rule;
 	skiplist *kvs;
 	char *name;
 	int tmo_msecs;

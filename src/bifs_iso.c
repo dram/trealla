@@ -2968,6 +2968,7 @@ static int bif_clause(tpl_query *q, int wait)
 	node *term1 = get_callable(term1);
 	unsigned context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
+	node *save_match = q->curr_match;
 	node *head = NULL;
 	rule *r = NULL;
 
@@ -3004,19 +3005,27 @@ static int bif_clause(tpl_query *q, int wait)
 			if (did_lock)
 				DBUNLOCK(q->curr_db);
 
-			return 0;
+			save_match = q->curr_match = NULL;
 		}
-
-		q->curr_match = NLIST_FRONT(&r->val_l);
-		head = term_firstarg(q->curr_match);
+		else
+			save_match = q->curr_match = NLIST_FRONT(&r->val_l);
 
 		if (did_lock)
 			DBUNLOCK(q->curr_db);
 
 		allocate_frame(q);
+		q->curr_rule = r;
 	}
 	else {
-		q->curr_match = term_next(q->curr_match);
+		r = q->curr_rule;
+
+		if (!q->curr_match)
+			save_match = q->curr_match = NLIST_FRONT(&r->val_l);
+		else {
+			r = q->curr_rule;
+			save_match = q->curr_match;
+			q->curr_match = term_next(q->curr_match);
+		}
 	}
 
 	while (q->curr_match) {
@@ -3065,12 +3074,15 @@ static int bif_clause(tpl_query *q, int wait)
 	if (!q->curr_match && !wait)
 		return 0;
 
-	if (term_next(q->curr_match) || wait)
-		try_me_nofollow(q);
+	int is_eof = !q->curr_match;
 
 #ifndef ISO_ONLY
-	if (!q->curr_match && wait) {
+	if (is_eof && wait) {
+		q->curr_match = save_match;
+		try_me_nofollow(q);
+		DBLOCK(q->curr_db);
 		sl_set(&r->procs, (const char *)q, NULL);
+		DBUNLOCK(q->curr_db);
 		PIDLOCK(q->pl);
 
 		if (q->tmo_msecs > 0) {
@@ -3083,6 +3095,8 @@ static int bif_clause(tpl_query *q, int wait)
 		return process_yield_locked(q);
 	}
 #endif
+
+	try_me_nofollow(q);
 
 	if (!term2)
 		return 1;
