@@ -1660,12 +1660,12 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	l->was_paren = l->is_paren;
 	l->was_op = l->is_op;
 
-	if (!strcmp(l->tok, "("))
+	if (!l->quoted && !strcmp(l->tok, "("))
 		l->is_paren = 1;
 	else
 		l->is_paren = 0;
 
-	if (!strcmp(l->tok, ","))
+	if (!l->quoted && !strcmp(l->tok, ","))
 		l->is_op = 1;
 	else
 		l->is_op = 0;

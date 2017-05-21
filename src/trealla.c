@@ -1033,7 +1033,7 @@ void query_dump(tpl_query *self)
 		while (sl_next(&vars, (void **)&n) != NULL) {
 			char tmpbuf[PRINTBUF_SIZE];
 			self->latest_context = FUDGE_FACTOR;
-			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 0);
+			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
 			printf(" %s: %s\n", VAL_S(n), tmpbuf);
 			any++;
 		}
