@@ -1,4 +1,5 @@
-:-module(auth,[init/0]).
+:-module(auth).
+:-export([init/0]).
 :-export([adduser/2,deluser/1,login/5,logout/1,checkin/3]).
 :-export([listusers/1,dumpusers/0]).
 :-export([setuser_email/2,getuser_email/2]).

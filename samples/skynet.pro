@@ -1,4 +1,5 @@
-:-module(skynet,[start/0,test/0]).
+:-module(skynet).
+:-export([start/0,test/0]).
 
 % Skynet - see https://github.com/atemerev/skynet
 

@@ -1,4 +1,5 @@
-:-module(blog,[init/0]).
+:-module(blog).
+:-export([init/0]).
 :-export([addpost/5,modpost/3,delpost/1,undelpost/1,lockpost/1,unlockpost/1]).
 :-export([getpost/8,getposts/2]).
 :-export([addcomment/4,modcomment/2,replycomment/2,delcomment/1,undelcomment/1]).
