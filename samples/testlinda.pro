@@ -12,7 +12,9 @@ main :-
 
 producer :-
 	between(1,100,I),
-		sys:delay(10),
+		random(R),
+		Ms is ((R * 99) // 1) + 1,
+		sys:delay(Ms),
 		linda:out({msg:I}),
 		fail.
 producer :-
@@ -20,7 +22,7 @@ producer :-
 	proc:end_wait.
 
 consumer(N) :-
-	linda:rd({msg:Y}),
+	linda:in({msg:Y}),
 		sys:concat('consumer ',N,' got = ',Y,Line),
 		writeln(Line),
 		fail.
