@@ -292,9 +292,10 @@ This normally happens when the *--merge* option is specified on the command-line
 Linda data-coordination: namespace 'linda'
 ------------------------------------------
 
-Implements the Linda data-coordination primitives. This is an alternative and more naturally
-Prolog-like system for concurrent processing. It uses the regular rule database for passing tuples
-between cooperating processes.
+Implements the Linda data-coordination primitives. This is an alternative, simpler and more
+Prolog-like system for concurrent processing than the Erlang-style actor model described later. It
+uses the regular rule database for passing tuples between worker processes. The tuples can be
+persistent allowing naturally resilient and optionally distributed systems to be built.
 
 	init/0				- initialization
 	init(+List)			- initialization with dynamic modifiers
@@ -311,11 +312,11 @@ Note: 'linda:init/0' does a call to:
 
 in the current module, while *linda:init/1* allows adding extra modifiers (eg. for persistence).
 The first argument of the tuple, as with all dynamics, is indexed. When creating persistent tuples
-use the *dbs:init/0* or *dbs:load/0* etc calls to access the database log.
+use the *dbs:init/0* or *dbs:load/0* etc calls to first load the database.
 
 All of the input predicates will attempt to resatisfy on backtracking. The blocking predicates
-will be notified (awoken) on a relevant assert or out. The non-blocking predicates can be
-used to implement polling.
+will be notified (awoken) on a relevant assert or out. The non-blocking predicates can be used to
+implement polling behaviour.
 
 Note: a worker process can use the per-process dictionary.
 
