@@ -297,8 +297,6 @@ Prolog-like system for concurrent processing than the Erlang-style actor model d
 uses the regular rule database for passing tuples between worker processes. The tuples can be
 persistent allowing naturally resilient and optionally distributed systems to be built.
 
-	init/0				- initialization
-	init(+List)			- initialization with dynamic modifiers
 	eval(+Goal)			- create concurrent worker process (spawn)
 	out(+Tuple)			- assert new tuple
 	in(-Tuple)			- retract tuple (blocking)
@@ -306,19 +304,21 @@ persistent allowing naturally resilient and optionally distributed systems to be
 	rd(-Tuple)			- match tuple (blocking)
 	rdp(-Tuple)			- ... (non-blocking)
 
-Note: 'linda:init/0' does a call to:
-
-	dynamic({}/1,[notify])
-
 Also:
 
+	init/0				- initialization
+	init(+List)			- initialization with dynamic modifiers
 	fork/0                     - continue as child, parent fails
 	wait/0                     - wait indefinitely (used by parent)
 	end_wait/0                 - abort the wait (used by child)
 
+Note: 'linda:init/0' does a call to:
+
+	dynamic({}/1,[notify])
+
 in the current module, while *linda:init/1* allows adding extra modifiers (eg. for persistence).
 The first argument of the tuple, as with all dynamics, is indexed. When creating persistent tuples
-use the *dbs:init/0* or *dbs:load/0* etc calls to first load the database.
+use the *dbs:init/0* or *dbs:load/0* calls to first restore the database state.
 
 All of the input predicates will attempt to resatisfy on backtracking. The blocking predicates
 will be notified (awoken) on a relevant assert or out. The non-blocking predicates can be used to
