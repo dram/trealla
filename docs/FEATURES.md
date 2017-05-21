@@ -310,6 +310,12 @@ Note: 'linda:init/0' does a call to:
 
 	dynamic({}/1,[notify])
 
+Also:
+
+	fork/0                     - continue as child, parent fails
+	wait/0                     - wait indefinitely (used by parent)
+	end_wait/0                 - abort the wait (used by child)
+
 in the current module, while *linda:init/1* allows adding extra modifiers (eg. for persistence).
 The first argument of the tuple, as with all dynamics, is indexed. When creating persistent tuples
 use the *dbs:init/0* or *dbs:load/0* etc calls to first load the database.
@@ -347,8 +353,8 @@ compound. A process yields when entering a blocking recv, send, read, write, del
 	procinfo(+Atom,-V)         - get named info ('pids','idle','named','msgs')
 	until(:Goal)               - wait until Goal succeeds
 	fork/0                     - continue as child, parent fails
-	wait/0                     - wait indefinitely
-	end_wait/0                 - abort the wait
+	wait/0                     - wait indefinitely (used by parent)
+	end_wait/0                 - abort the wait (used by child)
 
 	receive ?Term              - receive message (operator fy)
 	undo ?Term                 - undo message (operator fy)

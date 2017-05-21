@@ -1560,41 +1560,11 @@ static int bif_linda_init_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_linda_eval_1(tpl_query *q)
-{
-	return bif_proc_spawn_link_1(q);
-}
-
 static int bif_linda_out_1(tpl_query *q)
 {
-	extern int bif_iso_assertz(tpl_query *q);
 	node *args = get_args(q);
 	node *term1 = get_tuple(term1);
 	return bif_iso_assertz(q);
-}
-
-static int bif_linda_in_1(tpl_query *q)
-{
-	extern int bif_xtra_retractw(tpl_query *q);
-	return bif_xtra_retractw(q);
-}
-
-static int bif_linda_inp_1(tpl_query *q)
-{
-	extern int bif_iso_retract(tpl_query *q);
-	return bif_iso_retract(q);
-}
-
-static int bif_linda_rd_1(tpl_query *q)
-{
-	extern int bif_xtra_clausew(tpl_query *q);
-	return bif_xtra_clausew(q);
-}
-
-static int bif_linda_rdp_1(tpl_query *q)
-{
-	extern int bif_iso_clause(tpl_query *q);
-	return bif_iso_clause(q);
 }
 
 void bifs_load_proc(void)
@@ -1640,9 +1610,12 @@ void bifs_load_proc(void)
 	DEFINE_BIF("linda:init", 0, bif_linda_init_0);
 	DEFINE_BIF("linda:init", 1, bif_linda_init_1);
 	DEFINE_BIF("linda:out", 1, bif_linda_out_1);
-	DEFINE_BIF("linda:in", 1, bif_linda_in_1);
-	DEFINE_BIF("linda:inp", 1, bif_linda_inp_1);
-	DEFINE_BIF("linda:rd", 1, bif_linda_rd_1);
-	DEFINE_BIF("linda:rdp", 1, bif_linda_rdp_1);
-	DEFINE_BIF("linda:eval", 1, bif_linda_eval_1);
+	DEFINE_BIF("linda:in", 1, bif_xtra_retractw);
+	DEFINE_BIF("linda:inp", 1, bif_iso_retract);
+	DEFINE_BIF("linda:rd", 1, bif_xtra_clausew);
+	DEFINE_BIF("linda:rdp", 1, bif_iso_clause);
+	DEFINE_BIF("linda:eval", 1, bif_proc_spawn_link_1);
+	DEFINE_BIF("linda:fork", 0, bif_proc_fork_0);
+	DEFINE_BIF("linda:wait", 0, bif_proc_wait_0);
+	DEFINE_BIF("linda:end_wait", 0, bif_proc_end_wait_0);
 }
