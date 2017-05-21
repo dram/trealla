@@ -1530,6 +1530,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 					if (l->pl->flag_character_escapes && (l->quoted <= 2) && (ch == '\\')) {
 						const char *ptr = strchr(g_anti_escapes, ch = *s++);
+
 						if (ptr)
 							token_put(&t, g_escapes[ptr - g_anti_escapes]);
 						else
@@ -2133,7 +2134,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				char tmpbuf[40];
 				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", self->vars);
 				n->val_s = dict(self->db, tmpbuf);
-			} else
+			}
+			else
 				n->val_s = dict(self->db, self->tok);
 
 			free(self->tok);

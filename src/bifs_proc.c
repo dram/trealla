@@ -484,7 +484,6 @@ static int proc_callback(tpl_query *q, session *s, node *goal, node *var)
 		who->is_forked = 1;
 		process_start_handler(who);
 	}
-
 	else if (session_on_disconnect(s)) {
 		// printf("DEBUG: DISCONNECT\n");
 		session_clr_udata_flag(s, HELLO);
