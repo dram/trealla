@@ -104,19 +104,19 @@ void dbs_save_node(module *db, FILE *fp, char **dstbuf, size_t *buflen, node *n,
 		n = head = dbs_read_entry(db, tmp_rest->val_i);
 	}
 
-	if (save_n->flags & FLAG_DBS_RETRACT) {
+	if (save_n->bifptr == bif_iso_retract) {
 		dst += snprintf(dst, *buflen, "r_(");
-		dst += term_sprint2(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
+		dst += term_sprint2(dstbuf, buflen, &dst, db->pl, NULL, term_firstarg(n), 1);
 		*dst++ = ')';
 	}
-	else if (save_n->flags & FLAG_DBS_ASSERTZ) {
+	else if (save_n->bifptr == bif_iso_assertz) {
 		dst += snprintf(dst, *buflen, "z_(");
-		dst += term_sprint2(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
+		dst += term_sprint2(dstbuf, buflen, &dst, db->pl, NULL, term_firstarg(n), 1);
 		*dst++ = ')';
 	}
-	else if (save_n->flags & FLAG_DBS_ASSERTA) {
+	else if (save_n->bifptr == bif_iso_asserta) {
 		dst += snprintf(dst, *buflen, "a_(");
-		dst += term_sprint2(dstbuf, buflen, &dst, db->pl, NULL, n, 1);
+		dst += term_sprint2(dstbuf, buflen, &dst, db->pl, NULL, term_firstarg(n), 1);
 		*dst++ = ')';
 	}
 	else {

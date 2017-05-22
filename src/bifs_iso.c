@@ -2264,7 +2264,7 @@ int bif_asserta(tpl_query *q, node *n)
 	return persist;
 }
 
-static int bif_iso_asserta(tpl_query *q)
+int bif_iso_asserta(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -2598,7 +2598,7 @@ static int bif_retract2(tpl_query *q, int wait)
 #endif
 }
 
-static int bif_iso_retract(tpl_query *q)
+int bif_iso_retract(tpl_query *q)
 {
 	return bif_retract2(q, 0);
 }
