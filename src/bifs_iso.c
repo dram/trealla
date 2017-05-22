@@ -2598,13 +2598,13 @@ static int bif_retract2(tpl_query *q, int wait)
 #endif
 }
 
-int bif_iso_retract(tpl_query *q)
+static int bif_iso_retract(tpl_query *q)
 {
 	return bif_retract2(q, 0);
 }
 
 #ifndef ISO_ONLY
-int bif_xtra_retractw(tpl_query *q)
+static int bif_xtra_retractw(tpl_query *q)
 {
 	return bif_retract2(q, 1);
 }
@@ -3105,13 +3105,13 @@ static int bif_clause(tpl_query *q, int wait)
 	return unify_term(q, term2, body, q->curr_frame);
 }
 
-int bif_iso_clause(tpl_query *q)
+static int bif_iso_clause(tpl_query *q)
 {
 	return bif_clause(q, 0);
 }
 
 #ifndef ISO_ONLY
-int bif_xtra_clausew(tpl_query *q)
+static int bif_xtra_clausew(tpl_query *q)
 {
 	return bif_clause(q, 1);
 }
@@ -5600,6 +5600,13 @@ static int bif_xtra_trace(tpl_query *q)
 	q->trace = 1;
 	return 1;
 }
+
+static int bif_linda_out_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_tuple(term1);
+	return bif_iso_assertz(q);
+}
 #endif
 
 void bifs_load_iso(void)
@@ -5820,4 +5827,12 @@ void bifs_load_iso(void)
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
+
+#ifndef ISO_ONLY
+	DEFINE_BIF("linda:out", 1, bif_linda_out_1);
+	DEFINE_BIF("linda:in", 1, bif_xtra_retractw);
+	DEFINE_BIF("linda:inp", 1, bif_iso_retract);
+	DEFINE_BIF("linda:rd", 1, bif_xtra_clausew);
+	DEFINE_BIF("linda:rdp", 1, bif_iso_clause);
+#endif
 }
