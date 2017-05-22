@@ -372,7 +372,7 @@ represents the integer halt code and *Reason* the description) if it terminates 
 *exit/1* is called *Code* will be 1 and *Reason* the argument supplied. Otherwise it will be an
 exception code and pre-defined reason. It can be identified as the current Pid. For example:
 
-	?- spawn_link(exit('die')),recv(E).
+	?- proc:spawn_link(sys:exit('die')),proc:recv(E).
 	E: {'EXIT',1,'die'}
 	(0.001 s) yes
 

@@ -220,7 +220,7 @@ void process_error(tpl_query *q)	// FIXME
 	node *n3 = make_compound();
 	term_append(n3, make_and());
 	term_append(n3, make_int(q->halt));
-	term_append(n3, make_atom(q->halt_s, 1));
+	term_append(n3, make_atom(strdup(q->halt_s), 1));
 	term_append(n2, n3);
 	term_append(n, n2);
 	process_enqueue(q->pl, q, who, n, 1);
