@@ -33,10 +33,9 @@ Getting / Building
 	cd trealla
 	make [CC=gcc|clang|tcc] [iso|iso_debug|debug]
 
-WIN32 compilation is sporadic and may not support everything. In fact the
-Windows build has been discontinued.
+The Windows build has been discontinued.
 
-TCC does not support 128-bit integers or atomics (so no procs).
+Note *tcc* does not support 128-bit integers or atomics (so no procs).
 
 Compiler should be C11 if using procs (to use atomics) otherwise C99 should be
 adequate, eg:
@@ -47,14 +46,15 @@ adequate, eg:
 If contributing code, the source style is basically K&R / Linux-kernel with
 hard TABs set to 4 (the goldilocks zone).
 
-Missing
--------
+Missing / Limitations
+---------------------
 
-Current ISO predicates that are not implemented:
+Current ISO predicates that are (known) not yet implemented:
 
 	sub_atom
-	...
-	?
+
+Defined operators can ONLY be used as operators. To use them as regular functors they
+must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
 Usage
 -----
