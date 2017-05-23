@@ -2187,7 +2187,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 			else if (*self->tok && (strlen(self->tok) < sizeof(n->val_ch))) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
-				strcpy(&n->val_ch[0], self->tok);
+				strcpy(n->val_ch, self->tok);
 				free(self->tok);
 			}
 			else
