@@ -921,10 +921,12 @@ static int bif_iso_close(tpl_query *q)
 
 #ifndef ISO_ONLY
 	if (is_socket(term1)) {
-		session_close((session *)sp->sptr);
+		session *sptr = (session *)sp->sptr;
 
 		if (session_is_client((session *)sp->sptr))
 			sp->sptr = NULL;
+
+		session_close((session *)sptr);
 	}
 	else
 #endif
