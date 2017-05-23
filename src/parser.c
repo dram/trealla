@@ -745,7 +745,7 @@ int dir_use_module(lexer *l, node *n)
 		lib++;
 	}
 
-	char tmpbuf[FUNCTOR_SIZE];
+	char tmpbuf[FUNCTOR_SIZE * 2];
 
 	if (use_lib) {
 		const char *path = getenv("TREALLA_LIBRARY_PATH");

@@ -1251,8 +1251,8 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 	if (strlen_utf8(filename) >= FUNCTOR_LEN)
 		return 0;
 
-	char *line = strdup(src);
-	char *dst = line;
+	char *dst = (char *)malloc(strlen(src));
+	char *line = dst;
 
 	lexer l;
 	lexer_init(&l, self);
