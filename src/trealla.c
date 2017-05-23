@@ -1177,7 +1177,7 @@ void query_destroy(tpl_query *self)
 
 	env *e = &self->envs[0];
 
-	for (size_t i = 0; i < self->envs_used; i++, e++)
+	for (size_t i = 0; i < self->envs_possible; i++, e++)
 		term_heapcheck(e->term);
 
 	if (!self->parent) {
@@ -1588,7 +1588,7 @@ void trealla_destroy(trealla *self)
 	g_instances--;
 
 #ifdef DEBUG
-	if (!g_instances && (g_allocs > 0) && !self->quiet)
+	if (g_allocs != 0)
 		printf("DEBUG: orphaned=%u\n", (unsigned)g_allocs);
 #endif
 

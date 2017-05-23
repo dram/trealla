@@ -1158,8 +1158,7 @@ static int dcg_term(lexer *l, node *term, int i, int j)
 
 	if (is_atom(term)) {
 		node *tmp = term_make();
-		tmp->flags = term->flags;
-		tmp->flags |= TYPE_ATOM;
+		tmp->flags |= term->flags;
 
 		if (term->flags & FLAG_SMALL)
 			strcpy(tmp->val_ch, term->val_ch);

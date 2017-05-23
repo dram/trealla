@@ -170,7 +170,7 @@ static node *copy_atom(node *from)
 static node *copy_var(node *from)
 {
 	node *n = term_make();
-	n->flags = from->flags;
+	n->flags |= from->flags;
 	n->val_s = from->val_s;
 	n->slot = from->slot;
 	return n;
@@ -3680,8 +3680,8 @@ static int bif_iso_findall(tpl_query *q)
 		}
 		else {
 			node *tmp = make_list();
-			term_append(end, tmp);
 			term_append(tmp, res);
+			term_append(end, tmp);
 			end = tmp;
 		}
 
