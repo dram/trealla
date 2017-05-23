@@ -1177,7 +1177,7 @@ void query_destroy(tpl_query *self)
 
 	env *e = &self->envs[0];
 
-	for (size_t i = 0; i < self->envs_possible; i++, e++)
+	for (size_t i = 0; i < self->envs_used; i++, e++)
 		term_heapcheck(e->term);
 
 	if (!self->parent) {
