@@ -937,7 +937,8 @@ static int bif_iso_close(tpl_query *q)
 		}
 	}
 
-	term1->flags &= ~(FLAG_STREAM | FLAG_FILE);
+	term1->flags &= ~(FLAG_STREAM | FLAG_FILE | FLAG_SOCKET);
+	free(sp);
 	return 1;
 }
 

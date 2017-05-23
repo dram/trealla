@@ -42,7 +42,7 @@ debug:
 	make 'OPT=-O0 -g -DDEBUG'
 
 profile:
-	make 'OPT=-O1 -pg'
+	make 'OPT=-O1 -pg -g'
 
 small:
 	make NOUSE_128=1
@@ -57,7 +57,7 @@ iso_debug:
 	make 'OPT=-O0 -g -DDEBUG' ISO_ONLY=1 USE_SSL=0
 
 iso_profile:
-	make 'OPT=-O1 -pg' ISO_ONLY=1 USE_SSL=0
+	make 'OPT=-O1 -pg -g' ISO_ONLY=1 USE_SSL=0
 
 tpl: $(OBJECTS) tpl.o
 	$(CC) -o tpl tpl.o $(OBJECTS) $(OPT) $(LDFLAGS)
