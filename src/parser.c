@@ -224,7 +224,7 @@ node *make_list(void)
 {
 	node *n = make_compound();
 	n->flags |= FLAG_LIST;
-	term_append(n, make_const_atom(g_list_cons, 1));
+	term_append(n, make_const_atom(g_list_cons, 0));
 	return n;
 }
 
@@ -706,15 +706,15 @@ static int dir_define(lexer *l, node *n)
 
 int dir_use_module(lexer *l, node *n)
 {
-	node *term1 = n, *term = NULL;
+	node *term = n;
 	int use_lib = 0;
 
-	if (is_atom(term1))
-		term = term1;
-	else if (is_compound(term1)) {
-		if (!strcmp(term_functor(term1), "library")) {
+	if (is_atom(term))
+		;
+	else if (is_compound(term)) {
+		if (!strcmp(term_functor(term), "library")) {
 			use_lib = 1;
-			term = term_firstarg(term1);
+			term = term_firstarg(term);
 		}
 	}
 	else

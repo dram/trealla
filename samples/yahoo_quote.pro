@@ -2,7 +2,7 @@
 :-import(library(yahoo)).
 
 main :-
-	yahoo:get_quote('GOOG,IBM,AAPL,MSFT',Data),
+	yahoo:get_quote('GOOG,MSFT,IBM,AAPL',Data),
 	writeln('Raw data...'),
 	write(Data),
 	writeln('Processed data...'),

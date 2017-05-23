@@ -212,7 +212,7 @@ static int _parse_addr4(const char *host, struct sockaddr_in *addr4, int numeric
 	if ((status = getaddrinfo(host, 0, &hints, &AddrInfo)) != 0)
 		return 0;
 
-	struct addrinfo *AI;
+	const struct addrinfo *AI;
 	int i = 0;
 
 	for (AI = AddrInfo; AI != 0; AI = AI->ai_next) {
@@ -247,7 +247,7 @@ static int _parse_addr6(const char *host, struct sockaddr_in6 *addr6, int numeri
 	if ((status = getaddrinfo(host, 0, &hints, &AddrInfo)) != 0)
 		return 0;
 
-	struct addrinfo *AI;
+	const struct addrinfo *AI;
 	int i = 0;
 
 	for (AI = AddrInfo; AI != 0; AI = AI->ai_next) {

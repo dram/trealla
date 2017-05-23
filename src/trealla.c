@@ -122,6 +122,7 @@ void term_heapclean(node *n)
 #ifdef DEBUG
 	g_allocs--;
 #endif
+
 	free(n);
 }
 
@@ -429,7 +430,12 @@ uint64_t gettimeofday_usec(void)
 static void rule_done(void *p)
 {
 	rule *r = (rule *)p;
-	term_destroy(NLIST_FRONT(&r->val_l));
+
+	while (NLIST_COUNT(&r->val_l)) {
+		node *n = NLIST_POP_FRONT(&r->val_l);
+		term_heapcheck(n);
+	}
+
 	sb_destroy(r->idx);
 
 #ifndef ISO_ONLY
@@ -462,11 +468,10 @@ void db_init(module *self, trealla *pl, const char *name, const char *filename)
 
 static void db_done(module *self)
 {
-	sl_done(&self->rules, &rule_done);
 	sl_done(&self->dict, NULL);
 	sl_done(&self->exports, NULL);
-#ifndef ISO_ONLY
 
+#ifndef ISO_ONLY
 	node *tmp;
 
 	while ((tmp = NLIST_POP_FRONT(&self->tran_queue)) != NULL) {
@@ -479,20 +484,24 @@ static void db_done(module *self)
 		free(tmp);
 	}
 
-	lock_destroy(self->guard);
 	dbs_done(self);
+	lock_destroy(self->guard);
 #endif
+
+	sl_done(&self->rules, &rule_done);
 	free(self->filename);
 	free(self->name);
 }
 
 static void db_free(void *p)
 {
-	if (!p)
+	module *db = (module *)p;
+
+	if (!db)
 		return;
 
-	db_done((module *)p);
-	free(p);
+	db_done(db);
+	free(db);
 }
 
 static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, int arity)
@@ -513,7 +522,7 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 	char *save = NULL;
 
 	if (!(term->flags & FLAG_CONST))
-		save = VAL_S(term);
+		save = term->val_s;
 
 	if (r->dynamic)
 		term->flags |= FLAG_DYNAMIC;
@@ -569,7 +578,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 			char *save = NULL;
 
 			if (!(term->flags & FLAG_CONST))
-				save = VAL_S(term);
+				save = term->val_s;
 
 			term->flags |= FLAG_CONST;
 			term->val_s = dict(db, functor);
@@ -1313,22 +1322,11 @@ int trealla_deconsult(trealla *self, const char *filename)
 	while ((key = sl_next(&self->mods, (void **)&db)) != NULL) {
 		if (!strcmp(db->filename, filename)) {
 			sl_del(&self->mods, key, NULL);
+			db_free(db);
 			break;
 		}
 	}
 
-	DBLOCK(db);
-	sl_start(&db->rules);
-	rule *r;
-
-	while ((key = sl_next(&db->rules, (void **)&r)) != NULL) {
-		// FIXME: just deleting rules is too dangerous. ???
-		// sl_del(&db->rules, key, NULL);
-		// rule_done(r);
-	}
-
-	DBUNLOCK(db);
-	//db_free(db);
 	SYSUNLOCK(self);
 	return 1;
 }
