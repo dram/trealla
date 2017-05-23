@@ -5003,11 +5003,18 @@ static int bif_xtra_phrase(tpl_query *q)
 
 	term_append(tmp, clone_term(q, param));
 	param = get_next_arg(q, &args);
+	int made = 0;
 
-	if (param == NULL)
+	if (param == NULL) {
 		param = make_const_atom("[]", 0);
+		made = 1;
+	}
 
 	term_append(tmp, clone_term(q, param));
+
+	if (made)
+		term_heapcheck(param);
+
 	const char *functor = term_functor(tmp);
 	int arity = term_arity(tmp);
 	tmp->bifptr = get_bifarity(q->lex, functor, arity)->bifptr;

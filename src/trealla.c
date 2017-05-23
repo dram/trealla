@@ -788,7 +788,10 @@ static int trealla_make_rule(trealla *self, const char *src)
 	return ok;
 }
 
-int query_parse(tpl_query *self, const char *src) { return query_parse_file(self, src, NULL); }
+int query_parse(tpl_query *self, const char *src)
+{
+	return query_parse_file(self, src, NULL);
+}
 
 int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 {

@@ -491,7 +491,7 @@ static void dir_op(lexer *l, node *n)
 static int dir_initialization(lexer *l, node *n)
 {
 	char tmpbuf[FUNCTOR_SIZE + 10];
-	term_sprint(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 1);
+	term_sprint(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 0);
 	strcat(tmpbuf, ".");
 	l->init = strdup(tmpbuf);
 	l->pl->quiet = 1;
@@ -1159,16 +1159,10 @@ static int dcg_term(lexer *l, node *term, int i, int j)
 	if (is_atom(term)) {
 		node *tmp = term_make();
 		tmp->flags = term->flags;
-		tmp->flags = TYPE_ATOM;
+		tmp->flags |= TYPE_ATOM;
 
-		if (term->flags & FLAG_SMALL) {
+		if (term->flags & FLAG_SMALL)
 			strcpy(tmp->val_ch, term->val_ch);
-			tmp->flags |= FLAG_CONST | FLAG_SMALL;
-		}
-		else if (term->flags & FLAG_CONST) {
-			tmp->flags |= FLAG_CONST;
-			tmp->val_s = term->val_s;
-		}
 		else
 			tmp->val_s = term->val_s;
 
@@ -1790,13 +1784,11 @@ void lexer_done(lexer *self)
 static void lexer_finalize(lexer *self)
 {
 	if (self->fact) {
-		node *tmp = term_make();
-		tmp->flags |= TYPE_ATOM | FLAG_CONST | FLAG_BUILTIN;
-		tmp->val_s = (char *)":-";
+		node *tmp = make_const_atom(":-", 0);
+		tmp->flags |= FLAG_BUILTIN;
 		term_append(self->r, tmp);
-		tmp = term_make();
-		tmp->flags |= TYPE_ATOM | FLAG_CONST | FLAG_BUILTIN | FLAG_HIDDEN;
-		tmp->val_s = (char *)"true";
+		tmp = make_const_atom("true", 0);
+		tmp->flags |= FLAG_BUILTIN | FLAG_HIDDEN;
 		tmp->bifptr = bif_iso_true;
 		term_append(self->r, tmp);
 	}
@@ -1823,6 +1815,7 @@ static void lexer_finalize(lexer *self)
 
 		if (term_count(self->r) > 1) {
 			printf("ERROR: syntax error, excess terms\n");
+			term_heapcheck(self->r);
 			self->error = 1;
 			return;
 		}
@@ -2174,6 +2167,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				self->tok = dstbuf;
 			}
 #endif
+
 			if (self->quoted < 2) {
 				if ((n->bifptr = get_bif(self, self->tok)->bifptr) != NULL)
 					n->flags |= FLAG_BUILTIN;

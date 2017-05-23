@@ -610,6 +610,7 @@ void history_save(void)
 {
 	while (g_history) {
 		cmd *save = g_history;
+		free(save->line);
 		g_history = g_history->next;
 		free(save);
 	}
