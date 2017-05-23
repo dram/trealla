@@ -206,16 +206,16 @@ static int _parse_addr4(const char *host, struct sockaddr_in *addr4, int numeric
 	hints.ai_family = AF_INET;
 	hints.ai_flags = (numeric ? AI_NUMERICHOST : 0) | (host ? 0 : AI_PASSIVE);
 
-	struct addrinfo *AddrInfo;
+	struct addrinfo *result;
 	int status;
 
-	if ((status = getaddrinfo(host, 0, &hints, &AddrInfo)) != 0)
+	if ((status = getaddrinfo(host, 0, &hints, &result)) != 0)
 		return 0;
 
 	const struct addrinfo *AI;
 	int i = 0;
 
-	for (AI = AddrInfo; AI != 0; AI = AI->ai_next) {
+	for (AI = result; AI != NULL; AI = AI->ai_next) {
 		if (AI->ai_family != AF_INET)
 			continue;
 
@@ -223,7 +223,7 @@ static int _parse_addr4(const char *host, struct sockaddr_in *addr4, int numeric
 		i++;
 	}
 
-	freeaddrinfo(AddrInfo);
+	freeaddrinfo(result);
 	return i;
 }
 
@@ -241,16 +241,16 @@ static int _parse_addr6(const char *host, struct sockaddr_in6 *addr6, int numeri
 	hints.ai_family = AF_INET6;
 	hints.ai_flags = (numeric ? AI_NUMERICHOST : 0) | (host ? 0 : AI_PASSIVE);
 
-	struct addrinfo *AddrInfo;
+	struct addrinfo *result;
 	int status;
 
-	if ((status = getaddrinfo(host, 0, &hints, &AddrInfo)) != 0)
+	if ((status = getaddrinfo(host, 0, &hints, &result)) != 0)
 		return 0;
 
 	const struct addrinfo *AI;
 	int i = 0;
 
-	for (AI = AddrInfo; AI != 0; AI = AI->ai_next) {
+	for (AI = result; AI != NULL; AI = AI->ai_next) {
 		if (AI->ai_family != AF_INET6)
 			continue;
 
@@ -258,7 +258,7 @@ static int _parse_addr6(const char *host, struct sockaddr_in6 *addr6, int numeri
 		i++;
 	}
 
-	freeaddrinfo(AddrInfo);
+	freeaddrinfo(result);
 	return i;
 }
 
@@ -266,8 +266,8 @@ static int parse_addr6(const char *host, struct sockaddr_in6 *addr6)
 {
 	if (_parse_addr6(host, addr6, 0) || _parse_addr6(host, addr6, 1))
 		return 1;
-	else
-		return 0;
+
+	return 0;
 }
 
 session *session_create(void)
@@ -427,8 +427,8 @@ int session_enable_tls(session *s, const char *certfile, int level)
 #if USE_SSL
 	if (!g_ssl_init) {
 		g_ssl_init = 1;
-		SSL_library_init();
 		SSL_load_error_strings();
+		SSL_library_init();
 	}
 
 	static SSL_CTX *s_ctx = NULL;
@@ -2029,8 +2029,8 @@ int handler_set_tls(handler *h, const char *keyfile, const char *certfile)
 #if USE_SSL
 	if (!g_ssl_init) {
 		g_ssl_init = 1;
-		SSL_library_init();
 		SSL_load_error_strings();
+		SSL_library_init();
 	}
 
 	if (h->ctx) // already done
