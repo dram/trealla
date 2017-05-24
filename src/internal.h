@@ -19,7 +19,7 @@
 #include "network.h"
 #endif
 
-#if defined(__TINYC__) || defined(_WIN32) || defined(NOUSE_128)
+#if defined(__TINYC__) || defined(_WIN32) || !defined(USE_128)
 typedef int64_t nbr_t;
 typedef uint64_t unbr_t;
 #else

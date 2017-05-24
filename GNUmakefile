@@ -31,8 +31,8 @@ CFLAGS += -pthread
 LDFLAGS += -pthread
 endif
 
-ifdef NOUSE_128
-CFLAGS += -DNOUSE_128
+ifdef USE_128
+CFLAGS += -DUSE_128
 endif
 
 all: tpl
@@ -43,14 +43,14 @@ debug:
 profile:
 	make 'OPT=-O1 -pg'
 
-small:
-	make NOUSE_128=1
+big:
+	make USE_128=1
 
 iso:
 	make ISO_ONLY=1 USE_SSL=0
 
-iso_small:
-	make ISO_ONLY=1 NOUSE_128=1 USE_SSL=0
+iso_big:
+	make ISO_ONLY=1 USE_128=1 USE_SSL=0
 
 iso_debug:
 	make 'OPT=-O0 -g -DDEBUG' ISO_ONLY=1 USE_SSL=0

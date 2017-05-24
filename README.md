@@ -15,12 +15,11 @@ deep binding and structure sharing. It supports much of ISO-PROLOG plus:
  - Linda-style processes and tuple-space
  - advanced networking features
  - unlimited length and number of UTF-8 or binary strings
- - 128-bit integers (where available)
+ - optional 128-bit integers (where available)
  - definite clause grammar (DCG)
 
-The rule database usage is currently immediate update view (the traditional
-way). ISO-PROLOG however specifies logical update view (ie. snapshot), so this
-may change in future (a flag?).
+The rule database usage is currently immediate update view (the traditional way). ISO-PROLOG
+however specifies logical update view (ie. snapshot), so this may change in future (a flag?).
 
 Writen in plain-old C with a permissive license.
 
@@ -31,17 +30,17 @@ Getting / Building
 
 	git clone https://github.com/trealla-lang/trealla
 	cd trealla
-	make [CC=gcc|clang|tcc] [iso|iso_debug|debug]
+	make [CC=gcc|clang|tcc] [iso|iso_debug|iso_profile|debug|profile]
 
-The Windows build has been discontinued.
-
-Note *tcc* does not support 128-bit integers or atomics (so no procs).
+Note *tcc* does not support 128-bit integers, or atomics (so no procs).
 
 Compiler should be C11 if using procs (to use atomics) otherwise C99 should be
 adequate, eg:
 
 	make OPT=-std=c11       # or -std=gnu11
 	make OPT=-std=c99       # or -std=gnu99
+
+The Windows build has been discontinued.
 
 If contributing code, the source style is basically K&R / Linux-kernel with
 hard TABs set to 4 (the goldilocks zone).
@@ -145,7 +144,7 @@ Benchmarks
 ----------
 
 Indicative only, may not be current, and depends highly on compilers
-and compiler options. Made with 'make iso_small' option:
+and compiler options. Made with 'make iso' option:
 
   tpl -l samples/hanoi.pro -g 'hanoiq(20)'
 
