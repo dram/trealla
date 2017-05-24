@@ -75,7 +75,7 @@ static size_t _sprint_int(char *dst, size_t size, nbr_t n, int base)
 	if ((n / base) > 0)
 		dst += _sprint_int(dst, size, n / base, base);
 
-	char n2 = n % base;
+	int n2 = n % base;
 
 	if (base == 16) {
 		if (n2 < 10)
@@ -86,7 +86,7 @@ static size_t _sprint_int(char *dst, size_t size, nbr_t n, int base)
 	else
 		n2 += '0';
 
-	*dst++ = n2;
+	*dst++ = (char)n2;
 	return dst - save_dst;
 }
 

@@ -36,7 +36,12 @@ extern uint64_t g_choicepoints, g_heap_used, g_backtracks, g_executes,
 
 extern uint64_t g_busy;
 
-typedef nbr_t mask_t;
+#if defined(__TINYC__) || defined(_WIN32)
+typedef uint64_t mask_t;
+#else
+typedef __uint128_t mask_t;
+#endif
+
 #define MAX_FRAME_SIZE (sizeof(mask_t)*8)
 #define MAX_UOPS 100
 
