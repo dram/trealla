@@ -42,9 +42,9 @@ uuid uuid_set(uint64_t v1, uint64_t v2)
 
 uint64_t uuid_ts(const uuid *u) { return u->u1; }
 
-char *uuid_to_string(const uuid *u, char *buf)
+char *uuid_to_string(const uuid *u, char *buf, size_t buflen)
 {
-	sprintf(buf, "%016llX:%04llX:%012llX",
+	snprintf(buf, buflen, "%016llX:%04llX:%012llX",
 		(unsigned long long)u->u1, (unsigned long long)(u->u2 >> 48),
 		(unsigned long long)(u->u2 & MASK_FINAL));
 

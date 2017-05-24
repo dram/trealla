@@ -1342,8 +1342,8 @@ static int bif_sys_uuid_1(tpl_query *q)
 	node *term1 = get_var(term1);
 	uuid u;
 	uuid_gen(&u);
-	char tmpbuf[256];
-	uuid_to_string(&u, tmpbuf);
+	char tmpbuf[64];
+	uuid_to_string(&u, tmpbuf, sizeof(tmpbuf));
 	put_atom(q, q->curr_frame + term1->slot, strdup(tmpbuf), 1);
 	return 1;
 }
@@ -1356,11 +1356,15 @@ static int bif_sys_sha1_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	unsigned char digest[SHA_DIGEST_LENGTH];
 	SHA1((unsigned char *)VAL_S(term1), LEN(term1), digest);
-	char tmpbuf[1024];
+	char tmpbuf[512];
 	char *dst = tmpbuf;
+	size_t buflen = sizeof(tmpbuf);
 
-	for (int i = 0; i < SHA_DIGEST_LENGTH; i++)
-		dst += snprintf(dst, sizeof(tmpbuf), "%02X", digest[i]);
+	for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+		size_t len = snprintf(dst, buflen, "%02X", digest[i]);
+		dst += len;
+		buflen -= len;
+	}
 
 	put_atom(q, q->curr_frame + term2->slot, strdup(tmpbuf), 1);
 	return 1;
@@ -1373,11 +1377,15 @@ static int bif_sys_sha256_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	unsigned char digest[SHA256_DIGEST_LENGTH];
 	SHA256((unsigned char *)VAL_S(term1), LEN(term1), digest);
-	char tmpbuf[1024];
+	char tmpbuf[512];
 	char *dst = tmpbuf;
+	size_t buflen = sizeof(tmpbuf);
 
-	for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-		dst += snprintf(dst, sizeof(tmpbuf), "%02X", digest[i]);
+	for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+		size_t len = snprintf(dst, buflen, "%02X", digest[i]);
+		dst += len;
+		buflen -= len;
+	}
 
 	put_atom(q, q->curr_frame + term2->slot, strdup(tmpbuf), 1);
 	return 1;
@@ -1390,11 +1398,15 @@ static int bif_sys_sha512_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	unsigned char digest[SHA512_DIGEST_LENGTH];
 	SHA512((unsigned char *)VAL_S(term1), LEN(term1), digest);
-	char tmpbuf[1024];
+	char tmpbuf[512];
 	char *dst = tmpbuf;
+	size_t buflen = sizeof(tmpbuf);
 
-	for (int i = 0; i < SHA512_DIGEST_LENGTH; i++)
-		dst += snprintf(dst, sizeof(tmpbuf), "%02X", digest[i]);
+	for (int i = 0; i < SHA512_DIGEST_LENGTH; i++) {
+		size_t len = snprintf(dst, buflen, "%02X", digest[i]);
+		dst += len;
+		buflen -= len;
+	}
 
 	put_atom(q, q->curr_frame + term2->slot, strdup(tmpbuf), 1);
 	return 1;
