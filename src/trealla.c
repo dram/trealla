@@ -1180,7 +1180,7 @@ void query_destroy(tpl_query *self)
 			;
 	}
 
-	env *e = &self->envs[0];
+	env *e = self->envs;
 
 	for (size_t i = 0; i < self->envs_possible; i++, e++)
 		term_heapcheck(e->term);
