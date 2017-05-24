@@ -356,12 +356,12 @@ char *trealla_readline(lexer *l, FILE *fp, int more)
 		return history_readline_eol(more ? "|: " : "?- ", '.');
 
 	size_t maxlen = 0, blocksize = 1024 * 8;
+	char *line = NULL;
 
 	while (!feof(fp)) {
-		char *line = NULL;
 		maxlen += blocksize;
 
-		if (!(line = (char *)realloc(line, maxlen + 1)))
+		if (!(line = (char *)realloc(line, maxlen)))
 			break;
 
 		char *dst = (line + maxlen) - blocksize;
@@ -401,6 +401,9 @@ char *trealla_readline(lexer *l, FILE *fp, int more)
 
 		blocksize *= 2;
 	}
+
+	if (line)
+		free(line);
 
 	return NULL;
 }
