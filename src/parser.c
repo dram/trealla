@@ -217,6 +217,15 @@ node *make_atom(char *s, int quoted)
 	return n;
 }
 
+#if USE_SSL
+node *make_bignum(char *s)
+{
+	node *n = make_int(dec_to_int(s));	// FIXME - use SSL:BIGNUM
+	n->flags |= TYPE_BIGNUM;
+	return n;
+}
+#endif
+
 node *make_compound(void)
 {
 	node *n = term_make();
@@ -1319,6 +1328,8 @@ static char *token_take(token *t)
 	return t->buf;
 }
 
+enum { NUM_NONE, NUM_REAL, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
+
 const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 {
 	if ((ch == '0') && (*s == 'b')) {
@@ -1334,7 +1345,7 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 			s++;
 		}
 
-		*numeric = 3;
+		*numeric = NUM_BINARY;
 		*value = v;
 		return s;
 	}
@@ -1349,7 +1360,7 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 			s++;
 		}
 
-		*numeric = 4;
+		*numeric = NUM_OCTAL;
 		*value = v;
 		return s;
 	}
@@ -1369,24 +1380,28 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 			s++;
 		}
 
-		*numeric = 5;
+		*numeric = NUM_HEX;
 		*value = v;
 		return s;
 	}
 
 	int neg = 0;
 
-	if (ch == '-') {
+	if (ch == '-')
 		neg = 1;
-		ch = '0';
-	}
+	else
+		--s;
 
-	nbr_t v = ch - '0';
-	int real = 0, exp = 0;
+	nbr_t v = 0;
+	int real = 0, exp = 0, big = 0;
 
 	while ((ch = *s++) != '\0') {
 		if (ch == '_')
 			;
+#if USE_SSL
+		else if (ch == 'B')
+			big = 1;
+#endif
 		else if ((ch == '.') && isdigit(*s))
 			real = 1;
 		else if (!exp && ((ch == 'e') || (ch == 'E')))
@@ -1402,7 +1417,7 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 		}
 	}
 
-	*numeric = real ? 1 : 2;
+	*numeric = real ? NUM_REAL : big ? NUM_BIGNUM : NUM_INT;
 	*value = neg ? -v : v;
 	return s;
 }
@@ -1433,7 +1448,8 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 	token t;
 	token_init(&t);
-	l->numeric = l->quoted = 0;
+	l->numeric = NUM_NONE;
+	l->quoted = 0;
 
 	if (line)
 		l->cpos = (s - *line) - 3;
@@ -1594,22 +1610,14 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			int neg = l->neg;
 			l->neg = 0;
 
-			if (l->numeric > 1) {
-				t.dst = t.buf = (char *)realloc(t.buf, (t.maxlen = 255) + 1);
-
-				if (neg)
-					v = -v;
-
-				t.dst += sprint_int(t.buf, t.maxlen, v, 10);
-				break;
-			} else {
+			if (l->numeric == NUM_REAL) {
 				if (neg)
 					token_put(&t, '-');
 
 				token_put(&t, ch);
 				int exp = 0;
 
-				while ((ch = *save_s++) != 0) {
+				while ((ch = *save_s++) != '\0') {
 					if (ch == '_')
 						;
 					else if ((ch == '.') && isdigit(*save_s))
@@ -1626,6 +1634,31 @@ static const char *get_token(lexer *l, const char *s, char **line)
 					token_put(&t, ch);
 				}
 
+				break;
+			}
+			else if (l->numeric == NUM_BIGNUM) {
+				if (neg)
+					token_put(&t, '-');
+
+				token_put(&t, ch);
+
+				while ((ch = *save_s++) != '\0') {
+					if (!isdigit(ch)) {
+						save_s--;
+						break;
+					}
+
+					token_put(&t, ch);
+				}
+
+				break;
+			} else {
+				t.dst = t.buf = (char *)realloc(t.buf, (t.maxlen = 255) + 1);
+
+				if (neg)
+					v = -v;
+
+				t.dst += sprint_int(t.buf, t.maxlen, v, 10);
 				break;
 			}
 		}
@@ -2103,19 +2136,25 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				return src;
 			}
 		}
-		else if (self->numeric >= 2) {
+#if USE_SSL
+		else if (self->numeric == NUM_BIGNUM) {
+			n = make_bignum(self->tok);
+			free(self->tok);
+		}
+#endif
+		else if (self->numeric >= NUM_INT) {
 			n = make_int(dec_to_int(self->tok));
 
-			if (self->numeric == 3)
+			if (self->numeric == NUM_BINARY)
 				n->flags |= FLAG_BINARY;
-			else if (self->numeric == 4)
+			else if (self->numeric == NUM_OCTAL)
 				n->flags |= FLAG_OCTAL;
-			else if (self->numeric == 5)
+			else if (self->numeric == NUM_HEX)
 				n->flags |= FLAG_HEX;
 
 			free(self->tok);
 		}
-		else if (self->numeric == 1) {
+		else if (self->numeric == NUM_REAL) {
 			n = make_float(strtod(self->tok, NULL));
 			free(self->tok);
 		}

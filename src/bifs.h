@@ -15,7 +15,8 @@
 #define is_var(n) (((n)->flags & TYPE_VAR) ? 1 : 0)
 #define is_float(n) (((n)->flags & TYPE_FLOAT) ? 1 : 0)
 #define is_integer(n) (((n)->flags & TYPE_INTEGER) ? 1 : 0)
-#define is_number(n) (is_integer(n) || is_float(n) ? 1 : 0)
+#define is_bignum(n) (((n)->flags & TYPE_BIGNUM) ? 1 : 0)
+#define is_number(n) (is_integer(n) || is_float(n) || is_bignum(n) ? 1 : 0)
 #define is_atom(n) (((n)->flags & TYPE_ATOM) ? 1 : 0)
 #define is_atomic(n) (is_atom(n) || is_number(n) ? 1 : 0)
 

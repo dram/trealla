@@ -11,6 +11,10 @@
 #define atomic volatile
 #endif
 
+#if USE_SSL
+#include "openssl/bn.h"
+#endif
+
 #include "skiplist.h"
 #include "skipbuck.h"
 #include "list.h"
@@ -50,6 +54,7 @@ typedef __uint128_t mask_t;
 #define TYPE_ATOM				(1ULL << 2)
 #define TYPE_VAR				(1ULL << 3)
 #define TYPE_COMPOUND			(1ULL << 4)
+#define TYPE_BIGNUM				(1ULL << 5)
 
 #define FLAG_HEAP				(1ULL << 10)
 #define FLAG_ATTACHED			(1ULL << 11)
@@ -129,7 +134,7 @@ struct node_
 			node *n1, *n2;
 		};
 
-		char val_ch[sizeof(list)];
+		char val_ch[sizeof(list)];	// small atoms
 
 		stream *val_str;			// stream ptr
 		void *val_ptr;				// other ptr
@@ -137,6 +142,10 @@ struct node_
 		nbr_t val_i;				// integer signed
 		unbr_t val_u;				// integer unsigned
 		list val_l;					// compound
+
+#if USE_SSL
+		BIGNUM val_bn;
+#endif
 	};
 
 	union {

@@ -372,6 +372,13 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		*dst++ = '@';
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);
 	}
+#if USE_SSL
+	else if (is_bignum(n) && listing) {
+		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);
+		*dst++ = 'B';
+		*dst = '\0';
+	}
+#endif
 	else if (is_integer(n) && (n->flags & FLAG_BINARY) && listing)
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_u, 2);
 	else if (is_integer(n) && (n->flags & FLAG_OCTAL) && listing)
