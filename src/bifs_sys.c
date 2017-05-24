@@ -153,7 +153,7 @@ static int sys_write_file(tpl_query *q, node *var, node *term1, node *term2, nbr
 		sp2->fptr = fp;
 		node *n = make_stream(sp2);
 		put_env(q, q->curr_frame + var->slot, n, -1);
-		n->refcnt--;
+		term_heapcheck(n);
 		allocate_frame(q);
 	}
 	else {
@@ -341,7 +341,7 @@ static int bif_sys_load_file_2(tpl_query *q)
 	fclose(fp);
 	node *n = make_blob(dstbuf, len);
 	put_env(q, q->curr_frame + term2->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -393,7 +393,7 @@ static int bif_sys_concat_N(tpl_query *q)
 		n = make_atom(tmpbuf, 1);
 
 	put_env(q, q->curr_frame + var->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -552,7 +552,7 @@ static int bif_sys_bread_3(tpl_query *q)
 
 	node *n = make_blob(bufptr, len);
 	put_env(q, q->curr_frame + term3->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -1100,7 +1100,7 @@ static int bif_sys_split_3(tpl_query *q)
 	free(dstbuf);
 	term_append(l, make_const_atom("[]", 0));
 	put_env(q, q->curr_frame + term3->slot, save_l, q->curr_frame);
-	save_l->refcnt--;
+	term_heapcheck(save_l);
 	return 1;
 }
 
@@ -1516,7 +1516,7 @@ static int bif_sys_b64_decode_2(tpl_query *q)
 	size_t nbytes = b64_decode(VAL_S(term1), len, &dstbuf);
 	node *n = make_blob(dstbuf, nbytes);
 	put_env(q, q->curr_frame + term2->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -1616,7 +1616,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 	free(dstbuf);
 	term_append(l, make_const_atom("[]", 0));
 	put_env(q, q->curr_frame + term2->slot, save_l, q->curr_frame);
-	save_l->refcnt--;
+	term_heapcheck(save_l);
 	return 1;
 }
 
@@ -1716,7 +1716,7 @@ static int bif_sys_parse_tab_2(tpl_query *q)
 	free(dstbuf);
 	term_append(l, make_const_atom("[]", 0));
 	put_env(q, q->curr_frame + term2->slot, save_l, q->curr_frame);
-	save_l->refcnt--;
+	term_heapcheck(save_l);
 	return 1;
 }
 
@@ -1727,7 +1727,7 @@ static int bif_sys_stream_1(tpl_query *q)
 	stream *sp = calloc(1, sizeof(stream));
 	node *n = make_stream(sp);
 	put_env(q, q->curr_frame + term0->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 

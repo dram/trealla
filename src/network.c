@@ -427,7 +427,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 #if USE_SSL
 	if (!g_ssl_init) {
 		g_ssl_init = 1;
-		SSL_load_error_strings();
+		//SSL_load_error_strings();
 		SSL_library_init();
 	}
 
@@ -480,8 +480,10 @@ int session_enable_tls(session *s, const char *certfile, int level)
 		if (SSL_accept(s->ssl) == -1) {
 			if (g_debug)
 				printf("SSL_accept failed\n");
+
 			if (g_debug)
 				ERR_print_errors_fp(stderr);
+
 			return 0;
 		}
 	}
@@ -491,8 +493,10 @@ int session_enable_tls(session *s, const char *certfile, int level)
 		if (SSL_connect(s->ssl) == -1) {
 			if (g_debug)
 				printf("SSL_connect failed\n");
+
 			if (g_debug)
 				ERR_print_errors_fp(stderr);
+
 			return 0;
 		}
 	}
@@ -506,8 +510,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 
 	X509 *server_cert = SSL_get_peer_certificate(s->ssl);
 
-	if (server_cert)
-	{
+	if (server_cert) {
 		char buf[1024];
 		//char *str;
 		//buf[0] = 0;
@@ -522,8 +525,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 		//printf("SSL Server Common name = '%s'\n", common_name);
 		X509_free(server_cert);
 	}
-	else
-	{
+	else {
 		if (level > 0)
 			printf("SSL No server certificate\n");
 	}
@@ -882,8 +884,10 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 	char *dstbuf = (char *)malloc(len + 64);
 	char *dst = dstbuf;
 	uint8_t f = 0;
+
 	if (fin)
 		f |= 0x1 << 7;
+
 	f |= (unsigned char)opcode & 0xf;
 	dst += bufwrite(dst, &f, 1);
 	int masked;
@@ -894,8 +898,10 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 		masked = 0;
 
 	f = 0;
+
 	if (masked)
 		f |= 0x1 << 7;
+
 	uint8_t tmplen;
 
 	if (len <= 125)
@@ -911,12 +917,13 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 	if (tmplen == 126) {
 		uint16_t n = htons(len);
 		dst += bufwrite(dst, &n, sizeof(n));
-	}
-	else if (tmplen == 127) {
-		uint32_t n = htonl((uint64_t)len >> 32);
-		dst += bufwrite(dst, &n, sizeof(n));
-		n = htonl((uint64_t)len & 0xffffffff);
-		dst += bufwrite(dst, &n, sizeof(n));
+	} else {
+		if (tmplen == 127) {
+			uint32_t n = htonl((uint64_t)len >> 32);
+			dst += bufwrite(dst, &n, sizeof(n));
+			n = htonl((uint64_t)len & 0xffffffff);
+			dst += bufwrite(dst, &n, sizeof(n));
+		}
 	}
 
 	if (masked) {
@@ -924,6 +931,7 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 			uint32_t mask;
 			char mbytes[4];
 		} m;
+
 		m.mask = rand();
 		dst += bufwrite(dst, &m.mask, sizeof(m.mask));
 
@@ -973,14 +981,15 @@ int session_ws_parse(session *s, int *fin, unsigned *opcode, char **dstbuf, size
 			return 0;
 
 		len |= ntohl(n);
-	}
-	else if (len == 126) {
-		uint16_t n;
+	} else {
+		if (len == 126) {
+			uint16_t n;
 
-		if (!(session_read(s, &n, sizeof(n)) == sizeof(n)))
-			return 0;
+			if (!(session_read(s, &n, sizeof(n)) == sizeof(n)))
+				return 0;
 
-		len = ntohs(n);
+			len = ntohs(n);
+		}
 	}
 
 	union {
@@ -1042,8 +1051,7 @@ int session_rawwrite(session *s, const void *buf, size_t len)
 		else if (s->ipv4) {
 			socklen_t alen = sizeof(struct sockaddr_in);
 			wlen = sendto(s->fd, (const char *)buf, len, MSG_NOSIGNAL, (struct sockaddr *)&s->addr4, alen);
-		}
-		else {
+		} else {
 			socklen_t alen = sizeof(struct sockaddr_in6);
 			wlen = sendto(s->fd, (const char *)buf, len, MSG_NOSIGNAL, (struct sockaddr *)&s->addr6, alen);
 		}
@@ -1110,6 +1118,7 @@ int session_bcast(session *s, const void *buf, size_t len)
 
 	if (s->is_tcp)
 		return 0;
+
 	struct sockaddr_in addr4 = {0};
 	addr4.sin_family = AF_INET;
 	addr4.sin_port = htons(s->port);
@@ -1153,7 +1162,7 @@ int session_read(session *s, void *buf, size_t len)
 	else
 #endif
 	    if (s->is_tcp)
-		rlen += recv(s->fd, (char *)buf, len, 0);
+			rlen += recv(s->fd, (char *)buf, len, 0);
 	else if (s->ipv4) {
 		socklen_t tmplen = sizeof(struct sockaddr_in);
 		rlen = recvfrom(s->fd, (char *)buf, len, 0, (struct sockaddr *)&s->addr4, &tmplen);
@@ -1240,7 +1249,7 @@ int session_readmsg(session *s, char **buf)
 	else
 #endif
 	    if (s->is_tcp) {
-		rlen = recv(s->fd, (char *)s->srcbuf, READ_BUFLEN - 1, 0);
+			rlen = recv(s->fd, (char *)s->srcbuf, READ_BUFLEN - 1, 0);
 	}
 	else if (s->ipv4) {
 		socklen_t tmplen = sizeof(struct sockaddr_in);
@@ -1275,7 +1284,8 @@ int session_close(session *s)
 		if (s->is_client) {
 			shutdown(s->fd, SHUT_RDWR);
 			close(s->fd);
-		} else
+		}
+		else
 			shutdown(s->fd, SHUT_WR);
 	}
 
@@ -1350,11 +1360,9 @@ static int handler_accept(handler *h, server *srv, session **v)
 	linger.l_onoff = 0;
 	linger.l_linger = 1;
 	setsockopt(newfd, SOL_SOCKET, SO_LINGER, (char *)&linger, sizeof(linger));
-
 	int flag = 1;
 	setsockopt(newfd, SOL_SOCKET, SO_KEEPALIVE, (char *)&flag, sizeof(flag));
 	setsockopt(newfd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag));
-
 	session *s = session_create();
 	s->name = srv->name;
 	session_share(s);
@@ -1506,7 +1514,6 @@ int handler_wait_kqueue(handler *h, int wait)
 				struct kevent ev = {0};
 				EV_SET(&ev, s->fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 				kevent(s->h->fd, &ev, 1, NULL, 0, NULL);
-
 				session *s = session_create();
 				s->h = h;
 				s->fd = srv->fd;
@@ -1758,8 +1765,8 @@ int handler_wait_poll(handler *h, int wait)
 
 		for (int i = 0; (i < cnt) && n; i++) {
 			session *s = NULL;
-
 			int fd = h->rpollfds[i].fd;
+
 			if (fd == -1)
 				continue;
 
@@ -2029,7 +2036,7 @@ int handler_set_tls(handler *h, const char *keyfile, const char *certfile)
 #if USE_SSL
 	if (!g_ssl_init) {
 		g_ssl_init = 1;
-		SSL_load_error_strings();
+		//SSL_load_error_strings();
 		SSL_library_init();
 	}
 
@@ -2126,8 +2133,7 @@ static int leave_multicast6(int fd, const char *addr)
 	addr6.sin6_family = AF_INET6;
 	int status = 0;
 
-	if (parse_addr6(addr, &addr6))
-	{
+	if (parse_addr6(addr, &addr6)) {
 		struct ipv6_mreq mreq;
 		memcpy(&mreq.ipv6mr_multiaddr, &addr6.sin6_addr, sizeof(struct in6_addr));
 		mreq.ipv6mr_interface = 0;
@@ -2143,8 +2149,7 @@ static int leave_multicast4(int fd, const char *addr)
 	addr4.sin_family = AF_INET;
 	int status = 0;
 
-	if (parse_addr4(addr, &addr4))
-	{
+	if (parse_addr4(addr, &addr4)) {
 		struct ip_mreq mreq;
 		memcpy(&mreq.imr_multiaddr, &addr4.sin_addr, sizeof(struct in_addr));
 		mreq.imr_interface.s_addr = htonl(INADDR_ANY);
@@ -2160,8 +2165,10 @@ extern uncle *uncle_create2(handler *h, const char *binding, unsigned port, cons
 int handler_add_uncle(handler *h, const char *binding, unsigned port, const char *scope)
 {
 	uncle *u = uncle_create2(h, binding, port, scope, NULL, NULL);
+
 	if (!u)
 		return 0;
+
 	h->u[h->uncs++] = u;
 	return 1;
 }
@@ -2230,17 +2237,18 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		lock_lock(h->strand);
 		server *srv = &h->srvs[h->cnt++];
 		lock_unlock(h->strand);
-
 		srv->name = strdup(name ? name : DEFAULT_NAME);
 		srv->fd = fd6;
 		srv->port = port6;
 		srv->pri = pri;
 		srv->is_tcp = tcp;
+
 #if USE_SSL
 		srv->is_ssl = ssl && tcp && h->ctx;
 #else
 		srv->is_ssl = 0;
 #endif
+
 		srv->ipv4 = 0;
 		srv->f = f;
 		srv->v = v;
@@ -2276,8 +2284,7 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		if (!tcp) {
 			unsigned long flag2 = 1;
 			ioctl(fd4, FIONBIO, &flag2);
-		}
-		else {
+		} else {
 			if (listen(fd4, 128) != 0) {
 				printf("handler_add_server: error listen4 failed port:%u %s\n", port4, strerror(errno));
 				close(fd4);
@@ -2294,17 +2301,18 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		lock_lock(h->strand);
 		server *srv = &h->srvs[h->cnt++];
 		lock_unlock(h->strand);
-
 		srv->name = strdup(name ? name : DEFAULT_NAME);
 		srv->fd = fd4;
 		srv->port = port4;
 		srv->pri = pri;
 		srv->is_tcp = tcp;
+
 #if USE_SSL
 		srv->is_ssl = ssl && tcp && h->ctx;
 #else
 		srv->is_ssl = 0;
 #endif
+
 		srv->ipv4 = 1;
 		srv->f = f;
 		srv->v = v;
@@ -2337,7 +2345,6 @@ int handler_add_client(handler *h, int (*f)(session *, void *data), void *data, 
 	s->handled = 1;
 	h->use++;
 	sb_int_set(h->fds, s->fd, s);
-
 	unsigned long flag2 = 1;
 	ioctl(s->fd, FIONBIO, &flag2);
 	s->is_nonblocking = flag2;
@@ -2357,8 +2364,6 @@ int handler_add_client(handler *h, int (*f)(session *, void *data), void *data, 
 
 int handler_add_tpool(handler *h, tpool *tp)
 {
-	// if (!tp) return 0;
-
 	if (h->tp)
 		tpool_destroy(h->tp);
 
@@ -2403,10 +2408,12 @@ handler *handler_create(int threads)
 
 #if defined(BSD)
 	h->fd = kqueue();
+
 	if (h->fd < 0)
 		abort();
 #elif defined(__linux__)
 	h->fd = epoll_create(1);
+
 	if (h->fd < 0)
 		abort();
 #endif

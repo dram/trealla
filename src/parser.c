@@ -401,12 +401,12 @@ int dir_dynamic(lexer *l, node *n)
 
 	char tmpbuf[FUNCTOR_SIZE + 10];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", VAL_S(head), (int)term_next(head)->val_i);
-	const char *functor = strdup(tmpbuf);
 	rule *r = NULL;
 
 	if (sl_get(&l->db->rules, tmpbuf, (void **)&r))
 		return 0;
 
+	const char *functor = strdup(tmpbuf);
 	r = calloc(1, sizeof(rule));
 	r->functor = functor;
 	r->dynamic = 1;
@@ -1733,7 +1733,7 @@ void attach_vars(lexer *self, node *var)
 	}
 
 	var->slot = self->vars++;
-	sl_set(&self->symtab, VAL_S(var), (void *)(size_t)var->slot);
+	sl_set(&self->symtab, strdup(VAL_S(var)), (void *)(size_t)var->slot);
 }
 
 lexer *lexer_create(trealla *pl)
@@ -1752,12 +1752,14 @@ void lexer_destroy(lexer *self)
 void lexer_init(lexer *self, trealla *pl)
 {
 	memset(self, 0, sizeof(lexer));
-	sl_init(&self->symtab, 0, &strcmp, NULL);
+	sl_init(&self->symtab, 0, &strcmp, &free);
 	sl_init(&self->ns, 0, &strcmp, &free);
+
 #ifndef ISO_ONLY
 	sl_init(&self->defines, 0, &strcmp, &free);
 	sl_init(&self->funs, 0, &strcmp, &free);
 #endif
+
 	self->pl = pl;
 	self->db = &pl->db;
 }
@@ -1768,6 +1770,7 @@ void lexer_done(lexer *self)
 	sl_done(&self->funs, NULL);
 	sl_done(&self->defines, &free);
 #endif
+
 	sl_done(&self->ns, NULL);
 	sl_done(&self->symtab, NULL);
 
@@ -2288,6 +2291,8 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 			       (self->name ? self->name : "console"),
 			       self->line_nbr,
 			       (line ? line : "end_of_file reached unexpectedly"));
+
+			free(line);
 			break;
 		}
 

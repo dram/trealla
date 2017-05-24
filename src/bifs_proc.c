@@ -479,7 +479,7 @@ static int proc_callback(tpl_query *q, session *s, node *goal, node *var)
 		node *n = make_socket(sp);
 		n->flags |= FLAG_PID;
 		put_env(who, var->slot, n, -1);
-		n->refcnt--;
+		term_heapcheck(n);
 		session_set_udata_int(s, (size_t)(void *)who);
 		who->is_forked = 1;
 		process_start_handler(who);
@@ -797,7 +797,7 @@ static int bif_proc_pid_2(tpl_query *q)
 		node *tmp = make_stream(sp);
 		tmp->flags |= FLAG_PID;
 		put_env(q, q->curr_frame + term2->slot, tmp, -1);
-		tmp->refcnt--;
+		term_heapcheck(tmp);
 		return 1;
 	}
 
@@ -911,7 +911,7 @@ static int bif_proc_pid_2(tpl_query *q)
 	n->pid = q;
 	handler_add_client(q->pl->h, &client_callback, q, s);
 	put_env(q, q->curr_frame + term2->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -930,7 +930,7 @@ static int bif_proc_pid_1(tpl_query *q)
 	node *tmp = make_stream(sp);
 	tmp->flags |= FLAG_PID;
 	put_env(q, q->curr_frame + term1->slot, tmp, -1);
-	tmp->refcnt--;
+	term_heapcheck(tmp);
 	return 1;
 }
 

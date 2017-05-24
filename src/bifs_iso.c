@@ -477,7 +477,7 @@ static int bif_iso_calln(tpl_query *q)
 		s->flags |= FLAG_BUILTIN;
 
 	put_env(q, q->curr_frame + var->slot, s, q->curr_frame);
-	s->refcnt--;
+	term_heapcheck(s);
 	allocate_frame(q);
 	try_me(q);
 	q->curr_term = s;
@@ -749,7 +749,7 @@ static int bif_iso_atom_concat(tpl_query *q)
 		n = make_atom(tmp, 1);
 
 	put_env(q, q->curr_frame + term3->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -870,7 +870,7 @@ static int bif_iso_open_3(tpl_query *q)
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
 	put_env(q, q->curr_frame + term3->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -909,7 +909,7 @@ static int bif_iso_open_4(tpl_query *q)
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
 	put_env(q, q->curr_frame + term3->slot, n, -1);
-	n->refcnt--;
+	term_heapcheck(n);
 	return 1;
 }
 
@@ -2200,7 +2200,7 @@ static int bif_iso_current_input(tpl_query *q)
 	tmp = make_stream(sp);
 	tmp->flags |= FLAG_FILE;
 	put_env(q, q->curr_frame + term1->slot, tmp, -1);
-	tmp->refcnt--;
+	term_heapcheck(tmp);
 	return 1;
 }
 
@@ -2216,7 +2216,7 @@ static int bif_iso_current_output(tpl_query *q)
 	sp->type = strdup("text");
 	tmp = make_stream(sp);
 	put_env(q, q->curr_frame + term1->slot, tmp, -1);
-	tmp->refcnt--;
+	term_heapcheck(tmp);
 	return 1;
 }
 
@@ -2238,11 +2238,11 @@ static int bif_iso_copy_term(tpl_query *q)
 			return 0;
 	}
 
-	node *term = copy_term(q, term1);
+	node *tmp = copy_term(q, term1);
 	sl_done(&vars, NULL);
 	q->d = NULL;
-	put_env(q, q->curr_frame + term2->slot, term, is_compound(term) ? q->curr_frame : -1);
-	term->refcnt--;
+	put_env(q, q->curr_frame + term2->slot, tmp, is_compound(tmp) ? q->curr_frame : -1);
+	term_heapcheck(tmp);
 	return 1;
 }
 
@@ -3389,7 +3389,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		put_env(q, q->curr_frame + term1->slot, s, q->curr_frame);
-		s->refcnt--;
+		term_heapcheck(s);
 		return 1;
 	}
 
@@ -3551,7 +3551,7 @@ static int bif_iso_length(tpl_query *q)
 		try_me_nofollow(q);
 		node *tmp = make_const_atom("[]", 0);
 		put_env(q, q->curr_frame + orig_term1->slot, tmp, -1);
-		tmp->refcnt--;
+		term_heapcheck(tmp);
 		return 1;
 	}
 
@@ -3566,7 +3566,7 @@ static int bif_iso_length(tpl_query *q)
 	if (cnt == 0) {
 		node *tmp = make_const_atom("[]", 0);
 		put_env(q, q->curr_frame + orig_term1->slot, tmp, -1);
-		tmp->refcnt--;
+		term_heapcheck(tmp);
 		return 1;
 	}
 
@@ -3591,7 +3591,7 @@ static int bif_iso_length(tpl_query *q)
 
 	term_append(l, make_const_atom("[]", 0));
 	put_env(q, q->curr_frame + orig_term1->slot, save_l, q->curr_frame);
-	save_l->refcnt--;
+	term_heapcheck(save_l);
 	return 1;
 }
 
@@ -3737,7 +3737,7 @@ static int bif_iso_bagof(tpl_query *q)
 		sl_init(sp->kvs, 0, NULL, NULL);
 		node *n = make_stream(sp);
 		put_env(q, q->curr_frame + var->slot, n, -1);
-		n->refcnt--;
+		term_heapcheck(n);
 		allocate_frame(q);
 	}
 	else
@@ -3869,7 +3869,7 @@ static int bif_iso_setof(tpl_query *q)
 		sl_init(sp->kvs, 0, NULL, NULL);
 		node *n = make_stream(sp);
 		put_env(q, q->curr_frame + var->slot, n, -1);
-		n->refcnt--;
+		term_heapcheck(n);
 		allocate_frame(q);
 	}
 	else
@@ -5025,7 +5025,7 @@ static int bif_xtra_phrase(tpl_query *q)
 		tmp->flags |= FLAG_BUILTIN;
 
 	put_env(q, q->curr_frame + var->slot, tmp, -1);
-	tmp->refcnt--;
+	term_heapcheck(tmp);
 	allocate_frame(q);
 	try_me(q);
 	q->curr_term = tmp;
@@ -5354,7 +5354,7 @@ static int bif_xtra_findnsols(tpl_query *q)
 		sp->subqptr = subq;
 		node *n = make_stream(sp);
 		put_env(q, var->slot, n, -1);
-		n->refcnt--;
+		term_heapcheck(n);
 		sp->subqgoal = clone_term(q, term3);
 		begin_query(subq, sp->subqgoal);
 		query_run(subq);
