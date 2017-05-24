@@ -27,9 +27,11 @@
 #endif
 
 static size_t g_instances = 0;
+
 #ifdef DEBUG
-atomic uint64_t g_allocs = 0;
+atomic int64_t g_allocs = 0;
 #endif
+
 int g_trealla_memlimit_mb = 1024;
 volatile int g_abort = 0;
 const char *g_trealla_version = "0.1alpha";
@@ -1592,7 +1594,7 @@ void trealla_destroy(trealla *self)
 
 #ifdef DEBUG
 	if (g_allocs != 0)
-		printf("DEBUG: orphaned=%u\n", (unsigned)g_allocs);
+		printf("DEBUG: orphaned=%lld\n", (long long)g_allocs);
 #endif
 
 	free(self);
