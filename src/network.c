@@ -486,8 +486,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 
 			return 0;
 		}
-	}
-	else {
+	} else {
 		SSL_set_tlsext_host_name(s->ssl, s->host);
 
 		if (SSL_connect(s->ssl) == -1) {
@@ -520,12 +519,14 @@ int session_enable_tls(session *s, const char *certfile, int level)
 		const char *ptr = strstr(buf, "/CN=");
 		char common_name[256];
 		common_name[0] = 0;
-		if (ptr) sscanf(ptr+4, "%255[^/]", common_name);
+
+		if (ptr)
+			sscanf(ptr+4, "%255[^/]", common_name);
+
 		common_name[255] = 0;
 		//printf("SSL Server Common name = '%s'\n", common_name);
 		X509_free(server_cert);
-	}
-	else {
+	} else {
 		if (level > 0)
 			printf("SSL No server certificate\n");
 	}
@@ -584,8 +585,7 @@ static const char *inet_ntop(int family, void *address, char *buffer, socklen_t 
 
 		if (WSAAddressToString((struct sockaddr *)&sin6, sizeof(sin6), NULL, buffer, &buflen) == SOCKET_ERROR)
 			strcpy(buffer, "");
-	}
-	else {
+	} else {
 		struct sockaddr_in sin4 = {0};
 		sin4.sin_family = family;
 		sin4.sin_addr = *((struct in_addr *)address);
@@ -698,8 +698,7 @@ int session_enable_multicast(session *s, int loop, int ttl)
 
 		if (ttl)
 			status = setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (const char *)&ttl, sizeof(ttl));
-	}
-	else {
+	} else {
 		if (loop)
 			status = setsockopt(s->fd, IPPROTO_IP, IP_MULTICAST_LOOP, (const char *)&loop, sizeof(loop));
 
@@ -1166,8 +1165,7 @@ int session_read(session *s, void *buf, size_t len)
 	else if (s->ipv4) {
 		socklen_t tmplen = sizeof(struct sockaddr_in);
 		rlen = recvfrom(s->fd, (char *)buf, len, 0, (struct sockaddr *)&s->addr4, &tmplen);
-	}
-	else {
+	} else {
 		socklen_t tmplen = sizeof(struct sockaddr_in6);
 		rlen = recvfrom(s->fd, (char *)buf, len, 0, (struct sockaddr *)&s->addr6, &tmplen);
 	}
@@ -1254,8 +1252,7 @@ int session_readmsg(session *s, char **buf)
 	else if (s->ipv4) {
 		socklen_t tmplen = sizeof(struct sockaddr_in);
 		rlen = recvfrom(s->fd, s->srcbuf, READ_BUFLEN - 1, 0, (struct sockaddr *)&s->addr4, &tmplen);
-	}
-	else {
+	} else {
 		socklen_t tmplen = sizeof(struct sockaddr_in6);
 		rlen = recvfrom(s->fd, s->srcbuf, READ_BUFLEN - 1, 0, (struct sockaddr *)&s->addr6, &tmplen);
 	}
@@ -2219,8 +2216,7 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		if (!tcp) {
 			unsigned long flag2 = 1;
 			ioctl(fd6, FIONBIO, &flag2);
-		}
-		else {
+		} else {
 			if (listen(fd6, 128) != 0) {
 				printf("handler_add_server: error listen6 failed port: %u: %s\n", port6, strerror(errno));
 				close(fd6);

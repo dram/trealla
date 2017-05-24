@@ -1,6 +1,3 @@
-:-module(skynet).
-:-export([start/0,test/0]).
-
 % Skynet - see https://github.com/atemerev/skynet
 
 :-using([proc]).
@@ -22,7 +19,7 @@ skynet(Num,1,_) :-
 skynet(Num,Size,Div) :-
 	NewSize is Size div Div,
 	between(1,Div,Idx),
-		NewNum is ((Idx-1)*NewSize)+Num,
+		NewNum is ((Idx - 1) * NewSize) + Num,
 		spawn_link(skynet(NewNum,NewSize,Div)),
 		fail.
 skynet(_,_,Div) :-
@@ -32,6 +29,6 @@ process_sum(Tot,0) :-
 	send(parent,Tot).
 process_sum(Tot,Idx) :-
 	recv(N),
-	NewTot is Tot+N,
-	NewIdx is Idx-1,
+	NewTot is Tot + N,
+	NewIdx is Idx - 1,
 	process_sum(NewTot,NewIdx).
