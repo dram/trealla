@@ -21,6 +21,10 @@
 #include "jsonq.h"
 #endif
 
+#ifdef DEBUG
+extern atomic int64_t g_allocs;
+#endif
+
 const char *g_escapes = "\a\f\b\t\v\r\n\0";
 const char *g_anti_escapes = "afbtvrn0";
 

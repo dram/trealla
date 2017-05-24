@@ -346,8 +346,6 @@ typedef struct
  library;
 
 extern library g_libs[];
-extern atomic int64_t g_allocs;
-
 extern void lexer_init(lexer *l, trealla *pl);
 extern const char *lexer_parse(lexer *l, node *term, const char *src, char **line);
 extern int lexer_consult_file(lexer *self, const char *filename);
