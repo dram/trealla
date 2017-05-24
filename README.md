@@ -55,6 +55,8 @@ Current ISO predicates that are (known) not yet implemented:
 Defined operators can ONLY be used as operators. To use them as regular functors they
 must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
+It would be nice to have bigints (arbitrary precision).
+
 Usage
 -----
 
