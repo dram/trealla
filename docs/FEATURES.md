@@ -122,6 +122,7 @@ found in other Prolog implementations:
 	random(-Float)              - random float value >= 0.0 and <= 1.0
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
+	bignum(+Int)                - this is a function that converts it's arg
 
 System-extras: namespace 'sys'
 ------------------------------

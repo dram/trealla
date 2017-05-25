@@ -5927,6 +5927,19 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_bignum(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+
+	if (!q->nv.val_bn)
+		q->nv.val_bn = BN_new();
+
+	BN_set_word(q->nv.val_bn, term1->val_i);
+	q->nv.flags = TYPE_BIGNUM;
+	return 1;
+}
+
 static int bif_xtra_random(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6251,6 +6264,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("erase", 1, bif_xtra_erase);
 	DEFINE_BIF("random", 1, bif_xtra_random);
 	DEFINE_BIF("trace", 0, bif_xtra_trace);
+	DEFINE_BIF("bignum", 1, bif_xtra_bignum);
 #endif
 
 	DEFINE_BIF("time", 1, bif_xtra_time_1);
