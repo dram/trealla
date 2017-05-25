@@ -4171,7 +4171,15 @@ static int bif_iso_is(tpl_query *q)
 		return term1->val_f == q->nv.val_f;
 #if USE_SSL
 	else if (is_bignum(term1) && (q->nv.flags & TYPE_BIGNUM))
-		return BN_ucmp(term1->val_bn, q->nv.val_bn);
+		return !BN_cmp(term1->val_bn, q->nv.val_bn);
+	else if (is_bignum(term1) && (q->nv.flags & TYPE_INTEGER)) {
+		node nv1;
+		nv1.val_bn = BN_new();
+		BN_set_word(nv1.val_bn, q->nv.val_i);
+		int ok = !BN_cmp(term1->val_bn, nv1.val_bn);
+		BN_free(nv1.val_bn);
+		return ok;
+	}
 #endif
 
 	QABORT(ABORT_TYPEERROR);

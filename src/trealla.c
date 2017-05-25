@@ -1047,9 +1047,11 @@ void query_dump(tpl_query *self)
 
 	if (!sl_count(&vars)) {
 		if (self->nv.flags == TYPE_INTEGER)
-			printf(" %lld", (long long)self->nv.val_i);
+			printf(" %lld\n", (long long)self->nv.val_i);
+		else if (self->nv.flags == TYPE_BIGNUM)
+			printf(" %s\n", BN_bn2dec(self->nv.val_bn));
 		else if (self->nv.flags == TYPE_FLOAT)
-			printf(" %.*g", DBL_DIG, (double)self->nv.val_f);
+			printf(" %.*g\n", DBL_DIG, (double)self->nv.val_f);
 	} else {
 		while (sl_next(&vars, (void **)&n) != NULL) {
 			char tmpbuf[PRINTBUF_SIZE];
