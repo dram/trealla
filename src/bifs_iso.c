@@ -4595,6 +4595,23 @@ static int bif_iso_nlt(tpl_query *q)
 		ok = nv1.val_f < nv2.val_f;
 	else if ((nv1.flags & TYPE_FLOAT) && (nv2.flags & TYPE_INTEGER))
 		ok = nv1.val_f < (flt_t)nv2.val_i;
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			ok = BN_cmp(nv1.val_bn, nv2.val_bn) < 0;
+			BN_free(nv1.val_bn);
+			BN_free(nv2.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			nbr_t v = nv2.val_i;
+			nv2.val_bn = BN_new();
+			BN_set_word(nv2.val_bn, v);
+			ok = BN_cmp(nv1.val_bn, nv2.val_bn) < 0;
+			BN_free(nv1.val_bn);
+			BN_free(nv2.val_bn);
+		}
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
