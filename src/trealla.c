@@ -1206,6 +1206,11 @@ void query_destroy(tpl_query *self)
 	if (!self->def_trail)
 		free(self->trails);
 
+#if USE_SSL
+	if (self->ctx)
+		BN_CTX_free(self->ctx);
+#endif
+
 #ifndef ISO_ONLY
 	if (--self->refcnt > 0) {
 		self->is_dead = 1;

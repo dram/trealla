@@ -324,6 +324,10 @@ struct tpl_query_
 	uint8_t linked, is_forked, is_proc, is_dead, is_busy, is_idle;
 	atomic uint32_t refcnt;
 #endif
+
+#if USE_SSL
+	BN_CTX *ctx;
+#endif
 };
 
 #define MAX_BIFS 1000

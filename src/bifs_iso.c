@@ -44,6 +44,21 @@ static char *strndup(const char *s, size_t n)
 #endif
 
 #if USE_SSL
+static node *make_bignum(const node *v)
+{
+	node *n = term_make();
+	n->flags |= TYPE_BIGNUM;
+
+	if (is_integer(v))
+		BN_set_word(n->val_bn, (nbr_t)v->val_i);
+	else if (is_float(v))
+		BN_set_word(n->val_bn, (nbr_t)v->val_f);
+	else
+		n->val_bn = BN_dup(v->val_bn);
+
+	return n;
+}
+
 static void put_bignum(tpl_query *q, unsigned point, node *v)
 {
 	node *n = term_make();
@@ -4242,6 +4257,18 @@ static int bif_iso_add(tpl_query *q)
 		else if (nv2.flags & TYPE_INTEGER)
 			q->nv.val_f = nv1.val_f + (flt_t)nv2.val_i;
 	}
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			BN_add(q->nv.val_bn, nv1.val_bn, nv2.val_bn);
+			BN_free(nv1.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			q->nv.val_bn = nv1.val_bn;
+			BN_add_word(q->nv.val_bn, nv2.val_u);
+		}
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4273,6 +4300,18 @@ static int bif_iso_subtract(tpl_query *q)
 		else if (nv2.flags & TYPE_INTEGER)
 			q->nv.val_f = nv1.val_f - (flt_t)nv2.val_i;
 	}
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			BN_sub(q->nv.val_bn, nv1.val_bn, nv2.val_bn);
+			BN_free(nv1.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			q->nv.val_bn = nv1.val_bn;
+			BN_sub_word(q->nv.val_bn, nv2.val_u);
+		}
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4304,6 +4343,21 @@ static int bif_iso_multiply(tpl_query *q)
 		else if (nv2.flags & TYPE_INTEGER)
 			q->nv.val_f = nv1.val_f * (flt_t)nv2.val_i;
 	}
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			if (!q->ctx)
+				q->ctx = BN_CTX_new();
+
+			BN_mul(q->nv.val_bn, nv1.val_bn, nv2.val_bn, q->ctx);
+			BN_free(nv1.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			q->nv.val_bn = nv1.val_bn;
+			BN_mul_word(q->nv.val_bn, nv2.val_u);
+		}
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4349,6 +4403,27 @@ static int bif_iso_divide(tpl_query *q)
 		}
 		q->nv.val_f = nv1.val_f / (flt_t)nv2.val_i;
 	}
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			if (!q->ctx)
+				q->ctx = BN_CTX_new();
+
+			node nv0;
+			nv0.val_bn = BN_new();
+			BN_div(q->nv.val_bn, nv0.val_bn, nv1.val_bn, nv2.val_bn, q->ctx);
+			BN_free(nv1.val_bn);
+			BN_free(nv0.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			q->nv.val_bn = nv1.val_bn;
+			BN_div_word(q->nv.val_bn, nv2.val_u);
+		}
+
+		q->nv.flags = TYPE_BIGNUM;
+		return 1;
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4394,6 +4469,27 @@ static int bif_iso_div(tpl_query *q)
 		}
 		q->nv.val_i = (nbr_t)nv1.val_f / nv2.val_i;
 	}
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			if (!q->ctx)
+				q->ctx = BN_CTX_new();
+
+			node nv0;
+			nv0.val_bn = BN_new();
+			BN_div(q->nv.val_bn, nv0.val_bn, nv1.val_bn, nv2.val_bn, q->ctx);
+			BN_free(nv1.val_bn);
+			BN_free(nv0.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			q->nv.val_bn = nv1.val_bn;
+			BN_div_word(q->nv.val_bn, nv2.val_u);
+		}
+
+		q->nv.flags = TYPE_BIGNUM;
+		return 1;
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;

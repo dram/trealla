@@ -131,10 +131,6 @@ extern int process_yield(tpl_query *q, int locked);
 extern node *make_socket(stream *v);
 #endif
 
-#if USE_SSL
-extern node *make_bignum(const char *s);
-#endif
-
 extern node *make_blob(void *s, size_t len);
 extern node *make_int(nbr_t v);
 extern node *make_ptr(void* v);
