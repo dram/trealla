@@ -1051,14 +1051,14 @@ static int attach_ops(lexer *l, node *term)
 			continue;
 		}
 
-		if (was_operator && !strcmp(functor, "-") && first) {
+		if (was_operator && !strcmp(functor, "-")) {
 			node *tmp = term_next(n);
 
 			if (is_number(tmp)) {
 				if (is_float(tmp))
 					tmp->val_f = -tmp->val_f;
 #if USE_SSL
-				else if (is_float(tmp))
+				else if (is_bignum(tmp))
 					BN_set_negative(tmp->val_bn, !BN_is_negative(tmp->val_bn));
 #endif
 				else
@@ -1917,10 +1917,12 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			term->flags |= FLAG_NOARGS;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, "-")) {
+		if (!self->quoted && !strcmp(self->tok, "-") && first) {
 			free(self->tok);
 			self->tok = strdup("--");
 		}
+
+		first = 0;
 
 		if (!self->quoted && !strcmp(self->tok, ")") && is_atom(term_first(term))) {
 			if (!strcmp(term_functor(term), "once")) {
