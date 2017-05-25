@@ -1614,20 +1614,20 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			int neg = l->neg;
 			l->neg = 0;
 
-			if (l->numeric != NUM_INT) {
-				token_put(&t, ch);
-
-				while ((ch = *save_s++) != '\0')
-					token_put(&t, ch);
-
-				break;
-			} else {
+			if (l->numeric == NUM_INT) {
 				t.dst = t.buf = (char *)realloc(t.buf, (t.maxlen = 255) + 1);
 
 				if (neg)
 					v = -v;
 
 				t.dst += sprint_int(t.buf, t.maxlen, v, 10);
+				break;
+			} else {
+				token_put(&t, ch);
+
+				while ((ch = *save_s++) != '\0')
+					token_put(&t, ch);
+
 				break;
 			}
 		}
