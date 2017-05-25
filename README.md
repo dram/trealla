@@ -16,6 +16,7 @@ deep binding and structure sharing. It supports much of ISO-PROLOG plus:
  - advanced networking features
  - unlimited length and number of UTF-8 or binary strings
  - optional 128-bit integers (where available)
+ - bignums (arbitrary precision integers)
  - definite clause grammar (DCG)
 
 The rule database usage is currently immediate update view (the traditional way). ISO-PROLOG

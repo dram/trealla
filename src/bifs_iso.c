@@ -3129,9 +3129,9 @@ static int bif_clause(tpl_query *q, int wait)
 	if (!q->curr_match && !wait)
 		return 0;
 
+#ifndef ISO_ONLY
 	int is_eof = !q->curr_match;
 
-#ifndef ISO_ONLY
 	if (is_eof && wait) {
 		q->curr_match = save_match;
 		try_me_nofollow(q);
@@ -4274,12 +4274,20 @@ static int bif_iso_add(tpl_query *q)
 			q->nv.val_f = nv1.val_i + nv2.val_f;
 			nv1.flags = TYPE_FLOAT;
 		}
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
+		}
 	}
 	else if (nv1.flags & TYPE_FLOAT) {
 		if (nv2.flags & TYPE_FLOAT)
 			q->nv.val_f = nv1.val_f + nv2.val_f;
 		else if (nv2.flags & TYPE_INTEGER)
 			q->nv.val_f = nv1.val_f + (flt_t)nv2.val_i;
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
+		}
 	}
 #if USE_SSL
 	else if (nv1.flags & TYPE_BIGNUM) {
@@ -4290,6 +4298,10 @@ static int bif_iso_add(tpl_query *q)
 		else if (nv2.flags & TYPE_INTEGER) {
 			q->nv.val_bn = nv1.val_bn;
 			BN_add_word(q->nv.val_bn, nv2.val_u);
+		}
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
 		}
 	}
 #endif
@@ -4317,12 +4329,20 @@ static int bif_iso_subtract(tpl_query *q)
 			q->nv.val_f = (flt_t)nv1.val_i - nv2.val_f;
 			nv1.flags = TYPE_FLOAT;
 		}
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
+		}
 	}
 	else if (nv1.flags & TYPE_FLOAT) {
 		if (nv2.flags & TYPE_FLOAT)
 			q->nv.val_f = nv1.val_f - nv2.val_f;
 		else if (nv2.flags & TYPE_INTEGER)
 			q->nv.val_f = nv1.val_f - (flt_t)nv2.val_i;
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
+		}
 	}
 #if USE_SSL
 	else if (nv1.flags & TYPE_BIGNUM) {
@@ -4333,6 +4353,10 @@ static int bif_iso_subtract(tpl_query *q)
 		else if (nv2.flags & TYPE_INTEGER) {
 			q->nv.val_bn = nv1.val_bn;
 			BN_sub_word(q->nv.val_bn, nv2.val_u);
+		}
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
 		}
 	}
 #endif
@@ -4360,12 +4384,20 @@ static int bif_iso_multiply(tpl_query *q)
 			q->nv.val_f = (flt_t)nv1.val_i * nv2.val_f;
 			nv1.flags = TYPE_FLOAT;
 		}
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
+		}
 	}
 	else if (nv1.flags & TYPE_FLOAT) {
 		if (nv2.flags & TYPE_FLOAT)
 			q->nv.val_f = nv1.val_f * nv2.val_f;
 		else if (nv2.flags & TYPE_INTEGER)
 			q->nv.val_f = nv1.val_f * (flt_t)nv2.val_i;
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
+		}
 	}
 #if USE_SSL
 	else if (nv1.flags & TYPE_BIGNUM) {
@@ -4379,6 +4411,10 @@ static int bif_iso_multiply(tpl_query *q)
 		else if (nv2.flags & TYPE_INTEGER) {
 			q->nv.val_bn = nv1.val_bn;
 			BN_mul_word(q->nv.val_bn, nv2.val_u);
+		}
+		else {
+			QABORT(ABORT_TYPEERROR);
+			return 0;
 		}
 	}
 #endif
@@ -4867,6 +4903,14 @@ static int bif_iso_sin(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = sin(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -4880,6 +4924,14 @@ static int bif_iso_asin(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = asin(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -4893,6 +4945,14 @@ static int bif_iso_cos(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = cos(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -4906,6 +4966,14 @@ static int bif_iso_acos(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = acos(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -4919,6 +4987,14 @@ static int bif_iso_tan(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = tan(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -4932,6 +5008,14 @@ static int bif_iso_atan(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = atan(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -4948,9 +5032,25 @@ static int bif_iso_atan_2(tpl_query *q)
 
 	if (nv1.flags & TYPE_INTEGER)
 		nv1.val_f = (flt_t)nv1.val_i;
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM)
+		nv1.val_f = (flt_t)BN_get_word(nv1.val_bn);
+#endif
+	else if (!(nv1.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	if (nv2.flags & TYPE_INTEGER)
 		nv2.val_f = (flt_t)nv2.val_i;
+#if USE_SSL
+	else if (nv2.flags & TYPE_BIGNUM)
+		nv2.val_f = (flt_t)BN_get_word(nv2.val_bn);
+#endif
+	else if (!(nv2.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = atan2(nv1.val_f, nv2.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -4967,9 +5067,25 @@ static int bif_iso_pow(tpl_query *q)
 
 	if (nv1.flags & TYPE_INTEGER)
 		nv1.val_f = (flt_t)nv1.val_i;
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM)
+		nv1.val_f = (flt_t)BN_get_word(nv1.val_bn);
+#endif
+	else if (!(nv1.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	if (nv2.flags & TYPE_INTEGER)
 		nv2.val_f = (flt_t)nv2.val_i;
+#if USE_SSL
+	else if (nv2.flags & TYPE_BIGNUM)
+		nv2.val_f = (flt_t)BN_get_word(nv2.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = pow(nv1.val_f, nv2.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -5004,6 +5120,14 @@ static int bif_iso_exp(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = exp(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -5017,6 +5141,14 @@ static int bif_iso_sqrt(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = sqrt(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -5030,6 +5162,14 @@ static int bif_iso_log(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_f = (flt_t)q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
+	else if (!(q->nv.flags & TYPE_FLOAT)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
 
 	q->nv.val_f = log(q->nv.val_f);
 	q->nv.flags = TYPE_FLOAT;
@@ -5045,6 +5185,10 @@ static int bif_iso_abs(tpl_query *q)
 		q->nv.val_f = q->nv.val_f < (flt_t)0.0 ? -q->nv.val_f : q->nv.val_f;
 	else if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_i = q->nv.val_i < 0 ? -q->nv.val_i : q->nv.val_i;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;

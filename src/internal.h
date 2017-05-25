@@ -286,6 +286,7 @@ struct tpl_query_
 	env *envs;
 	trail *trails;
 	node *curr_term, *curr_match;
+	rule *curr_rule;
 	trealla *pl;
 	tpl_query *parent, *subq;
 	lexer *lex;
@@ -317,7 +318,6 @@ struct tpl_query_
 #ifndef ISO_ONLY
 	list queue;								// process queue
 	tpl_query *curr_pid;
-	rule *curr_rule;
 	skiplist *kvs;
 	char *name;
 	int tmo_msecs;
