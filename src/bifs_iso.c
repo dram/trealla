@@ -4411,17 +4411,18 @@ static int bif_iso_divide(tpl_query *q)
 
 			node nv0;
 			nv0.val_bn = BN_new();
+			nbr_t divisor = BN_get_word(nv2.val_bn);
 			BN_div(q->nv.val_bn, nv0.val_bn, nv1.val_bn, nv2.val_bn, q->ctx);
+			q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn) + ((flt_t)BN_get_word(nv0.val_bn) / (flt_t)divisor);
 			BN_free(nv1.val_bn);
 			BN_free(nv0.val_bn);
 		}
 		else if (nv2.flags & TYPE_INTEGER) {
 			q->nv.val_bn = nv1.val_bn;
-			BN_div_word(q->nv.val_bn, nv2.val_u);
+			nbr_t divisor = nv2.val_i;
+			nbr_t rem = BN_div_word(q->nv.val_bn, nv2.val_u);
+			q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn) + ((flt_t)rem / (flt_t)divisor);
 		}
-
-		q->nv.flags = TYPE_BIGNUM;
-		return 1;
 	}
 #endif
 	else {
@@ -4487,6 +4488,54 @@ static int bif_iso_div(tpl_query *q)
 		}
 
 		q->nv.flags = TYPE_BIGNUM;
+		return 1;
+	}
+#endif
+	else {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
+
+	q->nv.flags = TYPE_INTEGER;
+	return 1;
+}
+
+static int bif_iso_rem(tpl_query *q)
+{
+	node *args = get_args(q);
+	eval(q, &args);
+	node nv1 = q->nv;
+	eval(q, &args);
+	node nv2 = q->nv;
+
+	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER)) {
+		if (nv2.val_i == 0) {
+			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+			return 0;
+		}
+		q->nv.val_i = nv1.val_i % nv2.val_i;
+	}
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			if (!q->ctx)
+				q->ctx = BN_CTX_new();
+
+			node nv0;
+			nv0.val_bn = BN_new();
+			BN_div(nv0.val_bn, q->nv.val_bn, nv1.val_bn, nv2.val_bn, q->ctx);
+			BN_free(nv1.val_bn);
+			BN_free(nv0.val_bn);
+			q->nv.flags = TYPE_BIGNUM;
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			q->nv.val_bn = nv1.val_bn;
+			nbr_t rem = BN_mod_word(q->nv.val_bn, nv2.val_u);
+			BN_free(nv1.val_bn);
+			q->nv.val_i = rem;
+			q->nv.flags = TYPE_INTEGER;
+		}
+
 		return 1;
 	}
 #endif
@@ -4594,30 +4643,6 @@ static int bif_iso_compare(tpl_query *q)
 
 	QABORT(ABORT_INVALIDOPUNKNOWN);
 	return 0;
-}
-
-static int bif_iso_rem(tpl_query *q)
-{
-	node *args = get_args(q);
-	eval(q, &args);
-	node nv1 = q->nv;
-	eval(q, &args);
-	node nv2 = q->nv;
-
-	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER)) {
-		if (nv2.val_i == 0) {
-			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
-			return 0;
-		}
-		q->nv.val_i = nv1.val_i % nv2.val_i;
-	}
-	else {
-		QABORT(ABORT_TYPEERROR);
-		return 0;
-	}
-
-	q->nv.flags = TYPE_INTEGER;
-	return 1;
 }
 
 static int bif_iso_shiftleft(tpl_query *q)
