@@ -49,9 +49,10 @@ static void put_bignum(tpl_query *q, unsigned point, node *v)
 	node *n = term_make();
 	n->flags |= TYPE_BIGNUM;
 	n->val_bn = v->val_bn;
-	v->flags = 0;
-	put_env(q, point, n, -1);
 	n->refcnt--;
+	v->flags = 0;
+	v->val_bn = NULL;
+	put_env(q, point, n, -1);
 }
 #endif
 

@@ -1051,7 +1051,7 @@ static int attach_ops(lexer *l, node *term)
 			continue;
 		}
 
-		if (was_operator && !strcmp(functor, "-")) {
+		if (was_operator && !strcmp(functor, "-") && first) {
 			node *tmp = term_next(n);
 
 			if (is_number(tmp)) {
@@ -1879,6 +1879,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		return NULL;
 
 	self->depth++;
+	int first = 1;
 
 	while ((src = get_token(self, src, line)) != NULL) {
 		if (!self->quoted && !*self->tok) {
