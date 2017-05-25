@@ -61,6 +61,8 @@ Bignums are considered experimental at this stage. Opt-in to them with the 'B' s
 	?- X is 12345678901234567890123456789012345678901234567890B // 3, writeln(X).
 	4115226300411522630041152263004115226300411522630
 
+Mixed usage with ints is possible but keep the bignums on the LHS of expressions.
+
 Usage
 -----
 

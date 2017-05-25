@@ -164,6 +164,10 @@ static node *copy_nbr(node *from)
 	}
 	else if (is_float(from))
 		n->val_f = from->val_f;
+#if USE_SSL
+	else if (is_bignum(from))
+		n->val_bn = BN_dup(from->val_bn);
+#endif
 	else
 		n->val_i = from->val_i;
 

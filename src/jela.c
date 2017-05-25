@@ -570,6 +570,17 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term
 	if (is_float(term1) && is_float(term2))
 		return term1->val_f == term2->val_f;
 
+#if USE_SSL
+	if (is_bignum(term1) && is_bignum(term2))
+		return BN_cmp(term1->val_bn, term2->val_bn);
+
+	if (is_bignum(term1) && is_integer(term2))
+		return BN_get_word(term1->val_bn) == BN_get_word(term2->val_bn);
+
+	if (is_integer(term1) && is_bignum(term2))
+		return BN_get_word(term1->val_bn) == BN_get_word(term2->val_bn);
+#endif
+
 #ifndef ISO_ONLY
 	if (is_blob(term1) && is_blob(term2)) {
 		if (term1->val_len != term2->val_len)
