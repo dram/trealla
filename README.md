@@ -56,7 +56,10 @@ Current ISO predicates that are (known) not yet implemented:
 Defined operators can ONLY be used as operators. To use them as regular functors they
 must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
-It would be nice to have bigints (arbitrary precision).
+Bignums are considered experimental at this stage. Opt-in to them with the 'B' specifier:
+
+	?- X is 12345678901234567890123456789012345678901234567890B // 3, writeln(X).
+	4115226300411522630041152263004115226300411522630
 
 Usage
 -----
