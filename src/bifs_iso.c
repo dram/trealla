@@ -4406,6 +4406,11 @@ static int bif_iso_divide(tpl_query *q)
 #if USE_SSL
 	else if (nv1.flags & TYPE_BIGNUM) {
 		if (nv2.flags & TYPE_BIGNUM) {
+			if (BN_is_zero(nv2.val_bn)) {
+				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+				return 0;
+			}
+
 			if (!q->ctx)
 				q->ctx = BN_CTX_new();
 
@@ -4418,9 +4423,14 @@ static int bif_iso_divide(tpl_query *q)
 			BN_free(nv0.val_bn);
 		}
 		else if (nv2.flags & TYPE_INTEGER) {
+			if (nv2.val_i == 0) {
+				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+				return 0;
+			}
+
 			q->nv.val_bn = nv1.val_bn;
 			nbr_t divisor = nv2.val_i;
-			nbr_t rem = BN_div_word(q->nv.val_bn, nv2.val_u);
+			nbr_t rem = BN_div_word(q->nv.val_bn, nv2.val_i);
 			q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn) + ((flt_t)rem / (flt_t)divisor);
 		}
 	}
@@ -4473,6 +4483,11 @@ static int bif_iso_div(tpl_query *q)
 #if USE_SSL
 	else if (nv1.flags & TYPE_BIGNUM) {
 		if (nv2.flags & TYPE_BIGNUM) {
+			if (BN_is_zero(nv2.val_bn)) {
+				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+				return 0;
+			}
+
 			if (!q->ctx)
 				q->ctx = BN_CTX_new();
 
@@ -4483,8 +4498,13 @@ static int bif_iso_div(tpl_query *q)
 			BN_free(nv0.val_bn);
 		}
 		else if (nv2.flags & TYPE_INTEGER) {
+			if (nv2.val_i == 0) {
+				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+				return 0;
+			}
+
 			q->nv.val_bn = nv1.val_bn;
-			BN_div_word(q->nv.val_bn, nv2.val_u);
+			BN_div_word(q->nv.val_bn, nv2.val_i);
 		}
 
 		q->nv.flags = TYPE_BIGNUM;
@@ -4518,6 +4538,11 @@ static int bif_iso_rem(tpl_query *q)
 #if USE_SSL
 	else if (nv1.flags & TYPE_BIGNUM) {
 		if (nv2.flags & TYPE_BIGNUM) {
+			if (BN_is_zero(nv2.val_bn)) {
+				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+				return 0;
+			}
+
 			if (!q->ctx)
 				q->ctx = BN_CTX_new();
 
@@ -4529,8 +4554,13 @@ static int bif_iso_rem(tpl_query *q)
 			q->nv.flags = TYPE_BIGNUM;
 		}
 		else if (nv2.flags & TYPE_INTEGER) {
+			if (nv2.val_i == 0) {
+				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+				return 0;
+			}
+
 			q->nv.val_bn = nv1.val_bn;
-			nbr_t rem = BN_mod_word(q->nv.val_bn, nv2.val_u);
+			nbr_t rem = BN_mod_word(q->nv.val_bn, nv2.val_i);
 			BN_free(nv1.val_bn);
 			q->nv.val_i = rem;
 			q->nv.flags = TYPE_INTEGER;
