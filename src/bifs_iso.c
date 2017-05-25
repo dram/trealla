@@ -2069,7 +2069,8 @@ static int bif_iso_atom_chars(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			unsigned this_context = q->latest_context;
+			node *n = get_arg(q, head, this_context);
 
 			if (!is_atom(n)) {
 				QABORT(ABORT_INVALIDARGNOTATOM);
@@ -2090,7 +2091,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 			int ch = get_char_utf8(&src);
 			dst += put_char_utf8(dst, ch);
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = get_arg(q, tail, this_context);
 		}
 
 		*dst = '\0';

@@ -166,11 +166,10 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 	dst += snprintf(dst, *bufsize - (dst - *dstbuf), "]");
 
-	if (q)
+	if (q) {
 		q->latest_context = save_context;
-
-	if (q)
 		q->print_depth--;
+	}
 
 	return dst - *_dst;
 }
