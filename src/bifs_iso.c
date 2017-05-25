@@ -43,6 +43,17 @@ static char *strndup(const char *s, size_t n)
 }
 #endif
 
+#if USE_SSL
+static void put_bignum(tpl_query *q, unsigned point, node *v)
+{
+	node *n = term_make();
+	n->flags |= TYPE_BIGNUM;
+	n->val_bn = v->val_bn;
+	v->flags = 0;
+	put_env(q, point, n, -1);
+}
+#endif
+
 void reset_arg(tpl_query *q, const node *term, unsigned frame)
 {
 	env *e = get_env(q, frame + term->slot);
@@ -4032,6 +4043,12 @@ static void eval_nbr(tpl_query *q, node *nbr)
 		q->nv.val_f = nbr->val_f;
 		q->nv.flags = TYPE_FLOAT;
 	}
+#if USE_SSL
+	else if (is_bignum(nbr)) {
+		q->nv.val_bn = BN_dup(nbr->val_bn);
+		q->nv.flags = TYPE_BIGNUM;
+	}
+#endif
 	else
 		q->nv.flags = 0;
 }
@@ -4094,6 +4111,11 @@ static int bif_iso_is(tpl_query *q)
 			put_int(q, q->curr_frame + term1->slot, q->nv.val_i);
 		else if (q->nv.flags & TYPE_FLOAT)
 			put_float(q, q->curr_frame + term1->slot, q->nv.val_f);
+#if USE_SSL
+		else if (q->nv.flags & TYPE_BIGNUM) {
+			put_bignum(q, q->curr_frame + term1->slot, &q->nv);
+		}
+#endif
 		else {
 			QABORT(ABORT_TYPEERROR);
 			return 0;
@@ -4106,6 +4128,10 @@ static int bif_iso_is(tpl_query *q)
 		return term1->val_i == q->nv.val_i;
 	else if (is_float(term1) && (q->nv.flags & TYPE_FLOAT))
 		return term1->val_f == q->nv.val_f;
+#if USE_SSL
+	else if (is_bignum(term1) && (q->nv.flags & TYPE_BIGNUM))
+		return BN_ucmp(term1->val_bn, q->nv.val_bn);
+#endif
 
 	QABORT(ABORT_TYPEERROR);
 	return 0;
@@ -4122,6 +4148,12 @@ static int bif_iso_integer(tpl_query *q)
 			q->nv.val_i = (nbr_t)q->nv.val_f;
 			q->nv.flags = TYPE_INTEGER;
 		}
+#if USE_SSL
+		else if (q->nv.flags & TYPE_BIGNUM) {
+			q->nv.val_i = BN_get_word(q->nv.val_bn);
+			q->nv.flags = TYPE_INTEGER;
+		}
+#endif
 		else if (q->nv.flags != TYPE_INTEGER) {
 			QABORT(ABORT_TYPEERROR);
 			return 0;
@@ -4146,6 +4178,12 @@ static int bif_iso_float(tpl_query *q)
 			q->nv.val_f = (flt_t)q->nv.val_i;
 			q->nv.flags = TYPE_FLOAT;
 		}
+#if USE_SSL
+		else if (q->nv.flags & TYPE_BIGNUM) {
+			q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn);
+			q->nv.flags = TYPE_FLOAT;
+		}
+#endif
 		else if (q->nv.flags != TYPE_FLOAT) {
 			QABORT(ABORT_TYPEERROR);
 			return 0;
