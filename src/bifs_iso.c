@@ -51,6 +51,7 @@ static void put_bignum(tpl_query *q, unsigned point, node *v)
 	n->val_bn = v->val_bn;
 	v->flags = 0;
 	put_env(q, point, n, -1);
+	n->refcnt--;
 }
 #endif
 
@@ -4206,6 +4207,10 @@ int bif_iso_reverse(tpl_query *q)
 		q->nv.val_i = -q->nv.val_i;
 	else if (q->nv.flags & TYPE_FLOAT)
 		q->nv.val_f = -q->nv.val_f;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		BN_set_negative(q->nv.val_bn, !BN_is_negative(q->nv.val_bn));
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;

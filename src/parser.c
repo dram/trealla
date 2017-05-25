@@ -1057,6 +1057,10 @@ static int attach_ops(lexer *l, node *term)
 			if (is_number(tmp)) {
 				if (is_float(tmp))
 					tmp->val_f = -tmp->val_f;
+#if USE_SSL
+				else if (is_float(tmp))
+					BN_set_negative(tmp->val_bn, !BN_is_negative(tmp->val_bn));
+#endif
 				else
 					tmp->val_i = -tmp->val_i;
 
@@ -1607,14 +1611,10 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			const char *save_s = s;
 			nbr_t v = 0;
 			s = parse_number(ch, s, &v, &l->numeric);
-
 			int neg = l->neg;
 			l->neg = 0;
 
 			if (l->numeric == NUM_REAL) {
-				if (neg)
-					token_put(&t, '-');
-
 				token_put(&t, ch);
 				int exp = 0;
 
@@ -1638,9 +1638,6 @@ static const char *get_token(lexer *l, const char *s, char **line)
 				break;
 			}
 			else if (l->numeric == NUM_BIGNUM) {
-				if (neg)
-					token_put(&t, '-');
-
 				token_put(&t, ch);
 
 				while ((ch = *save_s++) != '\0') {
@@ -1882,7 +1879,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		return NULL;
 
 	self->depth++;
-	int first = 1;
 
 	while ((src = get_token(self, src, line)) != NULL) {
 		if (!self->quoted && !*self->tok) {
@@ -1920,12 +1916,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			term->flags |= FLAG_NOARGS;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, "-") && first && 0) {
+		if (!self->quoted && !strcmp(self->tok, "-")) {
 			free(self->tok);
 			self->tok = strdup("--");
 		}
-
-		first = 0;
 
 		if (!self->quoted && !strcmp(self->tok, ")") && is_atom(term_first(term))) {
 			if (!strcmp(term_functor(term), "once")) {
@@ -2011,7 +2005,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		if (!self->quoted && !strcmp(self->tok, "-") && !is_noargs(term)) {
 			self->was_atom = 0;
-			self->neg = 1;
 			free(self->tok);
 			self->was_atomic = 0;
 			continue;
