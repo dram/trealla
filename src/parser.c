@@ -1614,40 +1614,11 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			int neg = l->neg;
 			l->neg = 0;
 
-			if (l->numeric == NUM_REAL) {
-				token_put(&t, ch);
-				int exp = 0;
-
-				while ((ch = *save_s++) != '\0') {
-					if (ch == '_')
-						;
-					else if ((ch == '.') && isdigit(*save_s))
-						;
-					else if (!exp && ((ch == 'e') || (ch == 'E')))
-						exp = 1;
-					else if (exp && ((ch == '-') || (ch == '+')))
-						exp = 1;
-					else if (!isdigit(ch)) {
-						save_s--;
-						break;
-					}
-
-					token_put(&t, ch);
-				}
-
-				break;
-			}
-			else if (l->numeric == NUM_BIGNUM) {
+			if (l->numeric != NUM_INT) {
 				token_put(&t, ch);
 
-				while ((ch = *save_s++) != '\0') {
-					if (!isdigit(ch)) {
-						save_s--;
-						break;
-					}
-
+				while ((ch = *save_s++) != '\0')
 					token_put(&t, ch);
-				}
 
 				break;
 			} else {
