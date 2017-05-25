@@ -144,7 +144,7 @@ struct node_
 		list val_l;					// compound
 
 #if USE_SSL
-		BIGNUM val_bn;
+		BIGNUM* val_bn;
 #endif
 	};
 

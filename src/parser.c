@@ -218,10 +218,11 @@ node *make_atom(char *s, int quoted)
 }
 
 #if USE_SSL
-node *make_bignum(char *s)
+node *make_bignum(const char *s)
 {
-	node *n = make_int(dec_to_int(s));	// FIXME - use SSL:BIGNUM
+	node *n = term_make();
 	n->flags |= TYPE_BIGNUM;
+	BN_dec2bn(&n->val_bn, s);
 	return n;
 }
 #endif

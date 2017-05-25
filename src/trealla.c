@@ -119,6 +119,10 @@ void term_heapclean(node *n)
 			stream_close(n->val_str);
 			free(n->val_str);
 		}
+#if USE_SSL
+		else if (is_bignum(n))
+			BN_free(n->val_bn);
+#endif
 	}
 
 #ifdef DEBUG
