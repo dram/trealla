@@ -43,7 +43,7 @@ static char *strndup(const char *s, size_t n)
 }
 #endif
 
-#if USE_SSL
+#if USE_SSL && 0
 static node *make_bignum(const node *v)
 {
 	node *n = term_make();
@@ -58,7 +58,9 @@ static node *make_bignum(const node *v)
 
 	return n;
 }
+#endif
 
+#if USE_SSL
 static void put_bignum(tpl_query *q, unsigned point, node *v)
 {
 	node *n = term_make();
@@ -674,6 +676,28 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 		return 1;
 	}
+#if USE_SSL
+	else if (is_bignum(n1)) {
+		int ok;
+
+		if (is_bignum(n2)) {
+			ok = BN_cmp(n1->val_bn, n2->val_bn) < 0;
+		}
+		else if (is_integer(n2)) {
+			node nv2;
+			nv2.val_bn = BN_new();
+			BN_set_word(nv2.val_bn, n2->val_i);
+			ok = BN_cmp(n1->val_bn, nv2.val_bn);
+			BN_free(nv2.val_bn);
+		}
+		else {
+			QABORT(ABORT_INVALIDARGNOTINT);
+			return 0;
+		}
+
+		return ok < 0 ? -1 : ok == 0 ? 0 : 1;
+	}
+#endif
 	else if (is_atom(n1)) {
 		if (!is_atom(n2)) {
 			QABORT(ABORT_INVALIDARGNOTATOM);
@@ -4637,6 +4661,23 @@ static int bif_iso_nle(tpl_query *q)
 		ok = nv1.val_f <= nv2.val_f;
 	else if ((nv1.flags & TYPE_FLOAT) && (nv2.flags & TYPE_INTEGER))
 		ok = nv1.val_f <= (flt_t)nv2.val_i;
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			ok = BN_cmp(nv1.val_bn, nv2.val_bn) <= 0;
+			BN_free(nv1.val_bn);
+			BN_free(nv2.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			nbr_t v = nv2.val_i;
+			nv2.val_bn = BN_new();
+			BN_set_word(nv2.val_bn, v);
+			ok = BN_cmp(nv1.val_bn, nv2.val_bn) <= 0;
+			BN_free(nv1.val_bn);
+			BN_free(nv2.val_bn);
+		}
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4662,6 +4703,23 @@ static int bif_iso_neq(tpl_query *q)
 		ok = nv1.val_f == nv2.val_f;
 	else if ((nv1.flags & TYPE_FLOAT) && (nv2.flags & TYPE_INTEGER))
 		ok = nv1.val_f == (flt_t)nv2.val_i;
+#if USE_SSL
+	else if (nv1.flags & TYPE_BIGNUM) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			ok = BN_cmp(nv1.val_bn, nv2.val_bn) == 0;
+			BN_free(nv1.val_bn);
+			BN_free(nv2.val_bn);
+		}
+		else if (nv2.flags & TYPE_INTEGER) {
+			nbr_t v = nv2.val_i;
+			nv2.val_bn = BN_new();
+			BN_set_word(nv2.val_bn, v);
+			ok = BN_cmp(nv1.val_bn, nv2.val_bn) == 0;
+			BN_free(nv1.val_bn);
+			BN_free(nv2.val_bn);
+		}
+	}
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
