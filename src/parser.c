@@ -850,7 +850,17 @@ int dir_include(lexer *l, node *n)
 	if (!is_atom(term1))
 		return 0;
 
-	return lexer_consult_file(l, VAL_S(term1));
+	char tmpbuf[FUNCTOR_SIZE * 2 + 10];
+	strcpy(tmpbuf, l->name);
+	char *ptr = strrchr(tmpbuf, '/');
+
+	if (ptr != NULL)
+		*++ptr = '\0';
+	else
+		tmpbuf[0] = 0;
+
+	strcat(tmpbuf, VAL_S(term1));
+	return trealla_consult_file(l->pl, tmpbuf);
 }
 
 static void directive(lexer *l, node *n)
@@ -2331,7 +2341,7 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 
 int lexer_consult_file(lexer *self, const char *orig_filename)
 {
-	char tmpbuf[FUNCTOR_SIZE];
+	char tmpbuf[FUNCTOR_SIZE * 2 + 10];
 
 	if (orig_filename[0] == '~') {
 		const char *path = getenv("HOME");
