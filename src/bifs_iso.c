@@ -5523,9 +5523,9 @@ static int bif_xtra_term_to_blob(tpl_query *q)
 		char *dst = tmpbuf;
 		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
 		node *n = make_blob(strdup(tmpbuf), dst - tmpbuf);
-		free(tmpbuf);
 		ok = unify_term(q, term2, n, -1);
 		term_heapcheck(n);
+		free(tmpbuf);
 	}
 	else
 		ok = unify_term(q, term1, term2, q->curr_frame);
