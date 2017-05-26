@@ -39,10 +39,12 @@ size_t b64_encode(const char *s, size_t nbytes, char **pdst, int line_breaks, in
 {
 	if (!pdst)
 		return 0;
+
 	size_t max_len = 0, bytes_left = 0;
 
 	if (!*pdst) {
 		*pdst = (char *)malloc(max_len = bytes_left = 64);
+
 		if (!*pdst)
 			return 0;
 	}
@@ -65,8 +67,10 @@ size_t b64_encode(const char *s, size_t nbytes, char **pdst, int line_breaks, in
 			size_t nbytes = dst - *pdst;
 			bytes_left = max_len - nbytes;
 			*pdst = (char *)realloc(*pdst, max_len);
+
 			if (!*pdst)
 				return 0;
+
 			dst = *pdst + nbytes;
 		}
 	}
@@ -131,10 +135,12 @@ size_t b64_decode(const char *s, size_t nbytes, char **pdst)
 {
 	if (!pdst)
 		return 0;
+
 	size_t max_len = 0, bytes_left = 0;
 
 	if (!*pdst) {
 		*pdst = (char *)malloc(max_len = bytes_left = 64);
+
 		if (!*pdst)
 			return 0;
 	}
@@ -160,8 +166,10 @@ size_t b64_decode(const char *s, size_t nbytes, char **pdst)
 			size_t nbytes = dst - *pdst;
 			bytes_left = max_len - nbytes;
 			*pdst = (char *)realloc(*pdst, max_len);
+
 			if (!*pdst)
 				return 0;
+
 			dst = *pdst + nbytes;
 		}
 	}
