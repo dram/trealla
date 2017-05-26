@@ -843,33 +843,59 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
-	node *term2 = get_var(term2);
+	node *term2 = get_term(term2);
 	const char *flag = VAL_S(term1);
+	int ok;
 
-	if (!strcmp(flag, "bounded"))
-		put_const_atom(q, q->curr_frame + term2->slot, "false", 0);
-	else if (!strcmp(flag, "max_integer"))
-		put_int(q, q->curr_frame + term2->slot, LONG_MAX);
-	else if (!strcmp(flag, "min_integer"))
-		put_int(q, q->curr_frame + term2->slot, LONG_MIN);
-	else if (!strcmp(flag, "integer_rounding_function"))
-		put_const_atom(q, q->curr_frame + term2->slot, "down", 0);
-	else if (!strcmp(flag, "max_arity"))
-		put_int(q, q->curr_frame + term2->slot, MAX_FRAME_SIZE - 1);
-	else if (!strcmp(flag, "char_conversion"))
-		put_const_atom(q, q->curr_frame + term2->slot, q->pl->flag_char_conversion ? "true" : "false", 0);
-	else if (!strcmp(flag, "debug"))
-		put_const_atom(q, q->curr_frame + term2->slot, q->pl->flag_debug ? "true" : "false", 0);
-	else if (!strcmp(flag, "unknown"))
-		put_const_atom(q, q->curr_frame + term2->slot, q->pl->flag_unknown ? "error" : "none", 0);
-	else if (!strcmp(flag, "double_quotes"))
-		put_const_atom(q, q->curr_frame + term2->slot, q->pl->flag_double_quotes ? "atom" : "none", 0);
-	else if (!strcmp(flag, "character_escapes"))
-		put_const_atom(q, q->curr_frame + term2->slot, q->pl->flag_character_escapes ? "true" : "false", 0);
+	if (!strcmp(flag, "max_integer")) {
+		node *n = make_quick_int(LONG_MAX);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "min_integer")) {
+		node *n = make_quick_int(LONG_MIN);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "max_arity")) {
+		node *n = make_quick_int(MAX_FRAME_SIZE - 1);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "bounded")) {
+		node *n = make_const_atom("false", 0);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "integer_rounding_function")) {
+		node *n = make_const_atom("down", 0);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "char_conversion")) {
+		node *n = make_const_atom(q->pl->flag_char_conversion ? "true" : "false", 0);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "debug")) {
+		node *n = make_const_atom(q->pl->flag_debug ? "true" : "false", 0);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "double_quotes")) {
+		node *n = make_const_atom(q->pl->flag_double_quotes ? "atom" : "none", 0);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
+	else if (!strcmp(flag, "character_escapes")) {
+		node *n = make_const_atom(q->pl->flag_character_escapes ? "true" : "false", 0);
+		ok = unify_term(q, term2, n, q->curr_frame);
+		term_heapcheck(n);
+	}
 	else
 		return 0;
 
-	return 1;
+	return ok;
 }
 
 static int bif_iso_predicate_property(tpl_query *q)
