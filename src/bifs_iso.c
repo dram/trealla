@@ -839,7 +839,7 @@ static int bif_iso_set_prolog_flag(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_curr_prolog_flag(tpl_query *q)
+static int bif_iso_current_prolog_flag(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -849,9 +849,9 @@ static int bif_iso_curr_prolog_flag(tpl_query *q)
 	if (!strcmp(flag, "bounded"))
 		put_const_atom(q, q->curr_frame + term2->slot, "false", 0);
 	else if (!strcmp(flag, "max_integer"))
-		put_int(q, q->curr_frame + term2->slot, INT_MAX);
+		put_int(q, q->curr_frame + term2->slot, LONG_MAX);
 	else if (!strcmp(flag, "min_integer"))
-		put_int(q, q->curr_frame + term2->slot, INT_MIN);
+		put_int(q, q->curr_frame + term2->slot, LONG_MIN);
 	else if (!strcmp(flag, "integer_rounding_function"))
 		put_const_atom(q, q->curr_frame + term2->slot, "down", 0);
 	else if (!strcmp(flag, "max_arity"))
@@ -6273,7 +6273,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("abolish", 1, bif_iso_abolish);
 	DEFINE_BIF("curr_predicate", 1, bif_iso_curr_predicate);
 	DEFINE_BIF("set_prolog_flag", 2, bif_iso_set_prolog_flag);
-	DEFINE_BIF("curr_prolog_flag", 2, bif_iso_curr_prolog_flag);
+	DEFINE_BIF("current_prolog_flag", 2, bif_iso_current_prolog_flag);
 	DEFINE_BIF("predicate_property", 2, bif_iso_predicate_property);
 	DEFINE_BIF("findall", 3, bif_iso_findall);
 	DEFINE_BIF("bagof", 3 + 1, bif_iso_bagof);
