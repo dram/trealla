@@ -4679,6 +4679,13 @@ static int bif_iso_nlt(tpl_query *q)
 			BN_free(nv1.val_bn);
 		}
 	}
+	else if (nv1.flags & TYPE_INTEGER) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			nbr_t val = BN_get_word(nv2.val_bn);
+			ok = nv1.val_i < val;
+			BN_free(nv2.val_bn);
+		}
+	}
 #endif
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -4719,6 +4726,13 @@ static int bif_iso_nle(tpl_query *q)
 			BN_free(nv1.val_bn);
 		}
 	}
+	else if (nv1.flags & TYPE_INTEGER) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			nbr_t val = BN_get_word(nv2.val_bn);
+			ok = nv1.val_i <= val;
+			BN_free(nv2.val_bn);
+		}
+	}
 #endif
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -4757,6 +4771,13 @@ static int bif_iso_neq(tpl_query *q)
 			nbr_t val = BN_get_word(nv1.val_bn);
 			ok = val == nv2.val_i;
 			BN_free(nv1.val_bn);
+		}
+	}
+	else if (nv1.flags & TYPE_INTEGER) {
+		if (nv2.flags & TYPE_BIGNUM) {
+			nbr_t val = BN_get_word(nv2.val_bn);
+			ok = nv1.val_i == val;
+			BN_free(nv2.val_bn);
 		}
 	}
 #endif
