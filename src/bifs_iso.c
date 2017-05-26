@@ -4674,12 +4674,9 @@ static int bif_iso_nlt(tpl_query *q)
 			BN_free(nv2.val_bn);
 		}
 		else if (nv2.flags & TYPE_INTEGER) {
-			nbr_t v = nv2.val_i;
-			nv2.val_bn = BN_new();
-			BN_set_word(nv2.val_bn, v);
-			ok = BN_cmp(nv1.val_bn, nv2.val_bn) < 0;
+			nbr_t val = BN_get_word(nv1.val_bn);
+			ok = val < nv2.val_i;
 			BN_free(nv1.val_bn);
-			BN_free(nv2.val_bn);
 		}
 	}
 #endif
@@ -4688,6 +4685,7 @@ static int bif_iso_nlt(tpl_query *q)
 		return 0;
 	}
 
+	q->nv.flags = 0;
 	return ok;
 }
 
@@ -4716,12 +4714,9 @@ static int bif_iso_nle(tpl_query *q)
 			BN_free(nv2.val_bn);
 		}
 		else if (nv2.flags & TYPE_INTEGER) {
-			nbr_t v = nv2.val_i;
-			nv2.val_bn = BN_new();
-			BN_set_word(nv2.val_bn, v);
-			ok = BN_cmp(nv1.val_bn, nv2.val_bn) <= 0;
+			nbr_t val = BN_get_word(nv1.val_bn);
+			ok = val <= nv2.val_i;
 			BN_free(nv1.val_bn);
-			BN_free(nv2.val_bn);
 		}
 	}
 #endif
@@ -4730,6 +4725,7 @@ static int bif_iso_nle(tpl_query *q)
 		return 0;
 	}
 
+	q->nv.flags = 0;
 	return ok;
 }
 
@@ -4758,12 +4754,9 @@ static int bif_iso_neq(tpl_query *q)
 			BN_free(nv2.val_bn);
 		}
 		else if (nv2.flags & TYPE_INTEGER) {
-			nbr_t v = nv2.val_i;
-			nv2.val_bn = BN_new();
-			BN_set_word(nv2.val_bn, v);
-			ok = BN_cmp(nv1.val_bn, nv2.val_bn) == 0;
+			nbr_t val = BN_get_word(nv1.val_bn);
+			ok = val == nv2.val_i;
 			BN_free(nv1.val_bn);
-			BN_free(nv2.val_bn);
 		}
 	}
 #endif
@@ -4772,6 +4765,7 @@ static int bif_iso_neq(tpl_query *q)
 		return 0;
 	}
 
+	q->nv.flags = 0;
 	return ok;
 }
 

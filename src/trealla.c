@@ -1048,10 +1048,12 @@ void query_dump(tpl_query *self)
 	if (!sl_count(&vars)) {
 		if (self->nv.flags == TYPE_INTEGER)
 			printf(" %lld\n", (long long)self->nv.val_i);
-		else if (self->nv.flags == TYPE_BIGNUM)
-			printf(" %s\n", BN_bn2dec(self->nv.val_bn));
 		else if (self->nv.flags == TYPE_FLOAT)
 			printf(" %.*g\n", DBL_DIG, (double)self->nv.val_f);
+#if USE_SSL
+		else if (self->nv.flags == TYPE_BIGNUM)
+			printf(" %s\n", BN_bn2dec(self->nv.val_bn));
+#endif
 	} else {
 		while (sl_next(&vars, (void **)&n) != NULL) {
 			char tmpbuf[PRINTBUF_SIZE];
