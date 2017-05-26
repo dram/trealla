@@ -1867,15 +1867,13 @@ static int bif_iso_number_codes(tpl_query *q)
 
 		*dst = '\0';
 		q->curr_context = save_context;
-		node *tmp;
+		int ok;
 
 		if (is_real)
-			tmp = make_float(atof(tmpbuf));
+			ok = unify_float(q, term1, atof(tmpbuf));
 		else
-			tmp = make_quick_int(atoll(tmpbuf));
+			ok = unify_int(q, term1, atoll(tmpbuf));
 
-		int ok = unify_term(q, term1, tmp, -1);
-		term_heapcheck(tmp);
 		return ok;
 	}
 
@@ -1953,15 +1951,13 @@ static int bif_iso_number_chars(tpl_query *q)
 
 		*dst = '\0';
 		q->curr_context = save_context;
-		node *tmp;
+		int ok;
 
 		if (is_real)
-			tmp = make_float(atof(tmpbuf));
+			ok = unify_float(q, term1, atof(tmpbuf));
 		else
-			tmp = make_quick_int(atoll(tmpbuf));
+			ok = unify_int(q, term1, atoll(tmpbuf));
 
-		int ok = unify_term(q, term1, tmp, -1);
-		term_heapcheck(tmp);
 		return ok;
 	}
 
@@ -3599,10 +3595,7 @@ static int bif_iso_term_variables(tpl_query *q)
 	if (!cnt) {
 		q->d = NULL;
 		sl_done(&vars, NULL);
-		node *tmp = make_const_atom("[]", 0);
-		int ok = unify_term(q, term2, tmp, -1);
-		term_heapcheck(tmp);
-		return ok;
+		return unify_const_atom(q, term2, "[]", 0);
 	}
 
 	node *l = make_list();
@@ -5503,10 +5496,8 @@ static int bif_xtra_term_to_atom(tpl_query *q)
 		char *tmpbuf = (char *)malloc(max_len + 1);
 		char *dst = tmpbuf;
 		term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
-		node *n = make_atom(strdup(tmpbuf), 1);
+		ok = unify_atom(q, term2, strdup(tmpbuf), 1);
 		free(tmpbuf);
-		ok = unify_term(q, term2, n, -1);
-		term_heapcheck(n);
 	}
 	else
 		ok = unify_term(q, term1, term2, q->curr_frame);
