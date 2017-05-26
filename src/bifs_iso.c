@@ -846,33 +846,24 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	node *term2 = get_term(term2);
 	const char *flag = VAL_S(term1);
 
-	if (!strcmp(flag, "max_integer")) {
+	if (!strcmp(flag, "max_integer"))
 		return unify_int(q, term2, LONG_MAX);
-	}
-	else if (!strcmp(flag, "min_integer")) {
+	else if (!strcmp(flag, "min_integer"))
 		return unify_int(q, term2, LONG_MIN);
-	}
-	else if (!strcmp(flag, "max_arity")) {
+	else if (!strcmp(flag, "max_arity"))
 		return unify_int(q, term2, MAX_FRAME_SIZE - 1);
-	}
-	else if (!strcmp(flag, "bounded")) {
+	else if (!strcmp(flag, "bounded"))
 		return unify_const_atom(q, term2, "false", 0);
-	}
-	else if (!strcmp(flag, "integer_rounding_function")) {
+	else if (!strcmp(flag, "integer_rounding_function"))
 		return unify_const_atom(q, term2, "down", 0);
-	}
-	else if (!strcmp(flag, "char_conversion")) {
+	else if (!strcmp(flag, "char_conversion"))
 		return unify_const_atom(q, term2, q->pl->flag_char_conversion ? "true" : "false", 0);
-	}
-	else if (!strcmp(flag, "debug")) {
+	else if (!strcmp(flag, "debug"))
 		return unify_const_atom(q, term2, q->pl->flag_debug ? "true" : "false", 0);
-	}
-	else if (!strcmp(flag, "double_quotes")) {
+	else if (!strcmp(flag, "double_quotes"))
 		return unify_const_atom(q, term2, q->pl->flag_double_quotes ? "atom" : "none", 0);
-	}
-	else if (!strcmp(flag, "character_escapes")) {
+	else if (!strcmp(flag, "character_escapes"))
 		return unify_const_atom(q, term2, q->pl->flag_character_escapes ? "true" : "false", 0);
-	}
 
 	return 0;
 }
