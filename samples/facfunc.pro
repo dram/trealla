@@ -1,7 +1,7 @@
 :-function([fac/1]).
 
 fac(0,1).
-fac(N,F) :- N>0, N1 is N-1, fac(N1,F1), F is N*F1.
+fac(N,F) :- N>0, N1 is N-1, fac(N1,F1), F is F1*N.
 
 test :-
 	write('TEST: fac'), nl,

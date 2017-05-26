@@ -1,7 +1,19 @@
 % Iterative factorial: uses no env, choice, or trail space
 
+% Use ints...
+
 fac(N,F) :-
 	factorial(N,1,F).
+
+% Use floats...
+
+facf(N,F) :-
+	factorial(N,1.0,F).
+
+% Use bignums...
+
+facb(N,F) :-
+	factorial(N,1B,F).
 
 factorial(0,F,F).
 factorial(N,T,F) :-
