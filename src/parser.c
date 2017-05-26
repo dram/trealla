@@ -72,11 +72,11 @@ static op g_ops[] = {
 	{":", "xfy", 600},
 	{"+", "yfx", 500},
 	{"-", "yfx", 500},
+	{"?", "fx", 500},
 	{"*", "yfx", 400},
 	{"/", "yfx", 400},
 	{"//", "yfx", 400},
 	{"div", "yfx", 400},
-	{"\\", "yfx", 400},
 	{"\\/", "yfx", 400},
 	{"/\\", "yfx", 400},
 	{"xor", "yfx", 400},
@@ -84,6 +84,8 @@ static op g_ops[] = {
 	{"mod", "yfx", 400},
 	{"<<", "yfx", 400},
 	{">>", "yfx", 400},
+	{"+", "fy", 200},
+	{"-", "fy", 200},
 	{"**", "xfx", 200},
 	{"^", "xfy", 200},
 	{"--", "fy", 200},
@@ -1064,6 +1066,9 @@ static int attach_ops(lexer *l, node *term)
 		if (was_operator && !strcmp(functor, "-")) {
 			node *tmp = term_next(n);
 
+			if (!tmp)
+				continue;
+
 			if (is_number(tmp)) {
 				if (is_float(tmp))
 					tmp->val_f = -tmp->val_f;
@@ -1089,6 +1094,10 @@ static int attach_ops(lexer *l, node *term)
 		}
 		else if (was_operator && !strcmp(functor, "+")) {
 			node *tmp = term_next(n);
+
+			if (!tmp)
+				continue;
+
 			term_remove(term, n);
 			term_heapcheck(n);
 			n = tmp;
@@ -1905,13 +1914,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			term->flags |= FLAG_NOARGS;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, "-") && first_neg && 0) {
-			free(self->tok);
-			self->tok = strdup("--");
-		}
-
-		first_neg = 0;
-
 		if (!self->quoted && !strcmp(self->tok, ")") && is_atom(term_first(term))) {
 			if (!strcmp(term_functor(term), "once")) {
 				node *tmp = make_and();
@@ -1994,12 +1996,14 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, "-") && !is_noargs(term)) {
+		if (!self->quoted && !strcmp(self->tok, "-") && !is_noargs(term) && first_neg) {
 			self->was_atom = 0;
 			free(self->tok);
 			self->was_atomic = 0;
 			continue;
 		}
+
+		first_neg = 0;
 
 		if (!self->quoted && !strcmp(self->tok, "|") && !(term->flags & FLAG_CONSING)) {
 			printf("ERROR: extra bar: '%s'\n", self->tok);
