@@ -66,10 +66,10 @@ static void put_bignum(tpl_query *q, unsigned point, node *v)
 	node *n = term_make();
 	n->flags |= TYPE_BIGNUM;
 	n->val_bn = v->val_bn;
-	n->refcnt--;
 	v->flags = 0;
 	v->val_bn = NULL;
 	put_env(q, point, n, -1);
+	n->refcnt--;
 }
 #endif
 
@@ -4079,19 +4079,19 @@ static int bif_iso_sub_atom(tpl_query *q)			// NOT YET IMPLEMENTED
 	return 0;
 }
 
-static void eval_nbr(tpl_query *q, node *nbr)
+static void eval_nbr(tpl_query *q, const node *n)
 {
-	if (is_integer(nbr)) {
-		q->nv.val_i = nbr->val_i;
+	if (is_integer(n)) {
+		q->nv.val_i = n->val_i;
 		q->nv.flags = TYPE_INTEGER;
 	}
-	else if (is_float(nbr)) {
-		q->nv.val_f = nbr->val_f;
+	else if (is_float(n)) {
+		q->nv.val_f = n->val_f;
 		q->nv.flags = TYPE_FLOAT;
 	}
 #if USE_SSL
-	else if (is_bignum(nbr)) {
-		q->nv.val_bn = BN_dup(nbr->val_bn);
+	else if (is_bignum(n)) {
+		q->nv.val_bn = BN_dup(n->val_bn);
 		q->nv.flags = TYPE_BIGNUM;
 	}
 #endif
@@ -4501,10 +4501,8 @@ static int bif_iso_divide(tpl_query *q)
 				return 0;
 			}
 
-			q->nv.val_bn = nv1.val_bn;
-			nbr_t divisor = nv2.val_i;
-			nbr_t rem = BN_div_word(q->nv.val_bn, nv2.val_i);
-			q->nv.val_f = (flt_t)BN_get_word(q->nv.val_bn) + ((flt_t)rem / (flt_t)divisor);
+			nbr_t rem = BN_div_word(nv1.val_bn, nv2.val_i);
+			q->nv.val_f = (flt_t)BN_get_word(nv1.val_bn) + ((flt_t)rem / (flt_t)nv2.val_i);
 		}
 	}
 #endif
@@ -4517,7 +4515,7 @@ static int bif_iso_divide(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_div(tpl_query *q)
+static int bif_iso_divint(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
@@ -4576,8 +4574,8 @@ static int bif_iso_div(tpl_query *q)
 				return 0;
 			}
 
+			BN_div_word(nv1.val_bn, nv2.val_i);
 			q->nv.val_bn = nv1.val_bn;
-			BN_div_word(q->nv.val_bn, nv2.val_i);
 		}
 
 		q->nv.flags = TYPE_BIGNUM;
@@ -6084,7 +6082,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("-", 2, bif_iso_subtract);
 	DEFINE_BIF("*", 2, bif_iso_multiply);
 	DEFINE_BIF("/", 2, bif_iso_divide);
-	DEFINE_BIF("//", 2, bif_iso_div);
+	DEFINE_BIF("//", 2, bif_iso_divint);
 	DEFINE_BIF("rem", 2, bif_iso_rem);
 	DEFINE_BIF("mod", 2, bif_iso_rem);
 	DEFINE_BIF("**", 2, bif_iso_pow);
@@ -6247,7 +6245,7 @@ void bifs_load_iso(void)
 
 #ifndef ISO_ONLY
 	DEFINE_BIF("not", 1, bif_iso_not);
-	DEFINE_BIF("div", 2, bif_iso_div);
+	DEFINE_BIF("div", 2, bif_iso_divint);
 	DEFINE_BIF("consult", 1, bif_xtra_consult);
 	DEFINE_BIF("deconsult", 1, bif_xtra_deconsult);
 	DEFINE_BIF("reconsult", 1, bif_xtra_reconsult);

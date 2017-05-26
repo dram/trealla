@@ -373,16 +373,20 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	}
 #if USE_SSL
 	else if (is_bignum(n) && listing) {
-		dst += sprintf(dst, "%s", BN_bn2dec(n->val_bn));
+		char *src = BN_bn2dec(n->val_bn);
+		dst += sprintf(dst, "%s", src);
+		OPENSSL_free(src);
 
-		//if (BN_num_bits(n->val_bn) > 64)
+		//if (BN_num_bits(n->val_bn) > 63)
 		{
 			*dst++ = 'B';
 			*dst = '\0';
 		}
 	}
 	else if (is_bignum(n)) {
-		dst += sprintf(dst, "%s", BN_bn2dec(n->val_bn));
+		char *src = BN_bn2dec(n->val_bn);
+		dst += sprintf(dst, "%s", src);
+		OPENSSL_free(src);
 	}
 #endif
 	else if (is_integer(n) && (n->flags & FLAG_BINARY) && listing)
