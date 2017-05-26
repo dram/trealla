@@ -1607,7 +1607,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			const char *save_s = s;
 			nbr_t v = 0;
 			s = parse_number(ch, s, &v, &l->numeric);
-			char tmpbuf[1024];
+			char *tmpbuf = (char *)malloc(strlen(save_s-1)+10);
 			strncpy(tmpbuf, save_s-1, s-save_s);
 			l->neg = 0;
 
@@ -1633,9 +1633,10 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 				while ((ch = *src++) != '\0')
 					token_put(&t, ch);
-
-				break;
 			}
+
+			free(tmpbuf);
+			break;
 		}
 
 		token_put(&t, ch);
