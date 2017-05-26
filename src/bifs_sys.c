@@ -969,9 +969,7 @@ static int bif_sys_splitl_4(tpl_query *q)
 		src++;
 
 	*dst = '\0';
-	node *tmp = make_atom(strdup(dstbuf), 1);
-	int ok = unify_term(q, term3, tmp, q->curr_frame);
-	term_heapcheck(tmp);
+	int ok = unify_atom(q, term3, strdup(dstbuf), 1);
 
 	if (!ok) {
 		free(dstbuf);
@@ -993,10 +991,8 @@ static int bif_sys_splitl_4(tpl_query *q)
 		*dst++ = *src++;
 
 	*dst = '\0';
-	tmp = make_atom(strdup(dstbuf), 1);
+	ok = unify_atom(q, term4, strdup(dstbuf), 1);
 	free(dstbuf);
-	ok = unify_term(q, term4, tmp, q->curr_frame);
-	term_heapcheck(tmp);
 	return ok;
 }
 
@@ -1021,9 +1017,7 @@ static int bif_sys_split_4(tpl_query *q)
 		src++;
 
 	*dst = '\0';
-	node *tmp = make_atom(strdup(dstbuf), 1);
-	int ok = unify_term(q, term3, tmp, q->curr_frame);
-	term_heapcheck(tmp);
+	int ok = unify_atom(q, term3, strdup(dstbuf), 1);
 
 	if (!ok) {
 		free(dstbuf);
@@ -1045,10 +1039,8 @@ static int bif_sys_split_4(tpl_query *q)
 		*dst++ = *src++;
 
 	*dst = '\0';
-	tmp = make_atom(strdup(dstbuf), 1);
+	ok = unify_atom(q, term4, strdup(dstbuf), 1);
 	free(dstbuf);
-	ok = unify_term(q, term4, tmp, q->curr_frame);
-	term_heapcheck(tmp);
 	return ok;
 }
 
@@ -1284,10 +1276,7 @@ static int bif_sys_getenv_2(tpl_query *q)
 	if (!value)
 		return 0;
 
-	node *n = make_atom(strdup(value), 1);
-	int ok = unify_term(q, term2, n, q->curr_frame);
-	term_heapcheck(n);
-	return ok;
+	return unify_atom(q, term2, strdup(value), 1);
 }
 
 static int bif_sys_setenv_2(tpl_query *q)
@@ -1322,10 +1311,7 @@ static int bif_sys_system_2(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_int_or_var(term2);
 	int ok = system(VAL_S(term1));
-	node *n = make_int(ok);
-	ok = unify_term(q, term2, n, q->curr_frame);
-	term_heapcheck(n);
-	return ok;
+	return unify_int(q, term2, ok);
 }
 
 static int bif_sys_system_1(tpl_query *q)
@@ -1978,9 +1964,7 @@ static int bif_sys_get_keys_3(tpl_query *q)
 		ok = unify_term(q, term2, save_l, q->curr_frame);
 	}
 	else {
-		node *tmp = make_const_atom("[]", 0);
-		ok = unify_term(q, term2, tmp, q->curr_frame);
-		term_heapcheck(tmp);
+		ok = unify_const_atom(q, term2, "[]", 0);
 	}
 
 	term_heapcheck(save_l);
@@ -2028,9 +2012,7 @@ static int bif_sys_get_2(tpl_query *q)
 		ok = unify_term(q, term1, save_l, q->curr_frame);
 	}
 	else {
-		node *tmp = make_const_atom("[]", 0);
-		ok = unify_term(q, term1, tmp, q->curr_frame);
-		term_heapcheck(tmp);
+		ok = unify_const_atom(q, term1, "[]", 0);
 	}
 
 	term_heapcheck(save_l);
