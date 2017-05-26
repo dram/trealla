@@ -845,57 +845,36 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_term(term2);
 	const char *flag = VAL_S(term1);
-	int ok;
 
 	if (!strcmp(flag, "max_integer")) {
-		node *n = make_quick_int(LONG_MAX);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_int(q, term2, LONG_MAX);
 	}
 	else if (!strcmp(flag, "min_integer")) {
-		node *n = make_quick_int(LONG_MIN);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_int(q, term2, LONG_MIN);
 	}
 	else if (!strcmp(flag, "max_arity")) {
-		node *n = make_quick_int(MAX_FRAME_SIZE - 1);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_int(q, term2, MAX_FRAME_SIZE - 1);
 	}
 	else if (!strcmp(flag, "bounded")) {
-		node *n = make_const_atom("false", 0);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_const_atom(q, term2, "false", 0);
 	}
 	else if (!strcmp(flag, "integer_rounding_function")) {
-		node *n = make_const_atom("down", 0);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_const_atom(q, term2, "down", 0);
 	}
 	else if (!strcmp(flag, "char_conversion")) {
-		node *n = make_const_atom(q->pl->flag_char_conversion ? "true" : "false", 0);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_const_atom(q, term2, q->pl->flag_char_conversion ? "true" : "false", 0);
 	}
 	else if (!strcmp(flag, "debug")) {
-		node *n = make_const_atom(q->pl->flag_debug ? "true" : "false", 0);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_const_atom(q, term2, q->pl->flag_debug ? "true" : "false", 0);
 	}
 	else if (!strcmp(flag, "double_quotes")) {
-		node *n = make_const_atom(q->pl->flag_double_quotes ? "atom" : "none", 0);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_const_atom(q, term2, q->pl->flag_double_quotes ? "atom" : "none", 0);
 	}
 	else if (!strcmp(flag, "character_escapes")) {
-		node *n = make_const_atom(q->pl->flag_character_escapes ? "true" : "false", 0);
-		ok = unify_term(q, term2, n, q->curr_frame);
-		term_heapcheck(n);
+		return unify_const_atom(q, term2, q->pl->flag_character_escapes ? "true" : "false", 0);
 	}
-	else
-		return 0;
 
-	return ok;
+	return 0;
 }
 
 static int bif_iso_predicate_property(tpl_query *q)
