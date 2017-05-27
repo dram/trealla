@@ -652,16 +652,16 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 	node *n1 = get_arg(q, term1, q->curr_frame);
 	node *n2 = get_arg(q, term2, q->curr_frame);
 
-	if (is_integer(n1)) {
-		if (!is_integer(n2)) {
+	if (is_integer(n1) || is_bignum(n1)) {
+		if (!is_integer(n2) && !is_bignum(n2)) {
 			QABORT(ABORT_INVALIDARGNOTINT);
 			return 0;
 		}
 
-		if (n1->val_i < n2->val_i)
+		if (get_word(n1) < get_word(n2))
 			return -1;
 
-		if (n1->val_i == n2->val_i)
+		if (get_word(n1) == get_word(n2))
 			return 0;
 
 		return 1;
@@ -680,28 +680,6 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 		return 1;
 	}
-#if USE_SSL
-	else if (is_bignum(n1)) {
-		int ok;
-
-		if (is_bignum(n2)) {
-			ok = BN_cmp(n1->val_bn, n2->val_bn) < 0;
-		}
-		else if (is_integer(n2)) {
-			node nv2;
-			nv2.val_bn = BN_new();
-			BN_set_word(nv2.val_bn, n2->val_i);
-			ok = BN_cmp(n1->val_bn, nv2.val_bn);
-			BN_free(nv2.val_bn);
-		}
-		else {
-			QABORT(ABORT_INVALIDARGNOTINT);
-			return 0;
-		}
-
-		return ok < 0 ? -1 : ok == 0 ? 0 : 1;
-	}
-#endif
 	else if (is_atom(n1)) {
 		if (!is_atom(n2)) {
 			QABORT(ABORT_INVALIDARGNOTATOM);
@@ -1832,14 +1810,14 @@ static int bif_iso_number_codes(tpl_query *q)
 	if (is_list(term2)) {
 		int is_real = 0;
 		node *l = term2;
-		char tmpbuf[FUNCTOR_SIZE];
+		char tmpbuf[FUNCTOR_SIZE+10];
 		char *dst = tmpbuf;
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			node *n = get_arg(q, head, q->latest_context);
 
-			if (!is_integer(n)) {
+			if (!is_integer(n) && !is_bignum(n)) {
 				QABORT(ABORT_INVALIDARGNOTINT);
 				return 0;
 			}
@@ -1849,10 +1827,12 @@ static int bif_iso_number_codes(tpl_query *q)
 				return 0;
 			}
 
-			if (n->val_i == '.')
+			int i = get_word(n);
+
+			if (i == '.')
 				is_real = 1;
 			else {
-				int i = (int)n->val_i - '0';
+				i -= '0';
 
 				if ((i < 0) || (i > 9)) {
 					QABORT(ABORT_INVALIDARGNOTINT);
@@ -1860,7 +1840,7 @@ static int bif_iso_number_codes(tpl_query *q)
 				}
 			}
 
-			*dst++ = (char)n->val_i;
+			*dst++ = (char)(int)get_word(n);
 			node *tail = term_next(head);
 			l = get_arg(q, tail, q->latest_context);
 		}
@@ -1879,7 +1859,7 @@ static int bif_iso_number_codes(tpl_query *q)
 
 	node *save_l = make_list();
 	node *l = save_l;
-	char tmpbuf[FUNCTOR_SIZE];
+	char tmpbuf[FUNCTOR_SIZE+10];
 	term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, q, term1, 1);
 	const char *src = tmpbuf;
 
@@ -1916,7 +1896,7 @@ static int bif_iso_number_chars(tpl_query *q)
 	if (is_list(term2)) {
 		int is_real = 0;
 		node *l = term2;
-		char tmpbuf[FUNCTOR_SIZE];
+		char tmpbuf[FUNCTOR_SIZE+10];
 		char *dst = tmpbuf;
 
 		while (is_list(l)) {
@@ -1963,7 +1943,7 @@ static int bif_iso_number_chars(tpl_query *q)
 
 	node *save_l = make_list();
 	node *l = save_l;
-	char tmpbuf[FUNCTOR_SIZE];
+	char tmpbuf[FUNCTOR_SIZE+10];
 	term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, q, term1, 1);
 	const char *src = tmpbuf;
 
@@ -2081,7 +2061,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 			node *head = term_firstarg(l);
 			node *n = get_arg(q, head, q->latest_context);
 
-			if (!is_integer(n)) {
+			if (!is_integer(n) && !is_bignum(n)) {
 				QABORT(ABORT_INVALIDARGNOTINT);
 				return 0;
 			}
@@ -2096,7 +2076,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 				dst = dstbuf + save_len;
 			}
 
-			dst += put_char_utf8(dst, n->val_i);
+			dst += put_char_utf8(dst, get_word(n));
 			node *tail = term_next(head);
 			l = get_arg(q, tail, q->latest_context);
 		}
@@ -5382,39 +5362,14 @@ static int bif_xtra_between(tpl_query *q)
 
 	if (!q->retry) {
 		term3 = get_var(term3);
-
-#if USE_SSL
-		nbr_t v;
-
-		if (is_bignum(term1))
-			v = BN_get_word(term1->val_bn);
-		else
-#endif
-			v = term1->val_i;
-
+		nbr_t v = get_word(term1);
 		put_int(q, q->curr_frame + term3->slot, v);
 		allocate_frame(q);
 	}
 	else {
 		term3 = get_int(term3);
-		nbr_t v;
-
-#if USE_SSL
-		if (is_bignum(term3))
-			v = BN_get_word(term3->val_bn);
-		else
-#endif
-			v = term3->val_i;
-
-		v += 1;
-		nbr_t v2;
-
-#if USE_SSL
-		if (is_bignum(term2))
-			v2 = BN_get_word(term2->val_bn);
-		else
-#endif
-			v2 = term2->val_i;
+		nbr_t v = get_word(term3) + 1;
+		nbr_t v2 = get_word(term2);
 
 		if (v > v2)
 			return 0;
