@@ -59,8 +59,8 @@ must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 Bignums are considered experimental at this stage. To introduce a bignum use the 'B' suffix,
 eg: *X is 1B*, or *X is bignum(1)*. Thereafter X will propagate in calculations as a bignum.
 
-	tpl -l samples/factorial.pro -g 'facb(100000,F),writeln(F)' | wc -c
-	456575
+	tpl -l samples/factorial.pro -g 'facb(1000000,F),write(F)' | wc -c
+	5565709
 
 Usage
 -----
