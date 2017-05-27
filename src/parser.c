@@ -1456,6 +1456,16 @@ static const char *get_token(lexer *l, const char *s, char **line)
 		s++;
 	}
 
+	if (!l->comment && (*s == '/') && (s[1] == '*'))
+		l->comment = 1;
+	else if (l->comment && (*s == '*') && (s[1] == '/')) {
+		l->comment = 0;
+		s += 2;
+	}
+
+	while (l->comment && *s)
+		s++;
+
 	if (*s == '%') {
 		while (*s++)
 			;

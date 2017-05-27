@@ -238,7 +238,7 @@ struct lexer_
 	module *db;
 	char *init, *tok, quote, last;
 	uint32_t cpos;
-	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized;
+	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized, comment;
 	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, neg, vars, was_op, is_op;
 };
 
