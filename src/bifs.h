@@ -368,6 +368,19 @@ extern int bif_iso_retract(tpl_query *q);
 extern int bif_iso_asserta(tpl_query *q);
 extern int bif_iso_assertz(tpl_query *q);
 
+inline static nbr_t get_word(node *n)
+{
+#if USE_SSL
+	if (is_bignum(n))
+		return BN_get_word(n->val_bn);
+	else
+#endif
+	if (is_integer(n))
+		return n->val_i;
+	else
+		return 0;
+}
+
 extern node *dbs_read_entry(module* db, nbr_t fpos);
 
 #endif

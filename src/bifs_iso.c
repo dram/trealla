@@ -3335,24 +3335,12 @@ static int bif_iso_arg(tpl_query *q)
 		allocate_frame(q);
 	}
 	else if (q->retry) {
-#if USE_SSL
-		if (is_bignum(term1))
-			idx = BN_get_word(term1->val_bn) + 1;
-		else
-#endif
-			idx = term1->val_i + 1;
-
+		idx = get_word(term1) + 1;
 		reset_arg(q, orig_term1, q->curr_frame);
 		put_int(q, q->curr_frame + orig_term1->slot, idx);
 	}
-	else {
-#if USE_SSL
-		if (is_bignum(term1))
-			idx = BN_get_word(term1->val_bn);
-		else
-#endif
-			idx = term1->val_i;
-	}
+	else
+		idx = get_word(term1);
 
 	node *n = term_first(term2);
 	n = term_next(n);
@@ -3459,13 +3447,7 @@ static int bif_iso_functor(tpl_query *q)
 
 	if (is_atom(term2) && (is_integer(term3) || is_bignum(term3))) {
 		nbr_t v;
-
-#if USE_SSL
-		if (is_bignum(term3))
-			v = BN_get_word(term3->val_bn);
-		else
-#endif
-			v = term3->val_i;
+		v = get_word(term3);
 
 		if (v > 0) {
 
