@@ -1082,6 +1082,17 @@ tpl_query *query_create_subquery(tpl_query *self)
 		const env *e_from = get_env(self, self->curr_frame + i);
 		*e_to = *e_from;
 
+		if (!e_from->term)
+			continue;
+
+#if USE_SSL
+		extern node *copy_nbr(node *from);
+
+		if (is_bignum(e_from->term)) {
+			e_to->term = copy_nbr(e_from->term);
+		}
+		else
+#endif
 		if (e_from->term)
 			e_from->term->refcnt++;
 	}

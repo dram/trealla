@@ -55,7 +55,7 @@ static int needs_quoting(const char *s)
 	if (!*s)
 		return 1;
 
-	if (isupper(*s))
+	if (isupper(*s) || (!isalpha(*s) && (*s != '_')))
 		return 1;
 
 	while (*s) {

@@ -153,7 +153,7 @@ static int collect_vars(tpl_query *q, node *n)
 	return collect_vars2(q, n, 1);
 }
 
-static node *copy_nbr(node *from)
+node *copy_nbr(node *from)
 {
 	node *n = term_make();
 	n->flags |= from->flags;
@@ -3319,6 +3319,11 @@ static int bif_iso_arg(tpl_query *q)
 	unsigned save_context2 = q->latest_context;
 	node *term3 = get_term(term3);
 
+#if USE_SSL
+	if (is_bignum(term1) && (BN_get_word(term1->val_bn) <= 0))
+		return 0;
+#endif
+
 	if (is_integer(term1) && (term1->val_i <= 0))
 		return 0;
 
@@ -3330,12 +3335,24 @@ static int bif_iso_arg(tpl_query *q)
 		allocate_frame(q);
 	}
 	else if (q->retry) {
-		idx = term1->val_i + 1;
+#if USE_SSL
+		if (is_bignum(term1))
+			idx = BN_get_word(term1->val_bn) + 1;
+		else
+#endif
+			idx = term1->val_i + 1;
+
 		reset_arg(q, orig_term1, q->curr_frame);
 		put_int(q, q->curr_frame + orig_term1->slot, idx);
 	}
-	else
-		idx = term1->val_i;
+	else {
+#if USE_SSL
+		if (is_bignum(term1))
+			idx = BN_get_word(term1->val_bn);
+		else
+#endif
+			idx = term1->val_i;
+	}
 
 	node *n = term_first(term2);
 	n = term_next(n);
@@ -3440,23 +3457,32 @@ static int bif_iso_functor(tpl_query *q)
 	node *nf = NULL;
 	int arity = 0;
 
-	if (is_atom(term2) && is_integer(term3)) {
-		if (term3->val_i > 0) {
+	if (is_atom(term2) && (is_integer(term3) || is_bignum(term3))) {
+		nbr_t v;
 
-			if (!expand_frame(q, term3->val_i))
+#if USE_SSL
+		if (is_bignum(term3))
+			v = BN_get_word(term3->val_bn);
+		else
+#endif
+			v = term3->val_i;
+
+		if (v > 0) {
+
+			if (!expand_frame(q, v))
 				return 0;
 
 			node *s = make_compound();
 			term_append(s, copy_atom(term2));
 
-			for (int i = 0; i < term3->val_i; i++)
+			for (int i = 0; i < v; i++)
 				term_append(s, make_var(q));
 
 			int ok = unify_term(q, term1, s, q->curr_frame);
 			term_heapcheck(s);
 			return ok;
 		}
-		else if (term3->val_i == 0)
+		else if (v == 0)
 			return unify_term(q, term1, term2, -1);
 
 		return 0;
