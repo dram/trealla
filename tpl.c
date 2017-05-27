@@ -213,6 +213,10 @@ int main(int ac, char *av[])
 		else if (!strncmp(av[i], "--dbdir=", 8))
 			g_dbdir = av[i] + 8;
 #endif
+#if USE_SSL
+		else if (!strcmp(av[i], "--bignum"))
+			g_force_bignum = 1;
+#endif
 		else if (!strcmp(av[i], "-O0"))
 			trealla_optimize(pl, 0);
 		else if (!strcmp(av[i], "-O1") || !strcmp(av[i], "-O"))

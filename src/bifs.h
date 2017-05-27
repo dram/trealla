@@ -52,14 +52,14 @@
 
 #define get_atomic(t) get_next_arg(q, &args); if (!is_atomic(t)) { QABORT(ABORT_INVALIDARGNOTATOMIC); return 0; }
 #define get_atom(t) get_next_arg(q, &args); if (!is_atom(t)) { QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
-#define get_atom_or_int(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_integer(t)) { QABORT(ABORT_INVALIDARGNOTATOMORINT); return 0; }
+#define get_atom_or_int(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_integer(t)&&!is_bignum(t)) { QABORT(ABORT_INVALIDARGNOTATOMORINT); return 0; }
 #define get_atom_or_list(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_list(t)) { QABORT(ABORT_INVALIDARGNOTATOMORLIST); return 0; }
 #define get_atom_or_list_or_var(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_list(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTATOMORLIST); return 0; }
 #define get_atom_or_var(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTATOMORVAR); return 0; }
 #define get_nbr(t) get_next_arg(q, &args); if (!is_number(t)) { QABORT(ABORT_INVALIDARGNOTNBR); return 0; }
 #define get_nbr_or_var(t) get_next_arg(q, &args); if (!is_number(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTNBRORVAR); return 0; }
-#define get_int(t) get_next_arg(q, &args); if (!is_integer(t)) { QABORT(ABORT_INVALIDARGNOTINT); return 0; }
-#define get_int_or_var(t) get_next_arg(q, &args); if (!is_integer(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTINTORVAR); return 0; }
+#define get_int(t) get_next_arg(q, &args); if (!is_integer(t)&& !is_bignum(t)) { QABORT(ABORT_INVALIDARGNOTINT); return 0; }
+#define get_int_or_var(t) get_next_arg(q, &args); if (!is_integer(t)&&!is_bignum(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTINTORVAR); return 0; }
 #define get_ptr(t) get_next_arg(q, &args); if (!is_ptr(t)) { QABORT(ABORT_INVALIDARGNOTPTR); return 0; }
 #define get_var(t) get_next_arg(q, &args); if (!is_var(t)) { QABORT(ABORT_INVALIDARGNOTVAR); return 0; }
 #define get_nonvar(t) get_next_arg(q, &args); if (is_var(t)) { QABORT(ABORT_INVALIDARGISVAR); return 0; }

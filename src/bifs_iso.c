@@ -5374,18 +5374,42 @@ static int bif_xtra_between(tpl_query *q)
 
 	if (!q->retry) {
 		term3 = get_var(term3);
-		nbr_t v = term1->val_i;
+
+#if USE_SSL
+		nbr_t v;
+
+		if (is_bignum(term1))
+			v = BN_get_word(term1->val_bn);
+		else
+#endif
+			v = term1->val_i;
+
 		put_int(q, q->curr_frame + term3->slot, v);
 		allocate_frame(q);
 	}
 	else {
 		term3 = get_int(term3);
-		nbr_t v = term3->val_i + 1;
+		nbr_t v;
 
-		if (is_integer(term2)) {
-			if (v > term2->val_i)
-				return 0;
-		}
+#if USE_SSL
+		if (is_bignum(term3))
+			v = BN_get_word(term3->val_bn);
+		else
+#endif
+			v = term3->val_i;
+
+		v += 1;
+		nbr_t v2;
+
+#if USE_SSL
+		if (is_bignum(term2))
+			v2 = BN_get_word(term2->val_bn);
+		else
+#endif
+			v2 = term2->val_i;
+
+		if (v > v2)
+			return 0;
 
 		reset_arg(q, orig_term3, q->curr_frame);
 		put_int(q, q->curr_frame + orig_term3->slot, v);
@@ -5915,6 +5939,7 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 	return 1;
 }
 
+#if USE_SSL
 static int bif_xtra_bignum(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -5923,10 +5948,15 @@ static int bif_xtra_bignum(tpl_query *q)
 	if (!q->nv.val_bn)
 		q->nv.val_bn = BN_new();
 
-	BN_set_word(q->nv.val_bn, term1->val_i);
+	if (is_bignum(term1))
+		BN_copy(q->nv.val_bn, term1->val_bn);
+	else
+		BN_set_word(q->nv.val_bn, term1->val_i);
+
 	q->nv.flags = TYPE_BIGNUM;
 	return 1;
 }
+#endif
 
 static int bif_xtra_random(tpl_query *q)
 {
@@ -6252,7 +6282,11 @@ void bifs_load_iso(void)
 	DEFINE_BIF("erase", 1, bif_xtra_erase);
 	DEFINE_BIF("random", 1, bif_xtra_random);
 	DEFINE_BIF("trace", 0, bif_xtra_trace);
+
+#if USE_SSL
 	DEFINE_BIF("bignum", 1, bif_xtra_bignum);
+#endif
+
 #endif
 
 	DEFINE_BIF("time", 1, bif_xtra_time_1);

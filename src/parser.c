@@ -25,6 +25,10 @@
 extern atomic int64_t g_allocs;
 #endif
 
+#if USE_SSL
+int g_force_bignum = 0;
+#endif
+
 const char *g_escapes = "\a\f\b\t\v\r\n\0";
 const char *g_anti_escapes = "afbtvrn0";
 
@@ -1445,7 +1449,12 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 	 while ((ch = *s++) != '\0');
 
 #if USE_SSL
-	if ((*numeric == NUM_INT) && isdigit(*save_s)) {
+	if ((*numeric == NUM_INT) && g_force_bignum) {
+		*numeric = NUM_BIGNUM;
+		return s;
+	}
+
+	if ((*numeric == NUM_INT) && (strlen(save_s) > 12)) {
 		BIGNUM *bn = NULL;
 		char *tmpbuf = (char *)malloc(strlen(save_s)+1);
 		char *dst = tmpbuf;
@@ -1674,8 +1683,6 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 				while ((ch = *src++) && isdigit(ch))
 					token_put(&t, ch);
-
-				printf("\n");
 			}
 
 			break;
