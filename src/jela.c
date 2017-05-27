@@ -575,10 +575,10 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term
 		return !BN_cmp(term1->val_bn, term2->val_bn);
 
 	if (is_bignum(term1) && is_integer(term2))
-		return BN_get_word(term1->val_bn) == BN_get_word(term2->val_bn);
+		return BN_get_word(term1->val_bn) == term2->val_i;
 
 	if (is_integer(term1) && is_bignum(term2))
-		return BN_get_word(term1->val_bn) == BN_get_word(term2->val_bn);
+		return term1->val_i == BN_get_word(term2->val_bn);
 #endif
 
 #ifndef ISO_ONLY
