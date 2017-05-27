@@ -307,7 +307,7 @@ extern node *make_and(void);
 extern node *make_true(void);
 
 extern rule *xref_term(lexer *l, node *term, int arity);
-extern const char *parse_number(char ch, const char *s, nbr_t *v, int *numeric);
+extern const char *parse_number(const char *s, nbr_t *v, int *numeric);
 extern size_t sprint_int(char *dst, size_t size, nbr_t n, int base);
 extern const op *get_op(module *db, const char *functor, int hint_prefix);
 extern char *deescape(char *dst, const char *src, char quote);

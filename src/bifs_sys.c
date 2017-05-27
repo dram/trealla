@@ -891,10 +891,9 @@ static int bif_sys_atom_number_2(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_nbr_or_var(term2);
 	const char *src = VAL_S(term1);
-	char ch = *src++;
 	nbr_t v = 0;
 	int numeric = 0;
-	parse_number(ch, src, &v, &numeric);
+	parse_number(src, &v, &numeric);
 	node *n;
 
 	if (numeric > 1)
@@ -1587,7 +1586,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 		else {
 			nbr_t v = 0;
 			int numeric = 0;
-			parse_number(ch = dstbuf[0], dstbuf + 1, &v, &numeric);
+			parse_number(dstbuf, &v, &numeric);
 
 			if (numeric > 1)
 				tmp = make_int(v);
@@ -1687,7 +1686,7 @@ static int bif_sys_parse_tab_2(tpl_query *q)
 		else {
 			nbr_t v = 0;
 			int numeric = 0;
-			parse_number(ch = dstbuf[0], dstbuf + 1, &v, &numeric);
+			parse_number(dstbuf, &v, &numeric);
 
 			if (numeric > 1)
 				tmp = make_int(v);

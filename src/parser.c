@@ -1356,10 +1356,11 @@ static char *token_take(token *t)
 
 enum { NUM_NONE=0, NUM_REAL=1, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
 
-const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
+const char *parse_number(const char *s, nbr_t *value, int *numeric)
 {
-	if ((ch == '0') && (*s == 'b')) {
+	if ((*s == '0') && (s[1] == 'b')) {
 		unbr_t v = 0;
+		s++;
 		s++;
 
 		while ((*s == '0') || (*s == '1')) {
@@ -1376,8 +1377,9 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 		return s;
 	}
 
-	if ((ch == '0') && (*s == 'o')) {
+	if ((*s == '0') && (s[1] == 'o')) {
 		unbr_t v = 0;
+		s++;
 		s++;
 
 		while ((*s >= '0') && (*s <= '7')) {
@@ -1391,8 +1393,9 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 		return s;
 	}
 
-	if ((ch == '0') && (*s == 'x')) {
+	if ((*s == '0') && (s[1] == 'x')) {
 		unbr_t v = 0;
+		s++;
 		s++;
 
 		while (((*s >= '0') && (*s <= '9')) || ((toupper(*s) >= 'A') && (toupper(*s) <= 'F'))) {
@@ -1414,6 +1417,8 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 	*value = 0;
 	*numeric = NUM_INT;
 	int exp = 0;
+	const char *save_s = s;
+	char ch = *s++;
 
 	do {
 		if ((ch == '.') && isdigit(*s))
@@ -1438,6 +1443,28 @@ const char *parse_number(char ch, const char *s, nbr_t *value, int *numeric)
 		}
 	}
 	 while ((ch = *s++) != '\0');
+
+#if USE_SSL
+	if ((*numeric == NUM_INT) && isdigit(*save_s)) {
+		BIGNUM *bn = NULL;
+		char *tmpbuf = (char *)malloc(strlen(save_s)+1);
+		char *dst = tmpbuf;
+
+		while (isdigit(*save_s))
+			*dst++ = *save_s++;
+
+		*dst = '\0';
+		BN_dec2bn(&bn, tmpbuf);
+
+		if (BN_num_bits(bn) >= 64)
+			*numeric = NUM_BIGNUM;
+
+		if (bn)
+			BN_free(bn);
+
+		free(tmpbuf);
+	}
+#endif
 
 	return s;
 }
@@ -1633,38 +1660,24 @@ static const char *get_token(lexer *l, const char *s, char **line)
 		}
 
 		if (isdigit(ch)) {
-			const char *save_s = s;
+			const char *save_s = --s;
 			nbr_t v = 0;
-			s = parse_number(ch, s, &v, &l->numeric);
-			char *tmpbuf = (char *)malloc(strlen(save_s-1)+10);
-			strncpy(tmpbuf, save_s-1, s-save_s);
+			s = parse_number(s, &v, &l->numeric);
 			l->neg = 0;
-
-#if USE_SSL && 0
-			if (l->numeric == NUM_INT) {
-				BIGNUM *bn = NULL;
-				BN_dec2bn(&bn, tmpbuf);
-
-				if (BN_num_bits(bn) > 63)
-					l->numeric = NUM_BIGNUM;
-
-				if (bn)
-					BN_free(bn);
-			}
-#endif
 
 			if (l->numeric >= NUM_INT) {
 				t.dst = t.buf = (char *)realloc(t.buf, (t.maxlen = 255) + 1);
 				t.dst += sprint_int(t.buf, t.maxlen, v, 10);
 				break;
 			} else {
-				const char *src = tmpbuf;
+				const char *src = save_s;
 
-				while ((ch = *src++) != '\0')
+				while ((ch = *src++) && isdigit(ch))
 					token_put(&t, ch);
+
+				printf("\n");
 			}
 
-			free(tmpbuf);
 			break;
 		}
 

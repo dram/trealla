@@ -392,11 +392,11 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
 		OPENSSL_free(src);
 
-		if (BN_num_bits(n->val_bn) > 63)
-		{
-			*dst++ = 'B';
-			*dst = '\0';
-		}
+		//if (BN_num_bits(n->val_bn) < 64)
+		//{
+		//	*dst++ = 'B';
+		//	*dst = '\0';
+		//}
 	}
 	else if (is_bignum(n)) {
 		char *src = BN_bn2dec(n->val_bn);
