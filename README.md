@@ -16,7 +16,7 @@ deep binding and structure sharing. It supports much of ISO-PROLOG plus:
  - advanced networking features
  - unlimited length and number of UTF-8 or binary strings
  - optional 128-bit integers (where available)
- - bignums (arbitrary precision integers)
+ - bignums (using OpenSSL:BN)
  - definite clause grammar (DCG)
 
 The rule database usage is currently immediate update view (the traditional way). ISO-PROLOG
@@ -56,7 +56,11 @@ Current ISO predicates that are (known) not yet implemented:
 Defined operators can ONLY be used as operators. To use them as regular functors they
 must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
-Bignums are considered experimental at this stage.
+Bignums are considered experimental at this stage. To introduce a bignum use the 'B' suffix,
+eg: *X is 1B*, or *X is bignum(1)*. Thereafter X will propagate in calculations as a bignum.
+
+	tpl -l samples/factorial.pro -g 'facb(100000,F),writeln(F)' | wc -c
+	456575
 
 Usage
 -----
@@ -81,7 +85,7 @@ Usage
 	--tpool=N      - thread-pool size (default is 4)
 	--daemon       - daemonize program (or -d)
 	--watchdog     - set restart watchdog for daemon (or -w)
-	--cd=path      - chdir for daemon
+	--cd=path      - chdir (usually for daemon)
 	--merge        - merge transaction log
 	--consult      - consult from STDIN
 	--ns           - non-stop (ie. don't drop to REPL) on error

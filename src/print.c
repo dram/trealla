@@ -374,10 +374,25 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 #if USE_SSL
 	else if (is_bignum(n) && listing) {
 		char *src = BN_bn2dec(n->val_bn);
-		dst += sprintf(dst, "%s", src);
+		xlen = strlen(src) + 1024;
+		rem = (*bufsize - (dst - *dstbuf));
+
+		if (rem < xlen) {
+			size_t offset = dst - *dstbuf;
+			*bufsize *= 2;
+
+			if (*bufsize < xlen)
+				*bufsize += xlen;
+
+			*dstbuf = (char *)realloc(*dstbuf, *bufsize);
+			*_dst = *dstbuf + offset;
+			dst = *_dst;
+		}
+
+		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
 		OPENSSL_free(src);
 
-		//if (BN_num_bits(n->val_bn) > 63)
+		if (BN_num_bits(n->val_bn) > 63)
 		{
 			*dst++ = 'B';
 			*dst = '\0';
@@ -385,7 +400,22 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	}
 	else if (is_bignum(n)) {
 		char *src = BN_bn2dec(n->val_bn);
-		dst += sprintf(dst, "%s", src);
+		xlen = strlen(src) + 1024;
+		rem = (*bufsize - (dst - *dstbuf));
+
+		if (rem < xlen) {
+			size_t offset = dst - *dstbuf;
+			*bufsize *= 2;
+
+			if (*bufsize < xlen)
+				*bufsize += xlen;
+
+			*dstbuf = (char *)realloc(*dstbuf, *bufsize);
+			*_dst = *dstbuf + offset;
+			dst = *_dst;
+		}
+
+		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
 		OPENSSL_free(src);
 	}
 #endif
@@ -414,11 +444,41 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	else if (listing && is_blob(n)) {
 		char *tmpbuf = (char *)malloc((LEN(n) * 3) + 1);
 		b64_encode(n->val_s, n->val_len, &tmpbuf, 0, 0);
+		xlen = strlen(tmpbuf) + 1024;
+		rem = (*bufsize - (dst - *dstbuf));
+
+		if (rem < xlen) {
+			size_t offset = dst - *dstbuf;
+			*bufsize *= 2;
+
+			if (*bufsize < xlen)
+				*bufsize += xlen;
+
+			*dstbuf = (char *)realloc(*dstbuf, *bufsize);
+			*_dst = *dstbuf + offset;
+			dst = *_dst;
+		}
+
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "`%s`", tmpbuf);
 		free(tmpbuf);
 	}
 	else if (is_blob(n)) {
 		size_t len = (n->val_len < (*bufsize - (dst - *dstbuf)) ? n->val_len : (*bufsize - (dst - *dstbuf)));
+		xlen = len + 1024;
+		rem = (*bufsize - (dst - *dstbuf));
+
+		if (rem < xlen) {
+			size_t offset = dst - *dstbuf;
+			*bufsize *= 2;
+
+			if (*bufsize < xlen)
+				*bufsize += xlen;
+
+			*dstbuf = (char *)realloc(*dstbuf, *bufsize);
+			*_dst = *dstbuf + offset;
+			dst = *_dst;
+		}
+
 		memcpy(dst, n->val_s, len);
 		dst += len;
 	}
