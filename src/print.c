@@ -55,13 +55,13 @@ static int needs_quoting(const char *s)
 	if (!*s)
 		return 1;
 
-	if (isupper(*s) || (!isalpha(*s) && (*s != '_')))
+	if (isupper(*s) || (!isalpha_utf8(*s) && (*s != '_')))
 		return 1;
 
 	while (*s) {
 		unsigned char ch = *s++;
 
-		if (!isalpha(ch) && !isdigit(ch) && (ch != '_') && (ch != ':') && (ch < 0x7F))
+		if (!isalpha_utf8(ch) && !isdigit(ch) && (ch != '_') && (ch != ':') && (ch < 0x7F))
 			return 1;
 	}
 
