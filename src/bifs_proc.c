@@ -1143,6 +1143,11 @@ static int bif_proc_tmo_1(tpl_query *q)
 		return 0;
 	}
 
+#if USE_SSL
+	if (is_bignum(term1))
+		q->tmo_msecs = (int)BN_get_word(term1->val_bn);
+	else
+#endif
 	if (is_integer(term1))
 		q->tmo_msecs = (int)term1->val_i;
 	else

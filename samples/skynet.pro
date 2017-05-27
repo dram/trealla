@@ -2,8 +2,8 @@
 
 :-using([proc]).
 
-start :- run_skynet(1000000).
-test :- run_skynet(100).
+start :- run_skynet(1000000B).
+test :- run_skynet(100B).
 
 run_skynet(Size) :-
 	fork, !,
