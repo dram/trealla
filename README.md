@@ -56,11 +56,12 @@ Current ISO predicates that are (known) not yet implemented:
 Defined operators can ONLY be used as operators. To use them as regular functors they
 must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
-Bignums (actually bigints) are considered experimental at this stage. To introduce a bignum use the
-'B' suffix e.g: *X is 1B*, or *bignum/1* function e.g: *X is bignum(1)*. Thereafter X will propagate
-in calculations as a bignum. Integer literals will automatically promote to a bignum if needed. Not
-all BIFs handle bignums as yet (*between/3* does). Expect numerical programs to run 2-3 times slower
-when using bignums.
+Bignums (actually bigints) are considered experimental at this stage. To introduce a bignum use
+the 'B' suffix e.g: *X is 1B*, or *bignum/1* function e.g: *X is bignum(1)*. Thereafter X will
+propagate in calculations as a bignum. Integer literals will automatically promote to a bignum if
+needed during parsing. Not all BIFs handle bignums as yet (*between/3* does). Expect numerical
+programs to run 2-3 times slower when making use of bignums. Integer overflow does *NOT* promote
+to bignums.
 
 Usage
 -----
