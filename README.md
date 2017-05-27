@@ -1,30 +1,30 @@
 Trealla Prolog
 ==============
 
-Trealla is Prolog with light-weight thread-based concurrency and message
-passing.
-
-Trealla is an interpreter that parses to an AST. Queries are executed using
-deep binding and structure sharing. It supports much of ISO-PROLOG plus:
+Trealla is a Prolog interpreter that parses to an AST and uses deep-binding and structure sharing.
+It supports much of ISO-PROLOG plus:
 
  - modules
+ - first-argument indexing
  - persistency
  - transactions
- - first-argument indexing
+ - unlimited length and number of UTF-8 or binary strings
+ - 64-bit ints (optional 128-bit where available)
+ - bigints (using OpenSSL:BN)
  - Erlang-style processes and message-passing
  - Linda-style processes and tuple-space
  - advanced networking features
- - unlimited length and number of UTF-8 or binary strings
- - optional 128-bit integers (where available)
- - bignums (using OpenSSL:BN)
  - definite clause grammar (DCG)
+
+There are no bindings to an external database system. The combination of indexing, persistency,
+and transactions means that Prolog facts can be used as an efficient relational database. SQL-like
+queries can be mapped closely to Prolog queries.
 
 The rule database usage is currently immediate update view (the traditional way). ISO-PROLOG
 however specifies logical update view (ie. snapshot), so this may change in future (a flag?).
 
-Writen in plain-old C with a permissive license.
-
-This is alpha release software at this point and is subject to great change.
+Writen in plain-old C with a permissive license. This is alpha release software at this point and
+is subject to great change.
 
 Getting / Building
 ------------------
@@ -56,8 +56,9 @@ Current ISO predicates that are (known) not yet implemented:
 Defined operators can ONLY be used as operators. To use them as regular functors they
 must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
-Bignums are considered experimental at this stage. To introduce a bignum use the 'B' suffix,
-eg: *X is 1B*, or *X is bignum(1)*. Thereafter X will propagate in calculations as a bignum.
+Bignums (actually bigints) are considered experimental at this stage. To introduce a bignum use the
+'B' suffix, eg: *X is 1B*, or *X is bignum(1)*. Thereafter X will propagate in calculations as a
+bignum. For example:
 
 	tpl -l samples/factorial.pro -g 'facb(1000000,F),write(F)' | wc -c
 	5565709
