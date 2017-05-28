@@ -125,6 +125,34 @@ const op *get_op(module *db, const char *functor, int hint_prefix)
 	return optr;
 }
 
+int needs_quoting(const char *s)
+{
+	if (!*s)
+		return 1;
+
+	if (isupper(*s) || isdigit(*s) || isspace(*s) || iscntrl(*s))
+		return 1;
+
+	int any_signs = 0, any_ans = 0;
+
+	while (*s) {
+		unsigned char ch = *s++;
+
+		if (isspace(ch) || iscntrl(ch))
+			return 1;
+
+		if (isalpha_utf8(ch) || isdigit(ch))
+			any_ans = 1;
+		else
+			any_signs = 1;
+
+		if (any_ans && any_signs)
+			return 1;
+	}
+
+	return 0;
+}
+
 static nbr_t dec_to_int(const char *src)
 {
 	nbr_t v = 0;
@@ -1500,10 +1528,10 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			s += 2;
 			continue;
 		}
-		
+
 		break;
 	}
-	
+
 	while (l->comment && *s)
 		s++;
 
@@ -2204,7 +2232,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			attach_vars(self, n);
 		}
 		else if (!self->error && !self->quoted && !is_op(self->db, self->tok) &&
-				!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!") && strcmp(self->tok, ".")) {
+				!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!") && strcmp(self->tok, ".") &&
+				needs_quoting(self->tok)) {
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
 			return NULL;
@@ -2269,7 +2298,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			is_op = 0;
 
 		if (!self->error && self->was_atomic && !is_op) {
-			printf("ERROR: operator expected\n");
+			printf("ERROR: operator expected: '%s'\n", VAL_S(n));
 			term_heapcheck(n);
 			self->error = 1;
 			return NULL;

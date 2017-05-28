@@ -313,6 +313,7 @@ extern const op *get_op(module *db, const char *functor, int hint_prefix);
 extern char *deescape(char *dst, const char *src, char quote);
 extern char *dict(module *db, const char *key);
 extern void db_init(module *self, trealla *pl, const char *name, const char *filename);
+extern int needs_quoting(const char *s);
 
 #ifndef ISO_ONLY
 extern void dbs_save_node(module *db, FILE* fp, char **dstbuf, size_t *buflen, node *n, int in_tran);
