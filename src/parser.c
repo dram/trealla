@@ -1485,20 +1485,25 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	if (s == NULL)
 		return NULL;
 
-	while (isspace(*s)) {
-		if (*s == '\n')
-			l->line_nbr++;
+	for (;;) {
+		while (isspace(*s)) {
+			if (*s == '\n')
+				l->line_nbr++;
 
-		s++;
+			s++;
+		}
+
+		if (!l->comment && (*s == '/') && (s[1] == '*'))
+			l->comment = 1;
+		else if (l->comment && (*s == '*') && (s[1] == '/')) {
+			l->comment = 0;
+			s += 2;
+			continue;
+		}
+		
+		break;
 	}
-
-	if (!l->comment && (*s == '/') && (s[1] == '*'))
-		l->comment = 1;
-	else if (l->comment && (*s == '*') && (s[1] == '/')) {
-		l->comment = 0;
-		s += 2;
-	}
-
+	
 	while (l->comment && *s)
 		s++;
 
