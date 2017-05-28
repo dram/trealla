@@ -2440,6 +2440,7 @@ int lexer_consult_file(lexer *self, const char *orig_filename)
 	}
 
 	if (fp == NULL) {
+		printf("ERROR: non-existent file '%s'\n", orig_filename);
 		self->error = 1;
 		return 0;
 	}
