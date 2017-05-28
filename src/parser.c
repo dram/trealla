@@ -76,7 +76,6 @@ static op g_ops[] = {
 	{":", "xfy", 600},
 	{"+", "yfx", 500},
 	{"-", "yfx", 500},
-	{"?", "fx", 500},
 	{"*", "yfx", 400},
 	{"/", "yfx", 400},
 	{"//", "yfx", 400},
@@ -88,8 +87,6 @@ static op g_ops[] = {
 	{"mod", "yfx", 400},
 	{"<<", "yfx", 400},
 	{">>", "yfx", 400},
-	{"+", "fy", 200},
-	{"-", "fy", 200},
 	{"**", "xfx", 200},
 	{"^", "xfy", 200},
 	{"--", "fy", 200},
@@ -1515,14 +1512,14 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	if (!s)
 		return NULL;
 
+	while (isspace(*s)) {
+		if (*s == '\n')
+			l->line_nbr++;
+
+		s++;
+	}
+
 	while (*s) {
-		while (isspace(*s)) {
-			if (*s == '\n')
-				l->line_nbr++;
-
-			s++;
-		}
-
 		if (!l->comment && (*s == '/') && (s[1] == '*')) {
 			l->comment = 1;
 			s += 2;
@@ -1536,6 +1533,13 @@ static const char *get_token(lexer *l, const char *s, char **line)
 
 		if (!l->comment)
 			break;
+
+		s++;
+	}
+
+	while (isspace(*s)) {
+		if (*s == '\n')
+			l->line_nbr++;
 
 		s++;
 	}
