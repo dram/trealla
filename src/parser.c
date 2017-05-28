@@ -89,10 +89,10 @@ static op g_ops[] = {
 	{">>", "yfx", 400},
 	{"**", "xfx", 200},
 	{"^", "xfy", 200},
-	{"--", "fy", 200},
 	{"\\", "fy", 200},
 	{"+", "fy", 200},
 	{"-", "fy", 200},
+	{"--", "fy", 200},				// HACK
 
 	{0}
 };
@@ -1122,6 +1122,7 @@ static int attach_ops(lexer *l, node *term)
 			functor = n->val_s = (char *)"--";
 			n->flags |= FLAG_CONST;
 			n->bifptr = bif_iso_reverse;
+			continue;
 		}
 		else if (was_operator && !strcmp(functor, "+")) {
 			node *tmp = term_next(n);
