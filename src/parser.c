@@ -1450,9 +1450,11 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 	*numeric = NUM_INT;
 	int exp = 0;
 	const char *save_s = s;
-	char ch = *s++;
+	char ch = *s;
 
 	do {
+		s++;
+
 		if ((ch == '.') && isdigit(*s))
 			*numeric = NUM_REAL;
 		else if (!exp && ((ch == 'e') || (ch == 'E'))) {
@@ -1474,7 +1476,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 			*value += ch - '0';
 		}
 	}
-	 while ((ch = *s++) != '\0');
+	 while (ch = *s, (ch != '\0'));
 
 #if USE_SSL
 	if ((*numeric == NUM_INT) && g_force_bignum) {
