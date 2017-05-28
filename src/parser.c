@@ -1200,6 +1200,7 @@ static int attach_ops(lexer *l, node *term)
 			return 0;
 
 		did_something = 1;
+		break;
 	}
 
 	if (did_something)
