@@ -1510,10 +1510,10 @@ static const char *get_token(lexer *l, const char *s, char **line)
 {
 	l->tok = NULL;
 
-	if (s == NULL)
+	if (!s)
 		return NULL;
 
-	for (;;) {
+	while (*s) {
 		while (isspace(*s)) {
 			if (*s == '\n')
 				l->line_nbr++;
@@ -1521,19 +1521,22 @@ static const char *get_token(lexer *l, const char *s, char **line)
 			s++;
 		}
 
-		if (!l->comment && (*s == '/') && (s[1] == '*'))
+		if (!l->comment && (*s == '/') && (s[1] == '*')) {
 			l->comment = 1;
+			s += 2;
+			continue;
+		}
 		else if (l->comment && (*s == '*') && (s[1] == '/')) {
 			l->comment = 0;
 			s += 2;
 			continue;
 		}
 
-		break;
-	}
+		if (!l->comment)
+			break;
 
-	while (l->comment && *s)
 		s++;
+	}
 
 	if (*s == '%') {
 		while (*s++)
