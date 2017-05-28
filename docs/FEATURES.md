@@ -252,27 +252,24 @@ The alternative declaration with a *storage* modifier:
 
 	:-dynamic(+Name/Arity,[storage]).
 
-means that all args from the second position on are stored in the transaction log only and not in
-memory. Instead a filepos into the log is held and the data is loaded on demand. In this way
-databases far larger than physical memory can be accessed, especially useful if blobs are stored
-(for example: you no longer need to store a name to an external file). The *persist* modifier
-is implied and doesn't need to be specified.
+means that all terms apart from the first-arg index are stored in the transaction log only and not
+held in memory. Instead a filepos into the log is held and the extra data is loaded on demand. In
+this way databases far larger than physical memory can be accessed, especially useful as blobs can
+be stored.
 
 To access the persistent database:
 
 	init/0               - prepare only
 	load/0               - prepare & load existing data
 	tail/0               - load and tail for new data (every 1000ms)
-	tail(+Msecs)         - load and tail for new data (every N ms)
-
-first time only (subsequent calls will have no effect).
+	tail(+Msecs)         - load and tail for new data (specified ms)
 
 Transactions within the same database can be done via bracketing a series of one or more updates
 with *begin/end* calls:
 
 	begin/0              - start atomic transaction sequence
 	end/0                - commit changes with fsync
-	end(+Boolean)        - commit changes optional fsync
+	end(+Boolean)        - commit changes with optional fsync
 
 and occurs as a single (all-or-nothing) update to the rule database and (if persistent) write to
 the transaction log. A transaction locks out any other transactions on the module for the
@@ -283,12 +280,12 @@ To write to the transaction log only, without updating the database:
 
 	log(:Term)
 
-where *Term* is an asserta/assertz/retract (or other) operation. This can be useful for external
-adapters that need to write to the log what to do, without actually doing it themselves. Another
-program could then tail the log and update the real database.
+where *Term* is usally an asserta/assertz/retract (or other) operation. This can be useful for
+external adapters that need to write to the log what to do, without actually doing it themselves.
+Another program could then tail the log and update the real database.
 
-Periodically the log and the master are merged and a new master is created, discarding old files.
-This normally happens when the *--merge* option is specified on the command-line.
+Periodically the log and the master are merged and a new master is created, saving the old files.
+This happens when the *--merge* option is specified on the command-line.
 
 Linda data-coordination: namespace 'linda'
 ------------------------------------------
