@@ -1514,6 +1514,8 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	if (!s)
 		return NULL;
 
+LOOP:
+
 	while (isspace(*s)) {
 		if (*s == '\n')
 			l->line_nbr++;
@@ -1530,18 +1532,11 @@ static const char *get_token(lexer *l, const char *s, char **line)
 		else if (l->comment && (*s == '*') && (s[1] == '/')) {
 			l->comment = 0;
 			s += 2;
-			continue;
+			goto LOOP;
 		}
 
 		if (!l->comment)
 			break;
-
-		s++;
-	}
-
-	while (isspace(*s)) {
-		if (*s == '\n')
-			l->line_nbr++;
 
 		s++;
 	}
