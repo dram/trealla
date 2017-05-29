@@ -94,7 +94,6 @@ found in other Prolog implementations:
 	consult(+File)              - consult file
 	deconsult(+File)            - deconsult file
 	reconsult(+File)            - reconsult file
-	abolish(+Name,+Arity)       - abolish functor name/arity
 	between(+From,+To,-Int)     - loop with start, end and index range
 	term_to_atom(+Term,?Atom)   - convert term to atom
 	term_to_blob(+Term,-Blob)   - convert term to BLOB
@@ -113,10 +112,6 @@ found in other Prolog implementations:
 	find(+N,+L,-Term)           - find nth arg of list
 	time(:Goal,-Float)          - run goal and return elapsed time (seconds)
 	time(:Goal)                 - run goal and print elapsed time
-	assert(+Clause)             - same as assertz (DEPRECATED)
-	asserta(+Clause,-Ref)
-	assertz(+Clause,-Ref)
-	erase(+Ref)
 	writeln(+Term1)             - does buffered write/1 + nl/0 to stdout
 	writeln(+S,+Term1)          - does buffered write/2 + nl/1 to stream
 	random(-Float)              - random float value >= 0.0 and <= 1.0
@@ -125,9 +120,28 @@ found in other Prolog implementations:
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
 	atom_number(+A,?V)          - convert atom to Int or Float
+	bignum(+Int)                - function to convert int to bignum
+
+and for accessing the rule database:
+
+	assert(+Clause)             - same as assertz (DEPRECATED)
+	asserta(+Clause,-Ref)
+	assertz(+Clause,-Ref)
+	erase(+Ref)	
+	abolish(+Name,+Arity)      
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
-	bignum(+Int)                - function to convert int to bignum
+
+and for accessing the recorded database:
+
+	recorda(+K,+V)
+	recorda(+K,+V,-Ref)
+	recordz(+K,+V)
+	recordz(+K,+V,-Ref)
+	recorded(?K,?V)
+	recorded(?K,?V,?Ref)
+	instance(+Ref,-V)
+	current_key(+K)
 
 System-extras: namespace 'sys'
 ------------------------------
