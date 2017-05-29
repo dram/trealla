@@ -76,6 +76,7 @@ static op g_ops[] = {
 	{":", "xfy", 600},
 	{"+", "yfx", 500},
 	{"-", "yfx", 500},
+	//{"?", "fx", 500},
 	{"*", "yfx", 400},
 	{"/", "yfx", 400},
 	{"//", "yfx", 400},
@@ -93,6 +94,7 @@ static op g_ops[] = {
 	{"+", "fy", 200},
 	{"-", "fy", 200},
 	{"--", "fy", 200},				// HACK
+	//{"$", "fx", 1},
 
 	{0}
 };
@@ -1116,13 +1118,10 @@ static int attach_ops(lexer *l, node *term)
 				continue;
 			}
 
-			if (!(n->flags & FLAG_CONST))
-				free(n->val_s);
-
 			functor = n->val_s = (char *)"--";
 			n->flags |= FLAG_CONST;
 			n->bifptr = bif_iso_reverse;
-			continue;
+			optr = get_op(&l->pl->db, functor, !term_prev(n) ? 1 : 0);
 		}
 		else if (was_operator && !strcmp(functor, "+")) {
 			node *tmp = term_next(n);

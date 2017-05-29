@@ -257,10 +257,10 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	}
 	else if (!isop || (nf->flags & FLAG_QUOTED) || (listing == 2) || ignore_ops) {
 		if (!(n->flags & FLAG_CONSING) || (listing >= 2)) {
-			const char *src = functor;
+			const char *src = strcmp(functor, "--") ? functor : "-";
 
 			if (!src || (isop && !ignore_ops))
-				src = functor;
+				src = strcmp(functor, "--") ? functor : "-";
 
 			if (((nf->flags & FLAG_QUOTED) || needs_quoting(src)) && (!isop || (listing == 2)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");
