@@ -5978,16 +5978,16 @@ static int bif_xtra_atom_number(tpl_query *q)
 	parse_number(src, &v, &numeric);
 	node *n;
 
-	if (numeric > 1)
+	if (numeric >= NUM_INT)
 		n = make_quick_int(v);
 	else
 		n = make_float(strtod(VAL_S(term1), NULL));
 
-	if (numeric == 5)
+	if (numeric == NUM_HEX)
 		n->flags |= FLAG_HEX;
-	else if (numeric == 4)
+	else if (numeric == NUM_OCTAL)
 		n->flags |= FLAG_OCTAL;
-	else if (numeric == 3)
+	else if (numeric == NUM_BINARY)
 		n->flags |= FLAG_BINARY;
 
 	int ok = unify_term(q, term2, n, q->curr_frame);

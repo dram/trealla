@@ -369,6 +369,8 @@ extern int bif_iso_retract(tpl_query *q);
 extern int bif_iso_asserta(tpl_query *q);
 extern int bif_iso_assertz(tpl_query *q);
 
+enum { NUM_NONE=0, NUM_REAL=1, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
+
 inline static nbr_t get_word(node *n)
 {
 #if USE_SSL

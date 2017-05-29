@@ -1386,8 +1386,6 @@ static char *token_take(token *t)
 	return t->buf;
 }
 
-enum { NUM_NONE=0, NUM_REAL=1, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
-
 const char *parse_number(const char *s, nbr_t *value, int *numeric)
 {
 	if ((*s == '0') && (s[1] == 'b')) {
