@@ -885,59 +885,6 @@ static int bif_sys_atom_timestamp_2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_atom_number_2(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	node *term2 = get_nbr_or_var(term2);
-	const char *src = VAL_S(term1);
-	nbr_t v = 0;
-	int numeric = 0;
-	parse_number(src, &v, &numeric);
-	node *n;
-
-	if (numeric > 1)
-		n = make_quick_int(v);
-	else
-		n = make_float(strtod(VAL_S(term1), NULL));
-
-	if (numeric == 5)
-		n->flags |= FLAG_HEX;
-	else if (numeric == 4)
-		n->flags |= FLAG_OCTAL;
-	else if (numeric == 3)
-		n->flags |= FLAG_BINARY;
-
-	int ok = unify_term(q, term2, n, q->curr_frame);
-	term_heapcheck(n);
-	return ok;
-}
-
-static int bif_sys_read_term_from_atom_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	node *term2 = get_atom_or_var(term2);
-	node *term3 = get_atom_or_list(term3);
-	char *src = VAL_S(term1);
-	int len = LEN(term1);
-
-	if (!len)
-		return 0;
-
-	lexer l;
-	lexer_init(&l, q->pl);
-	lexer_parse(&l, l.r, src, NULL);
-	xref_clause(&l, l.r);
-	node *term = term_first(l.r);
-	term = copy_term(q, term);
-	term_heapcheck(l.r);
-	lexer_done(&l);
-	int ok = unify_term(q, term2, term, q->curr_frame);
-	term_heapcheck(term);
-	return ok;
-}
-
 static int bif_sys_splitl_4(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -2058,8 +2005,6 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:begins", 2, bif_sys_begins_2);
 	DEFINE_BIF("sys:left", 3, bif_sys_left_3);
 	DEFINE_BIF("sys:right", 3, bif_sys_right_3);
-	DEFINE_BIF("sys:read_term_from_atom", 3, bif_sys_read_term_from_atom_3);
-	DEFINE_BIF("sys:atom_number", 2, bif_sys_atom_number_2);
 	DEFINE_BIF("sys:atom_timestamp", 2, bif_sys_atom_timestamp_2);
 	DEFINE_BIF("sys:format_rfcdate", 2, bif_sys_format_rfcdate_2);
 	DEFINE_BIF("sys:parse_rfcdate", 2, bif_sys_parse_rfcdate_2);

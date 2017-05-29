@@ -121,6 +121,10 @@ found in other Prolog implementations:
 	writeln(+S,+Term1)          - does buffered write/2 + nl/1 to stream
 	random(-Float)              - random float value >= 0.0 and <= 1.0
 	term_hash(+Term,-Int)		- 32-bit non-crypto hash
+
+	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
+
+	atom_number(+A,?V)          - convert atom to Int or Float
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
 	bignum(+Int)                - function to convert int to bignum
@@ -176,8 +180,6 @@ These are an assortment of utilities:
 	left(+Atom,?Len,?Sub)       - len and/or Sub must be instantiated
 	right(+Atom,?Len,?Sub)      - len and/or Sub must be instantiated
 	replace(+Atom,+S1,+S2,-Atom) - replace every occurrance of S1 with S2
-	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
-	atom_number(+A,?V)          - convert atom to Int or Float
 
 	atom_timestamp(+A,-Usecs)   - atom is YYYY-MM-DD!HH:MM:SS.SSS
 								   (Note: the actual separators can be
