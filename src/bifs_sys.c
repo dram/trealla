@@ -1419,12 +1419,19 @@ static int bif_sys_term_hash_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
-	size_t max_len = PRINTBUF_SIZE;
-	char *tmpbuf = (char *)malloc(max_len + 1);
-	char *dst = tmpbuf;
-	term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);	
-	put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(tmpbuf));
-	free(tmpbuf);
+	
+	if (is_atom(term1) && !is_blob(term1)) {
+		put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(VAL_S(term1)));
+	}
+	else {
+		size_t max_len = PRINTBUF_SIZE;
+		char *tmpbuf = (char *)malloc(max_len + 1);
+		char *dst = tmpbuf;
+		term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);	
+		put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(tmpbuf));
+		free(tmpbuf);
+	}
+	
 	return 1;
 }
 
