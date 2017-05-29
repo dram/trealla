@@ -1591,10 +1591,10 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta(sys_record(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
 	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz(sys_record(K,V),R).");
-	trealla_make_rule(pl, "recorded(K,V,R) :- nonvar(K), clause(sys_record(K,V),_).");
+	trealla_make_rule(pl, "recorded(K,V,R) :- nonvar(K), clause(sys_record(K,V),_,R).");
 	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
 	trealla_make_rule(pl, "current_key(K) :- var(K), sys_record(K,_).");
-	//trealla_make_rule(pl, "instance(R,V) :- nonvar(R),clause(sys_record(_,V),_).");
+	trealla_make_rule(pl, "instance(R,V) :- nonvar(R),clause(sys_record(_,V),_,R).");
 #endif
 
 	return pl;
