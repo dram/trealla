@@ -1414,12 +1414,17 @@ static uint32_t jenkins_one_at_a_time_hash(char *key)
 	return hash;
 }
 
-static int bif_sys_hash_2(tpl_query *q)
+static int bif_sys_term_hash_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
+	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
-	put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(VAL_S(term1)));
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
+	term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);	
+	put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(tmpbuf));
+	free(tmpbuf);
 	return 1;
 }
 
@@ -2071,7 +2076,7 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:sha512", 2, bif_sys_sha512_2);
 #endif
 
-	DEFINE_BIF("sys:hash", 2, bif_sys_hash_2);
+	DEFINE_BIF("sys:term_hash", 2, bif_sys_term_hash_2);
 	DEFINE_BIF("sys:bread", 3, bif_sys_bread_3);
 	DEFINE_BIF("sys:bwrite", 2, bif_sys_bwrite_2);
 	DEFINE_BIF("sys:munge", 2, bif_sys_munge_2);

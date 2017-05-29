@@ -167,7 +167,7 @@ These are an assortment of utilities:
 	sha1(+Atom,-Atom)           - SHA-1 (128-bit) hash     (NEW USE DEPRECATED)
 	sha256(+Atom,-Atom)         - SHA-256 (256-bit) hash
 	sha512(+Atom,-Atom)         - SHA-512 (512-bit) hash
-	hash(+Atom,-Int)			- 32-bit non-crypto hash
+	term_hash(+Term,-Int)		- 32-bit non-crypto hash
 	url_encode(+Atom,-Atom)
 	url_decode(+Atom,-Atom)
 	b64_encode(+Atom,-Atom)     - Base64 encode
