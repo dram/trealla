@@ -5978,11 +5978,17 @@ static int bif_xtra_atom_number(tpl_query *q)
 	parse_number(src, &v, &numeric);
 	node *n;
 
-	if (numeric >= NUM_INT)
+	if (numeric == NUM_REAL)
+		n = make_float(strtod(src, NULL));
+#if USE_SSL
+	else if (numeric == NUM_BIGNUM)
+		n = make_bignum(src);
+#endif
+	else if (numeric == NUM_INT)
 		n = make_quick_int(v);
 	else
-		n = make_float(strtod(VAL_S(term1), NULL));
-
+		return 0;
+		
 	if (numeric == NUM_HEX)
 		n->flags |= FLAG_HEX;
 	else if (numeric == NUM_OCTAL)

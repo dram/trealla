@@ -144,6 +144,10 @@ extern node *make_var(tpl_query *q);
 extern node *make_tuple(void);
 extern node *make_quick_int(nbr_t v);
 
+#if USE_SSL
+extern node *make_bignum(const char *s);
+#endif
+
 inline static void put_env(tpl_query *q, unsigned point, node *term, signed frame)
 {
 	env *e = &q->envs[point];
