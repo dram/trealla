@@ -1577,7 +1577,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "select(X,[X|T],T).");
 	trealla_make_rule(pl, "select(X,[H|T],[H|Rest]) :- select(X,T,Rest).");
 	trealla_make_rule(pl, "efface([],L,L) :- !.");
-	trealla_make_rule(pl, "efface([H|T],L,L2) :- selectall(H,L,L1),efface(T,L1,L2).");
+	trealla_make_rule(pl, "efface([H|T],L,L2) :- selectall(H,L,L1), efface(T,L1,L2).");
 	trealla_make_rule(pl, "revzap([],L,L) :- !.");
 	trealla_make_rule(pl, "revzap([X|L],L2,L3) :- revzap(L,[X|L2],L3).");
 	trealla_make_rule(pl, "reverse(L1,L2) :- revzap(L1,[],L2).");
@@ -1585,7 +1585,16 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "append([H|T],L2,[H|L3]) :- append(T,L2,L3).");
 	trealla_make_rule(pl, "find(N,[],X) :- !.");
 	trealla_make_rule(pl, "find(1,[H|_],H) :- !.");
-	trealla_make_rule(pl, "find(N,[_|T],X) :- N1 is N-1,find(N1,T,X).");
+	trealla_make_rule(pl, "find(N,[_|T],X) :- N1 is N-1, find(N1,T,X).");
+
+	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
+	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta(sys_record(K,V),R).");
+	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
+	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz(sys_record(K,V),R).");
+	trealla_make_rule(pl, "recorded(K,V,R) :- nonvar(K), clause(sys_record(K,V),_).");
+	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
+	trealla_make_rule(pl, "current_key(K) :- var(K), sys_record(K,_).");
+	//trealla_make_rule(pl, "instance(R,V) :- nonvar(R),clause(sys_record(_,V),_).");
 #endif
 
 	return pl;

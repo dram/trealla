@@ -6302,6 +6302,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("import", 1, bif_xtra_use_module);
 	DEFINE_BIF("retractw", 1, bif_xtra_retractw);
 	DEFINE_BIF("clausew", 2, bif_xtra_clausew);
+	DEFINE_BIF("clause", 3, bif_iso_clause);
 	DEFINE_BIF("listing_canonical", 0, bif_xtra_listing_canonical);
 	DEFINE_BIF("listing_canonical", 1, bif_xtra_listing_canonical);
 	DEFINE_BIF("term_to_blob", 2, bif_xtra_term_to_blob);
