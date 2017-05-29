@@ -1449,7 +1449,11 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 	*value = 0;
 	*numeric = NUM_INT;
 	int exp = 0;
+
+#if USE_SSL
 	const char *save_s = s;
+#endif
+
 	char ch = *s;
 
 	do {

@@ -5930,6 +5930,43 @@ static int bif_xtra_random(tpl_query *q)
 	return 1;
 }
 
+static uint32_t jenkins_one_at_a_time_hash(char *key)
+{
+	uint32_t hash = 0;
+
+	while (*key != 0) {
+		hash += *key++;
+		hash += (hash << 10);
+		hash ^= (hash >> 6);
+	}
+
+	hash += (hash << 3);
+	hash ^= (hash >> 11);
+	hash += (hash << 15);
+	return hash;
+}
+
+static int bif_xtra_term_hash(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	node *term2 = get_var(term2);
+	
+	if (is_atom(term1) && !is_blob(term1)) {
+		put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(VAL_S(term1)));
+	}
+	else {
+		size_t max_len = PRINTBUF_SIZE;
+		char *tmpbuf = (char *)malloc(max_len + 1);
+		char *dst = tmpbuf;
+		term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);	
+		put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(tmpbuf));
+		free(tmpbuf);
+	}
+	
+	return 1;
+}
+
 int bif_xtra_enter(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6244,6 +6281,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("assertz", 2, bif_xtra_assertz);
 	DEFINE_BIF("erase", 1, bif_xtra_erase);
 	DEFINE_BIF("random", 1, bif_xtra_random);
+	DEFINE_BIF("term_hash", 2, bif_xtra_term_hash);
 	DEFINE_BIF("trace", 0, bif_xtra_trace);
 
 #if USE_SSL

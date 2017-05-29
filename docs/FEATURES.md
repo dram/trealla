@@ -120,6 +120,7 @@ found in other Prolog implementations:
 	writeln(+Term1)             - does buffered write/1 + nl/0 to stdout
 	writeln(+S,+Term1)          - does buffered write/2 + nl/1 to stream
 	random(-Float)              - random float value >= 0.0 and <= 1.0
+	term_hash(+Term,-Int)		- 32-bit non-crypto hash
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
 	bignum(+Int)                - function to convert int to bignum
@@ -167,7 +168,6 @@ These are an assortment of utilities:
 	sha1(+Atom,-Atom)           - SHA-1 (128-bit) hash     (NEW USE DEPRECATED)
 	sha256(+Atom,-Atom)         - SHA-256 (256-bit) hash
 	sha512(+Atom,-Atom)         - SHA-512 (512-bit) hash
-	term_hash(+Term,-Int)		- 32-bit non-crypto hash
 	url_encode(+Atom,-Atom)
 	url_decode(+Atom,-Atom)
 	b64_encode(+Atom,-Atom)     - Base64 encode
