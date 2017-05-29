@@ -2934,10 +2934,16 @@ static int bif_clause(tpl_query *q, int wait)
 	node *term1 = get_callable(term1);
 	unsigned context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
+	node *term3 = get_next_arg(q, &args);
 	node *save_match = q->curr_match;
 	node *head = NULL;
 	rule *r = NULL;
 
+	if (term3 && !is_var(term3)) {
+		QABORT(ABORT_INVALIDARGNOTVAR);
+		return 0;
+	}
+	
 	if (!q->retry) {
 		const char *functor;
 		int arity = 0;
@@ -3064,6 +3070,9 @@ static int bif_clause(tpl_query *q, int wait)
 
 	try_me_nofollow(q);
 
+	if (term3)
+		put_ptr(q, q->curr_frame + term3->slot, q->curr_match);
+	
 	if (!term2)
 		return 1;
 
