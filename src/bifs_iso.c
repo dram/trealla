@@ -2939,11 +2939,6 @@ static int bif_clause(tpl_query *q, int wait)
 	node *head = NULL;
 	rule *r = NULL;
 
-	if (term3 && !is_var(term3)) {
-		QABORT(ABORT_INVALIDARGNOTVAR);
-		return 0;
-	}
-	
 	if (!q->retry) {
 		const char *functor;
 		int arity = 0;
@@ -3037,6 +3032,15 @@ static int bif_clause(tpl_query *q, int wait)
 			continue;
 		}
 
+		if (term3 && is_ptr(term3) && (term3->val_ptr != q->curr_match)) {
+			if (save_head)
+				term_heapcheck(save_head);
+
+			reallocate_frame(q);
+			q->curr_match = term_next(q->curr_match);
+			continue;
+		}
+		
 		if (save_head)
 			term_heapcheck(save_head);
 
@@ -3070,7 +3074,7 @@ static int bif_clause(tpl_query *q, int wait)
 
 	try_me_nofollow(q);
 
-	if (term3)
+	if (term3 && is_var(term3))
 		put_ptr(q, q->curr_frame + term3->slot, q->curr_match);
 	
 	if (!term2)
