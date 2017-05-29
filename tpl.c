@@ -160,7 +160,9 @@ int main(int ac, char *av[])
 #endif
 
 	for (int i = 1; i < ac; i++) {
-		if (!strcmp(av[i], "-d") || !strcmp(av[i], "--daemon"))
+		if (!strcmp(av[i], "--"))
+			break;
+		else if (!strcmp(av[i], "-d") || !strcmp(av[i], "--daemon"))
 			daemon = 1;
 #ifndef ISO_ONLY
 		else if (!strcmp(av[i], "--startapp"))
@@ -201,7 +203,9 @@ int main(int ac, char *av[])
 	trealla_optimize(pl, 3);
 
 	for (int i = 1; i < ac; i++) {
-		if (!strcmp(av[i], "--trace"))
+		if (!strcmp(av[i], "--"))
+			break;
+		else if (!strcmp(av[i], "--trace"))
 			trace = 1;
 		else if (!strcmp(av[i], "--swi7"))
 			g_list_cons = "[|]";
@@ -255,7 +259,9 @@ int main(int ac, char *av[])
 	srand(time(NULL));
 
 	for (int i = 1; i < ac; i++) {
-		if (!get && !install && !appget) {
+		if (!strcmp(av[i], "--"))
+			break;
+		else if (!get && !install && !appget) {
 			if (!strcmp(av[i], "appget"))
 				appget = 1;
 			else if (!strcmp(av[i], "get"))
@@ -352,7 +358,9 @@ int main(int ac, char *av[])
 	int error = 0;
 
 	for (int i = 1; i < ac; i++) {
-		if ((av[i][0] != '-') && !get) {
+		if (!strcmp(av[i], "--"))
+			break;
+		else if ((av[i][0] != '-') && !get) {
 			if (!trealla_consult_file(pl, av[i])) {
 				error = 1;
 				break;
