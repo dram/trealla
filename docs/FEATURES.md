@@ -128,6 +128,7 @@ and for accessing the rule database:
 	asserta(+Clause,-Ref)
 	assertz(+Clause,-Ref)
 	erase(+Ref)	
+	clause(?Head,?Body,?Ref) 
 	abolish(+Name,+Arity)      
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
