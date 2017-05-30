@@ -107,19 +107,22 @@ check_method(S,Log,Ver,'POST',Path,FullPath) :-
 	http:www_form(S),
 	process_post(S,Log,Ver,Path,FullPath).
 
+check_method(S,Log,Ver,'POST',Path,FullPath) :-
+	error_message(S,Log,501,'NOT IMPLEMENTED').
+
 check_method(S,Log,Ver,'PUT',Path,FullPath) :-
 	authorize(S,Log,Path), !,
 	process_put(S,Log,Ver,Path,FullPath).
 
 check_method(S,Log,Ver,'PUT',Path,FullPath) :-
-	fail.
+	error_message(S,Log,501,'NOT IMPLEMENTED').
 
 check_method(S,Log,Ver,'DELETE',Path,FullPath) :-
 	authorize(S,Log,Path), !,
 	process_delete(S,Log,Ver,Path,FullPath).
 
 check_method(S,Log,Ver,'DELETE',Path,FullPath) :-
-	fail.
+	error_message(S,Log,501,'NOT IMPLEMENTED').
 
 check_method(S,Log,Ver,Cmd,Path,FullPath) :-
 	error_message(S,Log,501,'NOT IMPLEMENTED').

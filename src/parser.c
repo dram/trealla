@@ -747,8 +747,9 @@ static int dir_define(lexer *l, node *n)
 	if (!is_atomic(term2))
 		return 0;
 
-	char tmpbuf[KEY_SIZE];
-	term_sprint(tmpbuf, sizeof(tmpbuf), l->pl, NULL, term2, 1);
+	char tmpbuf[KEY_SIZE+10];
+	char *dst = tmpbuf;
+	dst += term_sprint(dst, sizeof(tmpbuf), l->pl, NULL, term2, 1);
 	add_define(l, VAL_S(term1), tmpbuf);
 	return 1;
 }
@@ -1815,6 +1816,7 @@ LOOP:
 		if (value != NULL) {
 			free(l->tok);
 			get_token(l, value, line);
+			l->quoted = 1;
 			return s;
 		}
 
