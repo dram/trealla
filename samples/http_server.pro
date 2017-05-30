@@ -60,9 +60,6 @@ process_request(S,Log,Root,Ver,Cmd,Path) :-
 	concat(Root,'/',Host,?DirFiles,Path,Path2),
 	check_method(S,Log,Ver,Cmd,Path,Path2).
 
-process_request(S,Log,Root,Ver,Cmd,Path) :-
-	error_message(S,Log,505,'HTTP VERSION NOT SUPPORTED').
-
 security(S,Log,Path) :-
 	tls(S,false),
 	?PreferHttps = true, !,
@@ -115,14 +112,14 @@ check_method(S,Log,Ver,'PUT',Path,FullPath) :-
 	process_put(S,Log,Ver,Path,FullPath).
 
 check_method(S,Log,Ver,'PUT',Path,FullPath) :-
-	true.
+	fail.
 
 check_method(S,Log,Ver,'DELETE',Path,FullPath) :-
 	authorize(S,Log,Path), !,
 	process_delete(S,Log,Ver,Path,FullPath).
 
 check_method(S,Log,Ver,'DELETE',Path,FullPath) :-
-	true.
+	fail.
 
 check_method(S,Log,Ver,Cmd,Path,FullPath) :-
 	error_message(S,Log,501,'NOT IMPLEMENTED').
