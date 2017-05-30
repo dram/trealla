@@ -52,6 +52,7 @@ start_server(Bind,Root) :-
 	repeat,
 		http:parse(S,Ver,Cmd,Path),
 		process_request(S,Log,Root,Ver,Cmd,Path),
+		!,
 		at_end_of_stream(S).
 
 process_request(S,Log,Root,Ver,Cmd,Path) :-
