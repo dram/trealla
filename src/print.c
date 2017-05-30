@@ -50,14 +50,14 @@ char *deescape(char *dst, const char *src, char quote)
 	return save;
 }
 
-static size_t _sprint_int(char *dst, size_t size, nbr_t n)
+static size_t _sprint_int(char *dst, size_t size, nbr_t n, int base)
 {
 	const char *save_dst = dst;
+	
+	if ((n / base) > 0)
+		dst += _sprint_int(dst, size, n / base, base);
 
-	if ((n / 10) > 0)
-		dst += _sprint_int(dst, size, n / 10);
-
-	int n2 = n % 10;
+	int n2 = n % base;
 	n2 += '0';
 
 	*dst++ = (char)n2;
@@ -67,7 +67,8 @@ static size_t _sprint_int(char *dst, size_t size, nbr_t n)
 size_t sprint_int(char *dst, size_t size, nbr_t n)
 {
 	const char *save_dst = dst;
-
+	const int base = 10;
+	
 	if (n < 0) {
 		*dst++ = '-';
 		n = -n;
@@ -79,7 +80,7 @@ size_t sprint_int(char *dst, size_t size, nbr_t n)
 		return dst - save_dst;
 	}
 
-	dst += _sprint_int(dst, size, n);
+	dst += _sprint_int(dst, size, n, base);
 	*dst = '\0';
 	return dst - save_dst;
 }
