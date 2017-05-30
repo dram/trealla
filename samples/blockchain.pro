@@ -5,6 +5,7 @@
 
 % Manage a cryptographic chain of data blocks.
 % Each 'key' designates an independent chain.
+% There is no 'proof of work' included.
 
 :-dynamic(block/6,[storage]).
 
@@ -21,11 +22,14 @@ verify(Key) :-
 		LastIdx is Idx - 1,
 		once(block(Key,LastIdx,LastTs,LastData,LastHash,LastPrevHash)),
 		sys:concat(Key,LastIdx,LastPrevHash,LastTs,LastData,Tmp),
-		sys:sha256(Tmp,VerifyHash),
-		( PrevHash = VerifyHash -> writeln('OK') ; writeln('*** ERROR ***') ),
+		sys:sha256(Tmp,VerifyHash), 
+		( 
+			PrevHash = VerifyHash -> 
+				writeln('.') ; 
+				writeln('*** ERROR ***') 
+		),
 		fail.
-verify(Key) :-
-	true.
+verify(Key).
 
 % Return latest data...
 
@@ -75,7 +79,7 @@ store_block(Key,Idx,Ts,Data,Hash) :-
 	nonvar(Data),
 	dbs:begin,
 	get_block(Key,LastIdx,_,_,LastHash,_),
-	Idx is LastIdx + 1,                                   % Verify
+	Idx is LastIdx + 1,                                       % Verify
 	term_to_blob(Data,Blob),
 	sys:concat(Key,Idx,LastHash,Ts,Blob,Tmp),
 	sys:sha256(Tmp,VerifyHash),
@@ -85,7 +89,8 @@ store_block(Key,Idx,Ts,Data,Hash) :-
 
 get_block(Key,Idx,Ts,Data,Hash,PrevHash) :-
 	nonvar(Key),
-	block(Key,Idx,Ts,Data,Hash,PrevHash), !.
+	block(Key,Idx,Ts,Data,Hash,PrevHash), 
+	!.
 get_block(Key,Idx,Ts,Data,Hash,PrevHash) :-
 	nonvar(Key),
 	Idx = -1,
