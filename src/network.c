@@ -105,7 +105,9 @@
 #endif
 
 //#define DEFAULT_CIPHERS "HIGH:!aNULL"
+#define DEFAULT_CIPHERS "EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256"
 
+/*
 #define DEFAULT_CIPHERS \
 	"ECDHE-ECDSA-AES128-GCM-SHA256:" \
 	"ECDHE-ECDSA-AES256-GCM-SHA384:" \
@@ -125,6 +127,7 @@
 	"DHE-RSA-AES256-SHA:" \
 	"DHE-RSA-AES128-SHA256:" \
 	"DHE-RSA-AES256-SHA256"
+*/
 	
 static const int g_debug = 0;
 extern volatile int g_abort;
