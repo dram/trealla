@@ -80,8 +80,6 @@ Usage
 	-q             - quiet mode (no banner)
 	-v             - verbose mode (show execution time)
 
-	--start        - same as '-g start'
-	--test         - same as '-g test'
 	--stats        - print statistics of query (debug build only)
 	--trace        - trace step-by-step of execution
 	--tpool=N      - thread-pool size (default is 4)
