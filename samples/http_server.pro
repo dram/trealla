@@ -209,7 +209,7 @@ log_message(S,Log,Status,Len) :-
 	stash_get(S,'SERVER_NAME',Host,''),
 	concat('"',Date,'","',Addr,'","HTTP/',Ver,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"\n',Msg),
 	write(Log,Msg),
-	flush_output(Log),
+	%flush_output(Log),
 	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> close(S); true).
