@@ -1403,12 +1403,9 @@ static int bif_iso_read(tpl_query *q)
 static int bif_iso_flush_output_1(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_file(term1);
 	stream *sp = term1->val_str;
-
-	if (is_file(term1))
-		fflush(sp->fptr);
-
+	fflush(sp->fptr);
 	return 1;
 }
 
