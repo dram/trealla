@@ -173,6 +173,23 @@ static nbr_t dec_to_int(const char *src)
 	return neg ? -v : v;
 }
 
+static nbr_t dec_to_uint(const char *src)
+{
+	unbr_t v = 0;
+
+	if (*src == '-') {
+		src++;
+	}
+
+	while (isdigit(*src)) {
+		v *= 10;
+		v += *src - '0';
+		src++;
+	}
+
+	return v;
+}
+
 node *term_make(void)
 {
 	node *n = calloc(1, sizeof(node));
@@ -188,6 +205,13 @@ node *term_make(void)
 	return n;
 }
 
+static node *make_uint(unbr_t v)
+{
+	node *n = term_make();
+	n->flags |= TYPE_INTEGER;
+	n->val_u = v;
+	return n;
+}
 node *make_int(nbr_t v)
 {
 	node *n = term_make();
@@ -1404,7 +1428,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 		}
 
 		*numeric = NUM_BINARY;
-		*value = v;
+		*(unbr_t *)value = v;
 		return s;
 	}
 
@@ -1420,7 +1444,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 		}
 
 		*numeric = NUM_OCTAL;
-		*value = v;
+		*(unbr_t *)value = v;
 		return s;
 	}
 
@@ -1441,7 +1465,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 		}
 
 		*numeric = NUM_HEX;
-		*value = v;
+		*(unbr_t *)value = v;
 		return s;
 	}
 
@@ -1719,7 +1743,12 @@ LOOP:
 
 			if (l->numeric >= NUM_INT) {
 				t.dst = t.buf = (char *)realloc(t.buf, (t.maxlen = 255) + 1);
-				t.dst += sprint_int(t.buf, t.maxlen, v, 10);
+				
+				if (l->numeric > NUM_INT)
+					t.dst += sprint_uint(t.buf, t.maxlen, (unbr_t)v, 10);
+				else
+					t.dst += sprint_int(t.buf, t.maxlen, v);
+
 				break;
 			} else {
 				const char *src = save_s;
@@ -2206,7 +2235,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		}
 #endif
 		else if (self->numeric >= NUM_INT) {
-			n = make_int(dec_to_int(self->tok));
+			if (self->numeric > NUM_INT)
+				n = make_uint(dec_to_uint(self->tok));
+			else
+				n = make_int(dec_to_int(self->tok));
 
 			if (self->numeric == NUM_BINARY)
 				n->flags |= FLAG_BINARY;

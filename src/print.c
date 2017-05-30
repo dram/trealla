@@ -50,12 +50,46 @@ char *deescape(char *dst, const char *src, char quote)
 	return save;
 }
 
-static size_t _sprint_int(char *dst, size_t size, nbr_t n, int base)
+static size_t _sprint_int(char *dst, size_t size, nbr_t n)
+{
+	const char *save_dst = dst;
+
+	if ((n / 10) > 0)
+		dst += _sprint_int(dst, size, n / 10);
+
+	int n2 = n % 10;
+	n2 += '0';
+
+	*dst++ = (char)n2;
+	return dst - save_dst;
+}
+
+size_t sprint_int(char *dst, size_t size, nbr_t n)
+{
+	const char *save_dst = dst;
+
+	if (n < 0) {
+		*dst++ = '-';
+		n = -n;
+	}
+
+	if (n == 0) {
+		*dst++ = '0';
+		*dst = '\0';
+		return dst - save_dst;
+	}
+
+	dst += _sprint_int(dst, size, n);
+	*dst = '\0';
+	return dst - save_dst;
+}
+
+static size_t _sprint_uint(char *dst, size_t size, unbr_t n, int base)
 {
 	const char *save_dst = dst;
 
 	if ((n / base) > 0)
-		dst += _sprint_int(dst, size, n / base, base);
+		dst += _sprint_uint(dst, size, n / base, base);
 
 	int n2 = n % base;
 
@@ -72,7 +106,7 @@ static size_t _sprint_int(char *dst, size_t size, nbr_t n, int base)
 	return dst - save_dst;
 }
 
-size_t sprint_int(char *dst, size_t size, nbr_t n, int base)
+size_t sprint_uint(char *dst, size_t size, unbr_t n, int base)
 {
 	const char *save_dst = dst;
 
@@ -88,10 +122,6 @@ size_t sprint_int(char *dst, size_t size, nbr_t n, int base)
 		*dst++ = '0';
 		*dst++ = 'b';
 	}
-	else if (n < 0) {
-		*dst++ = '-';
-		n = -n;
-	}
 
 	if (n == 0) {
 		*dst++ = '0';
@@ -99,7 +129,7 @@ size_t sprint_int(char *dst, size_t size, nbr_t n, int base)
 		return dst - save_dst;
 	}
 
-	dst += _sprint_int(dst, size, n, base);
+	dst += _sprint_uint(dst, size, n, base);
 	*dst = '\0';
 	return dst - save_dst;
 }
@@ -351,7 +381,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += sprint2_compound(++depth, dstbuf, bufsize, &dst, pl, q, n, listing);
 	else if (is_ptr(n) && listing) {
 		*dst++ = '@';
-		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);
+		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);
 	}
 #if USE_SSL
 	else if (is_bignum(n) && listing) {
@@ -402,13 +432,13 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	}
 #endif
 	else if (is_integer(n) && (n->flags & FLAG_BINARY) && listing)
-		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_u, 2);
+		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 2);
 	else if (is_integer(n) && (n->flags & FLAG_OCTAL) && listing)
-		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_u, 8);
+		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 8);
 	else if (is_integer(n) && (n->flags & FLAG_HEX) && listing)
-		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_u, 16);
+		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 16);
 	else if (is_integer(n))
-		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);
+		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i);
 	else if (is_float(n)) {
 		const char *save_dst = dst;
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%.*g", DBL_DIG, (double)n->val_f);
