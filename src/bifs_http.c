@@ -316,6 +316,11 @@ static int bif_http_parse_4(tpl_query *q)
 	stream *sp = term1->val_str;
 	char *bufptr = NULL;
 
+	if (!sp->sptr) {
+		q->is_yielded = 1;
+		return 0;
+	}
+
 	if (session_on_disconnect((session *)sp->sptr)) {
 		q->is_yielded = 1;
 		return 0;
