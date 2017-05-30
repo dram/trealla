@@ -52,7 +52,7 @@ start_server(Bind,Root) :-
 	repeat,
 		http:parse(S,Ver,Cmd,Path),
 		process_request(S,Log,Root,Ver,Cmd,Path),
-		fail.
+		at_end_of_stream(S).
 
 process_request(S,Log,Root,Ver,Cmd,Path) :-
 	security(S,Log,Path),
@@ -73,8 +73,7 @@ security(S,Log,Path) :-
 	concat(Msg1,'Location: https://',Host,Path,'\r\n',Msg2),
 	concat(Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n',Msg),
 	write(S,Msg),
-	log_message(S,Log,Code,0),
-	fail.                          % NOTE
+	log_message(S,Log,Code,0).
 
 security(S,Log,Path).
 
@@ -93,8 +92,7 @@ authorize(S,Log,Path) :-
 	concat(Msg1,'WWW-Authenticate: Basic realm="',Host,'"\r\n',Msg2),
 	concat(Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n',Msg),
 	write(S,Msg),
-	log_message(S,Log,Code,0),
-	fail.                          % NOTE
+	log_message(S,Log,Code,0).
 
 check_method(S,Log,Ver,Cmd,Path,FullPath) :-
 	member(Cmd,['GET','HEAD']), !,
@@ -167,8 +165,7 @@ process_file(S,Ver,Lmod,Len,'HEAD',FullPath) :- !,
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	concat('HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Length: ',Len,'\r\n\r\n',Msg),
-	write(S,Msg),
-	true.
+	write(S,Msg).
 
 process_file(S,Ver,Lmod,Len,'GET',FullPath) :- !,
 	stash_get(S,'Connection',Conn,'keep-alive'),
@@ -195,8 +192,7 @@ error_message(S,Log,Code,ErrMsg) :-
 	stash_set(S,'Connection',_,'close'),
 	concat('HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
 	write(S,Msg),
-	log_message(S,Log,Code,0),
-	fail.                          % NOTE
+	log_message(S,Log,Code,0).
 
 log_message(S,Log,Status,Len) :-
 	now(Now),
