@@ -943,17 +943,13 @@ static int bif_iso_close(tpl_query *q)
 	stream *sp = term1->val_str;
 
 #ifndef ISO_ONLY
-	if (is_socket(term1)) {
-		session *sptr = (session *)sp->sptr;
-
-		if (session_is_client((session *)sp->sptr))
-			sp->sptr = NULL;
-
-		session_close((session *)sptr);
+	if (is_socket(term1) && sp->sptr) {
+		session_close((session *)sp->sptr);
+		sp->sptr = NULL;
 	}
 	else
 #endif
-	if (is_file(term1))
+	if (is_file(term1) && sp->fptr)
 	{
 	    if (sp->fptr) {
 			fclose(sp->fptr);
