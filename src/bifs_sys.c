@@ -370,15 +370,9 @@ static int bif_sys_concat_N(tpl_query *q)
 			var = term;
 		else if (is_atomic(term))
 			dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term, 0);
-		else {
-			free(tmpbuf);
-			return 0;
-		}
 
 		term = get_next_arg(q, &args);
 	}
-
-	*dst = '\0';
 
 	if (!var) {
 		free(tmpbuf);
