@@ -942,26 +942,21 @@ static int bif_iso_close(tpl_query *q)
 	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 #ifndef ISO_ONLY
 	if (is_socket(term1)) {
+		term1->flags &= ~FLAG_SOCKET;
 		session_close((session *)sp->sptr);
-		sp->sptr = NULL;
 	}
 	else
 #endif
-	if (is_file(term1))
-	{
-	    if (sp->fptr) {
-			fclose(sp->fptr);
-			sp->fptr = NULL;
-		}
+	if (is_file(term1)) {
+		term1->flags &= ~FLAG_FILE;
+		fclose(sp->fptr);
 	}
 
+	term1->flags &= ~FLAG_STREAM;
+	free(term1->val_str);
+	term1->val_str = NULL;
 	return 1;
 }
 
@@ -971,13 +966,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_atom_or_list(term3);
-	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
+	stream *sp = term1->val_str;	
 	int quoted = 0, nl = 0, fs = 0;
 
 	if (is_atom(term2)) {
@@ -1095,12 +1084,6 @@ static int bif_iso_write_canonical_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
@@ -1142,12 +1125,6 @@ static int bif_iso_writeq_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
@@ -1189,12 +1166,6 @@ static int bif_iso_write_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	char *tmpbuf;
 	size_t len;
 
@@ -1265,12 +1236,6 @@ static int bif_iso_nl_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	int ok;
 
 #ifndef ISO_ONLY
@@ -1295,12 +1260,6 @@ static int bif_iso_read_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	char *line = NULL;
 	node *term = NULL;
 
@@ -1441,12 +1400,6 @@ static int bif_iso_flush_output_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_file(term1);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	fflush(sp->fptr);
 	return 1;
 }
@@ -1463,11 +1416,6 @@ static int bif_iso_at_end_of_stream_1(tpl_query *q)
 	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 #ifndef ISO_ONLY
 	if (is_socket(term1) && sp->sptr)
 		return session_on_disconnect((session *)sp->sptr);
@@ -1490,12 +1438,6 @@ static int bif_iso_set_stream_position(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	return !fseeko(sp->fptr, term2->val_i, SEEK_SET);
 }
 
@@ -1557,12 +1499,6 @@ static int bif_iso_put_char_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	const char *src = VAL_S(term2);
 	int ch = get_char_utf8(&src);
 	char tmpbuf[20];
@@ -1593,12 +1529,6 @@ static int bif_iso_put_byte_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	int ok;
 
 #ifndef ISO_ONLY
@@ -1627,12 +1557,6 @@ static int bif_iso_put_code_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	char tmpbuf[20];
 	int len = put_char_utf8(tmpbuf, term2->val_i);
 	int ok;
@@ -1677,12 +1601,6 @@ static int bif_iso_get_code_2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_int_or_var(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	int ch = getc_utf8(sp->fptr);
 
 	if (ch == EOF)
@@ -1724,12 +1642,6 @@ static int bif_iso_get_byte_2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_atom_or_var(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	int ch = fgetc(sp->fptr);
 
 	if (ch == EOF)
@@ -1774,12 +1686,6 @@ static int bif_iso_get_char_2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_atom_or_var(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	int ch = getc_utf8(sp->fptr);
 
 	if (ch == EOF)
@@ -1809,12 +1715,6 @@ static int bif_iso_peek_code_2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_int_or_var(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	int ch = fgetc(sp->fptr);
 
 	if (ch == EOF)
@@ -1879,12 +1779,6 @@ static int bif_iso_peek_char_2(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_atom_or_var(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	int ch = getc_utf8(sp->fptr);
 
 	if (ch == EOF)
@@ -6181,12 +6075,6 @@ static int bif_xtra_writeln_2(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
-	
-	if (!sp->fptr && !sp->sptr) {
-		QABORT(ABORT_INVALIDARGNOTSTREAM);
-		return 0;
-	}
-	
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;

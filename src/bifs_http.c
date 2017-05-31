@@ -309,14 +309,14 @@ static void parse_header(session *s, char *bufptr, int len)
 static int bif_http_parse_4(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_socket(term1);
+	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
 	node *term3 = get_var(term3);
 	node *term4 = get_var(term4);
 	stream *sp = term1->val_str;
 	char *bufptr = NULL;
 
-	if (!sp->sptr)
+	if (!is_socket(term1))
 		return 0;
 
 	if (session_on_disconnect((session *)sp->sptr)) {
@@ -1542,12 +1542,12 @@ static int bif_ws_upgrade_2(tpl_query *q)
 static int bif_ws_parse_3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_socket(term1);
+	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
 	node *term3 = get_var(term3);
 	stream *sp = term1->val_str;
 
-	if (!sp->sptr)
+	if (!is_socket(term1))
 		return 0;
 
 	if (session_on_disconnect((session *)sp->sptr)) {
@@ -1701,12 +1701,12 @@ static int bif_h2_msg_3(tpl_query *q)
 static int bif_h2_parse_3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_socket(term1);
+	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
 	node *term3 = get_var(term3);
 	stream *sp = term1->val_str;
 
-	if (!sp->sptr)
+	if (!is_socket(term1))
 		return 0;
 
 	if (session_on_disconnect((session *)sp->sptr))
@@ -1795,13 +1795,13 @@ static char *stomp_deescape(const char *path, char *path2)
 static int bif_stomp_parse_3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_socket(term1);
+	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
 	node *term3 = get_var(term3);
 	stream *sp = term1->val_str;
 	char *bufptr = NULL;
 
-	if (!sp->sptr)
+	if (!is_socket(term1))
 		return 0;
 
 	if (session_on_disconnect((session *)sp->sptr)) {
