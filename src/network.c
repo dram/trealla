@@ -1453,15 +1453,17 @@ static int kqueue_run(void *data)
 	while (s->f(s, s->v))
 		;
 
-	if (s->blocked) {
-		EV_SET(&ev, s->fd, EVFILT_WRITE, EV_ADD | EV_CLEAR | EV_DISPATCH, 0, 0, s);
-		s->blocked = 0;
+	if (!s->disconnected) {
+		if (s->blocked) {
+			EV_SET(&ev, s->fd, EVFILT_WRITE, EV_ADD | EV_CLEAR | EV_DISPATCH, 0, 0, s);
+			s->blocked = 0;
+		}
+		else
+			EV_SET(&ev, s->fd, EVFILT_READ, EV_ADD | EV_CLEAR | EV_DISPATCH, 0, 0, s);
+
+		kevent(s->h->fd, &ev, 1, NULL, 0, NULL);
 	}
-	else
-		EV_SET(&ev, s->fd, EVFILT_READ, EV_ADD | EV_CLEAR | EV_DISPATCH, 0, 0, s);
-
-	kevent(s->h->fd, &ev, 1, NULL, 0, NULL);
-
+	
 	if (!s->is_tcp)
 		free(s);
 
@@ -1592,20 +1594,22 @@ static int epoll_run(void *data)
 	while (s->f(s, s->v))
 		;
 
-	if (s->blocked) {
-		ev.events = EPOLLOUT | EPOLLRDHUP | EPOLLONESHOT | EPOLLET;
-		s->blocked = 0;
+	if (!s->disconnected) {
+		if (s->blocked) {
+			ev.events = EPOLLOUT | EPOLLRDHUP | EPOLLONESHOT | EPOLLET;
+			s->blocked = 0;
+		}
+		else
+			ev.events = EPOLLIN | EPOLLRDHUP | EPOLLONESHOT | EPOLLET;
+
+		if (!s->is_tcp)
+			ev.data.u64 = s->hidx;
+		else
+			ev.data.ptr = s;
+
+		epoll_ctl(s->h->fd, EPOLL_CTL_MOD, s->fd, &ev);
 	}
-	else
-		ev.events = EPOLLIN | EPOLLRDHUP | EPOLLONESHOT | EPOLLET;
-
-	if (!s->is_tcp)
-		ev.data.u64 = s->hidx;
-	else
-		ev.data.ptr = s;
-
-	epoll_ctl(s->h->fd, EPOLL_CTL_MOD, s->fd, &ev);
-
+	
 	if (!s->is_tcp)
 		free(s);
 
@@ -1729,11 +1733,13 @@ static int poll_run(void *data)
 	while (s->f(s, s->v))
 		;
 
-	if (s->blocked)
-		s->h->rpollfds[s->idx].events = POLLOUT | POLLRDHUP;
-	else
-		s->h->rpollfds[s->idx].events = POLLIN | POLLRDHUP;
-
+	if (!s->disconnected) {
+		if (s->blocked)
+			s->h->rpollfds[s->idx].events = POLLOUT | POLLRDHUP;
+		else
+			s->h->rpollfds[s->idx].events = POLLIN | POLLRDHUP;
+	}
+	
 	s->h->rpollfds[s->idx].revents = 0;
 
 	if (!s->is_tcp)
@@ -1888,10 +1894,12 @@ static int select_run(void *data)
 	while (s->f(s, s->v))
 		;
 
-	handler_select_set(s->h, s->fd, s);
-	s->h->srvs[s->idx].fd = s->fd;
-	s->busy = 0;
-
+	if (!s->disconnected) {
+		handler_select_set(s->h, s->fd, s);
+		s->h->srvs[s->idx].fd = s->fd;
+		s->busy = 0;
+	}
+	
 	if (!s->is_tcp)
 		free(s);
 

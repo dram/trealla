@@ -15,7 +15,7 @@
 #include "internal.h"
 #include "jela.h"
 
-#ifdef DEBUG
+#if defined(DEBUG) && 0
 #define DEBUGPRINT if (q->trace)
 #else
 #define DEBUGPRINT if (0)

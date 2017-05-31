@@ -180,7 +180,7 @@ static int sys_write_file(tpl_query *q, node *var, node *term1, node *term2, nbr
 					free(tmpbuf);
 					fclose(fp);
 					sp2->fptr = NULL;
-					QABORT(ABORT_STREAMCLOSED);
+					//QABORT(ABORT_STREAMCLOSED);
 					return 0;
 				}
 
@@ -200,7 +200,7 @@ static int sys_write_file(tpl_query *q, node *var, node *term1, node *term2, nbr
 				free(tmpbuf);
 				fclose(fp);
 				sp2->fptr = NULL;
-				QABORT(ABORT_STREAMCLOSED);
+				//QABORT(ABORT_STREAMCLOSED);
 				return 0;
 			}
 		}
@@ -453,13 +453,13 @@ static int bif_sys_bwrite_2(tpl_query *q)
 
 	if (is_socket(term1)) {
 		if (!session_write((session *)sp->sptr, VAL_S(term2), len)) {
-			QABORT(ABORT_STREAMCLOSED);
+			//QABORT(ABORT_STREAMCLOSED);
 			return 0;
 		}
 	}
 	else {
 		if (fwrite(VAL_S(term2), 1, len, sp->fptr) == 0) {
-			QABORT(ABORT_STREAMCLOSED);
+			//QABORT(ABORT_STREAMCLOSED);
 			return 0;
 		}
 	}
