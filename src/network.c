@@ -1482,6 +1482,7 @@ static int kqueue_run(void *data)
 	else if (s->is_tcp) {
 		sb_int_del(s->h->fds, s->fd);
 		s->h->use--;
+		session_unshare(s);
 	}
 	
 	if (!s->is_tcp)
@@ -1769,6 +1770,7 @@ static int poll_run(void *data)
 	else if (s->is_tcp) {
 		sb_int_del(s->h->fds, s->fd);
 		s->h->use--;
+		session_unshare(s);
 	}
 	
 	if (!s->is_tcp)
@@ -1931,6 +1933,7 @@ static int select_run(void *data)
 	else if (s->is_tcp) {
 		sb_int_del(s->h->fds, s->fd);
 		s->h->use--;
+		session_unshare(s);
 	}
 	
 	if (!s->is_tcp)
