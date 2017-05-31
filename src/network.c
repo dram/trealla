@@ -1463,6 +1463,8 @@ static int kqueue_run(void *data)
 
 		kevent(s->h->fd, &ev, 1, NULL, 0, NULL);
 	}
+	else if (s->is_tcp)
+		sb_int_del(s->h->fds, s->fd);
 	
 	if (!s->is_tcp)
 		free(s);
@@ -1609,6 +1611,8 @@ static int epoll_run(void *data)
 
 		epoll_ctl(s->h->fd, EPOLL_CTL_MOD, s->fd, &ev);
 	}
+	else if (s->is_tcp)
+		sb_int_del(s->h->fds, s->fd);
 	
 	if (!s->is_tcp)
 		free(s);
@@ -1738,10 +1742,12 @@ static int poll_run(void *data)
 			s->h->rpollfds[s->idx].events = POLLOUT | POLLRDHUP;
 		else
 			s->h->rpollfds[s->idx].events = POLLIN | POLLRDHUP;
-	}
-	
-	s->h->rpollfds[s->idx].revents = 0;
 
+		s->h->rpollfds[s->idx].revents = 0;
+	}
+	else if (s->is_tcp)
+		sb_int_del(s->h->fds, s->fd);
+	
 	if (!s->is_tcp)
 		free(s);
 
@@ -1899,6 +1905,8 @@ static int select_run(void *data)
 		s->h->srvs[s->idx].fd = s->fd;
 		s->busy = 0;
 	}
+	else if (s->is_tcp)
+		sb_int_del(s->h->fds, s->fd);
 	
 	if (!s->is_tcp)
 		free(s);
