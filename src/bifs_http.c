@@ -316,10 +316,8 @@ static int bif_http_parse_4(tpl_query *q)
 	stream *sp = term1->val_str;
 	char *bufptr = NULL;
 
-	if (!sp->sptr) {
-		q->is_yielded = 1;
+	if (!sp->sptr)
 		return 0;
-	}
 
 	if (session_on_disconnect((session *)sp->sptr)) {
 		q->is_yielded = 1;
@@ -1549,10 +1547,8 @@ static int bif_ws_parse_3(tpl_query *q)
 	node *term3 = get_var(term3);
 	stream *sp = term1->val_str;
 
-	if (!sp->sptr) {
-		q->is_yielded = 1;
+	if (!sp->sptr)
 		return 0;
-	}
 
 	if (session_on_disconnect((session *)sp->sptr)) {
 		q->is_yielded = 1;
@@ -1710,10 +1706,8 @@ static int bif_h2_parse_3(tpl_query *q)
 	node *term3 = get_var(term3);
 	stream *sp = term1->val_str;
 
-	if (!sp->sptr) {
-		q->is_yielded = 1;
+	if (!sp->sptr)
 		return 0;
-	}
 
 	if (session_on_disconnect((session *)sp->sptr))
 		return 0;
@@ -1807,10 +1801,8 @@ static int bif_stomp_parse_3(tpl_query *q)
 	stream *sp = term1->val_str;
 	char *bufptr = NULL;
 
-	if (!sp->sptr) {
-		q->is_yielded = 1;
+	if (!sp->sptr)
 		return 0;
-	}
 
 	if (session_on_disconnect((session *)sp->sptr)) {
 		q->is_yielded = 1;

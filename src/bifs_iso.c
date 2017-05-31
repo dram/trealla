@@ -942,14 +942,19 @@ static int bif_iso_close(tpl_query *q)
 	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 
+	if (!sp->fptr && !sp->sptr) {
+		QABORT(ABORT_INVALIDARGNOTSTREAM);
+		return 0;
+	}
+	
 #ifndef ISO_ONLY
-	if (is_socket(term1) && sp->sptr) {
+	if (is_socket(term1)) {
 		session_close((session *)sp->sptr);
 		sp->sptr = NULL;
 	}
 	else
 #endif
-	if (is_file(term1) && sp->fptr)
+	if (is_file(term1))
 	{
 	    if (sp->fptr) {
 			fclose(sp->fptr);
@@ -1458,6 +1463,11 @@ static int bif_iso_at_end_of_stream_1(tpl_query *q)
 	node *term1 = get_stream(term1);
 	stream *sp = term1->val_str;
 
+	if (!sp->fptr && !sp->sptr) {
+		QABORT(ABORT_INVALIDARGNOTSTREAM);
+		return 0;
+	}
+	
 #ifndef ISO_ONLY
 	if (is_socket(term1) && sp->sptr)
 		return session_on_disconnect((session *)sp->sptr);
@@ -5696,7 +5706,16 @@ static int bif_xtra_is_stream(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	return is_stream(term1);
+	
+	if (!is_stream(term1))
+		return 0;
+
+	stream *sp = term1->val_str;
+	
+	if (!sp->fptr && !sp->sptr)
+		return 0;
+		
+	return 1;
 }
 
 static int bif_xtra_consult(tpl_query *q)
