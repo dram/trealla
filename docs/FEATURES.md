@@ -574,7 +574,6 @@ certificate(s). Default ones for testing are provided.
 
 	server(+BindList,-S)            - listen for and accept connections
 	server(+BindList,-S,+Key,+Cert) - ditto & specify KEY & CERT .pem files
-	handler(+S,:Hello,:Bye)         - on server connection handling (DEPRECATED?)
 	client(+Host,-S)                - connect to server
 	start_tls(+S)                   - enable TLS switchover
 	readmsg(+S,-Atom)               - read up thru LF from socket

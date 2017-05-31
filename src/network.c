@@ -273,6 +273,10 @@ static int parse_addr6(const char *host, struct sockaddr_in6 *addr6)
 session *session_create(void)
 {
 	session *s = (session *)calloc(1, sizeof(session));
+
+	if (g_debug)
+		printf("*** session_create %p\n", s);	
+
 	s->disconnected = 1;
 	s->fd = -1;
 	return s;
@@ -1275,6 +1279,9 @@ int session_readmsg(session *s, char **buf)
 
 int session_close(session *s)
 {
+	if (g_debug)
+		printf("*** session_close %p fd=%d\n", s, s->fd);
+	
 	if (s->fd != -1) {
 		s->disconnected = 1;
 
@@ -1294,6 +1301,9 @@ int session_close(session *s)
 
 static void session_free(session *s)
 {
+	if (g_debug)
+		printf("*** session_free %p\n", s);
+	
 	if (s->dstbuf)
 		free(s->dstbuf);
 
@@ -1321,6 +1331,9 @@ static void session_free(session *s)
 
 void session_unshare(session *s)
 {
+	if (g_debug)
+		printf("*** session_unshare %p %d\n", s, (int)s->use_cnt);
+	
 	if (--s->use_cnt > 0)
 		return;
 
@@ -1334,6 +1347,9 @@ void session_share(session *s)
 
 static int handler_force_drop(void *_h, int fd, void *_s)
 {
+	if (g_debug)
+		printf("*** force_drop %p\n", _s);
+
 	session_close((session *)_s);
 	return 1;
 }
@@ -1463,8 +1479,10 @@ static int kqueue_run(void *data)
 
 		kevent(s->h->fd, &ev, 1, NULL, 0, NULL);
 	}
-	else if (s->is_tcp)
+	else if (s->is_tcp) {
 		sb_int_del(s->h->fds, s->fd);
+		s->h->use--;
+	}
 	
 	if (!s->is_tcp)
 		free(s);
@@ -1534,8 +1552,8 @@ int handler_wait_kqueue(handler *h, int wait)
 
 			if (s->disconnected) {
 				sb_int_del(h->fds, s->fd);
-				tpool_schedule(h->tp, &kqueue_close, s);
 				h->use--;
+				tpool_schedule(h->tp, &kqueue_close, s);
 			}
 			else
 				tpool_schedule(h->tp, &kqueue_run, s);
@@ -1611,8 +1629,11 @@ static int epoll_run(void *data)
 
 		epoll_ctl(s->h->fd, EPOLL_CTL_MOD, s->fd, &ev);
 	}
-	else if (s->is_tcp)
+	else if (s->is_tcp) {
 		sb_int_del(s->h->fds, s->fd);
+		s->h->use--;
+		session_unshare(s);
+	}
 	
 	if (!s->is_tcp)
 		free(s);
@@ -1680,8 +1701,8 @@ int handler_wait_epoll(handler *h, int wait)
 
 			if (s->disconnected) {
 				sb_int_del(h->fds, s->fd);
-				tpool_schedule(h->tp, &epoll_close, s);
 				h->use--;
+				tpool_schedule(h->tp, &epoll_close, s);
 			}
 			else
 				tpool_schedule(h->tp, &epoll_run, s);
@@ -1745,8 +1766,10 @@ static int poll_run(void *data)
 
 		s->h->rpollfds[s->idx].revents = 0;
 	}
-	else if (s->is_tcp)
+	else if (s->is_tcp) {
 		sb_int_del(s->h->fds, s->fd);
+		s->h->use--;
+	}
 	
 	if (!s->is_tcp)
 		free(s);
@@ -1831,9 +1854,9 @@ int handler_wait_poll(handler *h, int wait)
 
 			if (s->disconnected) {
 				sb_int_del(h->fds, s->fd);
+				h->use--;
 				h->rpollfds[i--] = h->rpollfds[--cnt]; // fill the gap
 				tpool_schedule(h->tp, &poll_close, s);
-				h->use--;
 			}
 			else if (h->rpollfds[i].revents & POLLIN) {
 				s->idx = i;
@@ -1905,8 +1928,10 @@ static int select_run(void *data)
 		s->h->srvs[s->idx].fd = s->fd;
 		s->busy = 0;
 	}
-	else if (s->is_tcp)
+	else if (s->is_tcp) {
 		sb_int_del(s->h->fds, s->fd);
+		s->h->use--;
+	}
 	
 	if (!s->is_tcp)
 		free(s);
@@ -1951,8 +1976,8 @@ static int handler_select_bads(void *_h, int fd, void *_s)
 	handler *h = (handler *)_h;
 	session *s = (session *)_s;
 	sb_int_del(h->fds, fd);
-	tpool_schedule(s->h->tp, &select_close, s);
 	h->use--;
+	tpool_schedule(s->h->tp, &select_close, s);
 	return 1;
 }
 
