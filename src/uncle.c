@@ -25,7 +25,7 @@ struct uncle_ {
 	handler *h;
 	skipbuck *db;
 	lock *strand;
-	session *s; // used to broadcast on
+	session *s;				// used to broadcast
 	char scope[256];
 	time_t unique;
 
