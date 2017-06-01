@@ -911,30 +911,30 @@ int dir_include(lexer *l, node *n)
 		return 0;
 
 	char tmpbuf[FUNCTOR_SIZE * 2 + 10];
-	strcpy(tmpbuf, l->name);
+	strcpy(tmpbuf, l->name ? l->name : "");
 	char *ptr = strrchr(tmpbuf, '/');
 
 	if (ptr != NULL)
 		*++ptr = '\0';
 	else
-		tmpbuf[0] = 0;
+		tmpbuf[0] = '\0';
 
 	strcat(tmpbuf, VAL_S(term1));
 	return trealla_consult_file(l->pl, tmpbuf);
 }
 
-static void directive(lexer *l, node *n)
+static int directive(lexer *l, node *n)
 {
 	if (term_arity(n) < 1)
-		return;
+		return 0;
 
 	if (!is_compound(n))
-		return;
+		return 0;
 
 	node *head = term_first(n);
 
 	if (!is_atom(head))
-		return;
+		return 0;
 
 	const char *functor = VAL_S(head);
 	node *n3 = term_next(head);
@@ -969,6 +969,10 @@ static void directive(lexer *l, node *n)
 	else if (!strcmp(functor, "unload_file"))
 		dir_unload_file(l, n3);
 #endif
+	else
+		return 0;
+		
+	return 1;
 }
 
 // This basically removes the effect of redundant parenthesis
@@ -1941,7 +1945,14 @@ static void lexer_finalize(lexer *self)
 	}
 	else if (!strcmp(term_functor(self->r), ":-")) {
 		if (self->consult) {
-			directive(self, term_firstarg(self->r));
+			
+			if (!directive(self, term_firstarg(self->r))) {
+				printf("ERROR: unknown/invalid directive\n");
+				term_heapcheck(self->r);
+				self->error = 1;
+				return;
+			}
+			
 			term_heapcheck(self->r);
 		} else {
 			self->r->flags |= FLAG_CLAUSE;
