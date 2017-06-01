@@ -2224,9 +2224,9 @@ uncle *handler_get_uncle(handler *h, const char *scope)
 	return NULL;
 }
 
-static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v, const char *binding, unsigned port6,
-                               unsigned port4, int tcp, int ssl, int pri, const char *maddr6, const char *maddr4,
-                               const char *name)
+static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v, const char *binding,
+			unsigned port, int tcp, int ssl, int pri, const char *maddr6, const char *maddr4,
+			const char *name)
 {
 	int fd6 = socket(AF_INET6, tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
 
@@ -2246,12 +2246,12 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 
 		struct sockaddr_in6 addr6 = {0};
 		addr6.sin6_family = AF_INET6;
-		addr6.sin6_port = htons(port6);
+		addr6.sin6_port = htons(port);
 		const struct in6_addr my_in6addr_any = IN6ADDR_ANY_INIT;
 		addr6.sin6_addr = my_in6addr_any;
 
 		if (bind(fd6, (struct sockaddr *)&addr6, sizeof(addr6)) != 0) {
-			printf("handler_add_server: warning bind6 failed port %u: %s\n", port6, strerror(errno));
+			printf("handler_add_server: warning bind6 failed port %u: %s\n", port, strerror(errno));
 			close(fd6);
 			fd6 = -1;
 			return 0;
@@ -2262,16 +2262,16 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 			ioctl(fd6, FIONBIO, &flag2);
 		} else {
 			if (listen(fd6, 128) != 0) {
-				printf("handler_add_server: error listen6 failed port: %u: %s\n", port6, strerror(errno));
+				printf("handler_add_server: error listen6 failed port: %u: %s\n", port, strerror(errno));
 				close(fd6);
 				return 0;
 			}
 		}
 
-		if (port6 == 0) {
+		if (port == 0) {
 			socklen_t len = sizeof(addr6);
 			getsockname(fd6, (struct sockaddr *)&addr6, &len);
-			port6 = ntohs(addr6.sin6_port);
+			port = ntohs(addr6.sin6_port);
 		}
 
 		lock_lock(h->strand);
@@ -2279,7 +2279,7 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		lock_unlock(h->strand);
 		srv->name = strdup(name ? name : DEFAULT_NAME);
 		srv->fd = fd6;
-		srv->port = port6;
+		srv->port = port;
 		srv->pri = pri;
 		srv->is_tcp = tcp;
 
@@ -2311,11 +2311,11 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 
 		struct sockaddr_in addr4 = {0};
 		addr4.sin_family = AF_INET;
-		addr4.sin_port = htons(port4);
+		addr4.sin_port = htons(port);
 		addr4.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		if (bind(fd4, (struct sockaddr *)&addr4, sizeof(addr4)) != 0) {
-			printf("handler_add_server: warning bind4 failed port %u: %s\n", port4, strerror(errno));
+			printf("handler_add_server: warning bind4 failed port %u: %s\n", port, strerror(errno));
 			close(fd4);
 			fd4 = -1;
 			return 0;
@@ -2326,16 +2326,16 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 			ioctl(fd4, FIONBIO, &flag2);
 		} else {
 			if (listen(fd4, 128) != 0) {
-				printf("handler_add_server: error listen4 failed port:%u %s\n", port4, strerror(errno));
+				printf("handler_add_server: error listen4 failed port:%u %s\n", port, strerror(errno));
 				close(fd4);
 				return 0;
 			}
 		}
 
-		if (port4 == 0) {
+		if (port == 0) {
 			socklen_t len = sizeof(addr4);
 			getsockname(fd4, (struct sockaddr *)&addr4, &len);
-			port4 = ntohs(addr4.sin_port);
+			port = ntohs(addr4.sin_port);
 		}
 
 		lock_lock(h->strand);
@@ -2343,7 +2343,7 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		lock_unlock(h->strand);
 		srv->name = strdup(name ? name : DEFAULT_NAME);
 		srv->fd = fd4;
-		srv->port = port4;
+		srv->port = port;
 		srv->pri = pri;
 		srv->is_tcp = tcp;
 
@@ -2363,17 +2363,17 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 
 	if (name && name[0] && h->uncs) {
 		uncle *u = h->u[h->uncs - 1];
-		uncle_add(u, name, hostname(), port6, port4, tcp, ssl, pri);
+		uncle_add(u, name, hostname(), port, tcp, ssl, pri);
 	}
 
 	h->use++;
 	return 1;
 }
 
-int handler_add_server(handler *h, int (*f)(session *, void *v), void *v, const char *binding, unsigned port6, unsigned port4,
-                       int tcp, int ssl, int pri, const char *name)
+int handler_add_server(handler *h, int (*f)(session *, void *v), void *v, const char *binding, 
+			unsigned port, int tcp, int ssl, int pri, const char *name)
 {
-	return handler_add_server2(h, f, v, binding, port6, port4, tcp, ssl, pri, NULL, NULL, name);
+	return handler_add_server2(h, f, v, binding, port, tcp, ssl, pri, NULL, NULL, name);
 }
 
 int handler_add_client(handler *h, int (*f)(session *, void *data), void *data, session *s)
@@ -2412,10 +2412,10 @@ int handler_add_tpool(handler *h, tpool *tp)
 	return 1;
 }
 
-int handler_add_multicast(handler *h, int (*f)(session *, void *v), void *v, const char *binding, unsigned port,
-                          const char *addr6, const char *addr4, const char *name)
+int handler_add_multicast(handler *h, int (*f)(session *, void *v), void *v, const char *binding, 
+			unsigned port, const char *addr6, const char *addr4, const char *name)
 {
-	return handler_add_server2(h, f, v, binding, port, port, 0, 0, 0, addr6, addr4, name);
+	return handler_add_server2(h, f, v, binding, port, 0, 0, 0, addr6, addr4, name);
 }
 
 handler *handler_create(int threads)

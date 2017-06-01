@@ -21,7 +21,7 @@ extern const char *uncle_get_scope(uncle *u);
 // Resources are named and there can be duplicates, but
 // the combination of name/addr/port/tcp is unique.
 
-extern int uncle_add(uncle *u, const char *name, const char *addr, unsigned port6, unsigned port4, int tcp, int ssl, int priority);
+extern int uncle_add(uncle *u, const char *name, const char *addr, unsigned port, int tcp, int ssl, int priority);
 extern int uncle_rem(uncle *u, const char *name, const char *addr, int tcp);
 
 // Query for named resource.

@@ -156,7 +156,7 @@ extern int handler_add_uncle(handler *h, const char *binding, unsigned port, con
 
 extern int handler_add_tpool(handler *h, tpool *tp);
 extern int handler_add_multicast(handler *h, int (*f)(session*, void *data), void *data, const char *binding, unsigned port, const char *maddr6, const char *maddr4, const char *name);
-extern int handler_add_server(handler *h, int (*f)(session*, void *data), void *data, const char *binding, unsigned port6, unsigned port4, int tcp, int ssl, int priority, const char *name);
+extern int handler_add_server(handler *h, int (*f)(session*, void *data), void *data, const char *binding, unsigned port, int tcp, int ssl, int priority, const char *name);
 extern int handler_add_client(handler *h, int (*f)(session*, void *data), void *data, session *s);
 
 // There is where the action occurs. It will not return until

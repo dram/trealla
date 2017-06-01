@@ -33,7 +33,7 @@ struct uncle_ {
 		const char *name;
 		const char *key;
 		char addr[256];
-		unsigned port6, port4;
+		unsigned port;
 		int tcp, ssl, pri;
 		session *s;
 	} search;
@@ -43,9 +43,9 @@ static int uncle_iter(uncle *u, const char *key, const char *value)
 {
 	char name[256], addr[256];
 	name[0] = addr[0] = '\0';
-	unsigned port6 = 0, port4 = 0;
+	unsigned port = 0;
 	int tcp = 0, ssl = 0, local = 0, pri = 0;
-	sscanf(key, "%255[^/]/%255[^/]/%d/%u/%u/%d/%d/%d", name, addr, &local, &port6, &port4, &tcp, &ssl, &pri);
+	sscanf(key, "%255[^/]/%255[^/]/%d/%u/%d/%d/%d", name, addr, &local, &port, &tcp, &ssl, &pri);
 	name[sizeof(name) - 1] = 0;
 	addr[sizeof(addr) - 1] = 0;
 
@@ -62,8 +62,7 @@ static int uncle_iter(uncle *u, const char *key, const char *value)
 		return 1;
 
 	strcpy(u->search.addr, addr);
-	u->search.port6 = port6;
-	u->search.port4 = port4;
+	u->search.port = port;
 	u->search.tcp = tcp;
 	u->search.ssl = ssl;
 	u->search.key = key;
@@ -94,18 +93,18 @@ int uncle_query(uncle *u, const char *name, char *addr, unsigned *port, int *tcp
 		return 0;
 
 	strcpy(addr, u->search.addr);
-	*port = u->search.port4 ? u->search.port4 : u->search.port6;
+	*port = u->search.port;
 	*tcp = u->search.tcp;
 	*ssl = u->search.ssl;
 	*pri = u->search.pri;
 	return 1;
 }
 
-static int uncle_db_add(uncle *u, const char *name, int local, const char *addr, unsigned port6, unsigned port4, int tcp,
+static int uncle_db_add(uncle *u, const char *name, int local, const char *addr, unsigned port, int tcp,
                         int ssl, int pri)
 {
 	char tmpbuf[1024];
-	sprintf(tmpbuf, "%s/%s/%d/%u/%u/%d/%d/%d", name, addr, local, port6, port4, tcp, ssl, pri);
+	sprintf(tmpbuf, "%s/%s/%d/%u/%d/%d/%d", name, addr, local, port, tcp, ssl, pri);
 	if (g_debug)
 		printf("DEBUG: DBADD %s\n", tmpbuf);
 	lock_lock(u->strand);
@@ -114,7 +113,7 @@ static int uncle_db_add(uncle *u, const char *name, int local, const char *addr,
 	return 1;
 }
 
-int uncle_add(uncle *u, const char *name, const char *addr, unsigned port6, unsigned port4, int tcp, int ssl, int pri)
+int uncle_add(uncle *u, const char *name, const char *addr, unsigned port, int tcp, int ssl, int pri)
 {
 	if (!u)
 		return 0;
@@ -123,12 +122,12 @@ int uncle_add(uncle *u, const char *name, const char *addr, unsigned port6, unsi
 		return 0;
 	if (strlen(addr) > 255)
 		return 0;
-	uncle_db_add(u, name, 1, addr, port6, port4, tcp, ssl, pri);
+	uncle_db_add(u, name, 1, addr, port, tcp, ssl, pri);
 
 	char tmpbuf[1024];
-	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$name\":\"%s\",\"$port6\":%u,\"$port4\":%u,\"$tcp\":%"
+	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$name\":\"%s\",\"$port\":%u,\"$tcp\":%"
 	                "s,\"$ssl\":%s,\"$pri\":%s}\n",
-	        u->scope, (unsigned long long)u->unique, name, port6, port4, tcp ? "true" : "false", ssl ? "true" : "false",
+	        u->scope, (unsigned long long)u->unique, name, port, tcp ? "true" : "false", ssl ? "true" : "false",
 	        pri ? "true" : "false");
 	if (g_debug)
 		printf("DEBUG: ADD %s", tmpbuf);
@@ -180,9 +179,9 @@ static int uncle_iter2(uncle *u, const char *k, const char *v)
 {
 	char name[256], addr[256];
 	name[0] = addr[0] = '\0';
-	unsigned port6 = 0, port4 = 0;
+	unsigned  port = 0;
 	int tcp = 0, ssl = 0, local = 0, pri = 0;
-	sscanf(v, "%255[^/]/%255[^/]/%d/%u/%u/%d/%d/%d", name, addr, &local, &port6, &port4, &tcp, &ssl, &pri);
+	sscanf(v, "%255[^/]/%255[^/]/%d/%u/%d/%d/%d", name, addr, &local, &port, &tcp, &ssl, &pri);
 	name[sizeof(name) - 1] = 0;
 	addr[sizeof(addr) - 1] = 0;
 	if (g_debug)
@@ -201,9 +200,9 @@ static int uncle_iter2(uncle *u, const char *k, const char *v)
 		return 1;
 
 	char tmpbuf[1024];
-	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$name\":\"%s\",\"$port6\":%u,\"$port4\":%u,\"$tcp\":%"
+	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$name\":\"%s\",\"$port\":%u,\"$tcp\":%"
 	                "s,\"$ssl\":%s,\"$pri\":%s}\n",
-	        u->scope, (unsigned long long)u->unique, name, port6, port4, tcp ? "true" : "false", ssl ? "true" : "false",
+	        u->scope, (unsigned long long)u->unique, name, port, tcp ? "true" : "false", ssl ? "true" : "false",
 	        pri ? "true" : "false");
 	if (g_debug)
 		printf("DEBUG: SND %s", tmpbuf);
@@ -238,8 +237,7 @@ static int uncle_handler(session *s, void *data)
 	char cmd[256], name[256];
 	jsonq(buf, "$cmd", cmd, sizeof(cmd));
 	jsonq(buf, "$name", name, sizeof(name));
-	unsigned port6 = (unsigned)jsonq_int(buf, "$port6");
-	unsigned port4 = (unsigned)jsonq_int(buf, "$port4");
+	unsigned port = (unsigned)jsonq_int(buf, "$port");
 	int tcp = -1, ssl = -1, pri = -1;
 
 	if (!jsonq_null(buf, "$tcp"))
@@ -252,7 +250,7 @@ static int uncle_handler(session *s, void *data)
 		pri = jsonq_bool(buf, "$pri");
 
 	if (!strcmp(cmd, "+")) {
-		uncle_db_add(u, name, 0, addr, port6, port4, tcp, ssl, pri);
+		uncle_db_add(u, name, 0, addr, port, tcp, ssl, pri);
 	}
 	else if (!strcmp(cmd, "-")) {
 		uncle_db_rem(u, name, 0, addr, tcp);
@@ -298,7 +296,7 @@ uncle *uncle_create2(handler *h, const char *binding, unsigned port, const char 
 	u->unique = time(NULL);
 	u->s = s;
 	strcpy(u->scope, scope ? scope : SCOPE_DEFAULT);
-	handler_add_server(u->h, &uncle_handler, u, binding, port, port, 0, 0, 0, NULL);
+	handler_add_server(u->h, &uncle_handler, u, binding, port, 0, 0, 0, NULL);
 	handler_add_client(h, &uncle_handler, u, u->s);
 	char tmpbuf[1024];
 	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"?\"}\n", u->scope, (unsigned long long)u->unique);

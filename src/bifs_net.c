@@ -124,7 +124,7 @@ int configure_server(tpl_query *q, handler *h, node *term, int (*f)(session *, v
 	if (!name[0])
 		sprintf(name, "%u", port);
 
-	if (!handler_add_server(h, f, q, binding[0] ? binding : NULL, port, port, ws ? 2 : tcp, ssl, pri, name[0] ? name : NULL)) {
+	if (!handler_add_server(h, f, q, binding[0] ? binding : NULL, port, ws ? 2 : tcp, ssl, pri, name[0] ? name : NULL)) {
 		QABORT(ABORT_SERVERCANTBIND);
 		return 0;
 	}
