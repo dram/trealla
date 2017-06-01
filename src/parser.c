@@ -142,7 +142,11 @@ int needs_quoting(const char *s)
 		if (isspace(ch) || iscntrl(ch))
 			return 1;
 
-		if (isalpha_utf8(ch) || isdigit(ch) || (ch == '_'))
+		if (isalpha_utf8(ch) || isdigit(ch) ||
+#ifndef ISO_ONLY
+			(ch == ':') ||
+#endif
+			(ch == '_'))
 			any_ans = 1;
 		else
 			any_signs = 1;
