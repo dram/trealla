@@ -739,6 +739,11 @@ void add_clauses(lexer *l)
 	node *n;
 
 	while ((n = NLIST_POP_FRONT(&l->val_l)) != NULL) {
+		if (n->flags & FLAG_SKIPPED) {
+			NLIST_PUSH_BACK(&tmp_l, n);
+			continue;
+		}
+		
 		if (!is_clause(n))
 			continue;
 
@@ -754,6 +759,7 @@ void add_clauses(lexer *l)
 
 		tmp = term_make();
 		tmp->n1 = n;
+		tmp->flags |= FLAG_SKIPPED;
 		NLIST_PUSH_BACK(&tmp_l, tmp);
 	}
 
