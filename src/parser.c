@@ -969,8 +969,10 @@ static int directive(lexer *l, node *n)
 	else if (!strcmp(functor, "unload_file"))
 		dir_unload_file(l, n3);
 #endif
-	else
-		return 0;
+	else {
+		if (!xref_term(l, n3, term_arity(n3)))
+			return 0;
+	}
 		
 	return 1;
 }
@@ -1945,12 +1947,14 @@ static void lexer_finalize(lexer *self)
 	}
 	else if (!strcmp(term_functor(self->r), ":-")) {
 		if (self->consult) {
+			node *n = term_firstarg(self->r);
 			
-			if (!directive(self, term_firstarg(self->r))) {
-				printf("ERROR: unknown/invalid directive\n");
-				term_heapcheck(self->r);
-				self->error = 1;
-				return;
+			if (!directive(self, n)) {
+				xref_clauses(self);
+				tpl_query *q = trealla_create_query(self->pl);
+				q->curr_term = n;
+				query_run(q);
+				query_destroy(q);
 			}
 			
 			term_heapcheck(self->r);
@@ -1978,6 +1982,7 @@ static void lexer_finalize(lexer *self)
 		term_remove(self->r, r);
 		NLIST_PUSH_BACK(&self->val_l, r);
 		term_heapcheck(self->r);
+		add_clauses(self);
 	}
 
 	sl_clear(&self->symtab, NULL);

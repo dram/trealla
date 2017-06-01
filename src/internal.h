@@ -238,8 +238,9 @@ struct lexer_
 	module *db;
 	char *init, *tok, quote, last;
 	uint32_t cpos;
-	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized, comment;
+	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized;
 	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, neg, vars, was_op, is_op;
+	int internal, comment;
 };
 
 // If 'term' set then  'context' is an actual env point (or -1).
@@ -361,9 +362,11 @@ typedef struct
 extern library g_libs[];
 extern void lexer_init(lexer *l, trealla *pl);
 extern const char *lexer_parse(lexer *l, node *term, const char *src, char **line);
-extern int lexer_consult_file(lexer *self, const char *filename);
-extern int lexer_consult_fp(lexer *self, FILE *fp);
+extern int lexer_consult_file(lexer *l, const char *filename);
+extern int lexer_consult_fp(lexer *l, FILE *fp);
 extern void lexer_done(lexer *l);
+extern void add_clauses(lexer *l);
+extern void xref_clauses(lexer *l);
 
 #ifndef ISO_ONLY
 extern int http_get10(session *s, const char *path, int keep, int *status);

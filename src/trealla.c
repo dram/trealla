@@ -730,7 +730,7 @@ int xref_clause(lexer *l, node *term)
 	return 1;
 }
 
-static void add_clauses(lexer *l, int internal)
+void add_clauses(lexer *l)
 {
 	list tmp_l;
 	list_init(&tmp_l);
@@ -742,12 +742,12 @@ static void add_clauses(lexer *l, int internal)
 		if (!is_clause(n))
 			continue;
 
-		if (internal)
+		if (l->internal)
 			n->flags |= FLAG_HIDDEN;
 
 		int persist;
 
-		if (!assertz_index(l, n, -internal, &persist, 1)) {
+		if (!assertz_index(l, n, -l->internal, &persist, 1)) {
 			term_destroy(n);
 			continue;
 		}
@@ -758,7 +758,19 @@ static void add_clauses(lexer *l, int internal)
 	}
 
 	while ((tmp = NLIST_POP_FRONT(&tmp_l)) != NULL) {
-		n = tmp->n1;
+		NLIST_PUSH_BACK(&l->val_l, tmp);		
+	}
+	
+	DBUNLOCK(l->db);
+}
+
+void xref_clauses(lexer *l)
+{
+	DBLOCK(l->db);
+	node *tmp;
+
+	while ((tmp = NLIST_POP_FRONT(&l->val_l)) != NULL) {
+		node *n = tmp->n1;
 		xref_clause(l, n);
 
 		// This flattens conjunctions...
@@ -791,6 +803,7 @@ static int trealla_make_rule(trealla *self, const char *src)
 {
 	lexer l;
 	lexer_init(&l, self);
+	l.internal = 1;
 	lexer_parse(&l, l.r, src, NULL);
 	int ok = !l.error;
 
@@ -799,7 +812,7 @@ static int trealla_make_rule(trealla *self, const char *src)
 		term_heapcheck(r);
 		printf("ERROR: error make_rule\n");
 	} else {
-		add_clauses(&l, 1);
+		xref_clauses(&l);
 	}
 
 	lexer_done(&l);
@@ -1248,7 +1261,7 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 	l.consult = 1;
 
 	if (lexer_consult_fp(&l, fp)) {
-		add_clauses(&l, 0);
+		xref_clauses(&l);
 
 		if (l.init && !l.error) {
 			if (!(l.error = trealla_run_query(self, l.init)))
@@ -1268,7 +1281,7 @@ int trealla_consult_file(trealla *self, const char *filename)
 	l.consult = 1;
 
 	if (lexer_consult_file(&l, filename)) {
-		add_clauses(&l, 0);
+		xref_clauses(&l);
 
 		if (l.init && !l.error) {
 			if (!(l.error = trealla_run_query(self, l.init)))
@@ -1330,7 +1343,7 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 	}
 
 	free(line);
-	add_clauses(&l, 0);
+	xref_clauses(&l);
 
 	if (l.init && !l.error) {
 		if (!trealla_run_query(self, l.init))
