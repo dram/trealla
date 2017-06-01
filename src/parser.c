@@ -1953,6 +1953,7 @@ static void lexer_finalize(lexer *self)
 				xref_clauses(self);
 				tpl_query *q = trealla_create_query(self->pl);
 				q->curr_term = n;
+				q->curr_db = self->db;
 				query_run(q);
 				query_destroy(q);
 			}
