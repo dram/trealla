@@ -84,7 +84,7 @@ void reset_arg(tpl_query *q, const node *term, unsigned frame)
 	e->context = 0;
 }
 
-#define S_NUMBERS (1000 * 1000)
+#define S_NUMBERS (1000 * 100)
 
 node *make_quick_int(nbr_t v)
 {
@@ -5371,7 +5371,7 @@ static int bif_xtra_between(tpl_query *q)
 	} 
 
 	if (is_atom(term2))
-		maxn = INT_MAX;
+		maxn = LONG_MAX;
 	else
 		maxn = get_word(term2);
 		
@@ -5382,8 +5382,8 @@ static int bif_xtra_between(tpl_query *q)
 		allocate_frame(q);
 	}
 	else {
-		term3 = get_int(term3);
-		nbr_t v = get_word(term3) + 1;
+		term3 = get_term(term3);
+		nbr_t v = term3->val_i + 1;
 
 		if (v > maxn)
 			return 0;

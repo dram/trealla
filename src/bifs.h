@@ -378,13 +378,12 @@ enum { NUM_NONE=0, NUM_REAL=1, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_H
 
 inline static nbr_t get_word(node *n)
 {
-#if USE_SSL
-	if (is_bignum(n))
-		return BN_get_word(n->val_bn);
-	else
-#endif
 	if (is_integer(n))
 		return n->val_i;
+#if USE_SSL
+	else if (is_bignum(n))
+		return BN_get_word(n->val_bn);
+#endif
 	else
 		return 0;
 }
