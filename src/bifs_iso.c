@@ -104,13 +104,13 @@ static int expand_frame(tpl_query *q, unsigned cnt)
 {
 	extern int grow_environment(tpl_query *q);
 
-	while ((q->env_point + cnt) >= q->envs_possible) {
+	while ((q->c.env_point + cnt) >= q->envs_possible) {
 		if (!grow_environment(q))
 			return 0;
 	}
 
 	prepare_frame(q, cnt);
-	q->env_point += cnt;
+	q->c.env_point += cnt;
 	choice *c = &q->choices[q->choice_point];
 	c->frame_size += cnt;
 	c->env_point += cnt;
@@ -397,12 +397,12 @@ int bif_iso_and(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
 
-	if (q->curr_term->flags & FLAG_PROMOTED) {
+	if (q->c.curr_term->flags & FLAG_PROMOTED) {
 		allocate_frame(q);
 		try_me_nochoice(q);
 	}
 
-	q->curr_term = term1;
+	q->c.curr_term = term1;
 	return call(q);
 }
 
@@ -415,7 +415,7 @@ static int bif_iso_not(tpl_query *q)
 	node *term1 = get_callable(term1);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = term1;
+	q->c.curr_term = term1;
 	return call(q);
 }
 
@@ -424,7 +424,7 @@ static int bif_iso_do(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_list_or_callable(term1);
 	trust_me(q);
-	q->curr_term = term1;
+	q->c.curr_term = term1;
 	return call(q);
 }
 
@@ -438,12 +438,12 @@ int bif_iso_or(tpl_query *q)
 	if (!q->retry) {
 		allocate_frame(q);
 		try_me(q);
-		q->curr_term = term1;
+		q->c.curr_term = term1;
 	}
 	else {
 		q->retry = 0;
 		try_me_nochoice(q);
-		q->curr_term = term2;
+		q->c.curr_term = term2;
 	}
 
 	return call(q);
@@ -458,7 +458,7 @@ static int bif_iso_once(tpl_query *q)
 	node *term1 = get_callable(term1);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = term1;
+	q->c.curr_term = term1;
 	return call(q);
 }
 
@@ -472,7 +472,7 @@ static int bif_iso_call(tpl_query *q)
 	node *term1 = get_callable(term1);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = term1;
+	q->c.curr_term = term1;
 	return call(q);
 }
 
@@ -509,11 +509,11 @@ static int bif_iso_calln(tpl_query *q)
 	else
 		s->flags |= FLAG_BUILTIN;
 
-	put_env(q, q->curr_frame + var->slot, s, q->curr_frame);
+	put_env(q, q->c.curr_frame + var->slot, s, q->c.curr_frame);
 	term_heapcheck(s);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = s;
+	q->c.curr_term = s;
 	return call(q);
 }
 
@@ -648,8 +648,8 @@ static int compare_compounds(tpl_query *q, node *term1, node *term2, int mode)
 
 static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 {
-	node *n1 = get_arg(q, term1, q->curr_frame);
-	node *n2 = get_arg(q, term2, q->curr_frame);
+	node *n1 = get_arg(q, term1, q->c.curr_frame);
+	node *n2 = get_arg(q, term2, q->c.curr_frame);
 
 	if (is_integer(n1) || is_bignum(n1)) {
 		if (!is_integer(n2) && !is_bignum(n2)) {
@@ -774,7 +774,7 @@ static int bif_iso_atom_concat(tpl_query *q)
 #endif
 		n = make_atom(tmp, 1);
 
-	put_env(q, q->curr_frame + term3->slot, n, -1);
+	put_env(q, q->c.curr_frame + term3->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -783,7 +783,7 @@ static int bif_iso_curr_predicate(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
-	return check_dynamic(q->curr_db, VAL_S(term1));
+	return check_dynamic(q->c.curr_db, VAL_S(term1));
 }
 
 static int bif_iso_set_prolog_flag(tpl_query *q)
@@ -850,10 +850,10 @@ static int bif_iso_predicate_property(tpl_query *q)
 	const char *functarity = VAL_S(term1);
 	const char *property = VAL_S(term2);
 
-	if (!strcmp(property, "dynamic") && check_dynamic(q->curr_db, functarity))
+	if (!strcmp(property, "dynamic") && check_dynamic(q->c.curr_db, functarity))
 		return 1;
 
-	if (!strcmp(property, "static") && !check_dynamic(q->curr_db, functarity))
+	if (!strcmp(property, "static") && !check_dynamic(q->c.curr_db, functarity))
 		return 1;
 
 	if (!strcmp(property, "built_in") && check_builtin(q->pl, functarity))
@@ -891,7 +891,7 @@ static int bif_iso_open_3(tpl_query *q)
 	sp->type = strdup(type);
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
-	put_env(q, q->curr_frame + term3->slot, n, -1);
+	put_env(q, q->c.curr_frame + term3->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -930,7 +930,7 @@ static int bif_iso_open_4(tpl_query *q)
 	sp->type = strdup(type);
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
-	put_env(q, q->curr_frame + term3->slot, n, -1);
+	put_env(q, q->c.curr_frame + term3->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -1271,7 +1271,7 @@ static int bif_iso_read_2(tpl_query *q)
 			}
 
 			if (session_on_disconnect((session *)sp->sptr)) {
-				put_const_atom(q, q->curr_frame + term2->slot, END_OF_FILE, 0);
+				put_const_atom(q, q->c.curr_frame + term2->slot, END_OF_FILE, 0);
 				return 1;
 			}
 		}
@@ -1279,7 +1279,7 @@ static int bif_iso_read_2(tpl_query *q)
 #endif
 		{
 			if (!(line = trealla_readline(q->lex, sp->fptr, 0))) {
-				put_const_atom(q, q->curr_frame + term2->slot, END_OF_FILE, 0);
+				put_const_atom(q, q->c.curr_frame + term2->slot, END_OF_FILE, 0);
 				return 1;
 			}
 		}
@@ -1327,7 +1327,7 @@ static int bif_iso_read_2(tpl_query *q)
 		break;
 	}
 
-	int ok = unify_term(q, term2, term, q->env_point);
+	int ok = unify_term(q, term2, term, q->c.env_point);
 	term_heapcheck(term);
 	return ok;
 }
@@ -1341,7 +1341,7 @@ static int bif_iso_read(tpl_query *q)
 
 	for (;;) {
 		if (!(line = trealla_readline(q->lex, q->curr_stdin, 0))) {
-			put_const_atom(q, q->curr_frame + term1->slot, END_OF_FILE, 0);
+			put_const_atom(q, q->c.curr_frame + term1->slot, END_OF_FILE, 0);
 			return 1;
 		}
 
@@ -1389,7 +1389,7 @@ static int bif_iso_read(tpl_query *q)
 		break;
 	}
 
-	int ok = unify_term(q, term1, term, q->env_point);
+	int ok = unify_term(q, term1, term, q->c.env_point);
 	term_heapcheck(term);
 	return ok;
 }
@@ -1446,7 +1446,7 @@ static int bif_iso_stream_property_position(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	put_int(q, q->curr_frame + term2->slot, ftello(sp->fptr));
+	put_int(q, q->c.curr_frame + term2->slot, ftello(sp->fptr));
 	return 1;
 }
 
@@ -1456,7 +1456,7 @@ static int bif_iso_stream_property_file_name(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	put_atom(q, q->curr_frame + term2->slot, strdup(sp->filename), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp->filename), 1);
 	return 1;
 }
 
@@ -1466,7 +1466,7 @@ static int bif_iso_stream_property_mode(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	put_atom(q, q->curr_frame + term2->slot, strdup(sp->mode), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp->mode), 1);
 	return 1;
 }
 
@@ -1476,7 +1476,7 @@ static int bif_iso_stream_property_type(tpl_query *q)
 	node *term1 = get_file(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
-	put_atom(q, q->curr_frame + term2->slot, strdup(sp->type), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp->type), 1);
 	return 1;
 }
 
@@ -2156,7 +2156,7 @@ static int bif_iso_current_input(tpl_query *q)
 	sp->type = strdup("text");
 	tmp = make_stream(sp);
 	tmp->flags |= FLAG_FILE;
-	put_env(q, q->curr_frame + term1->slot, tmp, -1);
+	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -2172,7 +2172,7 @@ static int bif_iso_current_output(tpl_query *q)
 	sp->mode = strdup("append");
 	sp->type = strdup("text");
 	tmp = make_stream(sp);
-	put_env(q, q->curr_frame + term1->slot, tmp, -1);
+	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -2198,7 +2198,7 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *tmp = copy_term(q, term1);
 	sl_done(&vars, NULL);
 	q->d = NULL;
-	put_env(q, q->curr_frame + term2->slot, tmp, is_compound(tmp) ? q->curr_frame : -1);
+	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -2218,7 +2218,7 @@ int bif_asserta(tpl_query *q, node *n)
 	int persist;
 	lexer l;
 	lexer_init(&l, q->pl);
-	l.db = q->curr_db;
+	l.db = q->c.curr_db;
 	asserta_index(&l, n, 1, &persist, q->in_tran);
 	lexer_done(&l);
 	return persist;
@@ -2254,20 +2254,20 @@ int bif_iso_asserta(tpl_query *q)
 	n->frame_size = l.vars;
 	lexer_done(&l);
 	n->flags |= FLAG_DBS_ASSERTA;
-	n->cpos = q->curr_term->cpos;
+	n->cpos = q->c.curr_term->cpos;
 
 #ifndef ISO_ONLY
 	if (q->in_tran) {
 		node *tmp = term_make();
 		tmp->n1 = n;
-		NLIST_PUSH_BACK(&q->curr_db->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->c.curr_db->tran_queue, tmp);
 	}
 	else
 #endif
 	{
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 		bif_asserta(q, n);
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 	}
 
 	return 1;
@@ -2278,7 +2278,7 @@ int bif_assertz(tpl_query *q, node *n)
 	int persist;
 	lexer l;
 	lexer_init(&l, q->pl);
-	l.db = q->curr_db;
+	l.db = q->c.curr_db;
 	assertz_index(&l, n, 1, &persist, q->in_tran);
 	lexer_done(&l);
 	return persist;
@@ -2314,20 +2314,20 @@ int bif_iso_assertz(tpl_query *q)
 	n->frame_size = l.vars;
 	lexer_done(&l);
 	n->flags |= FLAG_DBS_ASSERTZ;
-	n->cpos = q->curr_term->cpos;
+	n->cpos = q->c.curr_term->cpos;
 
 #ifndef ISO_ONLY
 	if (q->in_tran) {
 		node *tmp = term_make();
 		tmp->n1 = n;
-		NLIST_PUSH_BACK(&q->curr_db->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->c.curr_db->tran_queue, tmp);
 	}
 	else
 #endif
 {
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 		bif_assertz(q, n);
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 	}
 
 	return 1;
@@ -2338,7 +2338,7 @@ int bif_retract(tpl_query *q, node *n, node *n2)
 	int persist;
 	lexer l;
 	lexer_init(&l, q->pl);
-	l.db = q->curr_db;
+	l.db = q->c.curr_db;
 	retract_index(&l, n, n2, &persist, q->in_tran);
 	lexer_done(&l);
 
@@ -2391,12 +2391,12 @@ static int bif_retract2(tpl_query *q, int wait)
 
 	if (!q->in_tran) {
 		did_lock = 1;
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 	}
 
-	if (!sl_get(&q->curr_db->rules, tmpbuf, (void **)&r)) {
+	if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		term_heapcheck(n);
 		return 0;
@@ -2404,7 +2404,7 @@ static int bif_retract2(tpl_query *q, int wait)
 
 	if (!r->dynamic) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		term_heapcheck(n);
 		QABORT(ABORT_NOTDYNAMIC);
@@ -2470,10 +2470,10 @@ static int bif_retract2(tpl_query *q, int wait)
 			node *head = term_firstarg(match);
 			node *tmp_arg1 = term_firstarg(head);
 			node *tmp_rest = term_next(tmp_arg1);
-			save_head = dbs_read_entry(q->curr_db, tmp_rest->val_i);
+			save_head = dbs_read_entry(q->c.curr_db, tmp_rest->val_i);
 
 			if (!save_head) {
-				printf("ERROR: accessing %s storage fpos=%lld", q->curr_db->name, (long long)tmp_rest->val_i);
+				printf("ERROR: accessing %s storage fpos=%lld", q->c.curr_db->name, (long long)tmp_rest->val_i);
 				break;
 			}
 
@@ -2482,9 +2482,9 @@ static int bif_retract2(tpl_query *q, int wait)
 		}
 #endif
 
-		//printf("*** (%u) ", q->frame_size); term_print(q->pl, NULL, n, 0); printf(" <==> "); term_print(q->pl, NULL, match, 0); printf(" (%u)\n", q->frame_size);
+		//printf("*** (%u) ", q->c.frame_size); term_print(q->pl, NULL, n, 0); printf(" <==> "); term_print(q->pl, NULL, match, 0); printf(" (%u)\n", q->c.frame_size);
 
-		int ok = unify(q, n, context1, match, q->env_point);
+		int ok = unify(q, n, context1, match, q->c.env_point);
 
 		if (save_head)
 			term_heapcheck(save_head);
@@ -2513,14 +2513,14 @@ static int bif_retract2(tpl_query *q, int wait)
 			node *tmp = term_make();
 			tmp->n1 = save_match;
 			tmp->n2 = save_n;
-			NLIST_PUSH_BACK(&q->curr_db->tran_queue, tmp);
+			NLIST_PUSH_BACK(&q->c.curr_db->tran_queue, tmp);
 		}
 		else
 #endif
 			bif_retract(q, save_match, save_n);
 
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		return 1;
 	}
@@ -2529,7 +2529,7 @@ static int bif_retract2(tpl_query *q, int wait)
 
 	if (!wait) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		return 0;
 	}
@@ -2538,7 +2538,7 @@ static int bif_retract2(tpl_query *q, int wait)
 	sl_set(&r->procs, (const char *)q, NULL);
 
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	PIDLOCK(q->pl);
 
@@ -2552,7 +2552,7 @@ static int bif_retract2(tpl_query *q, int wait)
 	return process_yield_locked(q);
 #else
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	return 0;
 #endif
@@ -2610,12 +2610,12 @@ static int bif_iso_retractall(tpl_query *q)
 
 	if (!q->in_tran) {
 		did_lock = 1;
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 	}
 
-	if (!sl_get(&q->curr_db->rules, tmpbuf, (void **)&r)) {
+	if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		term_heapcheck(n);
 		return 1;
@@ -2623,7 +2623,7 @@ static int bif_iso_retractall(tpl_query *q)
 
 	if (!r->dynamic) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		term_heapcheck(n);
 		QABORT(ABORT_NOTDYNAMIC);
@@ -2632,7 +2632,7 @@ static int bif_iso_retractall(tpl_query *q)
 
 	if (!NLIST_COUNT(&r->val_l)) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		term_heapcheck(n);
 		return 1;
@@ -2697,10 +2697,10 @@ static int bif_iso_retractall(tpl_query *q)
 			node *head = term_firstarg(match);
 			node *tmp_arg1 = term_firstarg(head);
 			node *tmp_rest = term_next(tmp_arg1);
-			save_head = dbs_read_entry(q->curr_db, tmp_rest->val_i);
+			save_head = dbs_read_entry(q->c.curr_db, tmp_rest->val_i);
 
 			if (!save_head) {
-				printf("ERROR: accessing %s storage fpos=%lld", q->curr_db->name, (long long)tmp_rest->val_i);
+				printf("ERROR: accessing %s storage fpos=%lld", q->c.curr_db->name, (long long)tmp_rest->val_i);
 				break;
 			}
 
@@ -2709,7 +2709,7 @@ static int bif_iso_retractall(tpl_query *q)
 		}
 #endif
 
-		if (unify_term(q, n, match, q->curr_frame)) {
+		if (unify_term(q, n, match, q->c.curr_frame)) {
 			match->flags |= FLAG_DBS_RETRACT;
 			save_match->flags |= FLAG_DBS_RETRACT | FLAG_DELETED;
 			save_n->flags |= FLAG_DBS_RETRACT | FLAG_DBS_RETRACTALL;
@@ -2719,7 +2719,7 @@ static int bif_iso_retractall(tpl_query *q)
 				node *tmp = term_make();
 				tmp->n1 = save_match;
 				tmp->n2 = save_n;
-				NLIST_PUSH_BACK(&q->curr_db->tran_queue, tmp);
+				NLIST_PUSH_BACK(&q->c.curr_db->tran_queue, tmp);
 			}
 			else
 #endif
@@ -2741,7 +2741,7 @@ static int bif_iso_retractall(tpl_query *q)
 	}
 
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	term_heapcheck(save_n);
 	return 1;
@@ -2761,19 +2761,19 @@ static int bif_iso_abolish(tpl_query *q)
 
 	if (!q->in_tran) {
 		did_lock = 1;
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 	}
 
-	if (!sl_get(&q->curr_db->rules, tmpbuf, (void **)&r)) {
+	if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		return 1;
 	}
 
 	if (!r->dynamic) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		QABORT(ABORT_NOTDYNAMIC);
 		return 1;
@@ -2786,11 +2786,11 @@ static int bif_iso_abolish(tpl_query *q)
 			match->flags |= FLAG_DELETED;
 	}
 
-	if (sl_del(&q->curr_db->rules, tmpbuf, (void **)&r))
+	if (sl_del(&q->c.curr_db->rules, tmpbuf, (void **)&r))
 		free(r);
 
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	free(tmpbuf);
 	return 1;
@@ -2828,24 +2828,24 @@ static int bif_xtra_asserta(tpl_query *q)
 	n->frame_size = l.vars;
 	lexer_done(&l);
 	n->flags |= FLAG_DBS_ASSERTA;
-	n->cpos = q->curr_term->cpos;
+	n->cpos = q->c.curr_term->cpos;
 
 	if (q->in_tran) {
 		node *tmp = term_make();
 		tmp->n1 = n;
-		NLIST_PUSH_BACK(&q->curr_db->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->c.curr_db->tran_queue, tmp);
 	}
 	else {
 		if (!q->in_tran)
-			DBLOCK(q->curr_db);
+			DBLOCK(q->c.curr_db);
 
 		bif_asserta(q, n);
 
 		if (!q->in_tran)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 	}
 
-	put_ptr(q, q->curr_frame + term2->slot, n);
+	put_ptr(q, q->c.curr_frame + term2->slot, n);
 	return 1;
 }
 
@@ -2880,24 +2880,24 @@ static int bif_xtra_assertz(tpl_query *q)
 	n->frame_size = l.vars;
 	lexer_done(&l);
 	n->flags |= FLAG_DBS_ASSERTZ;
-	n->cpos = q->curr_term->cpos;
+	n->cpos = q->c.curr_term->cpos;
 
 	if (q->in_tran) {
 		node *tmp = term_make();
 		tmp->n1 = n;
-		NLIST_PUSH_BACK(&q->curr_db->tran_queue, tmp);
+		NLIST_PUSH_BACK(&q->c.curr_db->tran_queue, tmp);
 	}
 	else {
 		if (!q->in_tran)
-			DBLOCK(q->curr_db);
+			DBLOCK(q->c.curr_db);
 
 		bif_assertz(q, n);
 
 		if (!q->in_tran)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 	}
 
-	put_ptr(q, q->curr_frame + term2->slot, n);
+	put_ptr(q, q->c.curr_frame + term2->slot, n);
 	return 1;
 }
 
@@ -2910,13 +2910,13 @@ static int bif_xtra_erase(tpl_query *q)
 
 	if (!q->in_tran) {
 		did_lock = 1;
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 	}
 
 	bif_retract(q, n, n);
 
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	return 1;
 }
@@ -2929,7 +2929,7 @@ static int bif_clause(tpl_query *q, int wait)
 	unsigned context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
 	node *term3 = get_next_arg(q, &args);
-	node *save_match = q->curr_match;
+	node *save_match = q->c.curr_match;
 	node *head = NULL;
 	rule *r = NULL;
 
@@ -2952,27 +2952,27 @@ static int bif_clause(tpl_query *q, int wait)
 
 		if (!q->in_tran) {
 			did_lock = 1;
-			DBLOCK(q->curr_db);
+			DBLOCK(q->c.curr_db);
 		}
 
-		if (!sl_get(&q->curr_db->rules, tmpbuf, (void **)&r)) {
+		if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 			if (did_lock)
-				DBUNLOCK(q->curr_db);
+				DBUNLOCK(q->c.curr_db);
 
 			return 0;
 		}
 
 		if (!NLIST_COUNT(&r->val_l)) {
 			if (did_lock)
-				DBUNLOCK(q->curr_db);
+				DBUNLOCK(q->c.curr_db);
 
-			save_match = q->curr_match = NULL;
+			save_match = q->c.curr_match = NULL;
 		}
 		else
-			save_match = q->curr_match = NLIST_FRONT(&r->val_l);
+			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		allocate_frame(q);
 		q->curr_rule = r;
@@ -2980,58 +2980,58 @@ static int bif_clause(tpl_query *q, int wait)
 	else {
 		r = q->curr_rule;
 
-		if (!q->curr_match)
-			save_match = q->curr_match = NLIST_FRONT(&r->val_l);
+		if (!q->c.curr_match)
+			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 		else {
 			r = q->curr_rule;
-			save_match = q->curr_match;
-			q->curr_match = term_next(q->curr_match);
+			save_match = q->c.curr_match;
+			q->c.curr_match = term_next(q->c.curr_match);
 		}
 	}
 
-	while (q->curr_match) {
-		if (is_hidden(q->curr_match) || is_deleted(q->curr_match)) {
-			q->curr_match = term_next(q->curr_match);
+	while (q->c.curr_match) {
+		if (is_hidden(q->c.curr_match) || is_deleted(q->c.curr_match)) {
+			q->c.curr_match = term_next(q->c.curr_match);
 			continue;
 		}
 
-		head = term_firstarg(q->curr_match);
-		unsigned frame_size = q->curr_match->frame_size;
+		head = term_firstarg(q->c.curr_match);
+		unsigned frame_size = q->c.curr_match->frame_size;
 		prepare_frame(q, frame_size);
 
 		node *save_head = NULL;
 
 #ifndef ISO_ONLY
-		if (is_storage(q->curr_match)) {
+		if (is_storage(q->c.curr_match)) {
 			node *tmp_arg1 = term_firstarg(head);
 			node *tmp_rest = term_next(tmp_arg1);
-			save_head = dbs_read_entry(q->curr_db, tmp_rest->val_i);
+			save_head = dbs_read_entry(q->c.curr_db, tmp_rest->val_i);
 
 			if (!save_head) {
-				printf("ERROR: accessing %s storage fpos=%lld", q->curr_db->name, (long long)tmp_rest->val_i);
+				printf("ERROR: accessing %s storage fpos=%lld", q->c.curr_db->name, (long long)tmp_rest->val_i);
 				break;
 			}
 
 			head = term_firstarg(save_head);
 		}
 #endif
-		//printf("***(%u) ", q->frame_size); term_print(q->pl, NULL, term1, 0); printf(" <==> "); term_print(q->pl, NULL, head, 0); printf(" (%u)\n", q->curr_match->frame_size);
+		//printf("***(%u) ", q->c.frame_size); term_print(q->pl, NULL, term1, 0); printf(" <==> "); term_print(q->pl, NULL, head, 0); printf(" (%u)\n", q->c.curr_match->frame_size);
 
-		if (!unify(q, term1, context1, head, q->env_point)) {
+		if (!unify(q, term1, context1, head, q->c.env_point)) {
 			if (save_head)
 				term_heapcheck(save_head);
 
 			reallocate_frame(q);
-			q->curr_match = term_next(q->curr_match);
+			q->c.curr_match = term_next(q->c.curr_match);
 			continue;
 		}
 
-		if (term3 && is_ptr(term3) && (term3->val_ptr != q->curr_match)) {
+		if (term3 && is_ptr(term3) && (term3->val_ptr != q->c.curr_match)) {
 			if (save_head)
 				term_heapcheck(save_head);
 
 			reallocate_frame(q);
-			q->curr_match = term_next(q->curr_match);
+			q->c.curr_match = term_next(q->c.curr_match);
 			continue;
 		}
 		
@@ -3041,18 +3041,18 @@ static int bif_clause(tpl_query *q, int wait)
 		break;
 	}
 
-	if (!q->curr_match && !wait)
+	if (!q->c.curr_match && !wait)
 		return 0;
 
 #ifndef ISO_ONLY
-	int is_eof = !q->curr_match;
+	int is_eof = !q->c.curr_match;
 
 	if (is_eof && wait) {
-		q->curr_match = save_match;
+		q->c.curr_match = save_match;
 		try_me_nofollow(q);
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 		sl_set(&r->procs, (const char *)q, NULL);
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 		PIDLOCK(q->pl);
 
 		if (q->tmo_msecs > 0) {
@@ -3069,13 +3069,13 @@ static int bif_clause(tpl_query *q, int wait)
 	try_me_nofollow(q);
 
 	if (term3 && is_var(term3))
-		put_ptr(q, q->curr_frame + term3->slot, q->curr_match);
+		put_ptr(q, q->c.curr_frame + term3->slot, q->c.curr_match);
 	
 	if (!term2)
 		return 1;
 
 	node *body = term_next(head);
-	return unify_term(q, term2, body, q->curr_frame);
+	return unify_term(q, term2, body, q->c.curr_frame);
 }
 
 static int bif_iso_clause(tpl_query *q)
@@ -3215,12 +3215,12 @@ static int bif_iso_sort(tpl_query *q)
 
 		term_append(tmp, make_const_atom("[]", 0));
 		free(base);
-		int ok = unify_term(q, term2, l, q->curr_frame);
+		int ok = unify_term(q, term2, l, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
 	}
 
-	return unify_term(q, term2, term1, q->curr_frame);
+	return unify_term(q, term2, term1, q->c.curr_frame);
 }
 
 static int keycmp(const void *p1, const void *p2)
@@ -3289,12 +3289,12 @@ static int bif_iso_keysort(tpl_query *q)
 
 		term_append(tmp, make_const_atom("[]", 0));
 		free(base);
-		int ok = unify_term(q, term2, l, q->curr_frame);
+		int ok = unify_term(q, term2, l, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
 	}
 
-	return unify_term(q, term2, term1, q->curr_frame);
+	return unify_term(q, term2, term1, q->c.curr_frame);
 }
 
 static int bif_iso_arg(tpl_query *q)
@@ -3318,13 +3318,13 @@ static int bif_iso_arg(tpl_query *q)
 
 	if (is_var(term1)) {
 		idx = 1;
-		put_int(q, q->curr_frame + orig_term1->slot, idx);
+		put_int(q, q->c.curr_frame + orig_term1->slot, idx);
 		allocate_frame(q);
 	}
 	else if (q->retry) {
 		idx = get_word(term1) + 1;
-		reset_arg(q, orig_term1, q->curr_frame);
-		put_int(q, q->curr_frame + orig_term1->slot, idx);
+		reset_arg(q, orig_term1, q->c.curr_frame);
+		put_int(q, q->c.curr_frame + orig_term1->slot, idx);
 	}
 	else
 		idx = get_word(term1);
@@ -3363,7 +3363,7 @@ static int bif_iso_univ(tpl_query *q)
 			l = get_arg(q, tail, q->latest_context);
 		}
 
-		put_env(q, q->curr_frame + term1->slot, s, q->curr_frame);
+		put_env(q, q->c.curr_frame + term1->slot, s, q->c.curr_frame);
 		term_heapcheck(s);
 		return 1;
 	}
@@ -3385,7 +3385,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]", 0));
-		int ok = unify_term(q, save_l, term2, q->curr_frame);
+		int ok = unify_term(q, save_l, term2, q->c.curr_frame);
 		term_heapcheck(save_l);
 		return ok;
 	}
@@ -3394,7 +3394,7 @@ static int bif_iso_univ(tpl_query *q)
 		node *l = make_list();
 		term_append(l, copy_term(q, term1));
 		term_append(l, make_const_atom("[]", 0));
-		int ok = unify_term(q, l, term2, q->curr_frame);
+		int ok = unify_term(q, l, term2, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
 	}
@@ -3412,9 +3412,9 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		if (term_arity(s) == 0)
-			put_env(q, q->curr_frame + term1->slot, term_first(s), q->curr_frame);
+			put_env(q, q->c.curr_frame + term1->slot, term_first(s), q->c.curr_frame);
 		else
-			put_env(q, q->curr_frame + term1->slot, s, q->curr_frame);
+			put_env(q, q->c.curr_frame + term1->slot, s, q->c.curr_frame);
 
 		term_heapcheck(s);
 		return 1;
@@ -3447,7 +3447,7 @@ static int bif_iso_functor(tpl_query *q)
 			for (int i = 0; i < v; i++)
 				term_append(s, make_var(q));
 
-			int ok = unify_term(q, term1, s, q->curr_frame);
+			int ok = unify_term(q, term1, s, q->c.curr_frame);
 			term_heapcheck(s);
 			return ok;
 		}
@@ -3468,8 +3468,8 @@ static int bif_iso_functor(tpl_query *q)
 		return 0;
 
 	node *na = make_quick_int(arity);
-	int ok1 = unify_term(q, nf, term2, q->curr_frame);
-	int ok2 = unify_term(q, na, term3, q->curr_frame);
+	int ok1 = unify_term(q, nf, term2, q->c.curr_frame);
+	int ok2 = unify_term(q, na, term3, q->c.curr_frame);
 	term_heapcheck(na);
 	return ok1 && ok2;
 }
@@ -3510,7 +3510,7 @@ static int bif_iso_length(tpl_query *q)
 		}
 
 		if (is_var(term2))
-			put_int(q, q->curr_frame + term2->slot, cnt);
+			put_int(q, q->c.curr_frame + term2->slot, cnt);
 		else
 			return term2->val_i == cnt;
 
@@ -3518,17 +3518,17 @@ static int bif_iso_length(tpl_query *q)
 	}
 
 	if (is_list(term1))
-		reset_arg(q, orig_term1, q->curr_frame);
+		reset_arg(q, orig_term1, q->c.curr_frame);
 
 	if (!is_var(orig_term1))
 		return 0;
 
 	if (is_var(term2)) {
-		put_int(q, q->curr_frame + orig_term2->slot, 0);
+		put_int(q, q->c.curr_frame + orig_term2->slot, 0);
 		allocate_frame(q);
 		try_me_nofollow(q);
 		node *tmp = make_const_atom("[]", 0);
-		put_env(q, q->curr_frame + orig_term1->slot, tmp, -1);
+		put_env(q, q->c.curr_frame + orig_term1->slot, tmp, -1);
 		term_heapcheck(tmp);
 		return 1;
 	}
@@ -3536,14 +3536,14 @@ static int bif_iso_length(tpl_query *q)
 	int cnt = term2->val_i;
 
 	if (q->retry) {
-		reset_arg(q, orig_term2, q->curr_frame);
-		put_int(q, q->curr_frame + orig_term2->slot, ++cnt);
+		reset_arg(q, orig_term2, q->c.curr_frame);
+		put_int(q, q->c.curr_frame + orig_term2->slot, ++cnt);
 		try_me_nofollow(q);
 	}
 
 	if (cnt == 0) {
 		node *tmp = make_const_atom("[]", 0);
-		put_env(q, q->curr_frame + orig_term1->slot, tmp, -1);
+		put_env(q, q->c.curr_frame + orig_term1->slot, tmp, -1);
 		term_heapcheck(tmp);
 		return 1;
 	}
@@ -3568,7 +3568,7 @@ static int bif_iso_length(tpl_query *q)
 	}
 
 	term_append(l, make_const_atom("[]", 0));
-	put_env(q, q->curr_frame + orig_term1->slot, save_l, q->curr_frame);
+	put_env(q, q->c.curr_frame + orig_term1->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -3637,7 +3637,7 @@ static int bif_iso_findall(tpl_query *q)
 
 	if (is_dynamic(term2) && !q->in_tran) {
 		did_lock = 1;
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 	}
 
 	begin_query(subq, term2);
@@ -3664,7 +3664,7 @@ static int bif_iso_findall(tpl_query *q)
 	}
 
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	if (end)
 		term_append(end, make_const_atom("[]", 0));
@@ -3711,7 +3711,7 @@ static int bif_iso_bagof(tpl_query *q)
 		sp->kvs = malloc(sizeof(skiplist));
 		sl_init(sp->kvs, 0, NULL, NULL);
 		node *n = make_stream(sp);
-		put_env(q, q->curr_frame + var->slot, n, -1);
+		put_env(q, q->c.curr_frame + var->slot, n, -1);
 		term_heapcheck(n);
 		allocate_frame(q);
 	}
@@ -3741,7 +3741,7 @@ static int bif_iso_bagof(tpl_query *q)
 
 	if (is_dynamic(term2) && !q->in_tran) {
 		did_lock = 1;
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 	}
 
 	begin_query(subq, subqgoal);
@@ -3749,7 +3749,7 @@ static int bif_iso_bagof(tpl_query *q)
 
 	if (!ok) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		query_destroy(subq);
 		return 0;
@@ -3758,12 +3758,12 @@ static int bif_iso_bagof(tpl_query *q)
 	node *acc = NULL, *end = NULL;
 
 	while (ok && !g_abort) {
-		if (sl_get(sp->kvs, (void*)subq->curr_match, NULL)) {
+		if (sl_get(sp->kvs, (void*)subq->c.curr_match, NULL)) {
 			ok = query_continue(subq);
 			continue;
 		}
 
-		sl_set(sp->kvs, (void*)subq->curr_match, NULL);
+		sl_set(sp->kvs, (void*)subq->c.curr_match, NULL);
 		node *from = get_arg(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
@@ -3779,7 +3779,7 @@ static int bif_iso_bagof(tpl_query *q)
 			end = tmp;
 		}
 
-		for (unsigned i = 0; i < q->frame_size; i++) {
+		for (unsigned i = 0; i < q->c.frame_size; i++) {
 			if (!isfree[i])
 				subq->pins |= 1 << i;
 		}
@@ -3788,7 +3788,7 @@ static int bif_iso_bagof(tpl_query *q)
 	}
 
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	if (end)
 		term_append(end, make_const_atom("[]", 0));
@@ -3843,7 +3843,7 @@ static int bif_iso_setof(tpl_query *q)
 		sp->kvs = malloc(sizeof(skiplist));
 		sl_init(sp->kvs, 0, NULL, NULL);
 		node *n = make_stream(sp);
-		put_env(q, q->curr_frame + var->slot, n, -1);
+		put_env(q, q->c.curr_frame + var->slot, n, -1);
 		term_heapcheck(n);
 		allocate_frame(q);
 	}
@@ -3873,7 +3873,7 @@ static int bif_iso_setof(tpl_query *q)
 
 	if (is_dynamic(term2) && !q->in_tran) {
 		did_lock = 1;
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 	}
 
 	begin_query(subq, subqgoal);
@@ -3881,7 +3881,7 @@ static int bif_iso_setof(tpl_query *q)
 
 	if (!ok) {
 		if (did_lock)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		query_destroy(subq);
 		return 0;
@@ -3890,12 +3890,12 @@ static int bif_iso_setof(tpl_query *q)
 	node *acc = NULL, *end = NULL;
 
 	while (ok && !g_abort) {
-		if (sl_get(sp->kvs, (void*)subq->curr_match, NULL)) {
+		if (sl_get(sp->kvs, (void*)subq->c.curr_match, NULL)) {
 			ok = query_continue(subq);
 			continue;
 		}
 
-		sl_set(sp->kvs, (void*)subq->curr_match, NULL);
+		sl_set(sp->kvs, (void*)subq->c.curr_match, NULL);
 		node *from = get_arg(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
@@ -3911,7 +3911,7 @@ static int bif_iso_setof(tpl_query *q)
 			end = tmp;
 		}
 
-		for (unsigned i = 0; i < q->frame_size; i++) {
+		for (unsigned i = 0; i < q->c.frame_size; i++) {
 			if (!isfree[i])
 				subq->pins |= 1 << i;
 		}
@@ -3920,7 +3920,7 @@ static int bif_iso_setof(tpl_query *q)
 	}
 
 	if (did_lock)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	if (end)
 		term_append(end, make_const_atom("[]", 0));
@@ -4027,8 +4027,8 @@ static void eval_term(tpl_query *q, node *n)
 		return;
 	}
 
-	node *save = q->curr_term;
-	q->curr_term = n;
+	node *save = q->c.curr_term;
+	q->c.curr_term = n;
 
 	if (is_builtin(n)) {
 		n->bifptr(q);
@@ -4037,7 +4037,7 @@ static void eval_term(tpl_query *q, node *n)
 		g_s_resolves++;
 #endif
 
-		q->curr_term = save;
+		q->c.curr_term = save;
 		return;
 	}
 
@@ -4045,10 +4045,10 @@ static void eval_term(tpl_query *q, node *n)
 
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = n;
+	q->c.curr_term = n;
 	query_inline(q);
 	trust_me(q);
-	q->curr_term = save;
+	q->c.curr_term = save;
 }
 
 static void eval(tpl_query *q, node **args)
@@ -4072,12 +4072,12 @@ static int bif_iso_is(tpl_query *q)
 
 	if (is_var(term1)) {
 		if (q->nv.flags & TYPE_INTEGER)
-			put_int(q, q->curr_frame + term1->slot, q->nv.val_i);
+			put_int(q, q->c.curr_frame + term1->slot, q->nv.val_i);
 		else if (q->nv.flags & TYPE_FLOAT)
-			put_float(q, q->curr_frame + term1->slot, q->nv.val_f);
+			put_float(q, q->c.curr_frame + term1->slot, q->nv.val_f);
 #if USE_SSL
 		else if (q->nv.flags & TYPE_BIGNUM) {
-			put_bignum(q, q->curr_frame + term1->slot, &q->nv);
+			put_bignum(q, q->c.curr_frame + term1->slot, &q->nv);
 		}
 #endif
 		else {
@@ -5378,7 +5378,7 @@ static int bif_xtra_between(tpl_query *q)
 	if (!q->retry) {
 		term3 = get_var(term3);
 		nbr_t v = get_word(term1);
-		put_int(q, q->curr_frame + term3->slot, v);
+		put_int(q, q->c.curr_frame + term3->slot, v);
 		allocate_frame(q);
 	}
 	else {
@@ -5388,8 +5388,8 @@ static int bif_xtra_between(tpl_query *q)
 		if (v > maxn)
 			return 0;
 
-		reset_arg(q, orig_term3, q->curr_frame);
-		put_int(q, q->curr_frame + orig_term3->slot, v);
+		reset_arg(q, orig_term3, q->c.curr_frame);
+		put_int(q, q->c.curr_frame + orig_term3->slot, v);
 	}
 
 	try_me_nofollow(q);
@@ -5437,11 +5437,11 @@ static int bif_xtra_phrase(tpl_query *q)
 	else
 		tmp->flags |= FLAG_BUILTIN;
 
-	put_env(q, q->curr_frame + var->slot, tmp, -1);
+	put_env(q, q->c.curr_frame + var->slot, tmp, -1);
 	term_heapcheck(tmp);
 	allocate_frame(q);
 	try_me(q);
-	q->curr_term = tmp;
+	q->c.curr_term = tmp;
 	return call(q);
 }
 
@@ -5479,7 +5479,7 @@ static int bif_xtra_time_2(tpl_query *q)
 	trust_me(subq);
 	begin_query(subq, term1);
 	int ok = query_run(subq);
-	put_float(q, q->curr_frame + term2->slot, query_elapsed(subq));
+	put_float(q, q->c.curr_frame + term2->slot, query_elapsed(subq));
 	query_destroy(subq);
 	return ok;
 }
@@ -5501,7 +5501,7 @@ static int bif_xtra_term_to_atom(tpl_query *q)
 		free(tmpbuf);
 	}
 	else
-		ok = unify_term(q, term1, term2, q->curr_frame);
+		ok = unify_term(q, term1, term2, q->c.curr_frame);
 
 	return ok;
 }
@@ -5529,7 +5529,7 @@ static int bif_xtra_term_to_blob(tpl_query *q)
 		free(tmpbuf);
 	}
 	else
-		ok = unify_term(q, term1, term2, q->curr_frame);
+		ok = unify_term(q, term1, term2, q->c.curr_frame);
 
 	return ok;
 }
@@ -5546,18 +5546,18 @@ static int bif_xtra_abolish(tpl_query *q)
 	rule *r = NULL;
 
 	if (!q->in_tran)
-		DBLOCK(q->curr_db);
+		DBLOCK(q->c.curr_db);
 
-	if (!sl_get(&q->curr_db->rules, tmpbuf, (void **)&r)) {
+	if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 		if (!q->in_tran)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		return 0;
 	}
 
 	if (!r->dynamic) {
 		if (!q->in_tran)
-			DBUNLOCK(q->curr_db);
+			DBUNLOCK(q->c.curr_db);
 
 		QABORT(ABORT_NOTDYNAMIC);
 		return 0;
@@ -5566,11 +5566,11 @@ static int bif_xtra_abolish(tpl_query *q)
 	for (node *match = NLIST_FRONT(&r->val_l); match; match = term_next(match))
 		match->flags |= FLAG_DELETED;
 
-	if (sl_del(&q->curr_db->rules, tmpbuf, (void **)&r))
+	if (sl_del(&q->c.curr_db->rules, tmpbuf, (void **)&r))
 		free(r);
 
 	if (!q->in_tran)
-		DBUNLOCK(q->curr_db);
+		DBUNLOCK(q->c.curr_db);
 
 	return 1;
 }
@@ -5780,7 +5780,7 @@ static int bif_xtra_findnsols(tpl_query *q)
 		query_run(subq);
 	}
 	else {
-		reset_arg(q, term4, q->curr_frame);
+		reset_arg(q, term4, q->c.curr_frame);
 		sp = var->val_str;
 		subq = sp->subqptr;
 	}
@@ -5827,7 +5827,7 @@ static int bif_xtra_listing(tpl_query *q)
 {
 	const char *functor = NULL;
 
-	if (is_compound(q->curr_term)) {
+	if (is_compound(q->c.curr_term)) {
 		node *args = get_args(q);
 		node *term1 = get_next_arg(q, &args);
 
@@ -5843,9 +5843,9 @@ static int bif_xtra_listing(tpl_query *q)
 		}
 	}
 
-	// printf("DEBUG: listing module '%s'\n", q->curr_db->name);
+	// printf("DEBUG: listing module '%s'\n", q->c.curr_db->name);
 
-	module *db = q->curr_db;
+	module *db = q->c.curr_db;
 	sl_start(&db->rules);
 	rule *r;
 
@@ -5879,7 +5879,7 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 {
 	const char *functor = NULL;
 
-	if (is_compound(q->curr_term)) {
+	if (is_compound(q->c.curr_term)) {
 		node *args = get_args(q);
 		node *term1 = get_next_arg(q, &args);
 
@@ -5893,9 +5893,9 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 		functor = VAL_S(term1);
 	}
 
-	// printf("DEBUG: listing module '%s'\n", q->curr_db->name);
+	// printf("DEBUG: listing module '%s'\n", q->c.curr_db->name);
 
-	module *db = q->curr_db;
+	module *db = q->c.curr_db;
 	sl_start(&db->rules);
 	rule *r;
 
@@ -5949,7 +5949,7 @@ static int bif_xtra_random(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
 	double v = (double)rand() / (double)RAND_MAX;
-	put_float(q, q->curr_frame + term1->slot, v);
+	put_float(q, q->c.curr_frame + term1->slot, v);
 	return 1;
 }
 
@@ -5976,14 +5976,14 @@ static int bif_xtra_term_hash(tpl_query *q)
 	node *term2 = get_var(term2);
 	
 	if (is_atom(term1) && !is_blob(term1)) {
-		put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(VAL_S(term1)));
+		put_int(q, q->c.curr_frame + term2->slot, jenkins_one_at_a_time_hash(VAL_S(term1)));
 	}
 	else {
 		size_t max_len = PRINTBUF_SIZE;
 		char *tmpbuf = (char *)malloc(max_len + 1);
 		char *dst = tmpbuf;
 		term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);	
-		put_int(q, q->curr_frame + term2->slot, jenkins_one_at_a_time_hash(tmpbuf));
+		put_int(q, q->c.curr_frame + term2->slot, jenkins_one_at_a_time_hash(tmpbuf));
 		free(tmpbuf);
 	}
 	
@@ -6019,7 +6019,7 @@ static int bif_xtra_atom_number(tpl_query *q)
 	else if (numeric == NUM_BINARY)
 		n->flags |= FLAG_BINARY;
 
-	int ok = unify_term(q, term2, n, q->curr_frame);
+	int ok = unify_term(q, term2, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -6044,7 +6044,7 @@ static int bif_xtra_read_term_from_atom(tpl_query *q)
 	term = copy_term(q, term);
 	term_heapcheck(l.r);
 	lexer_done(&l);
-	int ok = unify_term(q, term2, term, q->curr_frame);
+	int ok = unify_term(q, term2, term, q->c.curr_frame);
 	term_heapcheck(term);
 	return ok;
 }
@@ -6054,8 +6054,8 @@ int bif_xtra_enter(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 
-	if (!sl_get(&q->pl->mods, VAL_S(term1), (void **)&q->curr_db))
-		q->curr_db = &q->pl->db;
+	if (!sl_get(&q->pl->mods, VAL_S(term1), (void **)&q->c.curr_db))
+		q->c.curr_db = &q->pl->db;
 
 	return 1;
 }

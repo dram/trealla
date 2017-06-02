@@ -129,8 +129,8 @@ static int bif_sys_exists_file_3(tpl_query *q)
 	if ((st.st_mode & S_IFMT) != S_IFREG)
 		return 0;
 
-	put_int(q, q->curr_frame + term2->slot, (nbr_t)st.st_size);
-	put_int(q, q->curr_frame + term3->slot, (nbr_t)st.st_mtime);
+	put_int(q, q->c.curr_frame + term2->slot, (nbr_t)st.st_size);
+	put_int(q, q->c.curr_frame + term3->slot, (nbr_t)st.st_mtime);
 	return 1;
 }
 
@@ -151,7 +151,7 @@ static int sys_write_file(tpl_query *q, node *var, node *term1, node *term2, nbr
 		sp2 = calloc(1, sizeof(stream));
 		sp2->fptr = fp;
 		node *n = make_stream(sp2);
-		put_env(q, q->curr_frame + var->slot, n, -1);
+		put_env(q, q->c.curr_frame + var->slot, n, -1);
 		term_heapcheck(n);
 		allocate_frame(q);
 	}
@@ -339,7 +339,7 @@ static int bif_sys_load_file_2(tpl_query *q)
 	dstbuf[len] = '\0';
 	fclose(fp);
 	node *n = make_blob(dstbuf, len);
-	put_env(q, q->curr_frame + term2->slot, n, -1);
+	put_env(q, q->c.curr_frame + term2->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -385,7 +385,7 @@ static int bif_sys_concat_N(tpl_query *q)
 	else
 		n = make_atom(tmpbuf, 1);
 
-	put_env(q, q->curr_frame + var->slot, n, -1);
+	put_env(q, q->c.curr_frame + var->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -413,7 +413,7 @@ static int bif_sys_getline_2(tpl_query *q)
 		}
 	}
 
-	put_atom(q, q->curr_frame + term2->slot, line, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, line, 1);
 	return 1;
 }
 
@@ -438,7 +438,7 @@ static int bif_sys_getline_1(tpl_query *q)
 		}
 	}
 
-	put_atom(q, q->curr_frame + term1->slot, line, 1);
+	put_atom(q, q->c.curr_frame + term1->slot, line, 1);
 	return 1;
 }
 
@@ -498,7 +498,7 @@ static int bif_sys_bread_3(tpl_query *q)
 		}
 
 		bufptr[len = rlen] = '\0';
-		put_int(q, q->curr_frame + term2->slot, len);
+		put_int(q, q->c.curr_frame + term2->slot, len);
 	}
 	else // return specific length
 	{
@@ -544,7 +544,7 @@ static int bif_sys_bread_3(tpl_query *q)
 	}
 
 	node *n = make_blob(bufptr, len);
-	put_env(q, q->curr_frame + term3->slot, n, -1);
+	put_env(q, q->c.curr_frame + term3->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -570,7 +570,7 @@ static int bif_sys_now_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
 	time_t secs = time(NULL);
-	put_int(q, q->curr_frame + term1->slot, secs);
+	put_int(q, q->c.curr_frame + term1->slot, secs);
 	return 1;
 }
 
@@ -578,7 +578,7 @@ static int bif_sys_timestamp_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	put_int(q, q->curr_frame + term1->slot, gettimeofday_usec());
+	put_int(q, q->c.curr_frame + term1->slot, gettimeofday_usec());
 	return 1;
 }
 
@@ -678,7 +678,7 @@ static int bif_sys_jsonq_3(tpl_query *q)
 		return 0;
 	}
 
-	put_atom(q, q->curr_frame + term3->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf), 1);
 	free(tmpbuf);
 	return 1;
 }
@@ -694,9 +694,9 @@ static int bif_sys_jsonq_4(tpl_query *q)
 	char *tmpbuf = (char *)malloc(len + 1);
 
 	if (!jsonq(VAL_S(term1), VAL_S(term2), tmpbuf, len))
-		put_atom(q, q->curr_frame + term3->slot, strdup(VAL_S(term4)), 1);
+		put_atom(q, q->c.curr_frame + term3->slot, strdup(VAL_S(term4)), 1);
 	else
-		put_atom(q, q->curr_frame + term3->slot, strdup(tmpbuf), 1);
+		put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf), 1);
 
 
 	free(tmpbuf);
@@ -719,7 +719,7 @@ static int bif_sys_xmlq_4(tpl_query *q)
 		return 0;
 	}
 
-	put_atom(q, q->curr_frame + term4->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term4->slot, strdup(tmpbuf), 1);
 	free(tmpbuf);
 	return 1;
 }
@@ -741,7 +741,7 @@ static int bif_sys_xmlq_3(tpl_query *q)
 			return 0;
 		}
 
-		put_int(q, q->curr_frame + var->slot, 0);
+		put_int(q, q->c.curr_frame + var->slot, 0);
 		allocate_frame(q);
 	}
 	else {
@@ -752,12 +752,12 @@ static int bif_sys_xmlq_3(tpl_query *q)
 			return 0;
 		}
 
-		reset_arg(q, orig_var, q->curr_frame);
-		put_int(q, q->curr_frame + orig_var->slot, i);
+		reset_arg(q, orig_var, q->c.curr_frame);
+		put_int(q, q->c.curr_frame + orig_var->slot, i);
 	}
 
 	try_me(q);
-	put_atom(q, q->curr_frame + term3->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf), 1);
 	free(tmpbuf);
 	return 1;
 }
@@ -778,7 +778,7 @@ static int bif_sys_upper_2(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->curr_frame + term2->slot, dstbuf, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, dstbuf, 1);
 	return 1;
 }
 
@@ -798,7 +798,7 @@ static int bif_sys_lower_2(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->curr_frame + term2->slot, dstbuf, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, dstbuf, 1);
 	return 1;
 }
 
@@ -820,7 +820,7 @@ static int bif_sys_format_rfcdate_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	char tmpbuf[80];
 	format_rfcdate(tmpbuf, term1->val_i);
-	put_atom(q, q->curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
 	return 1;
 }
 
@@ -851,7 +851,7 @@ static int bif_sys_parse_rfcdate_2(tpl_query *q)
 	tm.tm_min = min;
 	tm.tm_sec = sec;
 	nbr_t v = (nbr_t)mktime(&tm);
-	put_int(q, q->curr_frame + term2->slot, v);
+	put_int(q, q->c.curr_frame + term2->slot, v);
 	return 1;
 }
 
@@ -874,7 +874,7 @@ static int bif_sys_atom_timestamp_2(tpl_query *q)
 	v *= 1000;
 	v += ms;
 	v *= 1000;
-	put_int(q, q->curr_frame + term2->slot, v);
+	put_int(q, q->c.curr_frame + term2->slot, v);
 	return 1;
 }
 
@@ -999,7 +999,7 @@ static int bif_sys_split_3(tpl_query *q)
 
 	if (!*src) {
 		node *tmp = make_const_atom("[]", 0);
-		put_env(q, q->curr_frame + term3->slot, tmp, q->curr_frame);
+		put_env(q, q->c.curr_frame + term3->slot, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
 	}
 
@@ -1030,7 +1030,7 @@ static int bif_sys_split_3(tpl_query *q)
 
 	free(dstbuf);
 	term_append(l, make_const_atom("[]", 0));
-	put_env(q, q->curr_frame + term3->slot, save_l, q->curr_frame);
+	put_env(q, q->c.curr_frame + term3->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -1082,7 +1082,7 @@ static int bif_sys_replace_4(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->curr_frame + term4->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term4->slot, strdup(dstbuf), 1);
 	free(dstbuf);
 	return 1;
 }
@@ -1131,12 +1131,12 @@ static int bif_sys_left_3(tpl_query *q)
 	const char *src = VAL_S(term1);
 
 	if (is_var(term2))
-		put_int(q, q->curr_frame + term2->slot, len);
+		put_int(q, q->c.curr_frame + term2->slot, len);
 
 	if (is_atom(term3))
 		return !strncmp(src, VAL_S(term3), len);
 
-	put_atom(q, q->curr_frame + term3->slot, strndup(src, len), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strndup(src, len), 1);
 	return 1;
 }
 
@@ -1161,12 +1161,12 @@ static int bif_sys_right_3(tpl_query *q)
 	const char *src = VAL_S(term1) + LEN(term1) - len;
 
 	if (is_var(term2))
-		put_int(q, q->curr_frame + term2->slot, len);
+		put_int(q, q->c.curr_frame + term2->slot, len);
 
 	if (is_atom(term3))
 		return !strcmp(src, VAL_S(term3));
 
-	put_atom(q, q->curr_frame + term3->slot, strdup(src), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(src), 1);
 	return 1;
 }
 
@@ -1175,7 +1175,7 @@ static int bif_sys_rand_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
 	nbr_t v = rand();
-	put_int(q, q->curr_frame + term1->slot, v);
+	put_int(q, q->c.curr_frame + term1->slot, v);
 	return 1;
 }
 
@@ -1201,7 +1201,7 @@ static int bif_sys_munge_2(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->curr_frame + term2->slot, tmpbuf, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, tmpbuf, 1);
 	return 1;
 }
 
@@ -1269,7 +1269,7 @@ static int bif_sys_uuid_1(tpl_query *q)
 	uuid_gen(&u);
 	char tmpbuf[64];
 	uuid_to_string(&u, tmpbuf, sizeof(tmpbuf));
-	put_atom(q, q->curr_frame + term1->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term1->slot, strdup(tmpbuf), 1);
 	return 1;
 }
 
@@ -1291,7 +1291,7 @@ static int bif_sys_sha1_2(tpl_query *q)
 		buflen -= len;
 	}
 
-	put_atom(q, q->curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
 	return 1;
 }
 
@@ -1312,7 +1312,7 @@ static int bif_sys_sha256_2(tpl_query *q)
 		buflen -= len;
 	}
 
-	put_atom(q, q->curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
 	return 1;
 }
 
@@ -1333,7 +1333,7 @@ static int bif_sys_sha512_2(tpl_query *q)
 		buflen -= len;
 	}
 
-	put_atom(q, q->curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
 	return 1;
 }
 #endif
@@ -1387,7 +1387,7 @@ static int bif_sys_url_encode_2(tpl_query *q)
 	size_t len = LEN(term1);
 	char *dstbuf = (char *)malloc((len * 3) + 1);
 	url_encode(VAL_S(term1), len, dstbuf);
-	put_atom(q, q->curr_frame + term2->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf), 1);
 	free(dstbuf);
 	return 1;
 }
@@ -1400,7 +1400,7 @@ static int bif_sys_url_decode_2(tpl_query *q)
 	size_t len = LEN(term1);
 	char *dstbuf = (char *)malloc(len + 1);
 	url_decode(VAL_S(term1), dstbuf);
-	put_atom(q, q->curr_frame + term2->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf), 1);
 	free(dstbuf);
 	return 1;
 }
@@ -1413,7 +1413,7 @@ static int bif_sys_b64_encode_2(tpl_query *q)
 	size_t len = LEN(term1);
 	char *dstbuf = (char *)malloc((len * 3) + 1);
 	b64_encode(VAL_S(term1), len, &dstbuf, 0, 0);
-	put_atom(q, q->curr_frame + term2->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf), 1);
 	free(dstbuf);
 	return 1;
 }
@@ -1427,7 +1427,7 @@ static int bif_sys_b64_decode_2(tpl_query *q)
 	char *dstbuf = (char *)malloc(len + 1);
 	size_t nbytes = b64_decode(VAL_S(term1), len, &dstbuf);
 	node *n = make_blob(dstbuf, nbytes);
-	put_env(q, q->curr_frame + term2->slot, n, -1);
+	put_env(q, q->c.curr_frame + term2->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -1527,7 +1527,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 
 	free(dstbuf);
 	term_append(l, make_const_atom("[]", 0));
-	put_env(q, q->curr_frame + term2->slot, save_l, q->curr_frame);
+	put_env(q, q->c.curr_frame + term2->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -1627,7 +1627,7 @@ static int bif_sys_parse_tab_2(tpl_query *q)
 
 	free(dstbuf);
 	term_append(l, make_const_atom("[]", 0));
-	put_env(q, q->curr_frame + term2->slot, save_l, q->curr_frame);
+	put_env(q, q->c.curr_frame + term2->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -1638,7 +1638,7 @@ static int bif_sys_stream_1(tpl_query *q)
 	node *term0 = get_var(term0);
 	stream *sp = calloc(1, sizeof(stream));
 	node *n = make_stream(sp);
-	put_env(q, q->curr_frame + term0->slot, n, -1);
+	put_env(q, q->c.curr_frame + term0->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -1700,7 +1700,7 @@ static int bif_sys_lput_4(tpl_query *q)
 	else if (!sl_get(sp->kvs, VAL_S(term1), (void **)&value))
 		value = make_const_atom("[]", 0);
 
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 
 	if (!ok) {
@@ -1744,7 +1744,7 @@ static int bif_sys_put_4(tpl_query *q)
 	else if (!sl_get(sp->kvs, VAL_S(term1), (void **)&value))
 		value = make_quick_int(0);
 
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 
 	if (!ok) {
@@ -1810,7 +1810,7 @@ static int bif_sys_get_3(tpl_query *q)
 		value = make_quick_int(0);
 
 	SYSUNLOCK(q->pl);
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 	return ok;
 }
@@ -1831,7 +1831,7 @@ static int bif_sys_lget_3(tpl_query *q)
 		value = make_const_atom("[]", 0);
 
 	SYSUNLOCK(q->pl);
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 	return ok;
 }
@@ -1853,7 +1853,7 @@ static int bif_sys_get_keys_3(tpl_query *q)
 		const char *key;
 
 		while ((key = sl_next(sp->kvs, (void **)&value)) != NULL) {
-			if (!unify_term(q, value, term1, q->curr_frame)) {
+			if (!unify_term(q, value, term1, q->c.curr_frame)) {
 				reallocate_frame(q);
 				continue;
 			}
@@ -1875,7 +1875,7 @@ static int bif_sys_get_keys_3(tpl_query *q)
 
 	if (cnt) {
 		term_append(l, make_const_atom("[]", 0));
-		ok = unify_term(q, term2, save_l, q->curr_frame);
+		ok = unify_term(q, term2, save_l, q->c.curr_frame);
 	}
 	else {
 		ok = unify_const_atom(q, term2, "[]", 0);
@@ -1923,7 +1923,7 @@ static int bif_sys_get_2(tpl_query *q)
 
 	if (cnt) {
 		term_append(l, make_const_atom("[]", 0));
-		ok = unify_term(q, term1, save_l, q->curr_frame);
+		ok = unify_term(q, term1, save_l, q->c.curr_frame);
 	}
 	else {
 		ok = unify_const_atom(q, term1, "[]", 0);

@@ -863,27 +863,27 @@ int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 		return 0;
 	}
 
-	self->frame_size = self->lex->vars;
+	self->c.frame_size = self->lex->vars;
 	begin_query(self, NLIST_FRONT(&self->lex->val_l));
 	return 1;
 }
 
 void trace(tpl_query *q, int fail, int leave)
 {
-	if (!q->curr_term)
+	if (!q->c.curr_term)
 		return;
 
-	if (q->curr_term->flags & FLAG_HIDDEN)
+	if (q->c.curr_term->flags & FLAG_HIDDEN)
 		return;
 
 	const int save_context = q->latest_context;
-	q->latest_context = q->curr_frame;
+	q->latest_context = q->c.curr_frame;
 	size_t dstlen = PRINTBUF_SIZE;
 	char *dstbuf = (char *)malloc(dstlen + 1);
 	char *dst = dstbuf;
 	dst += sprintf(dst, "%s", fail ? "Fail:" : q->retry ? "Redo:" : leave ? "Exit:" : "Call:");
 	dst += sprintf(dst, "%s", q->parent ? " ... " : " ");
-	term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, q->curr_term, 1);
+	term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, q->c.curr_term, 1);
 	q->latest_context = save_context;
 
 #if 1
@@ -903,9 +903,9 @@ int query_run(tpl_query *self)
 {
 	self->ok = 1;
 	self->started = gettimeofday_usec();
-	self->env_point = self->curr_frame + self->frame_size;
-	self->envs_used = self->env_point;
-	prepare_frame(self, self->frame_size);
+	self->c.env_point = self->c.curr_frame + self->c.frame_size;
+	self->envs_used = self->c.env_point;
+	prepare_frame(self, self->c.frame_size);
 	run_me(self);
 	self->elapsed = gettimeofday_usec() - self->started;
 
@@ -937,7 +937,7 @@ void query_reset(tpl_query *self)
 	term_heapcheck(r);
 	lexer_done(self->lex);
 	lexer_init(self->lex, self->pl);
-	self->lex->db = self->curr_db;
+	self->lex->db = self->c.curr_db;
 }
 
 int query_continue(tpl_query *self)
@@ -1005,7 +1005,7 @@ long long query_get_integer(tpl_query *self, unsigned idx)
 
 char *query_get_text(tpl_query *self, unsigned idx)
 {
-	if (idx >= self->frame_size)
+	if (idx >= self->c.frame_size)
 		return strdup("ERROR");
 
 	env *e = get_env(self, idx);
@@ -1093,10 +1093,10 @@ tpl_query *query_create_subquery(tpl_query *self)
 	if (!q)
 		return NULL;
 
-	env *e_to = q->envs + q->curr_frame;
+	env *e_to = q->envs + q->c.curr_frame;
 
-	for (size_t i = 0; i < self->frame_size; i++, e_to++) {
-		const env *e_from = get_env(self, self->curr_frame + i);
+	for (size_t i = 0; i < self->c.frame_size; i++, e_to++) {
+		const env *e_from = get_env(self, self->c.curr_frame + i);
 		*e_to = *e_from;
 
 		if (!e_from->term)
@@ -1114,7 +1114,7 @@ tpl_query *query_create_subquery(tpl_query *self)
 			e_from->term->refcnt++;
 	}
 
-	q->frame_size = self->frame_size;
+	q->c.frame_size = self->c.frame_size;
 	return q;
 }
 
@@ -1410,17 +1410,17 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 	if (parent) {
 		q->optimize = parent->optimize;
 		q->trace = parent->trace;
-		q->curr_db = parent->curr_db;
+		q->c.curr_db = parent->c.curr_db;
 		q->lex = parent->lex;
 		q->curr_stdin = parent->curr_stdin;
 		q->curr_stdout = parent->curr_stdout;
-		q->curr_db = parent->curr_db;
+		q->c.curr_db = parent->c.curr_db;
 	} else {
 		q->lex = calloc(1, sizeof(lexer));
 		lexer_init(q->lex, self);
 		q->curr_stdin = stdin;
 		q->curr_stdout = stdout;
-		q->curr_db = &self->db;
+		q->c.curr_db = &self->db;
 	}
 
 #ifndef ISO_ONLY
@@ -1441,7 +1441,7 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 	q->choices = q->choice_stack;
 	q->envs = q->env_stack;
 	q->trails = q->trail_stack;
-	q->curr_frame = FUDGE_FACTOR;
+	q->c.curr_frame = FUDGE_FACTOR;
 	return q;
 }
 

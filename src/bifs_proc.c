@@ -173,7 +173,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 		if (n->flags & FLAG_SKIPPED)
 			continue;
 
-		if (!unify_term(q, term, n->val_ptr, q->curr_frame)) {
+		if (!unify_term(q, term, n->val_ptr, q->c.curr_frame)) {
 			reallocate_frame(q);
 			continue;
 		}
@@ -257,7 +257,7 @@ static int bif_proc_fork_0(tpl_query *q)
 	}
 
 	who->is_forked = 1;
-	begin_query(who, term_next(q->curr_term));
+	begin_query(who, term_next(q->c.curr_term));
 
 	if (!q->is_forked && q->name) {
 		PIDLOCK(q->pl);
@@ -285,7 +285,7 @@ static int bif_proc_procinfo_2(tpl_query *q)
 	else if (!strcmp(VAL_S(term1), "msgs"))
 		cnt = NLIST_COUNT(&q->queue);
 
-	put_int(q, q->curr_frame + term2->slot, cnt);
+	put_int(q, q->c.curr_frame + term2->slot, cnt);
 	return 1;
 }
 
@@ -307,7 +307,7 @@ static int bif_proc_procinfo_3(tpl_query *q)
 			cnt = NLIST_COUNT(&who->queue);
 	}
 
-	put_int(q, q->curr_frame + term3->slot, cnt);
+	put_int(q, q->c.curr_frame + term3->slot, cnt);
 	return 1;
 }
 
@@ -613,7 +613,7 @@ static int bif_proc_server5(tpl_query *q)
 	while (is_list(term1)) {
 		term1 = term_first(term1);
 		term1 = term_next(term1);
-		node *n = get_arg(q, term1, q->curr_frame);
+		node *n = get_arg(q, term1, q->c.curr_frame);
 		configure_server(q, h, n, &proc_callback3, &has_uncle);
 		term1 = term_next(term1);
 	}
@@ -629,7 +629,7 @@ static int proc_callback2(session *s, void *data)
 	node *args = get_args(q);
 	node *term1 = get_list(term1);
 	node *term2 = get_var(term2);
-	node *goal = term_next(q->curr_term);
+	node *goal = term_next(q->c.curr_term);
 	return proc_callback(q, s, goal, term2);
 }
 
@@ -795,7 +795,7 @@ static int bif_proc_pid_2(tpl_query *q)
 		sp->subqptr = pid;
 		node *tmp = make_stream(sp);
 		tmp->flags |= FLAG_PID;
-		put_env(q, q->curr_frame + term2->slot, tmp, -1);
+		put_env(q, q->c.curr_frame + term2->slot, tmp, -1);
 		term_heapcheck(tmp);
 		return 1;
 	}
@@ -909,7 +909,7 @@ static int bif_proc_pid_2(tpl_query *q)
 	n->flags |= FLAG_PID;
 	n->pid = q;
 	handler_add_client(q->pl->h, &client_callback, q, s);
-	put_env(q, q->curr_frame + term2->slot, n, -1);
+	put_env(q, q->c.curr_frame + term2->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -928,7 +928,7 @@ static int bif_proc_pid_1(tpl_query *q)
 	sp->subqptr = q->curr_pid;
 	node *tmp = make_stream(sp);
 	tmp->flags |= FLAG_PID;
-	put_env(q, q->curr_frame + term1->slot, tmp, -1);
+	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -1198,7 +1198,7 @@ static int bif_proc_lput_3(tpl_query *q)
 	else if (!sl_get(q->kvs, VAL_S(term1), (void **)&value))
 		value = make_const_atom("[]", 0);
 
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 	if (!ok)
 		return 0;
@@ -1234,7 +1234,7 @@ static int bif_proc_put_3(tpl_query *q)
 	else if (!sl_get(q->kvs, VAL_S(term1), (void **)&value))
 		value = make_quick_int(0);
 
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 	if (!ok)
 		return 0;
@@ -1287,7 +1287,7 @@ static int bif_proc_get_2(tpl_query *q)
 	else if (!sl_get(q->kvs, VAL_S(term1), (void **)&value))
 		value = make_quick_int(0);
 
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 	return ok;
 }
@@ -1304,7 +1304,7 @@ static int bif_proc_lget_2(tpl_query *q)
 	else if (!sl_get(q->kvs, VAL_S(term1), (void **)&value))
 		value = make_const_atom("[]", 0);
 
-	int ok = unify_term(q, term2, value, q->curr_frame);
+	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
 	return ok;
 }
@@ -1323,7 +1323,7 @@ static int bif_proc_get_keys_2(tpl_query *q)
 		const char *key;
 
 		while ((key = sl_next(q->kvs, (void **)&value)) != NULL) {
-			if (!unify_term(q, value, term1, q->curr_frame)) {
+			if (!unify_term(q, value, term1, q->c.curr_frame)) {
 				reallocate_frame(q);
 				continue;
 			}
@@ -1343,11 +1343,11 @@ static int bif_proc_get_keys_2(tpl_query *q)
 
 	if (cnt) {
 		term_append(l, make_const_atom("[]", 0));
-		ok = unify_term(q, term2, save_l, q->curr_frame);
+		ok = unify_term(q, term2, save_l, q->c.curr_frame);
 	}
 	else {
 		node *tmp = make_const_atom("[]", 0);
-		ok = unify_term(q, term2, tmp, q->curr_frame);
+		ok = unify_term(q, term2, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
 	}
 
@@ -1388,11 +1388,11 @@ static int bif_proc_get_1(tpl_query *q)
 
 	if (cnt) {
 		term_append(l, make_const_atom("[]", 0));
-		ok = unify_term(q, term1, save_l, q->curr_frame);
+		ok = unify_term(q, term1, save_l, q->c.curr_frame);
 	}
 	else {
 		node *tmp = make_const_atom("[]", 0);
-		ok = unify_term(q, term1, tmp, q->curr_frame);
+		ok = unify_term(q, term1, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
 	}
 

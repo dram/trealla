@@ -46,8 +46,8 @@
 #define is_storage(n) (((n)->flags & FLAG_DBS_STORAGE) ? 1 : 0)
 #endif
 
-#define get_arity(q) term_arity(q->curr_term)
-#define get_args(q) term_first(q->curr_term); if (!term_count(q->curr_term)) { QABORT(ABORT_INVALIDARGMISSING); return 0; }
+#define get_arity(q) term_arity(q->c.curr_term)
+#define get_args(q) term_first(q->c.curr_term); if (!term_count(q->c.curr_term)) { QABORT(ABORT_INVALIDARGMISSING); return 0; }
 #define get_term(t) get_next_arg(q, &args); if (t == NULL) { QABORT(ABORT_INVALIDARGMISSING); return 0; }
 
 #define get_atomic(t) get_next_arg(q, &args); if (!is_atomic(t)) { QABORT(ABORT_INVALIDARGNOTATOMIC); return 0; }
@@ -154,8 +154,8 @@ inline static void put_env(tpl_query *q, unsigned point, node *term, signed fram
 	point -= e->binding;
 	e -= e->binding;
 
-	if ((point < q->curr_frame) || (point >= (q->curr_frame + q->frame_size)))
-		q->trails[q->trail_point+q->trail_size++] = point;
+	if ((point < q->c.curr_frame) || (point >= (q->c.curr_frame + q->c.frame_size)))
+		q->trails[q->c.trail_point+q->c.trail_size++] = point;
 
 	e->binding = frame;
 	e->term = term;
@@ -224,7 +224,7 @@ inline static node *get_arg(tpl_query *q, node *term, unsigned frame)
 inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 {
 	if ((*term_ptr = NLIST_NEXT(*term_ptr)) != NULL)
-		return get_arg(q, *term_ptr, q->curr_frame);
+		return get_arg(q, *term_ptr, q->c.curr_frame);
 
 	return NULL;
 }

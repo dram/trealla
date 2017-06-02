@@ -23,7 +23,7 @@ extern int unify(tpl_query *q, node *term1, unsigned context1, node *term2, unsi
 inline static int unify_int(tpl_query *q, node *term, nbr_t v)
 {
 	node *n = make_quick_int(v);
-	int ok = unify_term(q, term, n, q->curr_frame);
+	int ok = unify_term(q, term, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -31,7 +31,7 @@ inline static int unify_int(tpl_query *q, node *term, nbr_t v)
 inline static int unify_float(tpl_query *q, node *term, flt_t v)
 {
 	node *n = make_float(v);
-	int ok = unify_term(q, term, n, q->curr_frame);
+	int ok = unify_term(q, term, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -39,7 +39,7 @@ inline static int unify_float(tpl_query *q, node *term, flt_t v)
 inline static int unify_atom(tpl_query *q, node *term, char *v, int quoted)
 {
 	node *n = make_atom(v, quoted);
-	int ok = unify_term(q, term, n, q->curr_frame);
+	int ok = unify_term(q, term, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -47,7 +47,7 @@ inline static int unify_atom(tpl_query *q, node *term, char *v, int quoted)
 inline static int unify_const_atom(tpl_query *q, node *term, const char *v, int quoted)
 {
 	node *n = make_const_atom(v, quoted);
-	int ok = unify_term(q, term, n, q->curr_frame);
+	int ok = unify_term(q, term, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }

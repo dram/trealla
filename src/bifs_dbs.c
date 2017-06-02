@@ -223,7 +223,7 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 			if (!q)
 				break;
 
-			q->curr_db = db;
+			q->c.curr_db = db;
 
 			if (!query_parse(q, line))
 				printf("ERROR: '%s'\n", filename);
@@ -338,7 +338,7 @@ static int dbs_end(tpl_query *q, int do_sync)
 
 	node *tmp;
 
-	while ((tmp = NLIST_POP_FRONT(&q->curr_db->tran_queue)) != NULL) {
+	while ((tmp = NLIST_POP_FRONT(&q->c.curr_db->tran_queue)) != NULL) {
 		if (tmp->n1->flags & FLAG_DBS_RETRACT)
 			any += bif_retract(q, tmp->n1, tmp->n2);
 		else if (tmp->n1->flags & FLAG_DBS_ASSERTZ)
@@ -352,15 +352,15 @@ static int dbs_end(tpl_query *q, int do_sync)
 	if (any) {
 		char tmpbuf[256];
 		strcpy(tmpbuf, "t_.\n");
-		fwrite(tmpbuf, strlen(tmpbuf), 1, q->curr_db->fp);
-		fflush(q->curr_db->fp);
+		fwrite(tmpbuf, strlen(tmpbuf), 1, q->c.curr_db->fp);
+		fflush(q->c.curr_db->fp);
 
 		if (do_sync)
-			ffsync(q->curr_db->fp);
+			ffsync(q->c.curr_db->fp);
 	}
 
 	q->in_tran = 0;
-	DBUNLOCK(q->curr_db);
+	DBUNLOCK(q->c.curr_db);
 	return 1;
 }
 
@@ -389,7 +389,7 @@ static void dbs_bail(tpl_query *q)
 {
 	node *tmp;
 
-	while ((tmp = NLIST_POP_FRONT(&q->curr_db->tran_queue)) != NULL) {
+	while ((tmp = NLIST_POP_FRONT(&q->c.curr_db->tran_queue)) != NULL) {
 		tmp->n1->flags &= ~(FLAG_DBS_ASSERTA | FLAG_DBS_ASSERTZ | FLAG_DBS_RETRACT);
 		tmp->n1->flags &= ~FLAG_DELETED;
 
@@ -400,7 +400,7 @@ static void dbs_bail(tpl_query *q)
 	}
 
 	q->in_tran = 0;
-	DBUNLOCK(q->curr_db);
+	DBUNLOCK(q->c.curr_db);
 }
 
 int bif_dbs_begin_0(tpl_query *q)
@@ -415,7 +415,7 @@ int bif_dbs_begin_0(tpl_query *q)
 
 	allocate_frame(q);
 	try_me_nofollow(q);
-	DBLOCK(q->curr_db);
+	DBLOCK(q->c.curr_db);
 	q->in_tran = 1;
 	return 1;
 }
@@ -427,7 +427,7 @@ static int bif_dbs_log_1(tpl_query *q)
 	size_t buflen = PRINTBUF_SIZE; // expandable
 	char *dstbuf = (char *)malloc(buflen + 1);
 	node *n = clone_term(q, term1);
-	dbs_save_node(q->curr_db, q->curr_db->fp, &dstbuf, &buflen, n, q->in_tran);
+	dbs_save_node(q->c.curr_db, q->c.curr_db->fp, &dstbuf, &buflen, n, q->in_tran);
 	term_heapcheck(n);
 	free(dstbuf);
 	return 1;
@@ -435,24 +435,24 @@ static int bif_dbs_log_1(tpl_query *q)
 
 int bif_dbs_init_0(tpl_query *q)
 {
-	if (!q->curr_db->loaded)
-		dbs_load(q->curr_db, 0, 0);
+	if (!q->c.curr_db->loaded)
+		dbs_load(q->c.curr_db, 0, 0);
 
 	return 1;
 }
 
 int bif_dbs_load_0(tpl_query *q)
 {
-	if (!q->curr_db->loaded)
-		dbs_load(q->curr_db, 0, 1);
+	if (!q->c.curr_db->loaded)
+		dbs_load(q->c.curr_db, 0, 1);
 
 	return 1;
 }
 
 int bif_dbs_tail_0(tpl_query *q)
 {
-	if (!q->curr_db->loaded)
-		dbs_load(q->curr_db, 1000, 1);
+	if (!q->c.curr_db->loaded)
+		dbs_load(q->c.curr_db, 1000, 1);
 
 	return 1;
 }
@@ -462,8 +462,8 @@ int bif_dbs_tail_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
 
-	if (!q->curr_db->loaded)
-		dbs_load(q->curr_db, term1->val_i, 1);
+	if (!q->c.curr_db->loaded)
+		dbs_load(q->c.curr_db, term1->val_i, 1);
 
 	return 1;
 }

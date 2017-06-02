@@ -286,31 +286,29 @@ struct tpl_query_
 	choice *choices;
 	env *envs;
 	trail *trails;
-	node *curr_term, *curr_match;
 	rule *curr_rule;
 	trealla *pl;
 	tpl_query *parent, *subq;
 	lexer *lex;
-	module *curr_db;
 	char *halt_s;
 	node nv;
 
 	union {
-		sbiter *idx_iter;					// First-arg iterator
 		skiplist *d;						// used as a temp
 		uint32_t line_nbr;					// used during parsing
 	};
 
-	mask_t mask1, mask2, pins;
+	choice c;	
+	mask_t pins;
 	uint64_t started, elapsed, tmo_when_msecs;
 	uint32_t choices_used, choices_possible, choice_point;
-	uint32_t envs_used, envs_possible, env_point;
-	uint32_t trails_used, trails_possible, trail_point;
+	uint32_t envs_used, envs_possible;
+	uint32_t trails_used, trails_possible;
 	uint32_t curr_context, latest_context;
-	uint32_t curr_frame, prev_choice, print_depth;
+	uint32_t print_depth;
 	FILE *curr_stdin, *curr_stdout;
 	uint16_t unify_depth;
-	uint8_t frame_size, trail_size, fail_arg;
+	uint8_t fail_arg;
 	uint8_t halt_code, halt, is_running;
 	uint8_t is_yielded, retry, ok, def_choice, def_env, def_trail;
 	uint8_t is_det, timed_out, trace, optimize;

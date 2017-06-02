@@ -22,8 +22,8 @@
 
 #define TRACE(s) DEBUGPRINT { \
 	printf("###[ %s ] ==> frame=%d, size=%u, choice=%u, prev=%u, env=%u, trail=%u, size=%u\n", \
-	s, q->curr_frame, q->frame_size, q->choice_point, q->prev_choice, \
-	q->env_point, q->trail_point, q->trail_size); \
+	s, q->c.curr_frame, q->c.frame_size, q->choice_point, q->c.prev_choice, \
+	q->c.env_point, q->c.trail_point, q->c.trail_size); \
 	}
 
 static int grow_trail(tpl_query *q)
@@ -96,8 +96,8 @@ static void reclaim_trail(tpl_query *q)
 {
 	TRACE("reclaim_trail");
 
-	for (unsigned i = 0; i < q->trail_size; i++) {
-		env *e = &q->envs[q->trails[q->trail_point+i]];
+	for (unsigned i = 0; i < q->c.trail_size; i++) {
+		env *e = &q->envs[q->trails[q->c.trail_point+i]];
 		term_heapcheck(e->term);
 		e->term = NULL;
 		e->context = 0;
@@ -107,18 +107,18 @@ static void reclaim_trail(tpl_query *q)
 void prepare_frame(tpl_query *q, unsigned frame_size)
 {
 	TRACE("prepare_frame");
-	q->curr_context = q->curr_frame;
+	q->curr_context = q->c.curr_frame;
 
-	if ((q->env_point + frame_size) > q->envs_used) {
-		q->envs_used = q->env_point + frame_size;
+	if ((q->c.env_point + frame_size) > q->envs_used) {
+		q->envs_used = q->c.env_point + frame_size;
 
-		while ((q->env_point + frame_size) >= q->envs_possible) {
+		while ((q->c.env_point + frame_size) >= q->envs_possible) {
 			if (!grow_environment(q))
 				return;
 		}
 	}
 
-	env *e = &q->envs[q->env_point];
+	env *e = &q->envs[q->c.env_point];
 	e->choices = 0;
 
 	for (unsigned i = 0; i < frame_size; i++, e++) {
@@ -131,30 +131,30 @@ void prepare_frame(tpl_query *q, unsigned frame_size)
 void allocate_frame(tpl_query *q)
 {
 	TRACE("allocate_frame");
-	q->trail_size = 0;
+	q->c.trail_size = 0;
 
-	if ((q->trail_point + MAX_FRAME_SIZE) > q->trails_used) {
-		q->trails_used = q->trail_point + MAX_FRAME_SIZE;
+	if ((q->c.trail_point + MAX_FRAME_SIZE) > q->trails_used) {
+		q->trails_used = q->c.trail_point + MAX_FRAME_SIZE;
 
-		while ((q->trail_point + MAX_FRAME_SIZE) >= q->trails_possible) {
+		while ((q->c.trail_point + MAX_FRAME_SIZE) >= q->trails_possible) {
 			if (!grow_trail(q))
 				return;
 		}
 	}
 
-	q->mask1 = q->mask2 = 0;
+	q->c.mask1 = q->c.mask2 = 0;
 	mask_t bit = 1;
 
-	for (unsigned i = 0; i < q->frame_size; i++) {
-		env *e = &q->envs[q->curr_frame + i];
+	for (unsigned i = 0; i < q->c.frame_size; i++) {
+		env *e = &q->envs[q->c.curr_frame + i];
 
 		if (!e->context)
-			q->mask1 |= bit;
+			q->c.mask1 |= bit;
 		else if (!e->term) {
 			e -= e->binding;
 
 			if (!e->context)
-				q->mask2 |= bit;
+				q->c.mask2 |= bit;
 		}
 
 		bit <<= 1;
@@ -166,15 +166,15 @@ void reallocate_frame(tpl_query *q)
 	TRACE("reallocate_frame");
 	mask_t bit = 1;
 
-	for (unsigned i = 0; i < q->frame_size; i++) {
-		if ((q->mask1 & bit) && !(q->pins & bit))  {
-			env *e = &q->envs[q->curr_frame + i];
+	for (unsigned i = 0; i < q->c.frame_size; i++) {
+		if ((q->c.mask1 & bit) && !(q->pins & bit))  {
+			env *e = &q->envs[q->c.curr_frame + i];
 			term_heapcheck(e->term);
 			e->term = NULL;
 			e->context = 0;
 		}
-		else if ((q->mask2 & bit) && !(q->pins & bit))  {
-			env *e = get_env(q, q->curr_frame + i);
+		else if ((q->c.mask2 & bit) && !(q->pins & bit))  {
+			env *e = get_env(q, q->c.curr_frame + i);
 			term_heapcheck(e->term);
 			e->term = NULL;
 			e->context = 0;
@@ -188,45 +188,45 @@ void reallocate_frame(tpl_query *q)
 
 static int proceed(tpl_query *q)
 {
-	while (q->prev_choice) {
-		choice *c = &q->choices[q->prev_choice];
-		q->prev_choice = c->prev_choice;
+	while (q->c.prev_choice) {
+		choice *c = &q->choices[q->c.prev_choice];
+		q->c.prev_choice = c->prev_choice;
 
 		if (!c->nofollow)
-			q->curr_term = term_next(c->curr_term);
+			q->c.curr_term = term_next(c->curr_term);
 
-		q->mask1 = c->mask1;
-		q->mask2 = c->mask2;
-		q->curr_match = c->curr_match;
+		q->c.mask1 = c->mask1;
+		q->c.mask2 = c->mask2;
+		q->c.curr_match = c->curr_match;
 		q->curr_context = c->curr_frame;
-		q->idx_iter = c->idx_iter;
-		q->curr_db = c->curr_db;
-		q->curr_frame = c->curr_frame;
-		q->frame_size = c->frame_size;
+		q->c.idx_iter = c->idx_iter;
+		q->c.curr_db = c->curr_db;
+		q->c.curr_frame = c->curr_frame;
+		q->c.frame_size = c->frame_size;
 		TRACE("proceed");
 
-		if (q->curr_term == NULL)
+		if (q->c.curr_term == NULL)
 			continue;
 
 		break;
 	}
 
-	//if (q->trace && q->curr_term)
+	//if (q->trace && q->c.curr_term)
 	//	trace(q, 0, 0);
 
-	return q->curr_term != NULL;
+	return q->c.curr_term != NULL;
 }
 
 static int follow(tpl_query *q)
 {
-	if (q->curr_term->flags & FLAG_NOFOLLOW)
+	if (q->c.curr_term->flags & FLAG_NOFOLLOW)
 		return proceed(q);
 
-	if ((q->curr_term = term_next(q->curr_term)) == NULL)
+	if ((q->c.curr_term = term_next(q->c.curr_term)) == NULL)
 		return proceed(q);
 
-	if (is_var(q->curr_term))
-		q->curr_term = get_arg(q, q->curr_term, q->curr_frame);
+	if (is_var(q->c.curr_term))
+		q->c.curr_term = get_arg(q, q->c.curr_term, q->c.curr_frame);
 
 	return 1;
 }
@@ -235,32 +235,21 @@ void try_me2(tpl_query *q, int nofollow, int nochoice)
 {
 	TRACE("try_me");
 	choice *c = &q->choices[q->choice_point];
-	c->prev_choice = q->prev_choice;
-	c->mask1 = q->mask1;
-	c->mask2 = q->mask2;
-	c->curr_match = q->curr_match;
-	c->idx_iter = q->idx_iter;
-	c->curr_db = q->curr_db;
-	c->curr_term = q->curr_term;
-	c->curr_frame = q->curr_frame;
-	c->frame_size = q->frame_size;
-	c->env_point = q->env_point;
-	c->trail_point = q->trail_point;
-	c->trail_size = q->trail_size;
+	*c = q->c;
 	c->nofollow = nofollow;
 	c->cut = nochoice;
-	q->prev_choice = q->choice_point++;
+	q->c.prev_choice = q->choice_point++;
 
 #ifdef DEBUG
 	g_choicepoints++;
 #endif
 
-	q->trail_point += q->trail_size;
-	q->trail_size = 0;
+	q->c.trail_point += q->c.trail_size;
+	q->c.trail_size = 0;
 
-	if (q->curr_match != NULL)
-		if (term_next(q->curr_match) != NULL)
-			q->envs[q->curr_frame].choices++;
+	if (q->c.curr_match != NULL)
+		if (term_next(q->c.curr_match) != NULL)
+			q->envs[q->c.curr_frame].choices++;
 
 	if (q->choice_point <= q->choices_used)
 		return;
@@ -285,19 +274,8 @@ int retry_me(tpl_query *q)
 		if (term_next(c->curr_match) != NULL)
 			q->envs[c->curr_frame].choices--;
 
-	q->curr_context = c->curr_frame;
-	q->prev_choice = c->prev_choice;
-	q->mask1 = c->mask1;
-	q->mask2 = c->mask2;
-	q->curr_match = c->curr_match;
-	q->idx_iter = c->idx_iter;
-	q->curr_db = c->curr_db;
-	q->curr_term = c->curr_term;
-	q->curr_frame = c->curr_frame;
-	q->frame_size = c->frame_size;
-	q->env_point = c->env_point;
-	q->trail_point = c->trail_point;
-	q->trail_size = c->trail_size;
+	q->c = *c;
+	q->curr_context = q->c.curr_frame;
 	reallocate_frame(q);
 
 #ifdef DEBUG
@@ -313,8 +291,8 @@ int retry_me(tpl_query *q)
 void trust_me(tpl_query *q)
 {
 	TRACE("trust_me");
-	q->choice_point = q->prev_choice + 1;
-	choice *c = &q->choices[q->prev_choice];
+	q->choice_point = q->c.prev_choice + 1;
+	choice *c = &q->choices[q->c.prev_choice];
 	c->cut = 1;
 	q->envs[c->curr_frame].choices = 0;
 
@@ -326,11 +304,11 @@ void trust_me(tpl_query *q)
 static void execute_term(tpl_query *q, node *term, unsigned frame_size)
 {
 	TRACE("execute_term");
-	q->curr_context = q->env_point;
-	q->curr_frame = q->env_point;
-	q->env_point += frame_size;
-	q->frame_size = frame_size;
-	q->curr_term = term;
+	q->curr_context = q->c.env_point;
+	q->c.curr_frame = q->c.env_point;
+	q->c.env_point += frame_size;
+	q->c.frame_size = frame_size;
+	q->c.curr_term = term;
 	q->is_det = 1;
 
 #ifdef DEBUG
@@ -341,15 +319,15 @@ static void execute_term(tpl_query *q, node *term, unsigned frame_size)
 static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 {
 	TRACE("reexecute_term");
-	env *to = &q->envs[q->curr_frame];
+	env *to = &q->envs[q->c.curr_frame];
 
-	for (unsigned i = 0; i < q->frame_size; i++, to++) {
+	for (unsigned i = 0; i < q->c.frame_size; i++, to++) {
 		term_heapcheck(to->term);
 		to->term = NULL;
 	}
 
-	to = &q->envs[q->curr_frame];
-	env *from = &q->envs[q->env_point];
+	to = &q->envs[q->c.curr_frame];
+	env *from = &q->envs[q->c.env_point];
 
 	for (unsigned i = 0; i < frame_size; i++, to++, from++) {
 		to->term = from->term;
@@ -358,16 +336,16 @@ static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 		if (from->term != NULL)
 			to->context = from->context;
 		else if (from->binding != 0)
-			to->binding = from->binding - q->frame_size;
+			to->binding = from->binding - q->c.frame_size;
 		else
 			to->context = 0;
 
 		from->term = NULL;
 	}
 
-	q->env_point = q->curr_frame + frame_size;
-	q->frame_size = frame_size;
-	q->curr_term = term;
+	q->c.env_point = q->c.curr_frame + frame_size;
+	q->c.frame_size = frame_size;
+	q->c.curr_term = term;
 	q->is_det = 1;
 
 #ifdef DEBUG
@@ -381,12 +359,12 @@ static int dynamic(tpl_query *q)
 	node *n;
 	int arity;
 
-	if (is_compound(q->curr_term)) {
+	if (is_compound(q->c.curr_term)) {
 		node *args = get_args(q);
 		n = args;
 		arity = get_arity(q);
 	} else {
-		n = q->curr_term;
+		n = q->c.curr_term;
 		arity = 0;
 	}
 
@@ -412,7 +390,7 @@ static int dynamic(tpl_query *q)
 		char tmpbuf[FUNCTOR_SIZE + 10];
 		snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor[0] ? functor : ":", arity);
 
-		if (!sl_get(&q->curr_db->rules, tmpbuf, (void **)&r)) {
+		if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 			printf("ERROR: UNKNOWN -> '%s'\n", tmpbuf);
 			return 0;
 		}
@@ -423,7 +401,7 @@ static int dynamic(tpl_query *q)
 		return 0;
 	}
 
-	q->curr_term->match = r;
+	q->c.curr_term->match = r;
 	status = match(q);
 
 #ifdef DEBUG
@@ -440,23 +418,23 @@ int call(tpl_query *q)
 
 	int status = 0;
 
-	if (is_builtin(q->curr_term)) {
-		status = q->curr_term->bifptr(q);
-		q->latest_context = q->curr_frame;
+	if (is_builtin(q->c.curr_term)) {
+		status = q->c.curr_term->bifptr(q);
+		q->latest_context = q->c.curr_frame;
 
 #ifdef DEBUG
 		g_s_resolves++;
 #endif
 	}
-	else if (q->curr_term->match != NULL) {
+	else if (q->c.curr_term->match != NULL) {
 		status = match(q);
 
 #ifdef DEBUG
 		g_u_resolves++;
 #endif
 	}
-	else if (is_list(q->curr_term)) {
-		node *head = term_first(q->curr_term);
+	else if (is_list(q->c.curr_term)) {
+		node *head = term_first(q->c.curr_term);
 
 		for (node *n = term_next(head); n != NULL; n = term_next(n)) {
 			if (is_atom(n))
@@ -483,7 +461,7 @@ void begin_query(tpl_query *q, node *term)
 		printf("\n");
 	}
 
-	q->curr_term = term;
+	q->c.curr_term = term;
 }
 
 void run_me(tpl_query *q)
@@ -522,13 +500,13 @@ static void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 	if (point2 >= point1) {
 		q->envs[point2].binding = (signed)point2 - (signed)point1;
 
-		if ((point2 < q->curr_frame) || (point2 >= (q->curr_frame + q->frame_size)))
-			q->trails[q->trail_point+q->trail_size++] = point2;
+		if ((point2 < q->c.curr_frame) || (point2 >= (q->c.curr_frame + q->c.frame_size)))
+			q->trails[q->c.trail_point+q->c.trail_size++] = point2;
 	} else {
 		q->envs[point1].binding = (signed)point1 - (signed)point2;
 
-		if ((point1 < q->curr_frame) || (point1 >= (q->curr_frame + q->frame_size)))
-			q->trails[q->trail_point+q->trail_size++] = point1;
+		if ((point1 < q->c.curr_frame) || (point1 >= (q->c.curr_frame + q->c.frame_size)))
+			q->trails[q->c.trail_point+q->c.trail_size++] = point1;
 	}
 }
 
@@ -654,7 +632,7 @@ int unify(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned co
 int match(tpl_query *q)
 {
 	TRACE("match");
-	rule *r = q->curr_term->match;
+	rule *r = q->c.curr_term->match;
 
 	if (r == NULL)
 		return 0;
@@ -670,7 +648,7 @@ int match(tpl_query *q)
 	int use_iter = 0;
 
 	if (r->idx) {
-		node *fa = term_firstarg(q->curr_term);
+		node *fa = term_firstarg(q->c.curr_term);
 		node *fval = get_arg(q, fa, q->curr_context);
 
 		if (!is_var(fval)) {
@@ -693,49 +671,49 @@ int match(tpl_query *q)
 			}
 
 			if (!q->retry)
-				q->idx_iter = sb_findkey(r->idx, key);
+				q->c.idx_iter = sb_findkey(r->idx, key);
 
-			if (!sb_nextkey(q->idx_iter, key, (void **)&q->curr_match))
-				q->curr_match = NULL;
+			if (!sb_nextkey(q->c.idx_iter, key, (void **)&q->c.curr_match))
+				q->c.curr_match = NULL;
 		}
 		else if (q->retry)
-			q->curr_match = term_next(q->curr_match);
+			q->c.curr_match = term_next(q->c.curr_match);
 		else
-			q->curr_match = NLIST_FRONT(&r->val_l);
+			q->c.curr_match = NLIST_FRONT(&r->val_l);
 	}
 	else if (q->retry)
-		q->curr_match = term_next(q->curr_match);
+		q->c.curr_match = term_next(q->c.curr_match);
 	else
-		q->curr_match = NLIST_FRONT(&r->val_l);
+		q->c.curr_match = NLIST_FRONT(&r->val_l);
 
 	if (!q->retry)
 		allocate_frame(q);
 
-	while ((q->curr_match != NULL) && !q->halt) {
-		if (is_deleted(q->curr_match)) {
+	while ((q->c.curr_match != NULL) && !q->halt) {
+		if (is_deleted(q->c.curr_match)) {
 			if (use_iter) {
-				if (!sb_nextkey(q->idx_iter, key, (void **)&q->curr_match))
+				if (!sb_nextkey(q->c.idx_iter, key, (void **)&q->c.curr_match))
 					break;
 			}
 			else
-				q->curr_match = term_next(q->curr_match);
+				q->c.curr_match = term_next(q->c.curr_match);
 
 			continue;
 		}
 
-		node *term = term_first(q->curr_match);
+		node *term = term_first(q->c.curr_match);
 		node *head = term_next(term);
 
 #ifndef ISO_ONLY
 		node *save_head = head, *save_head2 = NULL;
 
-		if (is_storage(q->curr_match)) {
+		if (is_storage(q->c.curr_match)) {
 			node *tmp_arg1 = term_firstarg(head);
 			node *tmp_rest = term_next(tmp_arg1);
-			save_head2 = dbs_read_entry(q->curr_db, tmp_rest->val_i);
+			save_head2 = dbs_read_entry(q->c.curr_db, tmp_rest->val_i);
 
 			if (save_head2 == NULL) {
-				printf("ERROR: accessing %s storage fpos=%lld", q->curr_db->name, (long long)tmp_rest->val_i);
+				printf("ERROR: accessing %s storage fpos=%lld", q->c.curr_db->name, (long long)tmp_rest->val_i);
 				break;
 			}
 
@@ -744,18 +722,18 @@ int match(tpl_query *q)
 #endif
 
 		q->unify_depth = q->fail_arg = 0;
-		const unsigned frame_size = q->curr_match->frame_size;
+		const unsigned frame_size = q->c.curr_match->frame_size;
 		prepare_frame(q, frame_size);
 
 		DEBUGPRINT {
 			printf("### match : ");
-			term_print(q->pl, NULL, q->curr_term, 1);
-			printf(" (%u) <==> (%u) ", q->curr_context, q->env_point);
+			term_print(q->pl, NULL, q->c.curr_term, 1);
+			printf(" (%u) <==> (%u) ", q->curr_context, q->c.env_point);
 			term_print(q->pl, NULL, head, 1);
 			printf(" (size %u)\n", frame_size);
 		}
 
-		int ok = unify(q, q->curr_term, q->curr_frame, head, q->env_point);
+		int ok = unify(q, q->c.curr_term, q->c.curr_frame, head, q->c.env_point);
 
 #ifndef ISO_ONLY
 		if (head != save_head) {
@@ -773,22 +751,22 @@ int match(tpl_query *q)
 				break;
 
 			if (use_iter) {
-				if (!sb_nextkey(q->idx_iter, key, (void **)&q->curr_match))
-					q->curr_match = NULL;
+				if (!sb_nextkey(q->c.idx_iter, key, (void **)&q->c.curr_match))
+					q->c.curr_match = NULL;
 			}
 			else
-				q->curr_match = term_next(q->curr_match);
+				q->c.curr_match = term_next(q->c.curr_match);
 
 			continue;
 		}
 
 		node *body = term_next(head);
 		int is_cut = body->flags & FLAG_ISCUT;
-		int is_lastmatch = (term_next(q->curr_match) == NULL) || is_cut;
-		int is_lastcall = term_next(q->curr_term) == NULL;
+		int is_lastmatch = (term_next(q->c.curr_match) == NULL) || is_cut;
+		int is_lastcall = term_next(q->c.curr_term) == NULL;
 
 		if ((q->optimize > 1) && is_lastcall && is_lastmatch) {
-			int is_tco = is_tailrecursive(q->curr_term) && !q->envs[q->curr_frame].choices;
+			int is_tco = is_tailrecursive(q->c.curr_term) && !q->envs[q->c.curr_frame].choices;
 
 			if ((q->optimize > 2) && is_tco && q->is_det)
 				reexecute_term(q, head, frame_size);

@@ -336,7 +336,7 @@ node *make_var(tpl_query *q)
 	node *n = term_make();
 	n->flags |= TYPE_VAR | FLAG_ANON | FLAG_CONST;
 	n->val_s = (char *)"_";
-	n->slot = q->frame_size++;
+	n->slot = q->c.frame_size++;
 	return n;
 }
 
@@ -1956,8 +1956,8 @@ static void lexer_finalize(lexer *self)
 			if (!directive(self, n)) {
 				xref_clauses(self);
 				tpl_query *q = trealla_create_query(self->pl);
-				q->curr_term = n;
-				q->curr_db = self->db;
+				q->c.curr_term = n;
+				q->c.curr_db = self->db;
 				query_run(q);
 				query_destroy(q);
 			}
