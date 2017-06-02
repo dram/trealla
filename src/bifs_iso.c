@@ -5392,7 +5392,7 @@ static int bif_xtra_between(tpl_query *q)
 		put_int(q, q->curr_frame + orig_term3->slot, v);
 	}
 
-	try_me(q);
+	try_me_nofollow(q);
 	return 1;
 }
 
