@@ -418,7 +418,8 @@ int main(int ac, char *av[])
 			query_stats(q);
 
 		query_destroy(q);
-
+		if (!ok) error = 1;
+		
 		if (p1)
 			free(p1);
 	}
@@ -440,8 +441,11 @@ int main(int ac, char *av[])
 			if (ok)
 				ok = query_run(q);
 
+			if (!ok) error = 1;
+
 			if (ok)
 				query_dump(q);
+			
 
 			if (trealla_is_abort(pl) || trealla_is_halt(pl)) {
 				query_destroy(q);
@@ -485,7 +489,7 @@ int main(int ac, char *av[])
 			history_save();
 	}
 
-	const int halt = trealla_get_haltcode(pl);
+	int halt = trealla_get_haltcode(pl);
 	trealla_destroy(pl);
 
 #ifndef ISO_ONLY
@@ -505,5 +509,8 @@ int main(int ac, char *av[])
 		free(p2);
 #endif
 
+	if (!halt && error)
+		halt = error;
+		
 	return halt;
 }

@@ -1268,8 +1268,10 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 		xref_clauses(&l);
 
 		if (l.init && !l.error) {
-			if (!(l.error = trealla_run_query(self, l.init)))
+			if (!(l.error = trealla_run_query(self, l.init))) {
 				self->abort = self->halt_code > 0;
+				l.error = 1;
+			}
 		}
 	}
 

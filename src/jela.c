@@ -355,7 +355,6 @@ static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 
 static int dynamic(tpl_query *q)
 {
-	int status = 0;
 	node *n;
 	int arity;
 
@@ -401,14 +400,12 @@ static int dynamic(tpl_query *q)
 		return 0;
 	}
 
-	q->c.curr_term->match = r;
-	status = match(q);
-
 #ifdef DEBUG
 	g_u_resolves++;
 #endif
 
-	return status;
+	q->c.curr_term->match = r;
+	return match(q);
 }
 
 int call(tpl_query *q)
@@ -416,7 +413,7 @@ int call(tpl_query *q)
 	if (q->trace)
 		trace(q, 0, 0);
 
-	int status = 0;
+	int status = 1;
 
 	if (is_builtin(q->c.curr_term)) {
 		status = q->c.curr_term->bifptr(q);
@@ -476,8 +473,10 @@ void run_me(tpl_query *q)
 			if (q->trace)
 				trace(q, 1, 0);
 
-			if (!retry_me(q))
+			if (!retry_me(q)) {
+				q->ok = 0;
 				break;
+			}
 
 			continue;
 		}
