@@ -23,7 +23,6 @@
 #include "trealla.h"
 
 #include "bifs.h"
-#include "internal.h"
 #include "jela.h"
 
 #define ffsync(fp) fsync(fileno(fp))

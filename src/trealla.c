@@ -18,9 +18,8 @@
 #include "trealla.h"
 
 #include "bifs.h"
-#include "history.h"
-#include "internal.h"
 #include "jela.h"
+#include "history.h"
 
 #ifndef ISO_ONLY
 #include "uuid.h"

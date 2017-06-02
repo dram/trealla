@@ -30,7 +30,6 @@
 #include "trealla.h"
 
 #include "bifs.h"
-#include "internal.h"
 #include "jela.h"
 #include "network.h"
 #include "uncle.h"

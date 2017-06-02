@@ -34,7 +34,6 @@
 
 #include "base64.h"
 #include "bifs.h"
-#include "internal.h"
 #include "jela.h"
 #include "jsonq.h"
 #include "uuid.h"

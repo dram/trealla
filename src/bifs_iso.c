@@ -21,7 +21,6 @@
 #include "trealla.h"
 
 #include "bifs.h"
-#include "internal.h"
 #include "jela.h"
 
 #define END_OF_FILE "end_of_file"

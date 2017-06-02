@@ -12,7 +12,6 @@
 #include "trealla.h"
 
 #include "bifs.h"
-#include "internal.h"
 #include "jela.h"
 
 #if defined(DEBUG) && 0
