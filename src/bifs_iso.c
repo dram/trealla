@@ -2929,7 +2929,9 @@ static int bif_clause(tpl_query *q, int wait)
 	unsigned context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
 	node *term3 = get_next_arg(q, &args);
+#ifndef ISO_ONLY
 	node *save_match = q->c.curr_match;
+#endif
 	node *head = NULL;
 	rule *r = NULL;
 
@@ -2966,10 +2968,14 @@ static int bif_clause(tpl_query *q, int wait)
 			if (did_lock)
 				DBUNLOCK(q->c.curr_db);
 
+#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NULL;
+#endif
 		}
+#ifndef ISO_ONLY
 		else
 			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
+#endif
 
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
@@ -2981,10 +2987,16 @@ static int bif_clause(tpl_query *q, int wait)
 		r = q->curr_rule;
 
 		if (!q->c.curr_match)
+#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
+#else
+			;
+#endif
 		else {
 			r = q->curr_rule;
+#ifndef ISO_ONLY
 			save_match = q->c.curr_match;
+#endif
 			q->c.curr_match = term_next(q->c.curr_match);
 		}
 	}
@@ -5380,9 +5392,8 @@ static int bif_xtra_between(tpl_query *q)
 		nbr_t v = get_word(term1);
 		put_int(q, q->c.curr_frame + term3->slot, v);
 		allocate_frame(q);
-	}
-	else {
-		term3 = get_term(term3);
+	} else {
+		term3 = get_next_arg(q, &args);
 		nbr_t v = term3->val_i + 1;
 
 		if (v > maxn)
