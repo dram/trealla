@@ -5362,12 +5362,20 @@ static int bif_xtra_between(tpl_query *q)
 	node *term2 = get_atom_or_int(term2);
 	node *orig_term3 = term_next(args);
 	node *term3;
+	nbr_t maxn;
 
-	if (is_atom(term2) && strcmp(VAL_S(term2), "inf") && strcmp(VAL_S(term2), "infinite")) {
-		QABORT(ABORT_INVALIDARGNOTINT);
-		return 0;
-	}
+	if (!q->retry) {
+		if (is_atom(term2) && strcmp(VAL_S(term2), "inf") && strcmp(VAL_S(term2), "infinite")) {
+			QABORT(ABORT_INVALIDARGNOTINT);
+			return 0;
+		}
+	} 
 
+	if (is_atom(term2))
+		maxn = INT_MAX;
+	else
+		maxn = get_word(term2);
+		
 	if (!q->retry) {
 		term3 = get_var(term3);
 		nbr_t v = get_word(term1);
@@ -5377,9 +5385,8 @@ static int bif_xtra_between(tpl_query *q)
 	else {
 		term3 = get_int(term3);
 		nbr_t v = get_word(term3) + 1;
-		nbr_t v2 = get_word(term2);
 
-		if (v > v2)
+		if (v > maxn)
 			return 0;
 
 		reset_arg(q, orig_term3, q->curr_frame);
