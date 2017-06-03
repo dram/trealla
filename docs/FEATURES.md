@@ -118,6 +118,7 @@ found in other Prolog implementations:
 	term_hash(+Term,-Int)		- 32-bit non-crypto hash
 	atomic_concat(+S1,+S2,-S)
 	atomic_list_concat(+L,-S)
+	atomic_list_concat(+L,+Sep,-S)
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
