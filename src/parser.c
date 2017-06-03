@@ -944,7 +944,7 @@ static int directive(lexer *l, node *n)
 	node *n3 = term_next(head);
 
 	if (!strcmp(functor, "include"))
-		dir_include(l, n3);
+		l->error = !dir_include(l, n3);
 	else if (!strcmp(functor, "initialization"))
 		dir_initialization(l, n3);
 	else if (!strcmp(functor, "set_prolog_flag"))
@@ -977,7 +977,7 @@ static int directive(lexer *l, node *n)
 		if (!xref_term(l, n3, term_arity(n3)))
 			return 0;
 	}
-		
+
 	return 1;
 }
 
@@ -1753,7 +1753,7 @@ LOOP:
 
 			if (l->numeric >= NUM_INT) {
 				t.dst = t.buf = (char *)realloc(t.buf, (t.maxlen = 255) + 1);
-				
+
 				if (l->numeric > NUM_INT)
 					t.dst += sprint_uint(t.buf, t.maxlen, (unbr_t)v, 10);
 				else
@@ -1952,16 +1952,16 @@ static void lexer_finalize(lexer *self)
 	else if (!strcmp(term_functor(self->r), ":-")) {
 		if (self->consult) {
 			node *n = term_firstarg(self->r);
-			
+
 			if (!directive(self, n)) {
 				xref_clauses(self);
 				tpl_query *q = trealla_create_query(self->pl);
 				q->c.curr_term = n;
 				q->c.curr_db = self->db;
-				query_run(q);
+				self->error = !query_run(q);
 				query_destroy(q);
 			}
-			
+
 			term_heapcheck(self->r);
 		} else {
 			self->r->flags |= FLAG_CLAUSE;

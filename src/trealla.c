@@ -37,8 +37,8 @@ const char *g_trealla_version = "0.1alpha";
 const char *g_list_cons = ".";
 
 #ifdef DEBUG
-uint64_t g_enqueues = 0, g_rescheds = 0, g_choicepoints = 0, g_heap_used = 0, 
-	g_backtracks = 0, g_executes = 0, g_reexecutes = 0, g_tailrecurses = 0, g_cuts = 0, 
+uint64_t g_enqueues = 0, g_rescheds = 0, g_choicepoints = 0, g_heap_used = 0,
+	g_backtracks = 0, g_executes = 0, g_reexecutes = 0, g_tailrecurses = 0, g_cuts = 0,
 	g_u_resolves = 0, g_s_resolves = 0;
 #endif
 
@@ -741,7 +741,7 @@ void add_clauses(lexer *l)
 			NLIST_PUSH_BACK(&tmp_l, n);
 			continue;
 		}
-		
+
 		if (!is_clause(n))
 			continue;
 
@@ -762,9 +762,9 @@ void add_clauses(lexer *l)
 	}
 
 	while ((tmp = NLIST_POP_FRONT(&tmp_l)) != NULL) {
-		NLIST_PUSH_BACK(&l->val_l, tmp);		
+		NLIST_PUSH_BACK(&l->val_l, tmp);
 	}
-	
+
 	DBUNLOCK(l->db);
 }
 
@@ -1268,7 +1268,7 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 		xref_clauses(&l);
 
 		if (l.init && !l.error) {
-			if (!(l.error = trealla_run_query(self, l.init))) {
+			if (!(l.error = !trealla_run_query(self, l.init))) {
 				self->abort = self->halt_code > 0;
 				l.error = 1;
 			}
@@ -1290,7 +1290,7 @@ int trealla_consult_file(trealla *self, const char *filename)
 		xref_clauses(&l);
 
 		if (l.init && !l.error) {
-			if (!(l.error = trealla_run_query(self, l.init)))
+			if (!(l.error = !trealla_run_query(self, l.init)))
 				self->abort = self->halt_code > 0;
 		}
 	}

@@ -408,6 +408,9 @@ int main(int ac, char *av[])
 		if (ok)
 			ok = query_run(q);
 
+		if (!ok && (trealla_get_haltcode(pl) != 1))
+			error = 1;
+
 		if (verbose)
 			printf("(%.3lf) ", query_elapsed(q));
 
@@ -418,8 +421,7 @@ int main(int ac, char *av[])
 			query_stats(q);
 
 		query_destroy(q);
-		if (!ok) error = 1;
-		
+
 		if (p1)
 			free(p1);
 	}
@@ -441,11 +443,8 @@ int main(int ac, char *av[])
 			if (ok)
 				ok = query_run(q);
 
-			if (!ok) error = 1;
-
 			if (ok)
 				query_dump(q);
-			
 
 			if (trealla_is_abort(pl) || trealla_is_halt(pl)) {
 				query_destroy(q);
@@ -509,8 +508,11 @@ int main(int ac, char *av[])
 		free(p2);
 #endif
 
+	if (halt == 1)
+		halt = 0;
+
 	if (!halt && error)
 		halt = error;
-		
+
 	return halt;
 }
