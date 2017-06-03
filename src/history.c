@@ -33,11 +33,8 @@ static const char **key_words = NULL;
 #define italic "\e[3m"
 #define red "\e[31m"
 
-static int history_getch2(int *alt)
+int history_getch(void)
 {
-	if (alt)
-		*alt = '\0';
-
 	struct termios oldattr, newattr;
 	tcgetattr(STDIN_FILENO, &oldattr);
 	newattr = oldattr;
@@ -46,11 +43,6 @@ static int history_getch2(int *alt)
 	int ch = getc_utf8(stdin);
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
 	return ch;
-}
-
-int history_getch(void)
-{
-	return history_getch2(NULL);
 }
 
 char *history_readline(const char *prompt)
@@ -111,12 +103,12 @@ char *history_readline_eol(const char *prompt, char eol)
 	char *escdst = escbuf;
 	int escape = 0, is_insert = 0, reverse_search = 0;
 	cmd *last = NULL;
-	int alt, tmp;
+	int tmp;
 
 	printf("%s", prompt);
 	fflush(stdout);
 
-	while ((tmp = history_getch2(&alt)) != EOF) {
+	while ((tmp = history_getch()) != EOF) {
 		unsigned ch = (unsigned)tmp;
 
 		// printf("%02X (%02X) ", tmp, (char)alt);
