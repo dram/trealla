@@ -17,8 +17,8 @@
 typedef struct cmd_ cmd;
 
 struct cmd_ {
-	char *line;
 	cmd *prev, *next;
+	char *line;
 };
 
 static cmd *g_history = NULL;
@@ -48,9 +48,15 @@ static int history_getch2(int *alt)
 	return ch;
 }
 
-int history_getch(void) { return history_getch2(NULL); }
+int history_getch(void)
+{
+	return history_getch2(NULL);
+}
 
-char *history_readline(const char *prompt) { return history_readline_eol(prompt, '\0'); }
+char *history_readline(const char *prompt)
+{
+	return history_readline_eol(prompt, '\0');
+}
 
 static void output(const char *fmt, const char *prompt, const char *line)
 {
@@ -63,17 +69,18 @@ static void output(const char *fmt, const char *prompt, const char *line)
 	while (*src && len) {
 		if (key_words && (ispunct(last_ch) || isspace(last_ch))) {
 			for (int i = 0; key_words[i]; i++) {
-				if (!strncmp(src, key_words[i], strlen(key_words[i]))) {
-					char ch = src[strlen(key_words[i])];
+				if (strncmp(src, key_words[i], strlen(key_words[i])))
+					continue;
 
-					if (ispunct(ch) || isspace(ch)) {
-						size_t n = snprintf(dst, len, "%s%s%s", strcmp(key_words[i],"false")?italic:red, key_words[i], normal);
-						dst += n;
-						len -= n;
-						src += strlen(key_words[i]);
-						continue;
-					}
-				}
+				char ch = src[strlen(key_words[i])];
+
+				if (!ispunct(ch) && !isspace(ch))
+					continue;
+
+				size_t n = snprintf(dst, len, "%s%s%s", strcmp(key_words[i],"false")?italic:red, key_words[i], normal);
+				dst += n;
+				len -= n;
+				src += strlen(key_words[i]);
 			}
 		}
 
@@ -87,7 +94,10 @@ static void output(const char *fmt, const char *prompt, const char *line)
 	free(dstbuf);
 }
 
-void history_output(const char *prompt, const char *line) { output("%s%s\n", prompt, line); }
+void history_output(const char *prompt, const char *line)
+{
+	output("%s%s\n", prompt, line);
+}
 
 char *history_readline_eol(const char *prompt, char eol)
 {
@@ -576,7 +586,10 @@ char *history_readline_eol(const char *prompt, char eol)
 	return line;
 }
 
-void history_keywords(const char **word_array) { key_words = word_array; }
+void history_keywords(const char **word_array)
+{
+	key_words = word_array;
+}
 
 void history_load(const char *filename)
 {
