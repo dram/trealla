@@ -1001,6 +1001,7 @@ static int bif_sys_split_3(tpl_query *q)
 		node *tmp = make_const_atom("[]", 0);
 		put_env(q, q->c.curr_frame + term3->slot, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
+		return 1;
 	}
 
 	while (*src) {

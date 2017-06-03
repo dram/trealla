@@ -132,7 +132,7 @@ char *history_readline_eol(const char *prompt, char eol)
 
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
-			msleep(500);
+			msleep(250);
 			printf("\e[u"); fflush(stdout);
 		}
 		else if ((ch == ']') && (src = strchr(line, '['))) {
@@ -141,7 +141,7 @@ char *history_readline_eol(const char *prompt, char eol)
 
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
-			msleep(500);
+			msleep(250);
 			printf("\e[u"); fflush(stdout);
 		}
 		else if ((ch == '}') && (src = strchr(line, '{'))) {
@@ -150,7 +150,7 @@ char *history_readline_eol(const char *prompt, char eol)
 
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
-			msleep(500);
+			msleep(250);
 			printf("\e[u"); fflush(stdout);
 		}
 
