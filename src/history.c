@@ -111,7 +111,8 @@ char *history_readline_eol(const char *prompt, char eol)
 
 	printf("%s", prompt);
 	fflush(stdout);
-	int depth1 = 0, depth2 = 0, depth3 = 0;
+	int depth_paren = 0, depth_bracket = 0, depth_brace = 0;
+
 	while ((tmp = history_getch()) != EOF) {
 		unsigned ch = (unsigned)tmp;
 
@@ -119,14 +120,14 @@ char *history_readline_eol(const char *prompt, char eol)
 		const char *src;
 
 		if (ch == '(')
-			depth1++;
+			depth_paren++;
 		else if (ch == '[')
-			depth2++;
+			depth_bracket++;
 		else if (ch == '{')
-			depth3++;
+			depth_brace++;
 
 		if ((ch == ')') && (src = strchr(line, '('))) {
-			for (int i = 1; i < depth1; i++)
+			for (int i = 1; i < depth_paren; i++)
 				src = strchr(src+1, '(');
 
 			int n = dst - src;
@@ -135,7 +136,7 @@ char *history_readline_eol(const char *prompt, char eol)
 			printf("\e[u"); fflush(stdout);
 		}
 		else if ((ch == ']') && (src = strchr(line, '['))) {
-			for (int i = 1; i < depth2; i++)
+			for (int i = 1; i < depth_bracket; i++)
 				src = strchr(src+1, '[');
 
 			int n = dst - src;
@@ -144,7 +145,7 @@ char *history_readline_eol(const char *prompt, char eol)
 			printf("\e[u"); fflush(stdout);
 		}
 		else if ((ch == '}') && (src = strchr(line, '{'))) {
-			for (int i = 1; i < depth3; i++)
+			for (int i = 1; i < depth_brace; i++)
 				src = strchr(src+1, '{');
 
 			int n = dst - src;
@@ -154,11 +155,11 @@ char *history_readline_eol(const char *prompt, char eol)
 		}
 
 		if (ch == ')')
-			depth1--;
+			depth_paren--;
 		else if (ch == ']')
-			depth2--;
+			depth_bracket--;
 		else if (ch == '}')
-			depth3--;
+			depth_brace--;
 
 		if ((ch == 0x7f) || (ch == 0x08)) {
 			if (dst != line) {
