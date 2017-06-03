@@ -37,6 +37,9 @@ static const char **key_words = NULL;
 #define italic "\e[3m"
 #define red "\e[31m"
 
+#define SAVE "\e[s"
+#define UNSAVE "\e[u"
+
 int history_getch(void)
 {
 	struct termios oldattr, newattr;
@@ -95,6 +98,14 @@ void history_output(const char *prompt, const char *line)
 	output("%s%s\n", prompt, line);
 }
 
+static void flash_back(int n)
+{
+	printf("%s\e[%dD", SAVE, n); fflush(stdout);
+	msleep(100);
+	printf("%s", UNSAVE);
+	fflush(stdout);
+}
+
 char *history_readline_eol(const char *prompt, char eol)
 {
 	static const char *save_prompt;
@@ -139,28 +150,19 @@ char *history_readline_eol(const char *prompt, char eol)
 			for (int i = 1; src && (i < depth_paren); i++)
 				src = strchr(src+1, '(');
 
-			int n = dst - src;
-			printf("\e[s\e[%dD", n); fflush(stdout);
-			msleep(100);
-			printf("\e[u"); fflush(stdout);
+			flash_back(dst - src);
 		}
 		else if ((ch == ']') && (src = strchr(line, '[')) && (depth_bracket > 0) && !quoted) {
 			for (int i = 1; src && (i < depth_bracket); i++)
 				src = strchr(src+1, '[');
 
-			int n = dst - src;
-			printf("\e[s\e[%dD", n); fflush(stdout);
-			msleep(100);
-			printf("\e[u"); fflush(stdout);
+			flash_back(dst - src);
 		}
 		else if ((ch == '}') && (src = strchr(line, '{')) && (depth_brace > 0) && !quoted) {
 			for (int i = 1; src && (i < depth_brace); i++)
 				src = strchr(src+1, '{');
 
-			int n = dst - src;
-			printf("\e[s\e[%dD", n); fflush(stdout);
-			msleep(100);
-			printf("\e[u"); fflush(stdout);
+			flash_back(dst - src);
 		}
 
 		if (!quoted) {
