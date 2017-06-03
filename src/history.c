@@ -3,12 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef _WIN32
 #define snprintf _snprintf
+#define msleep Sleep
 #else
 #include <termios.h>
 #include <unistd.h>
+#include <sys/time.h>
+#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
 #endif
 
 #include "history.h"
@@ -112,6 +116,26 @@ char *history_readline_eol(const char *prompt, char eol)
 		unsigned ch = (unsigned)tmp;
 
 		// printf("%02X (%02X) ", tmp, (char)alt);
+		const char *src;
+
+		if ((ch == ')') && (src = strchr(line, '('))) {
+			int n = dst - src;
+			printf("\e[s\e[%dD", n); fflush(stdout);
+			msleep(500);
+			printf("\e[u"); fflush(stdout);
+		}
+		else if ((ch == ']') && (src = strchr(line, '['))) {
+			int n = dst - src;
+			printf("\e[s\e[%dD", n); fflush(stdout);
+			msleep(500);
+			printf("\e[u"); fflush(stdout);
+		}
+		else if ((ch == '}') && (src = strchr(line, '{'))) {
+			int n = dst - src;
+			printf("\e[s\e[%dD", n); fflush(stdout);
+			msleep(500);
+			printf("\e[u"); fflush(stdout);
+		}
 
 		if ((ch == 0x7f) || (ch == 0x08)) {
 			if (dst != line) {
