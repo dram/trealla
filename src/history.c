@@ -111,7 +111,7 @@ char *history_readline_eol(const char *prompt, char eol)
 
 	printf("%s", prompt);
 	fflush(stdout);
-	int depth_paren = 0, depth_bracket = 0, depth_brace = 0;
+	int depth_paren = 0, depth_bracket = 0, depth_brace = 0, quoted = 0, quote = 0;
 
 	while ((tmp = history_getch()) != EOF) {
 		unsigned ch = (unsigned)tmp;
@@ -119,14 +119,23 @@ char *history_readline_eol(const char *prompt, char eol)
 		// printf("%02X (%02X) ", tmp, (char)alt);
 		const char *src;
 
-		if (ch == '(')
-			depth_paren++;
-		else if (ch == '[')
-			depth_bracket++;
-		else if (ch == '{')
-			depth_brace++;
+		if (!quoted && ((ch == '\'') || (ch == '"'))) {
+			quoted = 1;
+			quote = ch;
+		}
+		else if (quoted && (ch == quote))
+			quoted = 0;
 
-		if ((ch == ')') && (src = strchr(line, '(')) && (depth_paren > 0)) {
+		if (!quoted) {
+			if (ch == '(')
+				depth_paren++;
+			else if (ch == '[')
+				depth_bracket++;
+			else if (ch == '{')
+				depth_brace++;
+		}
+
+		if ((ch == ')') && (src = strchr(line, '(')) && (depth_paren > 0) && !quoted) {
 			for (int i = 1; src && (i < depth_paren); i++)
 				src = strchr(src+1, '(');
 
@@ -135,7 +144,7 @@ char *history_readline_eol(const char *prompt, char eol)
 			msleep(100);
 			printf("\e[u"); fflush(stdout);
 		}
-		else if ((ch == ']') && (src = strchr(line, '[')) && (depth_bracket > 0)) {
+		else if ((ch == ']') && (src = strchr(line, '[')) && (depth_bracket > 0) && !quoted) {
 			for (int i = 1; src && (i < depth_bracket); i++)
 				src = strchr(src+1, '[');
 
@@ -144,7 +153,7 @@ char *history_readline_eol(const char *prompt, char eol)
 			msleep(100);
 			printf("\e[u"); fflush(stdout);
 		}
-		else if ((ch == '}') && (src = strchr(line, '{')) && (depth_brace > 0)) {
+		else if ((ch == '}') && (src = strchr(line, '{')) && (depth_brace > 0) && !quoted) {
 			for (int i = 1; src && (i < depth_brace); i++)
 				src = strchr(src+1, '{');
 
@@ -154,12 +163,14 @@ char *history_readline_eol(const char *prompt, char eol)
 			printf("\e[u"); fflush(stdout);
 		}
 
-		if (ch == ')')
-			depth_paren--;
-		else if (ch == ']')
-			depth_bracket--;
-		else if (ch == '}')
-			depth_brace--;
+		if (!quoted) {
+			if (ch == ')')
+				depth_paren--;
+			else if (ch == ']')
+				depth_bracket--;
+			else if (ch == '}')
+				depth_brace--;
+		}
 
 		if ((ch == 0x7f) || (ch == 0x08)) {
 			if (dst != line) {
