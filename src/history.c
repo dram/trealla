@@ -118,19 +118,19 @@ char *history_readline_eol(const char *prompt, char eol)
 		// printf("%02X (%02X) ", tmp, (char)alt);
 		const char *src;
 
-		if ((ch == ')') && (src = strchr(line, '('))) {
+		if ((ch == ')') && (src = strrchr(line, '('))) {
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
 			msleep(500);
 			printf("\e[u"); fflush(stdout);
 		}
-		else if ((ch == ']') && (src = strchr(line, '['))) {
+		else if ((ch == ']') && (src = strrchr(line, '['))) {
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
 			msleep(500);
 			printf("\e[u"); fflush(stdout);
 		}
-		else if ((ch == '}') && (src = strchr(line, '{'))) {
+		else if ((ch == '}') && (src = strrchr(line, '{'))) {
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
 			msleep(500);
