@@ -874,9 +874,6 @@ static int bif_iso_open_3(tpl_query *q)
 	char tmpbuf[40];
 	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
 
-	if (!strcmp(type, "binary"))
-		strcat(tmpbuf, "b");
-
 	FILE *fp = fopen(filename, tmpbuf);
 
 	if (!fp) {
@@ -902,19 +899,26 @@ static int bif_iso_open_4(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
-	node *term4 = get_atom(term4);
+	node *term4 = get_atom_or_list(term4);
 	const char *filename = VAL_S(term1);
 	const char *mode = VAL_S(term2);
-	const char *type = VAL_S(term4);
+	const char *type = "text";
 	char tmpbuf[40];
 	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
+	node * l = term4;
 
-	if (!strcmp(type, "type(binary)")) {
-		strcat(tmpbuf, "b");
-		type = "binary";
+	if (is_list(l)) {
+		node *opt = term_firstarg(l);
+
+		if (is_atom(opt)) {
+			if (!strcmp(VAL_S(opt), "type(binary)")) {
+				strcat(tmpbuf, "b");
+				type = "binary";
+			}
+		}
+
+		l = term_next(l);
 	}
-	else
-		type = "text";
 
 	FILE *fp = fopen(filename, tmpbuf);
 
@@ -965,7 +969,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 	node *term1 = get_stream(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_atom_or_list(term3);
-	stream *sp = term1->val_str;	
+	stream *sp = term1->val_str;
 	int quoted = 0, nl = 0, fs = 0;
 
 	if (is_atom(term2)) {
@@ -1418,7 +1422,7 @@ static int bif_iso_at_end_of_stream_1(tpl_query *q)
 #ifndef ISO_ONLY
 	if (is_socket(term1) && sp->sptr)
 		return session_on_disconnect((session *)sp->sptr);
-	else 
+	else
 #endif
 	if (is_file(term1) && sp->fptr)
 		return feof(sp->fptr) > 0;
@@ -1611,45 +1615,25 @@ static int bif_iso_get_code_2(tpl_query *q)
 static int bif_iso_get_byte(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom_or_var(term1);
+	node *term1 = get_int_or_var(term1);
 
 	if (q->pl->tty && !q->did_getc) {
 		printf("| ");
 		fflush(q->curr_stdout);
 	}
 
-	q->did_getc = 1;
 	int ch = fgetc(q->curr_stdin);
-
-	if (ch == EOF) {
-		q->did_getc = 0;
-		return 0;
-	}
-
-	if (ch == '\n')
-		q->did_getc = 0;
-
-	char tmpbuf[2];
-	tmpbuf[0] = (char)ch;
-	tmpbuf[1] = '\0';
-	return unify_atom(q, term1, strdup(tmpbuf), 0);
+	return unify_int(q, term1, ch);
 }
 
 static int bif_iso_get_byte_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_file(term1);
-	node *term2 = get_atom_or_var(term2);
+	node *term2 = get_int_or_var(term2);
 	stream *sp = term1->val_str;
 	int ch = fgetc(sp->fptr);
-
-	if (ch == EOF)
-		return 0;
-
-	char tmpbuf[2];
-	tmpbuf[0] = (char)ch;
-	tmpbuf[1] = '\0';
-	return unify_atom(q, term2, strdup(tmpbuf), 0);
+	return unify_int(q, term2, ch);
 }
 
 static int bif_iso_get_char(tpl_query *q)
@@ -3046,7 +3030,7 @@ static int bif_clause(tpl_query *q, int wait)
 			q->c.curr_match = term_next(q->c.curr_match);
 			continue;
 		}
-		
+
 		if (save_head)
 			term_heapcheck(save_head);
 
@@ -3082,7 +3066,7 @@ static int bif_clause(tpl_query *q, int wait)
 
 	if (term3 && is_var(term3))
 		put_ptr(q, q->c.curr_frame + term3->slot, q->c.curr_match);
-	
+
 	if (!term2)
 		return 1;
 
@@ -5380,13 +5364,13 @@ static int bif_xtra_between(tpl_query *q)
 			QABORT(ABORT_INVALIDARGNOTINT);
 			return 0;
 		}
-	} 
+	}
 
 	if (is_atom(term2))
 		maxn = LONG_MAX;
 	else
 		maxn = get_word(term2);
-		
+
 	if (!q->retry) {
 		term3 = get_var(term3);
 		nbr_t v = get_word(term1);
@@ -5617,15 +5601,15 @@ static int bif_xtra_is_stream(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	
+
 	if (!is_stream(term1))
 		return 0;
 
 	stream *sp = term1->val_str;
-	
+
 	if (!sp->fptr && !sp->sptr)
 		return 0;
-		
+
 	return 1;
 }
 
@@ -5985,7 +5969,7 @@ static int bif_xtra_term_hash(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
-	
+
 	if (is_atom(term1) && !is_blob(term1)) {
 		put_int(q, q->c.curr_frame + term2->slot, jenkins_one_at_a_time_hash(VAL_S(term1)));
 	}
@@ -5993,11 +5977,11 @@ static int bif_xtra_term_hash(tpl_query *q)
 		size_t max_len = PRINTBUF_SIZE;
 		char *tmpbuf = (char *)malloc(max_len + 1);
 		char *dst = tmpbuf;
-		term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);	
+		term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
 		put_int(q, q->c.curr_frame + term2->slot, jenkins_one_at_a_time_hash(tmpbuf));
 		free(tmpbuf);
 	}
-	
+
 	return 1;
 }
 
@@ -6022,7 +6006,7 @@ static int bif_xtra_atom_number(tpl_query *q)
 		n = make_quick_int(v);
 	else
 		return 0;
-		
+
 	if (numeric == NUM_HEX)
 		n->flags |= FLAG_HEX;
 	else if (numeric == NUM_OCTAL)
