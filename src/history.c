@@ -111,31 +111,54 @@ char *history_readline_eol(const char *prompt, char eol)
 
 	printf("%s", prompt);
 	fflush(stdout);
-
+	int depth1 = 0, depth2 = 0, depth3 = 0;
 	while ((tmp = history_getch()) != EOF) {
 		unsigned ch = (unsigned)tmp;
 
 		// printf("%02X (%02X) ", tmp, (char)alt);
 		const char *src;
 
-		if ((ch == ')') && (src = strrchr(line, '('))) {
+		if (ch == '(')
+			depth1++;
+		else if (ch == '[')
+			depth2++;
+		else if (ch == '{')
+			depth3++;
+
+		if ((ch == ')') && (src = strchr(line, '('))) {
+			for (int i = 1; i < depth1; i++)
+				src = strchr(src+1, '(');
+
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
 			msleep(500);
 			printf("\e[u"); fflush(stdout);
 		}
-		else if ((ch == ']') && (src = strrchr(line, '['))) {
+		else if ((ch == ']') && (src = strchr(line, '['))) {
+			for (int i = 1; i < depth2; i++)
+				src = strchr(src+1, '[');
+
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
 			msleep(500);
 			printf("\e[u"); fflush(stdout);
 		}
-		else if ((ch == '}') && (src = strrchr(line, '{'))) {
+		else if ((ch == '}') && (src = strchr(line, '{'))) {
+			for (int i = 1; i < depth3; i++)
+				src = strchr(src+1, '{');
+
 			int n = dst - src;
 			printf("\e[s\e[%dD", n); fflush(stdout);
 			msleep(500);
 			printf("\e[u"); fflush(stdout);
 		}
+
+		if (ch == ')')
+			depth1--;
+		else if (ch == ']')
+			depth2--;
+		else if (ch == '}')
+			depth3--;
 
 		if ((ch == 0x7f) || (ch == 0x08)) {
 			if (dst != line) {
