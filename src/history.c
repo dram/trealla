@@ -98,12 +98,23 @@ void history_output(const char *prompt, const char *line)
 	output("%s%s\n", prompt, line);
 }
 
-static void flash_back(int n)
+static int flash_check(int ch, char *line, char *dst, int quoted, int depth, int rhs, int lhs)
 {
-	printf("%s\e[%dD", SAVE, n); fflush(stdout);
-	msleep(100);
-	printf("%s", UNSAVE);
-	fflush(stdout);
+	const char *src;
+
+	if ((ch == rhs) && (src = strchr(line, lhs)) && (depth > 0) && !quoted) {
+		for (int i = 1; src && (i < depth); i++)
+			src = strchr(src+1, lhs);
+
+		printf("%s\e[%dD", SAVE, (int)(dst - src));
+		fflush(stdout);
+		msleep(100);
+		printf("%s", UNSAVE);
+		fflush(stdout);
+		return 1;
+	}
+
+	return 0;
 }
 
 char *history_readline_eol(const char *prompt, char eol)
@@ -128,7 +139,6 @@ char *history_readline_eol(const char *prompt, char eol)
 		unsigned ch = (unsigned)tmp;
 
 		// printf("%02X (%02X) ", tmp, (char)alt);
-		const char *src;
 
 		if (!quoted && ((ch == '\'') || (ch == '"'))) {
 			quoted = 1;
@@ -146,24 +156,12 @@ char *history_readline_eol(const char *prompt, char eol)
 				depth_brace++;
 		}
 
-		if ((ch == ')') && (src = strchr(line, '(')) && (depth_paren > 0) && !quoted) {
-			for (int i = 1; src && (i < depth_paren); i++)
-				src = strchr(src+1, '(');
-
-			flash_back(dst - src);
-		}
-		else if ((ch == ']') && (src = strchr(line, '[')) && (depth_bracket > 0) && !quoted) {
-			for (int i = 1; src && (i < depth_bracket); i++)
-				src = strchr(src+1, '[');
-
-			flash_back(dst - src);
-		}
-		else if ((ch == '}') && (src = strchr(line, '{')) && (depth_brace > 0) && !quoted) {
-			for (int i = 1; src && (i < depth_brace); i++)
-				src = strchr(src+1, '{');
-
-			flash_back(dst - src);
-		}
+		if (flash_check(ch, line, dst, quoted, depth_paren, ')', '('))
+			;
+		else if (flash_check(ch, line, dst, quoted, depth_bracket, ']', '['))
+			;
+		else if (flash_check(ch, line, dst, quoted, depth_brace, '}', '{'))
+			;
 
 		if (!quoted) {
 			if (ch == ')')
