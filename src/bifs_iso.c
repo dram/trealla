@@ -1521,8 +1521,10 @@ static int bif_iso_put_char_2(tpl_query *q)
 static int bif_iso_put_byte(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	fwrite(VAL_S(term1), 1, 1, q->curr_stdout);
+	node *term1 = get_int(term1);
+	char tmpbuf[20];
+	sprintf(tmpbuf, "%c", (int)term1->val_i);
+	fwrite(tmpbuf, 1, 1, q->curr_stdout);
 	return 1;
 }
 
@@ -1530,16 +1532,18 @@ static int bif_iso_put_byte_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_stream(term1);
-	node *term2 = get_atom(term2);
+	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
 	int ok;
+	char tmpbuf[20];
+	sprintf(tmpbuf, "%c", (int)term1->val_i);
 
 #ifndef ISO_ONLY
 	if (is_socket(term1))
-		ok = session_write((session *)sp->sptr, VAL_S(term2), 1);
+		ok = session_write((session *)sp->sptr, tmpbuf, 1);
 	else
 #endif
-		ok = fwrite(VAL_S(term2), 1, 1, sp->fptr);
+		ok = fwrite(tmpbuf, 1, 1, sp->fptr);
 
 	return ok > 0;
 }
@@ -1550,7 +1554,7 @@ static int bif_iso_put_code(tpl_query *q)
 	node *term1 = get_int(term1);
 	char tmpbuf[20];
 	int len = put_char_utf8(tmpbuf, term1->val_i);
-	fwrite(VAL_S(term1), 1, len, q->curr_stdout);
+	fwrite(tmpbuf, 1, len, q->curr_stdout);
 	return 1;
 }
 
@@ -1579,7 +1583,7 @@ static int bif_iso_get_code(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
 
-	if (q->pl->tty && !q->did_getc) {
+	if (q->pl->tty && !q->curr_stdin_name && !q->did_getc) {
 		printf("| ");
 		fflush(q->curr_stdout);
 	}
@@ -1617,7 +1621,7 @@ static int bif_iso_get_byte(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
 
-	if (q->pl->tty && !q->did_getc) {
+	if (q->pl->tty && !q->curr_stdin_name && !q->did_getc) {
 		printf("| ");
 		fflush(q->curr_stdout);
 	}
@@ -1641,7 +1645,7 @@ static int bif_iso_get_char(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
 
-	if (q->pl->tty && !q->did_getc) {
+	if (q->pl->tty && !q->curr_stdin_name && !q->did_getc) {
 		printf("| ");
 		fflush(q->curr_stdout);
 	}
