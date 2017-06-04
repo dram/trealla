@@ -1552,7 +1552,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	if (!s)
 		return NULL;
 
-LOOP:
+LOOP:								// FIXME someday
 
 	while (isspace(*s)) {
 		if (*s == '\n')
