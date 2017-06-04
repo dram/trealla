@@ -1793,7 +1793,8 @@ static int bif_iso_number_codes(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			unsigned this_context = q->latest_context;
+			node *n = get_arg(q, head, this_context);
 
 			if (!is_integer(n) && !is_bignum(n)) {
 				QABORT(ABORT_INVALIDARGNOTINT);
@@ -1820,7 +1821,7 @@ static int bif_iso_number_codes(tpl_query *q)
 
 			*dst++ = (char)(int)get_word(n);
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = get_arg(q, tail, this_context);
 		}
 
 		*dst = '\0';
@@ -1879,7 +1880,8 @@ static int bif_iso_number_chars(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			unsigned this_context = q->latest_context;
+			node *n = get_arg(q, head, this_context);
 
 			if (!is_atom(n)) {
 				QABORT(ABORT_INVALIDARGNOTATOM);
@@ -1904,7 +1906,7 @@ static int bif_iso_number_chars(tpl_query *q)
 
 			*dst++ = VAL_S(n)[0];
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = get_arg(q, tail, this_context);
 		}
 
 		*dst = '\0';
@@ -2037,7 +2039,8 @@ static int bif_iso_atom_codes(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			unsigned this_context = q->latest_context;
+			node *n = get_arg(q, head, this_context);
 
 			if (!is_integer(n) && !is_bignum(n)) {
 				QABORT(ABORT_INVALIDARGNOTINT);
@@ -2056,7 +2059,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 
 			dst += put_char_utf8(dst, get_word(n));
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = get_arg(q, tail, this_context);
 		}
 
 		*dst = '\0';
