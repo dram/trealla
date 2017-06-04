@@ -6247,6 +6247,40 @@ static int bif_xtra_told(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_tab_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_stream(term1);
+	node *term2 = get_int(term2);
+	stream *sp = term1->val_str;
+	int n = get_word(term1);
+	int ok = 1;
+
+	for (int i = 0; ok && (i < n); i++) {
+#ifndef ISO_ONLY
+		if (is_socket(term1))
+			ok = session_write((session *)sp->sptr, "\n", 1);
+		else
+#endif
+			ok = fwrite(" ", 1, 1, sp->fptr);
+	}
+
+	return ok > 0;
+}
+
+static int bif_xtra_tab(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+	int n = get_word(term1);
+	int ok = 1;
+
+	for (int i = 0; ok && (i < n); i++)
+		ok = fwrite(" ", 1, 1, q->curr_stdout);
+
+	return ok;
+}
+
 void bifs_load_iso(void)
 {
 	DEFINE_BIF("true", 0, bif_iso_true);
@@ -6483,6 +6517,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("tell", 1, bif_xtra_tell);
 	DEFINE_BIF("telling", 1, bif_xtra_telling);
 	DEFINE_BIF("told", 0, bif_xtra_told);
+	DEFINE_BIF("tab", 1, bif_xtra_tab);
+	DEFINE_BIF("tab", 2, bif_xtra_tab_2);
 
 #ifndef ISO_ONLY
 	DEFINE_BIF("linda:out", 1, bif_linda_out_1);
