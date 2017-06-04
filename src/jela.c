@@ -391,12 +391,14 @@ static int dynamic(tpl_query *q)
 
 		if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 			printf("ERROR: UNKNOWN -> '%s'\n", tmpbuf);
+			q->halt = ABORT_ABORT;
 			return 0;
 		}
 	}
 
 	if (r == NULL) {
 		printf("ERROR: NOT CALLABLE -> '%s/%d'\n", VAL_S(n), arity);
+		q->halt = ABORT_ABORT;
 		return 0;
 	}
 
