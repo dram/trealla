@@ -164,16 +164,13 @@ static int assert_index(lexer *l, node *n, int manual, int *persist, int append_
 	const char *functor = VAL_S(tmp);
 	char tmpbuf[FUNCTOR_SIZE + 10];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
-	char *save = NULL;
 
-	if (!(tmp->flags & FLAG_CONST))
-		save = tmp->val_s;
-
-	tmp->flags |= FLAG_CONST;
-	tmp->val_s = dict(db, VAL_S(tmp));
-
-	if (save != NULL)
+	if (!(tmp->flags & FLAG_CONST)) {
+		char *save = tmp->val_s;
+		tmp->flags |= FLAG_CONST;
+		tmp->val_s = dict(db, VAL_S(tmp));
 		free(save);
+	}
 
 	rule *r = NULL;
 
@@ -526,19 +523,15 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 	if (!sl_get(&db->rules, tmpbuf, (void **)&r))
 		return NULL;
 
-	char *save = NULL;
-
-	if (!(term->flags & FLAG_CONST))
-		save = term->val_s;
+	if (!(term->flags & FLAG_CONST)) {
+		char *save = term->val_s;
+		term->flags |= FLAG_CONST;
+		term->val_s = dict(l->db, VAL_S(term));
+		free(save);
+	}
 
 	if (r->dynamic)
 		term->flags |= FLAG_DYNAMIC;
-
-	term->flags |= FLAG_CONST;
-	term->val_s = dict(l->db, VAL_S(term));
-
-	if (save != NULL)
-		free(save);
 
 	return r;
 }
@@ -582,16 +575,12 @@ rule *xref_term(lexer *l, node *term, int arity)
 				sl_set(&db->rules, functor, r);
 			}
 
-			char *save = NULL;
-
-			if (!(term->flags & FLAG_CONST))
-				save = term->val_s;
-
-			term->flags |= FLAG_CONST;
-			term->val_s = dict(db, functor);
-
-			if (save != NULL)
+			if (!(term->flags & FLAG_CONST)) {
+				char *save = term->val_s;
+				term->flags |= FLAG_CONST;
+				term->val_s = dict(db, functor);
 				free(save);
+			}
 
 			return r;
 		}
