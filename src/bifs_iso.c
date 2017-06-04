@@ -2135,13 +2135,12 @@ static int bif_iso_current_input(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	node *tmp;
 	stream *sp = calloc(1, sizeof(stream));
 	sp->fptr = q->curr_stdin;
 	sp->filename = strdup("stdin");
 	sp->mode = strdup("read");
 	sp->type = strdup("text");
-	tmp = make_stream(sp);
+	node *tmp = make_stream(sp);
 	tmp->flags |= FLAG_FILE;
 	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
 	term_heapcheck(tmp);
@@ -2152,13 +2151,13 @@ static int bif_iso_current_output(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	node *tmp;
 	stream *sp = calloc(1, sizeof(stream));
 	sp->fptr = q->curr_stdout;
 	sp->filename = strdup("stdout");
 	sp->mode = strdup("append");
 	sp->type = strdup("text");
-	tmp = make_stream(sp);
+	node *tmp = make_stream(sp);
+	tmp->flags |= FLAG_FILE;
 	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
 	term_heapcheck(tmp);
 	return 1;
