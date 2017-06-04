@@ -1238,6 +1238,12 @@ void query_destroy(tpl_query *self)
 	if (!self->def_trail)
 		free(self->trails);
 
+	if (self->curr_stdin_name)
+		free(self->curr_stdin_name);
+
+	if (self->curr_stdout_name)
+		free(self->curr_stdout_name);
+
 #if USE_SSL
 	if (self->ctx)
 		BN_CTX_free(self->ctx);

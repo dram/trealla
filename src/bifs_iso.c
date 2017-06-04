@@ -6151,6 +6151,98 @@ static int bif_linda_out_1(tpl_query *q)
 }
 #endif
 
+static int bif_xtra_see(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	const char *filename = VAL_S(term1);
+	const char *mode = "read";
+	char tmpbuf[40];
+	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
+	FILE *fp = fopen(filename, tmpbuf);
+
+	if (!fp) {
+		QABORT(ABORT_NOTEXISTFILE);
+		return 0;
+	}
+
+	if (q->curr_stdin_name)
+		free(q->curr_stdin_name);
+
+	q->curr_stdin_name = strdup(filename);
+	q->curr_stdin = fp;
+	return 1;
+}
+
+static int bif_xtra_seeing(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+
+	if (!q->curr_stdin_name)
+		return 0;
+
+	return !strcmp(VAL_S(term1), q->curr_stdin_name);
+}
+
+static int bif_xtra_seen(tpl_query *q)
+{
+	if (q->curr_stdin_name) {
+		free(q->curr_stdin_name);
+		q->curr_stdin_name = NULL;
+		fclose(q->curr_stdin);
+		q->curr_stdin = stdin;
+	}
+
+	return 1;
+}
+
+static int bif_xtra_tell(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	const char *filename = VAL_S(term1);
+	const char *mode = "write";
+	char tmpbuf[40];
+	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
+	FILE *fp = fopen(filename, tmpbuf);
+
+	if (!fp) {
+		QABORT(ABORT_NOTEXISTFILE);
+		return 0;
+	}
+
+	if (q->curr_stdout_name)
+		free(q->curr_stdout_name);
+
+	q->curr_stdout_name = strdup(filename);
+	q->curr_stdout = fp;
+	return 1;
+}
+
+static int bif_xtra_telling(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+
+	if (!q->curr_stdout_name)
+		return 0;
+
+	return !strcmp(VAL_S(term1), q->curr_stdout_name);
+}
+
+static int bif_xtra_told(tpl_query *q)
+{
+	if (q->curr_stdout_name) {
+		free(q->curr_stdout_name);
+		q->curr_stdout_name = NULL;
+		fclose(q->curr_stdout);
+		q->curr_stdout = stdout;
+	}
+
+	return 1;
+}
+
 void bifs_load_iso(void)
 {
 	DEFINE_BIF("true", 0, bif_iso_true);
@@ -6378,6 +6470,15 @@ void bifs_load_iso(void)
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
+
+// These are for Edinburgh-style file handling...
+
+	DEFINE_BIF("see", 1, bif_xtra_see);
+	DEFINE_BIF("seeing", 1, bif_xtra_seeing);
+	DEFINE_BIF("seen", 0, bif_xtra_seen);
+	DEFINE_BIF("tell", 1, bif_xtra_tell);
+	DEFINE_BIF("telling", 1, bif_xtra_telling);
+	DEFINE_BIF("told", 0, bif_xtra_told);
 
 #ifndef ISO_ONLY
 	DEFINE_BIF("linda:out", 1, bif_linda_out_1);

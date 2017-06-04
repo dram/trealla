@@ -291,6 +291,7 @@ struct tpl_query_
 	tpl_query *parent, *subq;
 	lexer *lex;
 	char *halt_s;
+	char *curr_stdin_name, *curr_stdout_name;
 	node nv;
 
 	union {
@@ -298,7 +299,7 @@ struct tpl_query_
 		uint32_t line_nbr;					// used during parsing
 	};
 
-	choice c;	
+	choice c;
 	mask_t pins;
 	uint64_t started, elapsed, tmo_when_msecs;
 	uint32_t choices_used, choices_possible, choice_point;
