@@ -336,7 +336,7 @@ static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 		if (from->term != NULL)
 			to->context = from->context;
 		else if (from->binding != 0)
-			to->binding = from->binding - q->c.frame_size;
+			;//to->binding = from->binding - q->c.frame_size;
 		else
 			to->context = 0;
 
