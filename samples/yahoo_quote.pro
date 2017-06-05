@@ -6,7 +6,7 @@ main :-
 	writeln('Raw data...'),
 	write(Data),
 	writeln('Processed data...'),
-	sys:split(Data,'\n',List),
+	sys:split_all(Data,'\n',List),
 	print(List),
 	halt.
 

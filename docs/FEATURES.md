@@ -182,7 +182,7 @@ These are an assortment of utilities:
 	bwrite(+S,+Atom)            - block write to stream
 	rand(-Int)                  - random int value >= 0 and < RAND_MAX
 	uuid(-Atom)                 - return representation of a new UUID
-	split(+Atom,+Sep,-L)        - split atom based on separator into list
+	split_all(+Atom,+Sep,-L)    - split atom based on separator into list
 	split(+Atom,+Sep,?L,?R)     - split atom based on first separator into left & right
 	split_last(+Atom,+Sep,?L,?R) - split atom based on last separator into left & right
 	jsonq(+Atom,+N,-Atom)       - quick get named value from JSON source

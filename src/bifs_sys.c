@@ -983,7 +983,7 @@ static int bif_sys_split_4(tpl_query *q)
 	return ok;
 }
 
-static int bif_sys_split_3(tpl_query *q)
+static int bif_sys_split_all_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1994,7 +1994,7 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:lower", 2, bif_sys_lower_2);
 	DEFINE_BIF("sys:split_last", 4, bif_sys_split_last_4);
 	DEFINE_BIF("sys:split", 4, bif_sys_split_4);
-	DEFINE_BIF("sys:split", 3, bif_sys_split_3);
+	DEFINE_BIF("sys:split_all", 3, bif_sys_split_all_3);
 	DEFINE_BIF("sys:replace", 4, bif_sys_replace_4);
 	DEFINE_BIF("sys:begins", 2, bif_sys_begins_2);
 	DEFINE_BIF("sys:left", 3, bif_sys_left_3);
