@@ -1591,12 +1591,9 @@ static int bif_iso_get_code(tpl_query *q)
 	q->did_getc = 1;
 	int ch = getc_utf8(q->curr_stdin);
 
-	if (ch == EOF) {
+	if (ch == EOF)
 		q->did_getc = 0;
-		return unify_int(q, term1, ch);
-	}
-
-	if (ch == '\n')
+	else if (ch == '\n')
 		q->did_getc = 0;
 
 	return unify_int(q, term1, ch);
@@ -1609,10 +1606,6 @@ static int bif_iso_get_code_2(tpl_query *q)
 	node *term2 = get_int_or_var(term2);
 	stream *sp = term1->val_str;
 	int ch = getc_utf8(sp->fptr);
-
-	if (ch == EOF)
-		return 0;
-
 	return unify_int(q, term2, ch);
 }
 
