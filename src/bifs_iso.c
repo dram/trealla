@@ -1593,7 +1593,7 @@ static int bif_iso_get_code(tpl_query *q)
 
 	if (ch == EOF) {
 		q->did_getc = 0;
-		return 0;
+		return unify_int(q, term1, ch);
 	}
 
 	if (ch == '\n')
