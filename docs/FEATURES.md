@@ -183,7 +183,7 @@ These are an assortment of utilities:
 	rand(-Int)                  - random int value >= 0 and < RAND_MAX
 	uuid(-Atom)                 - return representation of a new UUID
 	split(+Atom,+Sep,?L,?R)     - split atom based on first separator into left & right
-	splitl(+Atom,+Sep,?L,?R)    - split atom based on last separator into left & right
+	split_last(+Atom,+Sep,?L,?R) - split atom based on last separator into left & right
 	split(+Atom,+Sep,-L)        - split atom based on separator into list
 	jsonq(+Atom,+N,-Atom)       - quick get named value from JSON source
 	jsonq(+Atom,+N,-Atom,+Def)  - quick get named value from JSON source (or default)
@@ -203,9 +203,8 @@ These are an assortment of utilities:
 	right(+Atom,?Len,?Sub)      - len and/or Sub must be instantiated
 	replace(+Atom,+S1,+S2,-Atom) - replace every occurrance of S1 with S2
 
-	atom_timestamp(+A,-Usecs)   - atom is YYYY-MM-DD!HH:MM:SS.SSS
-								   (Note: the actual separators can be
-								   any character at all) to usecs.
+	atom_timestamp(+A,-Usecs)   - atom is YYYY-MM-DD!HH:MM:SS.SSS (Note: the actual
+	                              separators can be any character at all) to usecs.
 
 	format_rfcdate(+Int,-Atom)  - format C-epoch to RFC datetime
 	parse_rfcdate(+Atom,-Int)   - parse RFC datetime to C-epoch
@@ -231,9 +230,9 @@ Each stream has access to it's own private in-memory dictionary:
 	erase(+S,+Key)              - erase value under Key
 	erase(+S)                   - erase all
 
-The *stream/1* predicate creates a dummy stream for use as a dictionary. The allowed operations are
-the same as the per-process dictionary. Dictionary operations are not undone on bactracking nor are
-they backed to the database. It should be disposed of by a call to close/1.
+The *stream/1* predicate creates a dummy stream for use as a dictionary. The allowed operations
+are the same as the per-process dictionary. Like all streams, it should be disposed of by a call to
+close/1. Dictionary operations are not undone on bactracking nor are they backed to the database.
 
 The parse_XXX/2 predicates accept double-quoted column items, and remove any spurious whitespace
 before and after items.

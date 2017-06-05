@@ -36,7 +36,7 @@ index([_|T],V) :- index(T,V).
 
 mime_type(File,Type) :-
 	exts(Exts),
-	sys:splitl(File,'.',_,Ext),
+	sys:split_last(File,'.',_,Ext),
 	sys:concat('.',Ext,Ext2),
 	index(Exts,{Ext2,Type}),
 	!.
