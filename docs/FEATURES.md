@@ -119,6 +119,8 @@ found in other Prolog implementations:
 	atomic_concat(+S1,+S2,-S)
 	atomic_list_concat(+L,-S)
 	atomic_list_concat(+L,+Sep,-S)
+	tab(+Spaces)
+	tab(+Stream,+Spaces)
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
@@ -130,9 +132,9 @@ and for accessing the rule database:
 	assert(+Clause)             - same as assertz (DEPRECATED)
 	asserta(+Clause,-Ref)
 	assertz(+Clause,-Ref)
-	erase(+Ref)	
-	clause(?Head,?Body,?Ref) 
-	abolish(+Name,+Arity)      
+	erase(+Ref)
+	clause(?Head,?Body,?Ref)
+	abolish(+Name,+Arity)
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
 
@@ -146,6 +148,8 @@ and for accessing the recorded database:
 	recorded(?K,?V,?Ref)
 	instance(+Ref,-V)
 	current_key(+K)
+
+Plus the Edinburgh file routines: see,seeing, seen, tell, telling and told.
 
 System-extras: namespace 'sys'
 ------------------------------

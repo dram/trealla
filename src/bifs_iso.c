@@ -6147,7 +6147,7 @@ static int bif_xtra_trace(tpl_query *q)
 	return 1;
 }
 
-static int bif_linda_out_1(tpl_query *q)
+static int bif_linda_out(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_tuple(term1);
@@ -6521,7 +6521,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("tab", 2, bif_xtra_tab_2);
 
 #ifndef ISO_ONLY
-	DEFINE_BIF("linda:out", 1, bif_linda_out_1);
+	DEFINE_BIF("linda:out", 1, bif_linda_out);
 	DEFINE_BIF("linda:in", 1, bif_xtra_retractw);
 	DEFINE_BIF("linda:inp", 1, bif_iso_retract);
 	DEFINE_BIF("linda:rd", 1, bif_xtra_clausew);
