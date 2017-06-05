@@ -23,14 +23,8 @@
 #include "network.h"
 #endif
 
-#if defined(__TINYC__) || defined(_WIN32) || !defined(USE_128)
 typedef int64_t nbr_t;
 typedef uint64_t unbr_t;
-#else
-typedef __int128_t nbr_t;
-typedef __uint128_t unbr_t;
-#endif
-
 typedef double flt_t;
 
 #ifdef DEBUG
@@ -40,7 +34,7 @@ extern uint64_t g_choicepoints, g_heap_used, g_backtracks, g_executes,
 
 extern uint64_t g_busy;
 
-#if defined(__TINYC__) || defined(_WIN32)
+#if defined(__TINYC__) || defined(_WIN32) || defined(NO128)
 typedef uint64_t mask_t;
 #else
 typedef __uint128_t mask_t;

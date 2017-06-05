@@ -32,10 +32,6 @@ CFLAGS += -pthread
 LDFLAGS += -pthread
 .endif
 
-.ifdef USE_128
-CFLAGS += -USE_128
-.endif
-
 all: tpl
 
 debug:
@@ -44,14 +40,8 @@ debug:
 profile:
 	make 'OPT=-O1 -pg'
 
-big:
-	make USE_128=1
-
 iso:
 	make ISO_ONLY=1 USE_SSL=0
-
-iso_big:
-	make ISO_ONLY=1 USE_128=1 USE_SSL=0
 
 iso_debug:
 	make 'OPT=-O0 -g -DDEBUG' ISO_ONLY=1 USE_SSL=0

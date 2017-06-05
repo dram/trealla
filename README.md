@@ -9,7 +9,7 @@ It supports much of ISO-PROLOG plus:
  - persistency
  - transactions
  - unlimited length and number of UTF-8 or binary strings
- - 64-bit ints (optional 128-bit where available)
+ - 64-bit ints
  - bigints (using OpenSSL:BN)
  - Erlang-style processes and message-passing
  - Linda-style processes and tuple-space
@@ -33,7 +33,7 @@ Getting / Building
 	cd trealla
 	make [CC=gcc|clang|tcc] [iso|iso_debug|iso_profile|debug|profile]
 
-Note *tcc* does not support 128-bit integers, or atomics (so no procs).
+Note *tcc* does not support atomics (so no procs).
 
 Compiler should be C11 if using procs (to use atomics) otherwise C99 should be
 adequate, eg:
