@@ -2223,8 +2223,9 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 							term_append(n, tmp);
 						}
 
-						if (is_builtin(tmp))
+						if (!strchr(functor , ':') && is_builtin(tmp)) {
 							n->flags |= FLAG_BUILTIN;
+						}
 					}
 				}
 			}
@@ -2331,8 +2332,9 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 #endif
 
 			if (self->quoted < 2) {
-				if ((n->bifptr = get_bif(self, self->tok)->bifptr) != NULL)
-					n->flags |= FLAG_BUILTIN;
+				if (is_op(self->db, self->tok) || !strchr(self->tok, ':'))
+					if ((n->bifptr = get_bif(self, self->tok)->bifptr) != NULL)
+						n->flags |= FLAG_BUILTIN;
 			}
 
 			if (self->quoted && !*self->tok) {

@@ -538,6 +538,11 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 		if (sl_get(&l->pl->mods, tmpbuf2, (void **)&db)) {
 			if (!db) {
+				if ((term->bifptr = get_bifarity(l, VAL_S(term), arity)->bifptr) != NULL) {
+					term->flags |= FLAG_BUILTIN;
+					return r;
+				}
+
 				printf("ERROR: in '%s', no module '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
 				l->error = 1;
 				return NULL;
