@@ -653,6 +653,11 @@ static int xref_body(lexer *l, node *term, const char *head_functor, int head_ar
 	else if (is_atom(term) && !(term->flags & FLAG_QUOTED) && !(term->flags & FLAG_BUILTIN)) {
 		rule *match = xref_term(l, term, 0);
 
+		if (!is_builtin(term)) {
+			if ((term->bifptr = get_bifarity(l, VAL_S(term), 0)->bifptr) != NULL)
+				term->flags |= FLAG_BUILTIN;
+		}
+
 		if (!is_builtin(term))
 			term->match = match;
 
@@ -722,7 +727,7 @@ int xref_clause(lexer *l, node *term)
 
 	int is_last = !term_next(term);
 
-	for (node *n = body; n != NULL; n = term_next(n))
+	for (node *n = body ? body : head; n != NULL; n = term_next(n))
 		xref_body(l, n, head_functor, arity, is_last);
 
 	return 1;
