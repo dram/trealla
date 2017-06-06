@@ -523,7 +523,7 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 
 rule *xref_term(lexer *l, node *term, int arity)
 {
-	// printf("*** XREF_TERM "); term_print(l->pl, NULL, term, 1); printf(" => arity=%d\n", arity);
+	//printf("*** XREF_TERM "); term_print(l->pl, NULL, term, 1); printf(" => arity=%d\n", arity);
 
 	const char *functor = VAL_S(term);
 	const char *src = strchr(functor, ':');
@@ -539,8 +539,9 @@ rule *xref_term(lexer *l, node *term, int arity)
 		if (sl_get(&l->pl->mods, tmpbuf2, (void **)&db)) {
 			if (!db) {
 				if ((term->bifptr = get_bifarity(l, VAL_S(term), arity)->bifptr) != NULL) {
+					//printf("*** %s/%d ==> %p\n", VAL_S(term), arity, term->bifptr);
 					term->flags |= FLAG_BUILTIN;
-					return r;
+					return NULL;
 				}
 
 				printf("ERROR: in '%s', no module '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
@@ -633,13 +634,26 @@ static int xref_body(lexer *l, node *term, const char *head_functor, int is_last
 		for (node *n = term_next(tmp); n != NULL; n = term_next(n))
 			xref_body(l, n, head_functor, is_last);
 
-		if (is_atom(tmp) && !(term->flags & FLAG_QUOTED) && !(tmp->flags & FLAG_BUILTIN)) {
-			term->match = xref_term(l, tmp, term_arity(term));
+		if (is_atom(tmp) && !(tmp->flags & FLAG_QUOTED) && !(tmp->flags & FLAG_BUILTIN)) {
+			rule *match = xref_term(l, tmp, term_arity(term));
+
+			if (!is_builtin(tmp)) {
+				term->match = match;
+			}
+			else {
+				term->flags |= FLAG_BUILTIN;
+				term->bifptr = tmp->bifptr;
+			}
+
 			functor = VAL_S(tmp);
 		}
 	}
 	else if (is_atom(term) && !(term->flags & FLAG_QUOTED) && !(term->flags & FLAG_BUILTIN)) {
-		term->match = xref_term(l, term, 0);
+		rule *match = xref_term(l, term, 0);
+
+		if (!is_builtin(term))
+			term->match = match;
+
 		functor = VAL_S(term);
 	}
 	else
