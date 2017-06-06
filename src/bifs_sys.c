@@ -952,7 +952,7 @@ static int bif_sys_split_4(tpl_query *q)
 	while (*src && strncmp(src, VAL_S(term2), LEN(term2)))
 		*dst++ = *src++;
 
-	while (isspace(*src))
+	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN(term2)))
 		src++;
 
 	*dst = '\0';
@@ -971,7 +971,7 @@ static int bif_sys_split_4(tpl_query *q)
 	src += LEN(term2);
 	dst = dstbuf;
 
-	while (isspace(*src))
+	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN(term2)))
 		src++;
 
 	while (*src && (*src != '\r') && (*src != '\n'))
