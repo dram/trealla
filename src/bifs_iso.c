@@ -356,6 +356,7 @@ static int bif_iso_halt(tpl_query *q)
 {
 	q->halt_code = 1;
 	q->halt = ABORT_HALT;
+	q->did_getc = 0;
 	return 0;
 }
 

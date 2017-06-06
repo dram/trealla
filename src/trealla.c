@@ -622,17 +622,18 @@ rule *xref_term(lexer *l, node *term, int arity)
 	return r;
 }
 
-static int xref_body(lexer *l, node *term, const char *head_functor, int is_last)
+static int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, int is_last)
 {
 	// printf("*** XREF_BODY "); term_print(l->pl, NULL, term, 1); printf("\n");
 
 	const char *functor = NULL;
+	int arity = -1;
 
 	if (is_compound(term)) {
 		node *tmp = term_first(term);
 
 		for (node *n = term_next(tmp); n != NULL; n = term_next(n))
-			xref_body(l, n, head_functor, is_last);
+			xref_body(l, n, head_functor, head_arity, is_last);
 
 		if (is_atom(tmp) && !(tmp->flags & FLAG_QUOTED) && !(tmp->flags & FLAG_BUILTIN)) {
 			rule *match = xref_term(l, tmp, term_arity(term));
@@ -646,6 +647,7 @@ static int xref_body(lexer *l, node *term, const char *head_functor, int is_last
 			}
 
 			functor = VAL_S(tmp);
+			arity = term_arity(term);
 		}
 	}
 	else if (is_atom(term) && !(term->flags & FLAG_QUOTED) && !(term->flags & FLAG_BUILTIN)) {
@@ -655,12 +657,13 @@ static int xref_body(lexer *l, node *term, const char *head_functor, int is_last
 			term->match = match;
 
 		functor = VAL_S(term);
+		arity = 0;
 	}
 	else
 		return 0;
 
 	if (functor && (term_next(term) == NULL) && is_last) {
-		if (!strcmp(functor, head_functor))
+		if (!strcmp(functor, head_functor) && (arity == head_arity))
 			term->flags |= FLAG_TAILRECURSIVE;
 	}
 
@@ -720,7 +723,7 @@ int xref_clause(lexer *l, node *term)
 	int is_last = !term_next(term);
 
 	for (node *n = body; n != NULL; n = term_next(n))
-		xref_body(l, n, head_functor, is_last);
+		xref_body(l, n, head_functor, arity, is_last);
 
 	return 1;
 }
