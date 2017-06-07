@@ -854,33 +854,6 @@ static int bif_iso_current_predicate(tpl_query *q)
 	return check_dynamic(q->c.curr_db, tmpbuf);
 }
 
-static int bif_iso_predicate_property(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_callable(term1);
-	node *term2 = get_atom_or_var(term2);
-
-	char tmpbuf[FUNCTOR_SIZE];
-
-	if (is_atom(term1))
-		sprintf(tmpbuf, "%s/%d", VAL_S(term1), 0);
-	else
-		sprintf(tmpbuf, "%s/%d", term_functor(term1), term_arity(term1));
-
-	const char *functarity = tmpbuf;
-
-	if (check_builtin(q->pl, functarity))
-		return unify_const_atom(q, term2, "built_in", 0);
-
-	if (check_dynamic(q->c.curr_db, functarity))
-		return unify_const_atom(q, term2, "dynamic", 0);
-
-	if (check_static(q->c.curr_db, functarity))
-		return unify_const_atom(q, term2, "static", 0);
-
-	return 0;
-}
-
 static int bif_iso_open_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6291,6 +6264,33 @@ static int bif_xtra_tab(tpl_query *q)
 	return ok;
 }
 
+static int bif_xtra_predicate_property(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_callable(term1);
+	node *term2 = get_atom_or_var(term2);
+
+	char tmpbuf[FUNCTOR_SIZE];
+
+	if (is_atom(term1))
+		sprintf(tmpbuf, "%s/%d", VAL_S(term1), 0);
+	else
+		sprintf(tmpbuf, "%s/%d", term_functor(term1), term_arity(term1));
+
+	const char *functarity = tmpbuf;
+
+	if (check_builtin(q->pl, functarity))
+		return unify_const_atom(q, term2, "built_in", 0);
+
+	if (check_dynamic(q->c.curr_db, functarity))
+		return unify_const_atom(q, term2, "dynamic", 0);
+
+	if (check_static(q->c.curr_db, functarity))
+		return unify_const_atom(q, term2, "static", 0);
+
+	return 0;
+}
+
 void bifs_load_iso(void)
 {
 	DEFINE_BIF("true", 0, bif_iso_true);
@@ -6444,7 +6444,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("current_predicate", 1, bif_iso_current_predicate);
 	DEFINE_BIF("set_prolog_flag", 2, bif_iso_set_prolog_flag);
 	DEFINE_BIF("current_prolog_flag", 2, bif_iso_current_prolog_flag);
-	DEFINE_BIF("predicate_property", 2, bif_iso_predicate_property);
 	DEFINE_BIF("findall", 3, bif_iso_findall);
 	DEFINE_BIF("bagof", 3 + 1, bif_iso_bagof);
 	DEFINE_BIF("setof", 3 + 1, bif_iso_setof);
@@ -6518,6 +6517,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
+	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property);
 
 // These are for Edinburgh-style file handling...
 
