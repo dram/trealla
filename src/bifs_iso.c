@@ -845,6 +845,26 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	return 0;
 }
 
+static int bif_iso_current_op(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int_or_var(term1);
+	node *term2 = get_atom_or_var(term2);
+	node *term3 = get_atom(term3);
+	const op *cur_op = get_op(q->c.curr_db, VAL_S(term3), 0);
+
+	if (!cur_op->fun)
+		return 0;
+
+	if (!unify_const_atom(q, term2, cur_op->spec, 0))
+		return 0;
+
+	if (!unify_int(q, term1, (int)cur_op->priority))
+		return 0;
+
+	return 1;
+}
+
 static int bif_iso_current_predicate(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6462,6 +6482,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("retract", 1, bif_iso_retract);
 	DEFINE_BIF("abolish", 1, bif_iso_abolish);
 	DEFINE_BIF("current_predicate", 1, bif_iso_current_predicate);
+	DEFINE_BIF("current_op", 3, bif_iso_current_op);
 	DEFINE_BIF("set_prolog_flag", 2, bif_iso_set_prolog_flag);
 	DEFINE_BIF("current_prolog_flag", 2, bif_iso_current_prolog_flag);
 	DEFINE_BIF("findall", 3, bif_iso_findall);
