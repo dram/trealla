@@ -1019,13 +1019,37 @@ static int bif_iso_close(tpl_query *q)
 	return 1;
 }
 
+static FILE *get_output(node *n)
+{
+	if (is_stream(n))
+		return n->val_str->fptr;
+
+	if (!strcmp(VAL_S(n), "user_error"))
+		return stderr;
+
+	if (!strcmp(VAL_S(n), "user_output"))
+		return stdout;
+
+	return stdout;
+}
+
+static FILE *get_input(node *n)
+{
+	if (is_stream(n))
+		return n->val_str->fptr;
+
+	if (!strcmp(VAL_S(n), "user_input"))
+		return stdin;
+
+	return stdin;
+}
+
 static int bif_iso_write_term_3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_atom_or_list(term3);
-	stream *sp = term1->val_str;
 	int quoted = 0, nl = 0, fs = 0;
 
 	if (is_atom(term2)) {
@@ -1070,6 +1094,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 		tmpbuf[len] = '\0';
 	}
 
+	stream *sp = term1->val_str;
 	int ok;
 
 #ifndef ISO_ONLY
@@ -1077,7 +1102,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, len, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, get_output(term1));
 
 	free(tmpbuf);
 	return ok >= 0;
@@ -1140,7 +1165,7 @@ static int bif_iso_write_term(tpl_query *q)
 static int bif_iso_write_canonical_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;
@@ -1160,7 +1185,7 @@ static int bif_iso_write_canonical_2(tpl_query *q)
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, len, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, get_output(term1));
 
 	free(tmpbuf);
 	return ok >= 0;
@@ -1181,7 +1206,7 @@ static int bif_iso_write_canonical(tpl_query *q)
 static int bif_iso_writeq_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;
@@ -1201,7 +1226,7 @@ static int bif_iso_writeq_2(tpl_query *q)
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, len, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, get_output(term1));
 
 	free(tmpbuf);
 	return ok >= 0;
@@ -1222,7 +1247,7 @@ static int bif_iso_writeq(tpl_query *q)
 static int bif_iso_write_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	char *tmpbuf;
@@ -1251,7 +1276,7 @@ static int bif_iso_write_2(tpl_query *q)
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, len, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, get_output(term1));
 
 	if (!is_atom(term2))
 		free(tmpbuf);
@@ -1293,7 +1318,7 @@ static int bif_iso_write(tpl_query *q)
 static int bif_iso_nl_1(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	stream *sp = term1->val_str;
 	int ok;
 
@@ -1302,7 +1327,7 @@ static int bif_iso_nl_1(tpl_query *q)
 		ok = session_write((session *)sp->sptr, "\n", 1);
 	else
 #endif
-		ok = fwrite("\n", 1, 1, sp->fptr);
+		ok = fwrite("\n", 1, 1, get_output(term1));
 
 	return ok > 0;
 }
@@ -1316,7 +1341,7 @@ static int bif_iso_nl(tpl_query *q)
 static int bif_iso_read_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	char *line = NULL;
@@ -1338,7 +1363,7 @@ static int bif_iso_read_2(tpl_query *q)
 		else
 #endif
 		{
-			if (!(line = trealla_readline(q->lex, sp->fptr, 0))) {
+			if (!(line = trealla_readline(q->lex, get_input(term1), 0))) {
 				put_const_atom(q, q->c.curr_frame + term2->slot, END_OF_FILE, 0);
 				return 1;
 			}
@@ -1457,9 +1482,8 @@ static int bif_iso_read(tpl_query *q)
 static int bif_iso_flush_output_1(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
-	stream *sp = term1->val_str;
-	fflush(sp->fptr);
+	node *term1 = get_atom_or_stream(term1);
+	fflush(get_output(term1));
 	return 1;
 }
 
@@ -1555,7 +1579,7 @@ static int bif_iso_put_char(tpl_query *q)
 static int bif_iso_put_char_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
 	const char *src = VAL_S(term2);
@@ -1569,7 +1593,7 @@ static int bif_iso_put_char_2(tpl_query *q)
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, len, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, get_output(term1));
 
 	return ok > 0;
 }
@@ -1587,7 +1611,7 @@ static int bif_iso_put_byte(tpl_query *q)
 static int bif_iso_put_byte_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
 	int ok;
@@ -1599,7 +1623,7 @@ static int bif_iso_put_byte_2(tpl_query *q)
 		ok = session_write((session *)sp->sptr, tmpbuf, 1);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, 1, sp->fptr);
+		ok = fwrite(tmpbuf, 1, 1, get_output(term1));
 
 	return ok > 0;
 }
@@ -1617,7 +1641,7 @@ static int bif_iso_put_code(tpl_query *q)
 static int bif_iso_put_code_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
 	char tmpbuf[20];
@@ -1629,7 +1653,7 @@ static int bif_iso_put_code_2(tpl_query *q)
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
 #endif
-		ok = fwrite(tmpbuf, 1, len, sp->fptr);
+		ok = fwrite(tmpbuf, 1, len, get_output(term1));
 
 	return ok > 0;
 }
@@ -1658,10 +1682,9 @@ static int bif_iso_get_code(tpl_query *q)
 static int bif_iso_get_code_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int_or_var(term2);
-	stream *sp = term1->val_str;
-	int ch = getc_utf8(sp->fptr);
+	int ch = getc_utf8(get_input(term1));
 	return unify_int(q, term2, ch);
 }
 
@@ -1682,10 +1705,9 @@ static int bif_iso_get_byte(tpl_query *q)
 static int bif_iso_get_byte_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int_or_var(term2);
-	stream *sp = term1->val_str;
-	int ch = fgetc(sp->fptr);
+	int ch = fgetc(get_input(term1));
 	return unify_int(q, term2, ch);
 }
 
@@ -1719,10 +1741,9 @@ static int bif_iso_get_char(tpl_query *q)
 static int bif_iso_get_char_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom_or_var(term2);
-	stream *sp = term1->val_str;
-	int ch = getc_utf8(sp->fptr);
+	int ch = getc_utf8(get_input(term1));
 
 	if (ch == EOF)
 		return unify_const_atom(q, term2, END_OF_FILE, 0);
@@ -1748,15 +1769,14 @@ static int bif_iso_peek_code(tpl_query *q)
 static int bif_iso_peek_code_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int_or_var(term2);
-	stream *sp = term1->val_str;
-	int ch = fgetc(sp->fptr);
+	int ch = fgetc(get_input(term1));
 
 	if (ch == EOF)
 		return 0;
 
-	ungetc(ch, sp->fptr); // FIXME
+	ungetc(ch, get_input(term1)); // FIXME
 	return unify_int(q, term2, ch);
 }
 
@@ -1779,15 +1799,14 @@ static int bif_iso_peek_byte(tpl_query *q)
 static int bif_iso_peek_byte_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom_or_var(term2);
-	stream *sp = term1->val_str;
-	int ch = fgetc(sp->fptr);
+	int ch = fgetc(get_input(term1));
 
 	if (ch == EOF)
 		return 0;
 
-	ungetc(ch, sp->fptr); // FIXME
+	ungetc(ch, get_input(term1)); // FIXME
 	char tmpbuf[2];
 	tmpbuf[0] = (char)ch;
 	tmpbuf[1] = '\0';
@@ -1812,15 +1831,14 @@ static int bif_iso_peek_char(tpl_query *q)
 static int bif_iso_peek_char_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom_or_var(term2);
-	stream *sp = term1->val_str;
-	int ch = getc_utf8(sp->fptr);
+	int ch = getc_utf8(get_input(term1));
 
 	if (ch == EOF)
 		return unify_const_atom(q, term2, END_OF_FILE, 0);
 
-	ungetc(ch, sp->fptr); // FIXME
+	ungetc(ch, get_input(term1)); // FIXME
 	char tmpbuf[20];
 	put_char_utf8(tmpbuf, ch);
 	return unify_atom(q, term2, strdup(tmpbuf), 0);

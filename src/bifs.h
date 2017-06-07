@@ -70,6 +70,7 @@
 #define get_list(t) get_next_arg(q, &args); if (!is_list(t)) { QABORT(ABORT_INVALIDARGNOTLIST); return 0; }
 #define get_tuple(t) get_next_arg(q, &args); if (!is_tuple(t)) { QABORT(ABORT_INVALIDARGNOTTUPLE); return 0; }
 #define get_list_or_var(t) get_next_arg(q, &args); if (!is_list(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTLISTORVAR); return 0; }
+#define get_atom_or_stream(t) get_next_arg(q, &args); if (!is_atom(t) && !is_stream(t)) { QABORT(ABORT_INVALIDARGNOTSTREAM); return 0; }
 #define get_stream(t) get_next_arg(q, &args); if (!is_stream(t)) { QABORT(ABORT_INVALIDARGNOTSTREAM); return 0; }
 #define get_file(t) get_next_arg(q, &args); if (!is_file(t)) { QABORT(ABORT_INVALIDARGNOTFILE); return 0; }
 
