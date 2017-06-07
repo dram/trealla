@@ -131,7 +131,7 @@ process_get(S,Log,Ver,Cmd,Path,FullPath) :-
 	check_modified(S,Log,Ver,Lmod,Len,Cmd,Path,FullPath).
 
 process_get(S,Log,Ver,Cmd,Path,FullPath) :-
-	exists_dir(FullPath), !,
+	exists_directory(FullPath), !,
 	concat(FullPath,?FileDefault,NewFullPath),
 	process_get(S,Log,Ver,Cmd,Path,NewFullPath).
 
