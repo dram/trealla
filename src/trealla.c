@@ -921,12 +921,12 @@ int query_run(tpl_query *self)
 	if (!self->is_yielded && (self->halt >= ABORT_HALT)) {
 		if (self->halt > ABORT_HALT)
 			printf("ERROR: ERROR %s\n", self->halt_s ? self->halt_s : "ABORT");
-		else if ((self->halt == ABORT_HALT) && !self->pl->quiet)
+		else if (self->did_halt && !self->pl->quiet)
 			printf("Halted\n");
 
 		self->pl->halt_code = self->halt_code;
 		self->pl->halt = self->halt;
-		self->ok = self->halt <= ABORT_HALT;
+		self->ok = self->halt < ABORT_HALT;
 	}
 
 	return self->ok;
@@ -1040,6 +1040,11 @@ int query_choices(tpl_query *self)
 int query_get_haltcode(tpl_query *self)
 {
 	return self->halt_code;
+}
+
+int query_is_halt(tpl_query *self)
+{
+	return self->did_halt;
 }
 
 static void collect_vars(tpl_query *q, node *n)
@@ -1398,6 +1403,9 @@ int trealla_run_query(trealla *self, const char *src)
 
 	if (!q->lex->error)
 		ok = query_run(q);
+
+	if (q->did_halt)
+		self->did_halt = 1;
 
 	node *r = NLIST_POP_FRONT(&q->lex->val_l);
 	term_heapcheck(r);

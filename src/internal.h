@@ -305,7 +305,7 @@ struct tpl_query_
 	unsigned int seed;
 	uint16_t unify_depth;
 	uint8_t fail_arg;
-	uint8_t halt_code, halt, is_running;
+	uint8_t halt_code, halt, is_running, did_halt;
 	uint8_t is_yielded, retry, ok, def_choice, def_env, def_trail;
 	uint8_t is_det, timed_out, trace, optimize;
 	uint8_t eval, did_getc, in_tran, ignore_ops;
@@ -333,7 +333,7 @@ struct trealla_
 	module db;
 	const char *keywords[MAX_BIFS+20];
 	volatile int end_wait, halt_code, halt;
-	uint8_t trace, optimize, tty, quiet;
+	uint8_t trace, optimize, tty, quiet, did_halt;
 	uint8_t flag_char_conversion, flag_debug, flag_character_escapes;
 	uint8_t flag_unknown, flag_double_quotes;
 

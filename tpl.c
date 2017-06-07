@@ -445,7 +445,7 @@ int main(int ac, char *av[])
 			if (ok)
 				query_dump(q);
 
-			if (trealla_is_halt(pl)) {
+			if (query_is_halt(q)) {
 				query_destroy(q);
 				break;
 			}
