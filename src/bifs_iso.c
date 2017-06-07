@@ -3461,7 +3461,7 @@ static int bif_iso_univ(tpl_query *q)
 
 	if (is_atomic(term1)) {
 		node *l = make_list();
-		term_append(l, copy_term(q, term1));
+		term_append(l, clone_term(q, term1));
 		term_append(l, make_const_atom("[]", 0));
 		int ok = unify_term(q, l, term2, q->c.curr_frame);
 		term_heapcheck(l);
@@ -3471,13 +3471,23 @@ static int bif_iso_univ(tpl_query *q)
 	if (is_var(term1) && is_list(term2)) {
 		node *s = make_compound();
 		node *l = term2;
+		int first = 1;
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
+			unsigned this_context = q->latest_context;
 			node *n = get_arg(q, head, q->latest_context);
-			term_append(s, copy_term(q, n));
+
+			if (first && is_var(n)) {
+				QABORT(ABORT_INVALIDARGNOTGROUNDED);
+				term_heapcheck(s);
+				return 0;
+			}
+
+			term_append(s, clone_term(q, n));
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = get_arg(q, tail, this_context);
+			first = 0;
 		}
 
 		if (term_arity(s) == 0)
@@ -3511,7 +3521,7 @@ static int bif_iso_functor(tpl_query *q)
 				return 0;
 
 			node *s = make_compound();
-			term_append(s, copy_atom(term2));
+			term_append(s, clone_term(q, term2));
 
 			for (int i = 0; i < v; i++)
 				term_append(s, make_var(q));
