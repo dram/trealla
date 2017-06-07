@@ -869,7 +869,16 @@ int dir_use_module(lexer *l, node *n)
 	}
 #endif
 
-	int ok = trealla_consult_file(l->pl, name);
+	strcpy(tmpbuf, l->name ? l->name : "");
+	char *ptr = strrchr(tmpbuf, '/');
+
+	if (ptr != NULL)
+		*++ptr = '\0';
+	else
+		tmpbuf[0] = '\0';
+
+	strcat(tmpbuf, name);
+	int ok = trealla_consult_file(l->pl, tmpbuf);
 	l->db = save;
 	return ok;
 }
