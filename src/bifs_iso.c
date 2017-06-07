@@ -872,11 +872,29 @@ static int bif_iso_current_predicate(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_compound(term1);
-	char tmpbuf[FUNCTOR_SIZE];
+	const char *functor = term_functor(term1);
+
+	if (strcmp(functor, "/")) {
+		QABORT(ABORT_INVALIDARGNOTPREDICATEINDICATOR);
+		return 0;
+	}
+
 	node *fa = term_firstarg(term1);
 	node *ta = term_next(fa);
-	const char *functor = is_atomic(fa) ? VAL_S(fa) : "???";
-	int arity = is_integer(ta) ? get_word(ta) : 0;
+
+	if (!is_atom(fa)) {
+		QABORT(ABORT_INVALIDARGNOTATOM);
+		return 0;
+	}
+
+	if (!is_integer(term_next(fa))) {
+		QABORT(ABORT_INVALIDARGNOTINT);
+		return 0;
+	}
+
+	functor = VAL_S(fa);
+	int arity = get_word(ta);
+	char tmpbuf[FUNCTOR_SIZE];
 	sprintf(tmpbuf, "%s/%d", functor, arity);
 
 	if (check_dynamic(q->c.curr_db, tmpbuf))
