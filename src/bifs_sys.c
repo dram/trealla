@@ -1175,7 +1175,7 @@ static int bif_sys_rand_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	nbr_t v = rand();
+	nbr_t v = rand_r(&q->seed);
 	put_int(q, q->c.curr_frame + term1->slot, v);
 	return 1;
 }

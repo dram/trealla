@@ -19,6 +19,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #ifdef DEBUG
 #include <assert.h>
@@ -87,7 +88,7 @@ skipbuck *sb_create2(int (*compkey)(const void *, const void *), void *(*copykey
 	skipbuck *l = (skipbuck *)malloc(sizeof(struct skipbuck_));
 	l->header = new_node_of_level(max_levels);
 	l->level = 1;
-	l->seed = (unsigned int)(size_t)l;
+	l->seed = (unsigned int)(size_t)(l + clock());
 
 	for (int i = 0; i < max_levels; i++)
 		l->header->forward[i] = NULL;

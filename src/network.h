@@ -99,6 +99,7 @@ extern const char *session_get_name(session *s);
 #define WS_OP_PONG 0xA
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
+extern unsigned int *get_seed(session *s);
 extern int session_ws_parse(session *s, int *fin, unsigned *opcode, char **dst, size_t *dstlen);
 extern int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t srclen);
 

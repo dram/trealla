@@ -153,6 +153,7 @@ struct session_ {
 	};
 
 	uint64_t udata_flags;
+	unsigned int seed;
 	int connected, disconnected, len, busy, handled, srclen, idx;
 	int use_cnt, fd, pri, ipv4, hidx, blocked;
 	int is_tcp, is_ssl, is_ws, is_nonblocking, is_client;
@@ -176,6 +177,11 @@ struct session_ {
 #if USE_SSL
 static int g_ssl_init = 0;
 #endif
+
+unsigned int *get_seed(session *s)
+{
+	return &s->seed;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -275,8 +281,9 @@ session *session_create(void)
 	session *s = (session *)calloc(1, sizeof(session));
 
 	if (g_debug)
-		printf("*** session_create %p\n", s);	
+		printf("*** session_create %p\n", s);
 
+	s->seed = (unsigned int)(size_t)(s + clock());
 	s->disconnected = 1;
 	s->fd = -1;
 	return s;
@@ -935,7 +942,7 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 			char mbytes[4];
 		} m;
 
-		m.mask = rand();
+		m.mask = rand_r(&s->seed);
 		dst += bufwrite(dst, &m.mask, sizeof(m.mask));
 
 		for (int i = 0; i < len; i++)
@@ -1281,7 +1288,7 @@ int session_close(session *s)
 {
 	if (g_debug)
 		printf("*** session_close %p fd=%d\n", s, s->fd);
-	
+
 	if (s->fd != -1) {
 		s->disconnected = 1;
 
@@ -1303,7 +1310,7 @@ static void session_free(session *s)
 {
 	if (g_debug)
 		printf("*** session_free %p\n", s);
-	
+
 	if (s->dstbuf)
 		free(s->dstbuf);
 
@@ -1333,7 +1340,7 @@ void session_unshare(session *s)
 {
 	if (g_debug)
 		printf("*** session_unshare %p %d\n", s, (int)s->use_cnt);
-	
+
 	if (--s->use_cnt > 0)
 		return;
 
@@ -1484,7 +1491,7 @@ static int kqueue_run(void *data)
 		s->h->use--;
 		session_unshare(s);
 	}
-	
+
 	if (!s->is_tcp)
 		free(s);
 
@@ -1635,7 +1642,7 @@ static int epoll_run(void *data)
 		s->h->use--;
 		session_unshare(s);
 	}
-	
+
 	if (!s->is_tcp)
 		free(s);
 
@@ -1772,7 +1779,7 @@ static int poll_run(void *data)
 		s->h->use--;
 		session_unshare(s);
 	}
-	
+
 	if (!s->is_tcp)
 		free(s);
 
@@ -1935,7 +1942,7 @@ static int select_run(void *data)
 		s->h->use--;
 		session_unshare(s);
 	}
-	
+
 	if (!s->is_tcp)
 		free(s);
 
@@ -2370,7 +2377,7 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 	return 1;
 }
 
-int handler_add_server(handler *h, int (*f)(session *, void *v), void *v, const char *binding, 
+int handler_add_server(handler *h, int (*f)(session *, void *v), void *v, const char *binding,
 			unsigned port, int tcp, int ssl, int pri, const char *name)
 {
 	return handler_add_server2(h, f, v, binding, port, tcp, ssl, pri, NULL, NULL, name);
@@ -2412,7 +2419,7 @@ int handler_add_tpool(handler *h, tpool *tp)
 	return 1;
 }
 
-int handler_add_multicast(handler *h, int (*f)(session *, void *v), void *v, const char *binding, 
+int handler_add_multicast(handler *h, int (*f)(session *, void *v), void *v, const char *binding,
 			unsigned port, const char *addr6, const char *addr4, const char *name)
 {
 	return handler_add_server2(h, f, v, binding, port, 0, 0, 0, addr6, addr4, name);

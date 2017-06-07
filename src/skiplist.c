@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef DEBUG
 #include <assert.h>
@@ -56,7 +57,7 @@ void sl_init(skiplist *d, int dups, int (*compare)(const char *, const char *), 
 	d->deleter = deleter;
 	d->cnt = 0;
 	d->iter = NULL;
-	d->seed = (unsigned int)(size_t)d;
+	d->seed = (unsigned int)(size_t)(d + clock());
 
 	for (int i = 0; i < max_levels; i++)
 		d->header->forward[i] = NULL;

@@ -1416,6 +1416,7 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 	q->pl = self;
 	q->optimize = self->optimize;
 	q->trace = self->trace;
+	q->seed = (unsigned int)(size_t)(q + clock());
 
 	if (parent) {
 		q->optimize = parent->optimize;

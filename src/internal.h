@@ -302,6 +302,7 @@ struct tpl_query_
 	uint32_t curr_context, latest_context;
 	uint32_t print_depth;
 	FILE *curr_stdin, *curr_stdout;
+	unsigned int seed;
 	uint16_t unify_depth;
 	uint8_t fail_arg;
 	uint8_t halt_code, halt, is_running;

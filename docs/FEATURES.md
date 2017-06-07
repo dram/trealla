@@ -180,7 +180,7 @@ These are an assortment of utilities:
 
 	bread(+S,?len,-Blob)        - block read from stream
 	bwrite(+S,+Atom)            - block write to stream
-	rand(-Int)                  - random int value >= 0 and < RAND_MAX
+	rand(-Int)                  - random int value >= 0 and <= RAND_MAX
 	uuid(-Atom)                 - return representation of a new UUID
 	split_all(+Atom,+Sep,-L)    - split atom based on separator into list
 	split(+Atom,+Sep,?L,?R)     - split atom based on first separator into left & right

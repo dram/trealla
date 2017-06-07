@@ -5943,7 +5943,7 @@ static int bif_xtra_random(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
-	double v = (double)rand() / (double)RAND_MAX;
+	double v = (double)rand_r(&q->seed) / (double)RAND_MAX;
 	put_float(q, q->c.curr_frame + term1->slot, v);
 	return 1;
 }

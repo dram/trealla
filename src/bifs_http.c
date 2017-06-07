@@ -1370,7 +1370,7 @@ static int bif_ws_msg_3(tpl_query *q)
 static int ws_request(session *s, const char *path, const char *prots, int *status)
 {
 	char tmpbuf[256];
-	snprintf(tmpbuf, sizeof(tmpbuf), "%lld-%d", (long long)time(NULL), rand());
+	snprintf(tmpbuf, sizeof(tmpbuf), "%lld-%d", (long long)time(NULL), rand_r(get_seed(s)));
 	char key[256];
 	key[0] = '\0';
 	char *ptr = key;
