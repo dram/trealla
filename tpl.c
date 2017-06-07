@@ -361,13 +361,13 @@ int main(int ac, char *av[])
 			break;
 		else if ((av[i][0] != '-') && !get) {
 			if (!trealla_consult_file(pl, av[i])) {
-				error = 1;
+				error = -1;
 				break;
 			}
 		}
 		else if (!strcmp(av[i], "--consult")) {
 			if (!trealla_consult_fp(pl, stdin)) {
-				error = 1;
+				error = -1;
 				break;
 			}
 		}
@@ -389,7 +389,7 @@ int main(int ac, char *av[])
 			sprintf(tmpbuf, "%s.", av[i] + 7);
 
 			if (!trealla_consult_file(pl, tmpbuf)) {
-				error = 1;
+				error = -1;
 				break;
 			}
 		}
@@ -406,9 +406,6 @@ int main(int ac, char *av[])
 
 		if (ok)
 			ok = query_run(q);
-
-		if (!ok && (trealla_get_haltcode(pl) != 1))
-			error = 1;
 
 		if (verbose)
 			printf("(%.3lf) ", query_elapsed(q));
@@ -507,7 +504,7 @@ int main(int ac, char *av[])
 		free(p2);
 #endif
 
-	if (!halt && error)
+	if (!halt && (error > 0))
 		halt = error;
 
 	return halt;
