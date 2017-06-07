@@ -342,6 +342,17 @@ static int check_dynamic(module *db, const char *functarity)
 	return 0;
 }
 
+static int check_static(module *db, const char *functarity)
+{
+	char *key = (char *)functarity;
+	rule *r = NULL;
+
+	if (sl_get(&db->rules, key, (void **)&r))
+		return !r->dynamic;
+
+	return 0;
+}
+
 int bif_iso_true(tpl_query *q)
 {
 	return 1;
@@ -782,13 +793,6 @@ static int bif_iso_atom_concat(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_curr_predicate(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	return check_dynamic(q->c.curr_db, VAL_S(term1));
-}
-
 static int bif_iso_set_prolog_flag(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -841,26 +845,38 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	return 0;
 }
 
+static int bif_iso_current_predicate(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_compound(term1);
+	char tmpbuf[FUNCTOR_SIZE];
+	sprintf(tmpbuf, "%s/%d", term_functor(term1), term_arity(term1));
+	return check_dynamic(q->c.curr_db, tmpbuf);
+}
+
 static int bif_iso_predicate_property(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
+	node *term1 = get_callable(term1);
 	node *term2 = get_atom_or_var(term2);
 
-	if (!is_atom(term1) || !is_atom(term2))
-		return 0;
+	char tmpbuf[FUNCTOR_SIZE];
 
-	const char *functarity = VAL_S(term1);
-	const char *property = VAL_S(term2);
+	if (is_atom(term1))
+		sprintf(tmpbuf, "%s/%d", VAL_S(term1), 0);
+	else
+		sprintf(tmpbuf, "%s/%d", term_functor(term1), term_arity(term1));
 
-	if (!strcmp(property, "dynamic") && check_dynamic(q->c.curr_db, functarity))
-		return 1;
+	const char *functarity = tmpbuf;
 
-	if (!strcmp(property, "static") && !check_dynamic(q->c.curr_db, functarity))
-		return 1;
+	if (check_builtin(q->pl, functarity))
+		return unify_const_atom(q, term2, "built_in", 0);
 
-	if (!strcmp(property, "built_in") && check_builtin(q->pl, functarity))
-		return 1;
+	if (check_dynamic(q->c.curr_db, functarity))
+		return unify_const_atom(q, term2, "dynamic", 0);
+
+	if (check_static(q->c.curr_db, functarity))
+		return unify_const_atom(q, term2, "static", 0);
 
 	return 0;
 }
@@ -6115,8 +6131,7 @@ static int bif_iso_dynamic(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_compound(term1);
-	dir_dynamic(q->lex, term1);
-	return 1;
+	return dir_dynamic(q->lex, term1);
 }
 
 #ifndef ISO_ONLY
@@ -6426,7 +6441,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("retractall", 1, bif_iso_retractall);
 	DEFINE_BIF("retract", 1, bif_iso_retract);
 	DEFINE_BIF("abolish", 1, bif_iso_abolish);
-	DEFINE_BIF("curr_predicate", 1, bif_iso_curr_predicate);
+	DEFINE_BIF("current_predicate", 1, bif_iso_current_predicate);
 	DEFINE_BIF("set_prolog_flag", 2, bif_iso_set_prolog_flag);
 	DEFINE_BIF("current_prolog_flag", 2, bif_iso_current_prolog_flag);
 	DEFINE_BIF("predicate_property", 2, bif_iso_predicate_property);
