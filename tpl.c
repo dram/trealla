@@ -256,7 +256,6 @@ int main(int ac, char *av[])
 	char *p2 = NULL;
 	char *branch = (char *)"master";
 	int install = 0, appget = 0;
-	srand(time(NULL));
 
 	for (int i = 1; i < ac; i++) {
 		if (!strcmp(av[i], "--"))
