@@ -102,6 +102,24 @@ static op g_ops[] = {
 inline static node *term_last(node *s) { return NLIST_BACK(&s->val_l); }
 inline static node *term_prev(node *n) { return NLIST_PREV(n); }
 
+const op *get_op_2(module *db, const char *functor, const char *spec)
+{
+	const op *optr;
+	int i;
+
+	for (i = 0, optr = db->uops; (i < db->uops_cnt) && optr->fun; i++, optr++) {
+		if (!strcmp(optr->fun, functor) && !strcmp(optr->spec, spec))
+			return optr;
+	}
+
+	for (optr = g_ops; optr->fun; optr++) {
+		if (!strcmp(optr->fun, functor) && !strcmp(optr->spec, spec))
+			return optr;
+	}
+
+	return optr;
+}
+
 const op *get_op(module *db, const char *functor, int hint_prefix)
 {
 	const op *optr;

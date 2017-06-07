@@ -854,7 +854,10 @@ static int bif_iso_current_op(tpl_query *q)
 
 	// FIXME to backtrack
 
-	const op *cur_op = get_op(q->c.curr_db, VAL_S(term3), 0);
+	const op *cur_op =
+		is_atom(term2) ?
+			get_op_2(q->c.curr_db, VAL_S(term3), VAL_S(term2)) :
+			get_op(q->c.curr_db, VAL_S(term3), 0);
 
 	if (!cur_op->fun)
 		return 0;

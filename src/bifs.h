@@ -315,6 +315,7 @@ extern node *make_true(void);
 extern const char *parse_number(const char *s, nbr_t *v, int *numeric);
 extern size_t sprint_uint(char *dst, size_t size, unbr_t n, int base);
 extern size_t sprint_int(char *dst, size_t size, nbr_t n);
+extern const op *get_op_2(module *db, const char *functor, const char *spec);
 extern const op *get_op(module *db, const char *functor, int hint_prefix);
 extern char *deescape(char *dst, const char *src, char quote);
 extern char *dict(module *db, const char *key);
