@@ -1496,7 +1496,7 @@ static int bif_iso_flush_output(tpl_query *q)
 static int bif_iso_at_end_of_stream_1(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	stream *sp = term1->val_str;
 
 #ifndef ISO_ONLY
@@ -1507,7 +1507,7 @@ static int bif_iso_at_end_of_stream_1(tpl_query *q)
 	if (is_file(term1) && sp->fptr)
 		return feof(sp->fptr) > 0;
 	else
-		return 1;
+		return feof(get_input_stream(term1)) > 0;
 }
 
 static int bif_iso_at_end_of_stream(tpl_query *q)
