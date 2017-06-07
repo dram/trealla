@@ -17,7 +17,6 @@ extern int trealla_consult_file(trealla *pl, const char *filename);
 extern int trealla_consult_fp(trealla *pl, FILE *fp);
 extern int trealla_consult_text(trealla *pl, const char *s, const char *pseudo_filename);
 extern int trealla_deconsult(trealla *pl, const char *filename);
-extern int trealla_is_abort(trealla *pl);
 extern int trealla_is_halt(trealla *pl);
 extern int trealla_get_haltcode(trealla *pl);
 extern int trealla_run_query(trealla *pl, const char *s);	// 4 in one

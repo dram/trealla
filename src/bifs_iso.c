@@ -354,7 +354,7 @@ int bif_iso_fail(tpl_query *q)
 
 static int bif_iso_halt(tpl_query *q)
 {
-	q->halt_code = 1;
+	q->halt_code = 0;
 	q->halt = ABORT_HALT;
 	q->did_getc = 0;
 	return 0;
@@ -6106,8 +6106,7 @@ static int bif_iso_include(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
-	dir_include(q->lex, term1);
-	return 1;
+	return dir_include(q->lex, term1);
 }
 
 static int bif_iso_dynamic(tpl_query *q)

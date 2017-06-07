@@ -539,7 +539,6 @@ rule *xref_term(lexer *l, node *term, int arity)
 		if (sl_get(&l->pl->mods, tmpbuf2, (void **)&db)) {
 			if (!db) {
 				if ((term->bifptr = get_bifarity(l, VAL_S(term), arity)->bifptr) != NULL) {
-					//printf("*** %s/%d ==> %p\n", VAL_S(term), arity, term->bifptr);
 					term->flags |= FLAG_BUILTIN;
 					return NULL;
 				}
@@ -914,15 +913,15 @@ int query_run(tpl_query *self)
 	run_me(self);
 	self->elapsed = gettimeofday_usec() - self->started;
 
-	if (!self->is_yielded && self->halt) {
-		if (!self->pl->abort && (self->halt > ABORT_HALT))
+	if (!self->is_yielded && (self->halt >= ABORT_HALT)) {
+		if (self->halt > ABORT_HALT)
 			printf("ERROR: ERROR %s\n", self->halt_s ? self->halt_s : "ABORT");
-		else if (!self->pl->abort && (self->halt == ABORT_HALT))
+		else if ((self->halt == ABORT_HALT) && !self->pl->quiet)
 			printf("Halted\n");
 
 		self->pl->halt_code = self->halt_code;
 		self->pl->halt = self->halt;
-		self->ok = 0;
+		self->ok = self->halt <= ABORT_HALT;
 	}
 
 	return self->ok;
@@ -959,7 +958,7 @@ int query_continue(tpl_query *self)
 	self->elapsed = gettimeofday_usec() - self->started;
 
 	if (!self->is_yielded && self->halt) {
-		if (!self->pl->abort && (self->halt > ABORT_ABORT))
+		if (self->halt > ABORT_NONE)
 			printf("ERROR: %s\n", self->halt_s ? self->halt_s : "ABORT");
 
 		self->ok = 0;
@@ -1278,12 +1277,8 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 	if (lexer_consult_fp(&l, fp)) {
 		xref_clauses(&l);
 
-		if (l.init && !l.error) {
-			if (!(l.error = !trealla_run_query(self, l.init))) {
-				self->abort = self->halt_code > 0;
-				l.error = 1;
-			}
-		}
+		if (l.init && !l.error)
+			l.error = !trealla_run_query(self, l.init);
 	}
 
 	int ok = !l.error;
@@ -1300,10 +1295,8 @@ int trealla_consult_file(trealla *self, const char *filename)
 	if (lexer_consult_file(&l, filename)) {
 		xref_clauses(&l);
 
-		if (l.init && !l.error) {
-			if (!(l.error = !trealla_run_query(self, l.init)))
-				self->abort = self->halt_code > 0;
-		}
+		if (l.init && !l.error)
+			l.error = !trealla_run_query(self, l.init);
 	}
 
 	int ok = !l.error;
@@ -1347,7 +1340,6 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 
 		src++;
 		*dst = '\0';
-		// printf("*** [ %s ]\n", line);
 		lexer_parse(&l, l.r, line, &line);
 
 		if (l.error) {
@@ -1364,7 +1356,7 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 
 	if (l.init && !l.error) {
 		if (!trealla_run_query(self, l.init))
-			self->abort = self->halt_code > 0;
+			l.error = 1;
 	}
 
 	lexer_done(&l);
@@ -1476,11 +1468,6 @@ void trealla_trace(trealla *self, int mode)
 void trealla_optimize(trealla *self, int mode)
 {
 	self->optimize = mode;
-}
-
-int trealla_is_abort(trealla *self)
-{
-	return self->abort;
 }
 
 int trealla_is_halt(trealla *self)

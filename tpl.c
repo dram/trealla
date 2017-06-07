@@ -425,7 +425,7 @@ int main(int ac, char *av[])
 		if (p1)
 			free(p1);
 	}
-	else if (!error && !noquery && !trealla_is_abort(pl) && !ns) {
+	else if (!error && !noquery && !ns && !trealla_is_halt(pl)) {
 		if (!quiet)
 			printf("Trealla v%s, %s\n", g_trealla_version, __DATE__);
 
@@ -446,7 +446,7 @@ int main(int ac, char *av[])
 			if (ok)
 				query_dump(q);
 
-			if (trealla_is_abort(pl) || trealla_is_halt(pl)) {
+			if (trealla_is_halt(pl)) {
 				query_destroy(q);
 				break;
 			}
@@ -507,9 +507,6 @@ int main(int ac, char *av[])
 	if (p2)
 		free(p2);
 #endif
-
-	if (halt == 1)
-		halt = 0;
 
 	if (!halt && error)
 		halt = error;

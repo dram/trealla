@@ -943,9 +943,7 @@ static int directive(lexer *l, node *n)
 	const char *functor = VAL_S(head);
 	node *n3 = term_next(head);
 
-	if (!strcmp(functor, "include"))
-		l->error = !dir_include(l, n3);
-	else if (!strcmp(functor, "initialization"))
+	if (!strcmp(functor, "initialization"))
 		dir_initialization(l, n3);
 	else if (!strcmp(functor, "set_prolog_flag"))
 		dir_set_prolog_flag(l, n3);

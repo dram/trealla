@@ -99,7 +99,7 @@ static void set_curr_pid(tpl_query *q, tpl_query *who)
 
 int process_enqueue(trealla *pl, tpl_query *q, tpl_query *who, node *term, int noerror)
 {
-	if (pl->abort)
+	if (pl->halt)
 		return 0;
 
 	if (who->is_dead) {
@@ -154,7 +154,7 @@ int process_enqueue(trealla *pl, tpl_query *q, tpl_query *who, node *term, int n
 
 static int process_check(tpl_query *q, const tpl_query *who, node *term)
 {
-	if (q->pl->abort || q->halt)
+	if (q->pl->halt || q->halt)
 		return 0;
 
 	if (!NLIST_COUNT(&q->queue) && (q->tmo_msecs < 0)) {
@@ -1441,7 +1441,7 @@ static int bif_proc_wait_0(tpl_query *q)
 	skiplist tmplist;
 	sl_init(&tmplist, 0, NULL, NULL);
 
-	while (!g_abort && !q->pl->abort && !q->pl->end_wait) {
+	while (!g_abort && !q->pl->halt && !q->pl->end_wait) {
 		if (!sl_count(&q->pl->idle)) {
 			msleep(1);
 			continue;

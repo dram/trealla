@@ -391,14 +391,16 @@ static int dynamic(tpl_query *q)
 
 		if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
 			printf("ERROR: UNKNOWN -> '%s'\n", tmpbuf);
-			q->halt = ABORT_ABORT;
+			q->halt_code = 1;
+			q->halt = ABORT_HALT;
 			return 0;
 		}
 	}
 
 	if (r == NULL) {
 		printf("ERROR: NOT CALLABLE -> '%s/%d'\n", VAL_S(n), arity);
-		q->halt = ABORT_ABORT;
+		q->halt_code = 1;
+		q->halt = ABORT_HALT;
 		return 0;
 	}
 
@@ -449,7 +451,7 @@ int call(tpl_query *q)
 	}
 
 	q->retry = 0;
-	return q->ok = status;
+	return status;
 }
 
 void begin_query(tpl_query *q, node *term)
@@ -467,7 +469,7 @@ void run_me(tpl_query *q)
 {
 	q->is_running++;
 
-	while (!g_abort && !q->pl->abort) {
+	while (!g_abort) {
 		if (!call(q)) {
 			if (q->is_yielded || q->halt)
 				break;
