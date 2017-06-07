@@ -6154,6 +6154,15 @@ static int bif_xtra_unload_file(tpl_query *q)
 }
 #endif
 
+static int bif_iso_op(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_atom(term3);
+	return dir_op_3(q->lex, get_word(term1), VAL_S(term2), VAL_S(term3));
+}
+
 static int bif_iso_include(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6513,6 +6522,7 @@ void bifs_load_iso(void)
 
 	DEFINE_BIF("include", 1, bif_iso_include);
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
+	DEFINE_BIF("op", 3, bif_iso_op);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
 

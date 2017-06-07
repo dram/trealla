@@ -526,43 +526,50 @@ int dir_dynamic(lexer *l, node *n)
 	return 1;
 }
 
-static void dir_op(lexer *l, node *n)
+int dir_op_3(lexer *l, int pri, const char *spec, const char *name)
+{
+	if (!OP_VALID(spec))
+		return 0;
+
+	if (!strcmp(name, ",") || !strcmp(name, "[]") || !strcmp(name, "|"))
+		return 0;
+
+	if (pri > 0) {
+		int idx = l->db->uops_cnt++;
+		l->db->uops[idx].priority = pri;
+		l->db->uops[idx].spec = dict(l->db, spec);
+		l->db->uops[idx].fun = dict(l->db, name);
+		return 1;
+	}
+
+	for (int i = 0; i < l->db->uops_cnt; i++) {
+		if (!strcmp(name, l->db->uops[i].fun))
+			l->db->uops[i] = l->db->uops[--l->db->uops_cnt];
+	}
+
+	return 1;
+}
+
+static int dir_op(lexer *l, node *n)
 {
 	node *term1 = n;
 	node *term2 = term_next(term1);
 
 	if (!term2)
-		return;
+		return 0;
 
 	if (!is_integer(term1) || !is_atom(term2))
-		return;
-
-	if (!OP_VALID(VAL_S(term2)))
-		return;
+		return 0;
 
 	node *term3 = term_next(term2);
 
 	if (!term3)
-		return;
+		return 0;
 
 	if (!is_atom(term3))
-		return;
+		return 0;
 
-	if (!strcmp(VAL_S(term3), ",") || !strcmp(VAL_S(term3), "[]") || !strcmp(VAL_S(term3), "|"))
-		return;
-
-	if (term1->val_i > 0) {
-		int idx = l->db->uops_cnt++;
-		l->db->uops[idx].priority = term1->val_i;
-		l->db->uops[idx].spec = dict(l->db, VAL_S(term2));
-		l->db->uops[idx].fun = dict(l->db, VAL_S(term3));
-		return;
-	}
-
-	for (int i = 0; i < l->db->uops_cnt; i++) {
-		if (!strcmp(VAL_S(term3), l->db->uops[i].fun))
-			l->db->uops[i] = l->db->uops[--l->db->uops_cnt];
-	}
+	return dir_op_3(l, get_word(term1), VAL_S(term2), VAL_S(term3));
 }
 
 static int dir_initialization(lexer *l, node *n)
