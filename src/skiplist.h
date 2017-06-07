@@ -13,6 +13,7 @@ struct skiplist_
 	int (*compare)(const char*, const char*);
 	void (*deleter)(void*);
 	int dups, level;
+	unsigned int seed;
 	size_t cnt;
 };
 

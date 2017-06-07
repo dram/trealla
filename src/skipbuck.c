@@ -48,6 +48,7 @@ struct skipbuck_ {
 	sbnode *header;
 	size_t count;
 	int level;
+	unsigned int seed;
 	int (*compkey)(const void *, const void *);
 	void *(*copykey)(const void *);
 	void (*freekey)(void *);
@@ -86,6 +87,7 @@ skipbuck *sb_create2(int (*compkey)(const void *, const void *), void *(*copykey
 	skipbuck *l = (skipbuck *)malloc(sizeof(struct skipbuck_));
 	l->header = new_node_of_level(max_levels);
 	l->level = 1;
+	l->seed = (unsigned int)(size_t)l;
 
 	for (int i = 0; i < max_levels; i++)
 		l->header->forward[i] = NULL;
@@ -224,12 +226,12 @@ static int binary_search2(const skipbuck *l, const keyval_t n[], const void *key
 	return imid;
 }
 
-#define frand() ((double)rand() / RAND_MAX)
+#define frand(seedp) ((double)rand_r(seedp) / RAND_MAX)
 
-static int random_level()
+static int random_level(unsigned int *seedp)
 {
 	const double P = 0.5;
-	int lvl = (int)(log(frand()) / log(1. - P));
+	int lvl = (int)(log(frand(seedp)) / log(1. - P));
 	return lvl < max_level ? lvl : max_level;
 }
 
@@ -298,7 +300,7 @@ int sb_set(skipbuck *l, const void *key, const void *value)
 		}
 	}
 
-	k = random_level();
+	k = random_level(&l->seed);
 
 	if (k >= l->level) {
 		l->level++;
@@ -401,7 +403,7 @@ int sb_app(skipbuck *l, const void *key, const void *value)
 		}
 	}
 
-	k = random_level();
+	k = random_level(&l->seed);
 
 	if (k >= l->level) {
 		l->level++;
