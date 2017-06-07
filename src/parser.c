@@ -955,6 +955,8 @@ static int directive(lexer *l, node *n)
 	}
 	else if (!strcmp(functor, "op"))
 		dir_op(l, n3);
+	else if (!strcmp(functor, "include"))
+		dir_include(l, n3);
 #ifndef ISO_ONLY
 	else if (!strcmp(functor, "module"))
 		dir_module(l, n3);
@@ -972,7 +974,7 @@ static int directive(lexer *l, node *n)
 		dir_unload_file(l, n3);
 #endif
 	else {
-		if (!xref_term(l, n3, term_arity(n3)))
+		//if (!xref_term(l, n3, term_arity(n3)))
 			return 0;
 	}
 
@@ -1986,6 +1988,7 @@ static void lexer_finalize(lexer *self)
 		NLIST_PUSH_BACK(&self->val_l, r);
 		term_heapcheck(self->r);
 		add_clauses(self);
+		xref_clauses(self);
 	}
 
 	sl_clear(&self->symtab, NULL);
@@ -2328,7 +2331,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 #endif
 
-			if (is_op(self->db, self->tok) || !strchr(self->tok, ':')) {
+			if (is_op(self->db, self->tok)) {
 				if ((n->bifptr = get_bif(self, self->tok)->bifptr) != NULL)
 					n->flags |= FLAG_BUILTIN;
 			}

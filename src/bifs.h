@@ -304,13 +304,14 @@ extern uint64_t gettimeofday_usec(void);
 
 extern void attach_vars(lexer *l, node *var);
 extern int xref_clause(lexer *l, node *r);
+extern rule *xref_term(lexer *l, node *term, int arity);
+extern int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, int is_last);
 
 extern node *term_make(void);
 extern node *make_const_atom(const char *s, int quoted);
 extern node *make_and(void);
 extern node *make_true(void);
 
-extern rule *xref_term(lexer *l, node *term, int arity);
 extern const char *parse_number(const char *s, nbr_t *v, int *numeric);
 extern size_t sprint_uint(char *dst, size_t size, unbr_t n, int base);
 extern size_t sprint_int(char *dst, size_t size, nbr_t n);
