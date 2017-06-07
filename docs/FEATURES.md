@@ -163,14 +163,14 @@ These are an assortment of utilities:
 	concat(+Atomic,...,-Atom)   - concatenates all atomics to atom or BLOB
 	getline(-Atom)              - read a line into atom (CR and/or LF removed)
 	getline(+S,-Atom)           - ... same but from file stream
-	exists_dir(+Path)           - check if dir exists
-	make_dir(+Path)             - make dir (mode 0777) if not exists
-	make_dir(+Path,+Mode)       - make dir if not exists
+	exists_directory(+Path)     - check if dir exists
+	make_directory(+Path)       - make dir (mode 0777) if not exists
+	make_directory(+Path,+Mode) - make dir if not exists
 	exists_file(+File)          - check if file exists
 	exists_file(+File,-L,-S)    - ... length in bytes and last-modified in seconds (C-epoch)
 	load_file(+File,-Blob)      - read named file
 	save_file(+File,+Atom)      - create named file
-	remove_file(+File)          - delete named file
+	delete_file(+File)          - remove named file
 	append_file(+File,+Atom)    - append to named file
 
 	write_file(+S,+File,+From,+To) - write ranged contents of named file to stream. Range is in

@@ -71,7 +71,7 @@ static int bif_sys_exists_file_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_exists_dir_1(tpl_query *q)
+static int bif_sys_exists_directory_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -87,7 +87,7 @@ static int bif_sys_exists_dir_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_make_dir_1(tpl_query *q)
+static int bif_sys_make_directory_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -100,7 +100,7 @@ static int bif_sys_make_dir_1(tpl_query *q)
 	return !mkdir(filename, 0777);
 }
 
-static int bif_sys_make_dir_2(tpl_query *q)
+static int bif_sys_make_directory_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -273,7 +273,7 @@ static int bif_sys_write_file_4(tpl_query *q)
 	return sys_write_file(q, var, term1, term2, from, to);
 }
 
-static int bif_sys_remove_file_1(tpl_query *q)
+static int bif_sys_delete_file_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -1942,10 +1942,10 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:load_file", 2, bif_sys_load_file_2);
 	DEFINE_BIF("sys:save_file", 2, bif_sys_save_file_2);
 	DEFINE_BIF("sys:append_file", 2, bif_sys_append_file_2);
-	DEFINE_BIF("sys:remove_file", 1, bif_sys_remove_file_1);
-	DEFINE_BIF("sys:make_dir", 1, bif_sys_make_dir_1);
-	DEFINE_BIF("sys:make_dir", 2, bif_sys_make_dir_2);
-	DEFINE_BIF("sys:exists_dir", 1, bif_sys_exists_dir_1);
+	DEFINE_BIF("sys:delete_file", 1, bif_sys_delete_file_1);
+	DEFINE_BIF("sys:make_directory", 1, bif_sys_make_directory_1);
+	DEFINE_BIF("sys:make_directory", 2, bif_sys_make_directory_2);
+	DEFINE_BIF("sys:exists_directory", 1, bif_sys_exists_directory_1);
 	DEFINE_BIF("sys:exists_file", 1, bif_sys_exists_file_1);
 	DEFINE_BIF("sys:exists_file", 3, bif_sys_exists_file_3);
 	DEFINE_BIF("sys:write_file", 1 + 2, bif_sys_write_file_2);
