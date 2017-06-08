@@ -1830,7 +1830,7 @@ LOOP:								// FIXME someday
 	l->was_paren = l->is_paren;
 	l->was_op = l->is_op;
 
-	if (!l->quoted && !strcmp(l->tok, "("))
+	if (!l->quoted && (!strcmp(l->tok, "(") || !strcmp(l->tok, "[") || !strcmp(l->tok, "{")))
 		l->is_paren = 1;
 	else
 		l->is_paren = 0;
