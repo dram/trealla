@@ -54,6 +54,9 @@ Current ISO predicates that are (known) not yet implemented:
 	sub_atom
 	*exceptions*
 
+Double quotes are treated by default as quoted atoms (as with SWI7), this can be changed with
+set_prolog_flag/2.
+
 Defined operators can ONLY be used as operators. To use them as regular functors they
 must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
