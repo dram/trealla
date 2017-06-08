@@ -1592,6 +1592,7 @@ trealla *trealla_create(const char *name)
 #endif
 
 	pl->flag_unknown = 1;
+	pl->flag_character_escapes = 1;
 	pl->flag_char_conversion = 1;
 	pl->flag_double_quotes = 1;			// FIXME should be 0 = list of codes
 
