@@ -2335,6 +2335,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			self->error = 1;
 			return NULL;
 		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 0) && !self->tok[0]) {
+			self->was_atom = 1;
 			n = make_const_atom("[]", 0);
 			free(self->tok);
 		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 0)) {
@@ -2343,9 +2344,13 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			n->flags |= FLAG_DOUBLE_QUOTE;
 			const char *src = self->tok;
 
-			while (*src) {
+			for (;;) {
 				int ch = get_char_utf8(&src);
 				term_append(l, make_int(ch));
+
+				if (!*src)
+					break;
+
 				node *tmp = make_list();
 				term_append(l, tmp);
 				l = tmp;
@@ -2354,6 +2359,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			term_append(l, make_const_atom("[]", 0));
 			free(self->tok);
 		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2) && !self->tok[0]) {
+			self->was_atom = 1;
 			n = make_const_atom("[]", 0);
 			free(self->tok);
 		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2)) {
