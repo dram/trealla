@@ -837,7 +837,7 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	else if (!strcmp(flag, "debug"))
 		return unify_const_atom(q, term2, q->lex->flag_debug?"on":"off", 0);
 	else if (!strcmp(flag, "double_quotes"))
-		return unify_const_atom(q, term2, "atom", 0);
+		return unify_const_atom(q, term2, q->lex->flag_double_quotes == 1 ? "atom" : q->lex->flag_double_quotes == 2 ? "chars" : q->lex->flag_double_quotes == 0 ? "codes" : "codes", 0);
 	else if (!strcmp(flag, "unknown"))
 		return unify_const_atom(q, term2, q->lex->flag_unknown == 1?"error":q->lex->flag_unknown==2?"warning":"fail", 0);
 	else if (!strcmp(flag, "bounded"))
