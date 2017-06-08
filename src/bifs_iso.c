@@ -841,7 +841,7 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	else if (!strcmp(flag, "unknown"))
 		return unify_const_atom(q, term2, q->lex->flag_unknown == 1?"error":q->lex->flag_unknown==2?"warning":"fail", 0);
 	else if (!strcmp(flag, "bounded"))
-		return unify_const_atom(q, term2, g_force_bignum ? "false" : "true", 0);
+		return unify_const_atom(q, term2, g_force_unbounded ? "false" : "true", 0);
 	else if (!strcmp(flag, "integer_rounding_function"))
 		return unify_const_atom(q, term2, "down", 0);
 	else if (!strcmp(flag, "debug"))

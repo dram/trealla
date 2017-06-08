@@ -10,7 +10,7 @@ It supports much of ISO-PROLOG plus:
  - transactions
  - unlimited length and number of UTF-8 or binary strings
  - 64-bit ints
- - bigints (using OpenSSL:BN)
+ - ubounded big numbers (ints) (using OpenSSL:BN)
  - Erlang-style processes and message-passing
  - Linda-style processes and tuple-space
  - advanced networking features
@@ -65,7 +65,7 @@ programs to run 2-3 times slower when making use of bignums. Integer overflow do
 to bignums. For example:
 
 	tpl -l samples/factorial.pro -g 'fac(200B,F),writeln(F)'               # OR
-	tpl -l samples/factorial.pro -g 'fac(200,F),writeln(F)' --bn
+	tpl -l samples/factorial.pro -g 'fac(200,F),writeln(F)' --unbounded
 
 Usage
 -----
@@ -96,7 +96,7 @@ Usage
 	--http10       - use HTTP/1.0
 	--consult      - consult from STDIN
 	--dbdir=path   - root for persistent database files
-	--bn           - use bignums by default for integers
+	--unbounded    - use bignums by default for integers
 
 Files can be filename[.ext] where '.ext' if not specified can be one of the following:
 

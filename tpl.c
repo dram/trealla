@@ -218,8 +218,8 @@ int main(int ac, char *av[])
 			g_dbdir = av[i] + 8;
 #endif
 #if USE_SSL
-		else if (!strcmp(av[i], "--bn"))
-			g_force_bignum = 1;
+		else if (!strcmp(av[i], "--unbounded"))
+			g_force_unbounded = 1;
 #endif
 		else if (!strcmp(av[i], "-O0"))
 			trealla_optimize(pl, 0);

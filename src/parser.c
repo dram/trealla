@@ -26,7 +26,7 @@ extern atomic int64_t g_allocs;
 #endif
 
 #if USE_SSL
-int g_force_bignum = 0;
+int g_force_unbounded = 0;
 #endif
 
 const char *g_escapes = "\a\f\b\t\v\r\n\0";
@@ -1548,7 +1548,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 	 while (ch = *s, (ch != '\0'));
 
 #if USE_SSL
-	if ((*numeric == NUM_INT) && g_force_bignum) {
+	if ((*numeric == NUM_INT) && g_force_unbounded) {
 		*numeric = NUM_BIGNUM;
 		return s;
 	}
