@@ -470,13 +470,13 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 	const char *flag = VAL_S(n);
 
 	if (!strcmp(flag, "char_conversion"))
-		l->pl->flag_char_conversion = !strcmp(VAL_S(term2), "on") ? 1 : 0;
+		l->flag_char_conversion = !strcmp(VAL_S(term2), "on") ? 1 : 0;
 	else if (!strcmp(flag, "debug"))
-		l->pl->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : 0;
+		l->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : 0;
 	else if (!strcmp(flag, "unknown"))
-		l->pl->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
+		l->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
 	else if (!strcmp(flag, "double_quotes"))
-		l->pl->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
+		l->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
 }
 
 int dir_dynamic(lexer *l, node *n)
@@ -1664,7 +1664,7 @@ LOOP:								// FIXME someday
 					break;
 				}
 
-				if (l->pl->flag_character_escapes && (l->quoted <= 2) && (ch == '\\')) {
+				if (l->flag_character_escapes && (l->quoted <= 2) && (ch == '\\')) {
 					const char *ptr = strchr(g_anti_escapes, ch = *s++);
 					if (ptr)
 						token_put(&t, g_escapes[ptr - g_anti_escapes]);
@@ -1716,7 +1716,7 @@ LOOP:								// FIXME someday
 						break;
 					}
 
-					if (l->pl->flag_character_escapes && (l->quoted <= 2) && (ch == '\\')) {
+					if (l->flag_character_escapes && (l->quoted <= 2) && (ch == '\\')) {
 						const char *ptr = strchr(g_anti_escapes, ch = *s++);
 
 						if (ptr)
@@ -1939,6 +1939,12 @@ void lexer_init(lexer *self, trealla *pl)
 
 	self->pl = pl;
 	self->db = &pl->db;
+
+	self->flag_unknown = pl->flag_unknown;
+	self->flag_character_escapes = pl->flag_character_escapes;
+	self->flag_char_conversion = pl->flag_char_conversion;
+	self->flag_double_quotes = pl->flag_double_quotes;
+	self->flag_debug = pl->flag_debug;
 }
 
 void lexer_done(lexer *self)
@@ -2334,11 +2340,11 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
 			return NULL;
-		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 0) && !self->tok[0]) {
+		} else if ((self->quoted == 2) && (self->flag_double_quotes == 0) && !self->tok[0]) {
 			self->was_atom = 1;
 			n = make_const_atom("[]", 0);
 			free(self->tok);
-		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 0)) {
+		} else if ((self->quoted == 2) && (self->flag_double_quotes == 0)) {
 			self->was_atom = 1;
 			node *l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;
@@ -2358,11 +2364,11 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 			term_append(l, make_const_atom("[]", 0));
 			free(self->tok);
-		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2) && !self->tok[0]) {
+		} else if ((self->quoted == 2) && (self->flag_double_quotes == 2) && !self->tok[0]) {
 			self->was_atom = 1;
 			n = make_const_atom("[]", 0);
 			free(self->tok);
-		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2)) {
+		} else if ((self->quoted == 2) && (self->flag_double_quotes == 2)) {
 			self->was_atom = 1;
 			node *l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;

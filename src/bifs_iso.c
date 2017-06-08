@@ -801,16 +801,21 @@ static int bif_iso_set_prolog_flag(tpl_query *q)
 	const char *flag = VAL_S(term1);
 
 	if (!strcmp(flag, "char_conversion"))
-		q->pl->flag_char_conversion = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
+		q->lex->flag_char_conversion = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
 	else if (!strcmp(flag, "debug"))
-		q->pl->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
+		q->lex->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
 	else if (!strcmp(flag, "double_quotes"))
-		q->pl->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
+		q->lex->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
 	else if (!strcmp(flag, "unknown"))
-		q->pl->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
+		q->lex->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
 	else
 		return 0;
 
+	q->pl->flag_unknown = q->lex->flag_unknown;
+	q->pl->flag_character_escapes = q->lex->flag_character_escapes;
+	q->pl->flag_char_conversion = q->lex->flag_char_conversion;
+	q->pl->flag_double_quotes = q->lex->flag_double_quotes;
+	q->pl->flag_debug = q->lex->flag_debug;
 	return 1;
 }
 
@@ -828,19 +833,19 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	else if (!strcmp(flag, "max_arity"))
 		return unify_int(q, term2, MAX_FRAME_SIZE - 1);
 	else if (!strcmp(flag, "char_conversion"))
-		return unify_const_atom(q, term2, q->pl->flag_char_conversion?"on":"off", 0);
+		return unify_const_atom(q, term2, q->lex->flag_char_conversion?"on":"off", 0);
 	else if (!strcmp(flag, "debug"))
-		return unify_const_atom(q, term2, q->pl->flag_debug?"on":"off", 0);
+		return unify_const_atom(q, term2, q->lex->flag_debug?"on":"off", 0);
 	else if (!strcmp(flag, "double_quotes"))
 		return unify_const_atom(q, term2, "atom", 0);
 	else if (!strcmp(flag, "unknown"))
-		return unify_const_atom(q, term2, q->pl->flag_unknown == 1?"error":q->pl->flag_unknown==2?"warning":"fail", 0);
+		return unify_const_atom(q, term2, q->lex->flag_unknown == 1?"error":q->lex->flag_unknown==2?"warning":"fail", 0);
 	else if (!strcmp(flag, "bounded"))
 		return unify_const_atom(q, term2, g_force_bignum ? "false" : "true", 0);
 	else if (!strcmp(flag, "integer_rounding_function"))
 		return unify_const_atom(q, term2, "down", 0);
 	else if (!strcmp(flag, "debug"))
-		return unify_const_atom(q, term2, q->pl->flag_debug ? "on" : "off", 0);
+		return unify_const_atom(q, term2, q->lex->flag_debug ? "on" : "off", 0);
 
 	return 0;
 }
