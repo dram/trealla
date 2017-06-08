@@ -2181,7 +2181,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!self->quoted && (!strcmp(self->tok, ":-") || !strcmp(self->tok, "-->") || !strcmp(self->tok, "?-"))) {
+		if ((self->depth == 1) && !self->quoted && (!strcmp(self->tok, ":-") || !strcmp(self->tok, "-->") || !strcmp(self->tok, "?-"))) {
 			if (!strcmp(self->tok, "-->"))
 				self->dcg = 1;
 
