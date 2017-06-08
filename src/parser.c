@@ -2363,7 +2363,27 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			n = make_const_atom("[]", 0);
 			free(self->tok);
 		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2)) {
-			n = make_const_atom("[]", 0);
+			self->was_atom = 1;
+			node *l = n = make_list();
+			n->flags |= FLAG_DOUBLE_QUOTE;
+			const char *src = self->tok;
+
+			for (;;) {
+				int ch = get_char_utf8(&src);
+				char tmpbuf[20];
+				char *dst = tmpbuf;
+				put_char_utf8(dst, ch);
+				term_append(l, make_atom(strdup(tmpbuf), 1));
+
+				if (!*src)
+					break;
+
+				node *tmp = make_list();
+				term_append(l, tmp);
+				l = tmp;
+			}
+
+			term_append(l, make_const_atom("[]", 0));
 			free(self->tok);
 		} else {
 			self->was_atom = 1;
