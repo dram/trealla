@@ -94,7 +94,7 @@ found in other Prolog implementations:
 	consult(+File)              - consult file
 	deconsult(+File)            - deconsult file
 	reconsult(+File)            - reconsult file
-	between(+From,+To,-Int)     - loop with start, end and index range
+	between(+From,+To,?Int)     - ranges
 	term_to_atom(+Term,?Atom)   - convert term to atom
 	term_to_blob(+Term,-Blob)   - convert term to BLOB
 	is_list(+Term)              - is the arg a list?

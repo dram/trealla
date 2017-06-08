@@ -5460,9 +5460,16 @@ static int bif_xtra_between(tpl_query *q)
 		maxn = get_word(term2);
 
 	if (!q->retry) {
-		term3 = get_var(term3);
-		nbr_t v = get_word(term1);
-		put_int(q, q->c.curr_frame + term3->slot, v);
+		term3 = get_term(term3);
+
+		if (is_var(term3)) {
+			nbr_t v = get_word(term1);
+			put_int(q, q->c.curr_frame + term3->slot, v);
+		} else {
+			nbr_t v = get_word(term3);
+			return (v >= get_word(term1)) && (v <= get_word(term2));
+		}
+
 		allocate_frame(q);
 	} else {
 		term3 = get_next_arg(q, &args);
