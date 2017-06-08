@@ -475,7 +475,7 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 		l->pl->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : 0;
 	else if (!strcmp(flag, "unknown"))
 		l->pl->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
-	else if (!strcmp(flag, "double_quotes") && !strcmp(VAL_S(term2), "atom")) // FIXME
+	else if (!strcmp(flag, "double_quotes"))
 		l->pl->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
 }
 
@@ -2334,10 +2334,31 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
 			return NULL;
+		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 0) && !self->tok[0]) {
+			n = make_const_atom("[]", 0);
+			free(self->tok);
 		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 0)) {
-			;
+			self->was_atom = 1;
+			node *l = n = make_list();
+			n->flags |= FLAG_DOUBLE_QUOTE;
+			const char *src = self->tok;
+
+			while (*src) {
+				int ch = get_char_utf8(&src);
+				term_append(l, make_int(ch));
+				node *tmp = make_list();
+				term_append(l, tmp);
+				l = tmp;
+			}
+
+			term_append(l, make_const_atom("[]", 0));
+			free(self->tok);
+		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2) && !self->tok[0]) {
+			n = make_const_atom("[]", 0);
+			free(self->tok);
 		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2)) {
-			;
+			n = make_const_atom("[]", 0);
+			free(self->tok);
 		} else {
 			self->was_atom = 1;
 			n = term_make();

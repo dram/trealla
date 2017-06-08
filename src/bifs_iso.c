@@ -804,7 +804,7 @@ static int bif_iso_set_prolog_flag(tpl_query *q)
 		q->pl->flag_char_conversion = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
 	else if (!strcmp(flag, "debug"))
 		q->pl->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
-	else if (!strcmp(flag, "double_quotes") && !strcmp(VAL_S(term2), "atom")) // FIXME
+	else if (!strcmp(flag, "double_quotes"))
 		q->pl->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
 	else if (!strcmp(flag, "unknown"))
 		q->pl->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
