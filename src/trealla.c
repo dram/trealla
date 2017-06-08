@@ -1593,8 +1593,7 @@ trealla *trealla_create(const char *name)
 
 	pl->flag_unknown = 1;
 	pl->flag_char_conversion = 1;
-	pl->flag_double_quotes = 1;
-	pl->flag_character_escapes = 1;
+	pl->flag_double_quotes = 1;			// FIXME should be 0 = list of codes
 
 	trealla_make_rule(pl, "stream_property(S,type(P)) :- stream_property_type(S,P).");
 	trealla_make_rule(pl, "stream_property(S,mode(P)) :- stream_property_mode(S,P).");
