@@ -1594,7 +1594,7 @@ trealla *trealla_create(const char *name)
 	pl->flag_unknown = 1;
 	pl->flag_character_escapes = 1;
 	pl->flag_char_conversion = 1;
-	pl->flag_double_quotes = 1;
+	pl->flag_double_quotes = 0;
 	pl->flag_debug = 0;
 
 	trealla_make_rule(pl, "stream_property(S,type(P)) :- stream_property_type(S,P).");
