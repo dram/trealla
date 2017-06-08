@@ -2334,6 +2334,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
 			return NULL;
+		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 0)) {
+			;
+		} else if ((self->quoted == 2) && (self->pl->flag_double_quotes == 2)) {
+			;
 		} else {
 			self->was_atom = 1;
 			n = term_make();
