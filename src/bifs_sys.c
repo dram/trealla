@@ -293,7 +293,7 @@ static int bif_sys_save_file_2(tpl_query *q)
 		return 0;
 	}
 
-	size_t len = fwrite(term2->val_ptr, 1, LEN(term2), fp);
+	size_t len = fwrite(VAL_S(term2), 1, LEN(term2), fp);
 	fclose(fp);
 	return len == LEN(term2);
 }
@@ -310,7 +310,7 @@ static int bif_sys_append_file_2(tpl_query *q)
 		return 0;
 	}
 
-	size_t len = fwrite(term2->val_ptr, 1, LEN(term2), fp);
+	size_t len = fwrite(VAL_S(term2), 1, LEN(term2), fp);
 	fclose(fp);
 	return len == LEN(term2);
 }
