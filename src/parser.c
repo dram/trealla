@@ -29,8 +29,8 @@ extern atomic int64_t g_allocs;
 int g_force_unbounded = 0;
 #endif
 
-const char *g_escapes = "\a\f\b\t\v\r\n\0";
-const char *g_anti_escapes = "afbtvrn0";
+const char *g_escapes = "\e\a\f\b\t\v\r\n";
+const char *g_anti_escapes = "eafbtvrn";
 
 static op g_ops[] = {
 	{":-", "xfx", 1200},
@@ -1668,6 +1668,12 @@ LOOP:								// FIXME someday
 					const char *ptr = strchr(g_anti_escapes, ch = *s++);
 					if (ptr)
 						token_put(&t, g_escapes[ptr - g_anti_escapes]);
+					else if (ch == '0') {
+						if (!l->error)
+							printf("ERROR: illegal character escape sequence\n");
+
+						l->error = 1;
+					}
 					else
 						token_put(&t, ch);
 				}
@@ -1721,6 +1727,12 @@ LOOP:								// FIXME someday
 
 						if (ptr)
 							token_put(&t, g_escapes[ptr - g_anti_escapes]);
+						else if (ch == '0') {
+							if (!l->error)
+								printf("ERROR: illegal character escape sequence\n");
+
+							l->error = 1;
+						}
 						else
 							token_put(&t, ch);
 					}
