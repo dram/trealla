@@ -1434,12 +1434,16 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 		q->curr_stdin = parent->curr_stdin;
 		q->curr_stdout = parent->curr_stdout;
 		q->c.curr_db = parent->c.curr_db;
+		q->curr_stdin_name = strdup(parent->curr_stdin_name);
+		q->curr_stdout_name = strdup(parent->curr_stdout_name);
 	} else {
 		q->lex = calloc(1, sizeof(lexer));
 		lexer_init(q->lex, self);
 		q->curr_stdin = stdin;
 		q->curr_stdout = stdout;
 		q->c.curr_db = &self->db;
+		q->curr_stdin_name = strdup("user");
+		q->curr_stdout_name = strdup("user");
 	}
 
 #ifndef ISO_ONLY

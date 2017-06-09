@@ -6277,12 +6277,8 @@ static int bif_xtra_see(tpl_query *q)
 static int bif_xtra_seeing(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-
-	if (!q->curr_stdin_name)
-		return 0;
-
-	return !strcmp(VAL_S(term1), q->curr_stdin_name);
+	node *term1 = get_atom_or_var(term1);
+	return unify_atom(q, term1, strdup(q->curr_stdin_name), 1);
 }
 
 static int bif_xtra_seen(tpl_query *q)
@@ -6323,12 +6319,8 @@ static int bif_xtra_tell(tpl_query *q)
 static int bif_xtra_telling(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-
-	if (!q->curr_stdout_name)
-		return 0;
-
-	return !strcmp(VAL_S(term1), q->curr_stdout_name);
+	node *term1 = get_atom_or_var(term1);
+	return unify_atom(q, term1, strdup(q->curr_stdout_name), 1);
 }
 
 static int bif_xtra_told(tpl_query *q)
