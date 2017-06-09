@@ -6425,14 +6425,11 @@ static int bif_xtra_forall(tpl_query *q)
 		DBLOCK(q->c.curr_db);
 	}
 
-	node *cond = clone_term(subq, term1);
-	begin_query(subq, cond);
+	begin_query(subq, term1);
 	int ok = query_run(subq);
 
 	while (ok && !g_abort) {
-		node *action = clone_term(subq, term2);
-		subq->c.curr_term = action;
-		begin_query(subq, action);
+		begin_query(subq, term2);
 		query_run(subq);
 		ok = query_continue(subq);
 	}
