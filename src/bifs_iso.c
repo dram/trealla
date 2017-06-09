@@ -6213,12 +6213,14 @@ static int bif_iso_op(tpl_query *q)
 	return dir_op_3(q->lex, get_word(term1), VAL_S(term2), VAL_S(term3));
 }
 
+#if 0
 static int bif_iso_include(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	return dir_include(q->lex, term1);
 }
+#endif
 
 static int bif_iso_dynamic(tpl_query *q)
 {
@@ -6621,7 +6623,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("setof", 3 + 1, bif_iso_setof);
 	DEFINE_BIF("compare", 3, bif_iso_compare);
 
-	DEFINE_BIF("include", 1, bif_iso_include);
+	//DEFINE_BIF("include", 1, bif_iso_include);
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 	DEFINE_BIF("op", 3, bif_iso_op);
 

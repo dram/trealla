@@ -956,7 +956,8 @@ int dir_include(lexer *l, node *n)
 		tmpbuf[0] = '\0';
 
 	strcat(tmpbuf, VAL_S(term1));
-	return trealla_consult_file(l->pl, tmpbuf);
+	l->finalized = 0;
+	return lexer_consult_file(l, tmpbuf);
 }
 
 static int directive(lexer *l, node *n)
@@ -2038,7 +2039,7 @@ static void lexer_finalize(lexer *self)
 		NLIST_PUSH_BACK(&self->val_l, r);
 		term_heapcheck(self->r);
 		add_clauses(self);
-		xref_clauses(self);
+		//xref_clauses(self);
 	}
 
 	sl_clear(&self->symtab, NULL);
@@ -2605,8 +2606,10 @@ int lexer_consult_file(lexer *self, const char *orig_filename)
 		return 0;
 	}
 
+	char *save_name = self->name;
 	self->name = strdup(filename);
 	lexer_consult_fp(self, fp);
+	self->name = save_name;
 	fclose(fp);
 	return self->error ? 0 : 1;
 }

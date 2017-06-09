@@ -52,7 +52,7 @@ char *deescape(char *dst, const char *src, char quote)
 static size_t _sprint_int(char *dst, size_t size, nbr_t n, int base)
 {
 	const char *save_dst = dst;
-	
+
 	if ((n / base) > 0)
 		dst += _sprint_int(dst, size, n / base, base);
 
@@ -67,7 +67,7 @@ size_t sprint_int(char *dst, size_t size, nbr_t n)
 {
 	const char *save_dst = dst;
 	const int base = 10;
-	
+
 	if (n < 0) {
 		*dst++ = '-';
 		n = -n;
@@ -147,13 +147,12 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 	int save_context = q ? q->latest_context : -1;
 	char *dst = *_dst;
+	dst += snprintf(dst, *bufsize - (dst - *dstbuf), "[");
 	int inner = 0;
 
 	for (;;) {
 		if (inner)
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), ",");
-		else
-			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "[");
 
 		int this_context = q ? q->latest_context : -1;
 		node *head = term_firstarg(n);

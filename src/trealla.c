@@ -1285,8 +1285,9 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 	l.consult = 1;
 
 	if (lexer_consult_fp(&l, fp)) {
+		xref_clauses(&l);
+
 		if (l.init && !l.error) {
-			xref_clauses(&l);
 			l.error = !trealla_run_query(self, l.init);
 		}
 	}
@@ -1303,8 +1304,9 @@ int trealla_consult_file(trealla *self, const char *filename)
 	l.consult = 1;
 
 	if (lexer_consult_file(&l, filename)) {
+		xref_clauses(&l);
+
 		if (l.init && !l.error) {
-			xref_clauses(&l);
 			l.error = !trealla_run_query(self, l.init);
 		}
 	}
