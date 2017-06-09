@@ -262,8 +262,8 @@ inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 #define KEY_SIZE (FUNCTOR_SIZE+100)
 #define PRINTBUF_SIZE (1024*64)
 #define MAX_UNIFY_DEPTH 1000
-#define QABORT(code) q->halt = code; q->halt_s = strdup(#code); q->line_nbr = __LINE__;
-#define QABORT2(code,str) q->halt = code; q->halt_s = strdup(#code " - " str); q->line_nbr = __LINE__;
+#define QABORT(code) q->halt_code = 1, q->halt = code; q->halt_s = strdup(#code); q->line_nbr = __LINE__;
+#define QABORT2(code,str) q->halt_code = 1, q->halt = code; q->halt_s = strdup(#code " - " str); q->line_nbr = __LINE__;
 #define FUDGE_FACTOR 1
 #define PI 3.141592653589793238462643383279502884L
 
