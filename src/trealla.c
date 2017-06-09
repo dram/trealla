@@ -1622,7 +1622,6 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "find(N,[],X) :- !.");
 	trealla_make_rule(pl, "find(1,[H|_],H) :- !.");
 	trealla_make_rule(pl, "find(N,[_|T],X) :- N1 is N-1, find(N1,T,X).");
-
 	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta(sys_record(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");

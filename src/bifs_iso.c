@@ -6403,6 +6403,46 @@ static int bif_xtra_predicate_property(tpl_query *q)
 	return 0;
 }
 
+static int bif_xtra_forall(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_callable(term1);
+	node *term2 = get_callable(term2);
+
+	if (!q->subq)
+		q->subq = query_create_subquery(q);
+
+	if (!q->subq) {
+		QABORT(ABORT_OUTOFMEMORY);
+		return 0;
+	}
+
+	tpl_query *subq = q->subq;
+	int did_lock = 0;
+
+	if (is_dynamic(term1) && !q->in_tran) {
+		did_lock = 1;
+		DBLOCK(q->c.curr_db);
+	}
+
+	node *cond = clone_term(subq, term1);
+	begin_query(subq, cond);
+	int ok = query_run(subq);
+
+	while (ok && !g_abort) {
+		node *action = clone_term(subq, term2);
+		subq->c.curr_term = action;
+		begin_query(subq, action);
+		query_run(subq);
+		ok = query_continue(subq);
+	}
+
+	if (did_lock)
+		DBUNLOCK(q->c.curr_db);
+
+	return 0;
+}
+
 void bifs_load_iso(void)
 {
 	DEFINE_BIF("true", 0, bif_iso_true);
@@ -6618,6 +6658,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("read_term_from_atom", 3, bif_xtra_read_term_from_atom);
 	DEFINE_BIF("atom_number", 2, bif_xtra_atom_number);
 	DEFINE_BIF("trace", 0, bif_xtra_trace);
+	DEFINE_BIF("forall", 2, bif_xtra_forall);
 
 #if USE_SSL
 	DEFINE_BIF("bignum", 1, bif_xtra_bignum);
