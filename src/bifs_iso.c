@@ -6424,12 +6424,13 @@ static int bif_xtra_forall(tpl_query *q)
 
 	node *t1 = clone_term(q, term1);
 	begin_query(subq, t1);
-	int ok = query_run(subq);
+	int ok = query_run(subq), subok = 1;
 
 	while (ok && !g_abort) {
 		subq->c.curr_frame = FUDGE_FACTOR;
 		begin_query(subq, term2);
 		run_me(subq);
+		subok = subq->ok;
 
 		if (!subq->ok)
 			break;
@@ -6442,7 +6443,7 @@ static int bif_xtra_forall(tpl_query *q)
 
 	query_destroy(subq);
 	term_heapcheck(t1);
-	return 1;
+	return subok;
 }
 
 void bifs_load_iso(void)
