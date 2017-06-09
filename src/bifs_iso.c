@@ -6408,16 +6408,13 @@ static int bif_xtra_forall(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
 	node *term2 = get_callable(term2);
+	tpl_query *subq = query_create_subquery(q);
 
-	if (!q->subq)
-		q->subq = query_create_subquery(q);
-
-	if (!q->subq) {
+	if (!subq) {
 		QABORT(ABORT_OUTOFMEMORY);
 		return 0;
 	}
 
-	tpl_query *subq = q->subq;
 	int did_lock = 0;
 
 	if (is_dynamic(term1) && !q->in_tran) {
@@ -6429,15 +6426,21 @@ static int bif_xtra_forall(tpl_query *q)
 	int ok = query_run(subq);
 
 	while (ok && !g_abort) {
+		subq->c.curr_frame = FUDGE_FACTOR;
 		begin_query(subq, term2);
-		query_run(subq);
+		run_me(subq);
+
+		if (!subq->ok)
+			break;
+
 		ok = query_continue(subq);
 	}
 
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	return 0;
+	query_destroy(subq);
+	return 1;
 }
 
 void bifs_load_iso(void)
