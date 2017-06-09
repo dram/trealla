@@ -6261,23 +6261,31 @@ static int bif_linda_out(tpl_query *q)
 static int bif_xtra_see(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	const char *filename = VAL_S(term1);
-	const char *mode = "read";
-	char tmpbuf[40];
-	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
-	FILE *fp = fopen(filename, tmpbuf);
+	node *term1 = get_atom_or_stream(term1);
 
-	if (!fp) {
-		QABORT(ABORT_NOTEXISTFILE);
-		return 0;
+	if (is_atom(term1)) {
+		const char *filename = VAL_S(term1);
+		const char *mode = "read";
+		char tmpbuf[40];
+		strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
+		FILE *fp = fopen(filename, tmpbuf);
+
+		if (!fp) {
+			QABORT(ABORT_NOTEXISTFILE);
+			return 0;
+		}
+
+		if (q->curr_stdin_name)
+			free(q->curr_stdin_name);
+
+		q->curr_stdin_name = strdup(filename);
+		q->curr_stdin = fp;
+	} else {
+		stream *sp = term1->val_str;
+		q->curr_stdin_name = strdup(sp->filename);
+		q->curr_stdin = sp->fptr;
 	}
 
-	if (q->curr_stdin_name)
-		free(q->curr_stdin_name);
-
-	q->curr_stdin_name = strdup(filename);
-	q->curr_stdin = fp;
 	return 1;
 }
 
@@ -6303,23 +6311,31 @@ static int bif_xtra_seen(tpl_query *q)
 static int bif_xtra_tell(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	const char *filename = VAL_S(term1);
-	const char *mode = "write";
-	char tmpbuf[40];
-	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
-	FILE *fp = fopen(filename, tmpbuf);
+	node *term1 = get_atom_or_stream(term1);
 
-	if (!fp) {
-		QABORT(ABORT_NOTEXISTFILE);
-		return 0;
+	if (is_atom(term1)) {
+		const char *filename = VAL_S(term1);
+		const char *mode = "write";
+		char tmpbuf[40];
+		strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
+		FILE *fp = fopen(filename, tmpbuf);
+
+		if (!fp) {
+			QABORT(ABORT_NOTEXISTFILE);
+			return 0;
+		}
+
+		if (q->curr_stdout_name)
+			free(q->curr_stdout_name);
+
+		q->curr_stdout_name = strdup(filename);
+		q->curr_stdout = fp;
+	} else {
+		stream *sp = term1->val_str;
+		q->curr_stdout_name = strdup(sp->filename);
+		q->curr_stdout = sp->fptr;
 	}
 
-	if (q->curr_stdout_name)
-		free(q->curr_stdout_name);
-
-	q->curr_stdout_name = strdup(filename);
-	q->curr_stdout = fp;
 	return 1;
 }
 
