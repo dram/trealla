@@ -6422,7 +6422,8 @@ static int bif_xtra_forall(tpl_query *q)
 		DBLOCK(q->c.curr_db);
 	}
 
-	begin_query(subq, term1);
+	node *t1 = clone_term(q, term1);
+	begin_query(subq, t1);
 	int ok = query_run(subq);
 
 	while (ok && !g_abort) {
@@ -6440,6 +6441,7 @@ static int bif_xtra_forall(tpl_query *q)
 		DBUNLOCK(q->c.curr_db);
 
 	query_destroy(subq);
+	term_heapcheck(t1);
 	return 1;
 }
 
