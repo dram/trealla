@@ -990,9 +990,6 @@ static int bif_sys_split_all_3(tpl_query *q)
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
 	const char *src = VAL_S(term1);
-	node *l = make_list();
-	node *save_l = l;
-	char *dstbuf = (char *)malloc(LEN(term1) + 1);
 
 	while (isspace(*src))
 		src++;
@@ -1003,6 +1000,10 @@ static int bif_sys_split_all_3(tpl_query *q)
 		term_heapcheck(tmp);
 		return 1;
 	}
+
+	node *l = make_list();
+	node *save_l = l;
+	char *dstbuf = (char *)malloc(LEN(term1) + 1);
 
 	while (*src) {
 		char *dst = dstbuf;
