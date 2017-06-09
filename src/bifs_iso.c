@@ -772,11 +772,11 @@ static int bif_iso_atom_concat(tpl_query *q)
 	size_t len = LEN(term1) + LEN(term2);
 	char *tmp = (char *)malloc(len + 1);
 
-	if (LEN(term1))
-		memcpy(tmp, term1->val_ptr, LEN(term1));
+	if (LEN(term1) > 0)
+		memcpy(tmp, VAL_S(term1), LEN(term1));
 
-	if (LEN(term2))
-		memcpy(tmp + LEN(term1), term2->val_ptr, LEN(term2));
+	if (LEN(term2) > 0)
+		memcpy(tmp + LEN(term1), VAL_S(term2), LEN(term2));
 
 	tmp[len] = '\0';
 	node *n;
@@ -786,7 +786,7 @@ static int bif_iso_atom_concat(tpl_query *q)
 		n = make_blob(tmp, len);
 	else
 #endif
-		n = make_atom(tmp, 1);
+		n = make_atom(tmp, is_quoted(term1) || is_quoted(term2));
 
 	put_env(q, q->c.curr_frame + term3->slot, n, -1);
 	term_heapcheck(n);
