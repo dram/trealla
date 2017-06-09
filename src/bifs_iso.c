@@ -2123,6 +2123,13 @@ static int bif_iso_atom_codes(tpl_query *q)
 				return 0;
 			}
 
+			nbr_t v = get_word(n);
+
+			if (v <= 0) {
+				QABORT(ABORT_INVALIDARGNOTINT);
+				return 0;
+			}
+
 			size_t save_len = dst - dstbuf;
 			size_t len2 = 8; // Allow for utf8 char
 
@@ -2133,7 +2140,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 				dst = dstbuf + save_len;
 			}
 
-			dst += put_char_utf8(dst, get_word(n));
+			dst += put_char_utf8(dst, v);
 			node *tail = term_next(head);
 			l = get_arg(q, tail, this_context);
 		}
