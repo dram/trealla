@@ -1850,6 +1850,9 @@ LOOP:								// FIXME someday
 			} else {
 				const char *src = save_s;
 
+				if (l->negate)
+					token_put(&t, '-');
+
 				while ((ch = *src++) && isdigit(ch))
 					token_put(&t, ch);
 			}
