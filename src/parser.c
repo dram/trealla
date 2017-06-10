@@ -1844,7 +1844,7 @@ LOOP:								// FIXME someday
 				if (l->numeric > NUM_INT)
 					t.dst += sprint_uint(t.buf, t.maxlen, (unbr_t)v, 10);
 				else
-					t.dst += sprint_int(t.buf, t.maxlen, v);
+					t.dst += sprint_int(t.buf, t.maxlen, l->negate ? -v : v);
 
 				break;
 			} else {
@@ -1881,6 +1881,7 @@ LOOP:								// FIXME someday
 			break;
 	}
 
+	l->negate = 0;
 	l->tok = token_take(&t);
 	l->was_paren = l->is_paren;
 	l->was_op = l->is_op;
@@ -2212,6 +2213,14 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			free(self->tok);
 			self->was_atomic = 0;
 			continue;
+		}
+
+		if (!self->was_atomic && !strcmp(self->tok, "-") && !is_noargs(term) && !strcmp(self->tok, "-")) {
+
+			if (isdigit(*src)) {
+				self->negate = 1;
+				continue;
+			}
 		}
 
 		if (0 && !self->quoted && !strcmp(self->tok, "-") && !is_noargs(term) && first_neg) { // WTF?
