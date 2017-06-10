@@ -93,7 +93,7 @@ static op g_ops[] = {
 	{"\\", "fy", 200},
 	{"+", "fy", 200},
 	{"-", "fy", 200},
-	{"--", "fy", 200},				// HACK
+	{"[-]", "fy", 200},				// HACK
 	//{"$", "fx", 1},
 
 	{0}
@@ -1186,7 +1186,7 @@ static int attach_ops(lexer *l, node *term)
 				continue;
 			}
 
-			functor = n->val_s = (char *)"--";
+			functor = n->val_s = (char *)"[-]";
 			n->flags |= FLAG_CONST;
 			n->bifptr = bif_iso_reverse;
 			optr = get_op(&l->pl->db, functor, 1);
