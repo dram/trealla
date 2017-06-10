@@ -1885,6 +1885,7 @@ LOOP:								// FIXME someday
 	l->tok = token_take(&t);
 	l->was_paren = l->is_paren;
 	l->was_op = l->is_op;
+	l->was_op2 = l->is_op2;
 
 	if (!l->quoted && (!strcmp(l->tok, "(") || !strcmp(l->tok, "[") || !strcmp(l->tok, "{")))
 		l->is_paren = 1;
@@ -2222,9 +2223,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 		}
 
-		//printf("*** is_op=%d, was_op=%d, was_atomic=%d, was_atom=%d, tok=%s\n", self->is_op, self->was_op, self->was_atomic, self->was_atom, self->tok);
-
-		if ((self->was_op || self->was_paren) && !strcmp(self->tok, "-")) {
+		if ((self->was_op2 || self->was_paren) && is_noargs(term) && !strcmp(self->tok, "-")) {
 			if (isdigit(*src)) {
 				self->negate = 1;
 				continue;
@@ -2522,6 +2521,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		if (!optr->fun)
 			is_op = 0;
+
+		self->is_op2 = is_op;
 
 		if (!self->error && self->was_atomic && !is_op) {
 			printf("ERROR: operator expected: '%s'\n", VAL_S(n));
