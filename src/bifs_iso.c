@@ -2411,8 +2411,8 @@ int bif_retract(tpl_query *q, node *n, node *n2)
 	retract_index(&l, n, n2, &persist, q->in_tran);
 	lexer_done(&l);
 
-	if (!(n2->flags & FLAG_DBS_RETRACTALL))
-		term_heapcheck(n2);
+	//if (!(n2->flags & FLAG_DBS_RETRACTALL))
+	//	term_heapcheck(n2);
 
 	return persist;
 }
@@ -2974,7 +2974,7 @@ static int bif_xtra_erase(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_ptr(term1);
-	node *n = (node *)term1->val_ptr;
+	node *n = term1->val_ptr;
 	int did_lock = 0;
 
 	if (!q->in_tran) {
