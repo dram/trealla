@@ -1675,6 +1675,19 @@ LOOP:								// FIXME someday
 
 						l->error = 1;
 					}
+					else if (isdigit(ch)) {
+						int v = ch - '0';
+						ch = get_char_utf8(&s);
+						v *= 8;
+						v += ch - '0';
+						token_put(&t, v);
+						ch = get_char_utf8(&s);
+
+						if (ch != '\\')
+							s -= put_len_utf8(ch);
+
+						continue;
+					}
 					else
 						token_put(&t, ch);
 				}
@@ -1733,6 +1746,19 @@ LOOP:								// FIXME someday
 								printf("ERROR: illegal character escape sequence\n");
 
 							l->error = 1;
+						}
+						else if (isdigit(ch)) {
+							int v = ch - '0';
+							ch = get_char_utf8(&s);
+							v *= 8;
+							v += ch - '0';
+							token_put(&t, v);
+							ch = get_char_utf8(&s);
+
+							if (ch != '\\')
+								s -= put_len_utf8(ch);
+
+							continue;
 						}
 						else
 							token_put(&t, ch);
