@@ -2216,7 +2216,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		}
 
 		if (!is_noargs(term) && !strcmp(self->tok, "-")) {
-
 			if (isdigit(*src)) {
 				self->negate = 1;
 				continue;
