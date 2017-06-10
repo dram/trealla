@@ -1157,7 +1157,7 @@ static int attach_ops(lexer *l, node *term)
 			continue;
 		}
 
-		const op *optr = get_op(&l->pl->db, functor, !term_prev(n) ? 1 : 0);
+		const op *optr = get_op(&l->pl->db, functor, 0);
 
 		if (!optr->fun) {
 			was_operator = 0;
@@ -1189,7 +1189,7 @@ static int attach_ops(lexer *l, node *term)
 			functor = n->val_s = (char *)"--";
 			n->flags |= FLAG_CONST;
 			n->bifptr = bif_iso_reverse;
-			optr = get_op(&l->pl->db, functor, !term_prev(n) ? 1 : 0);
+			optr = get_op(&l->pl->db, functor, 1);
 		}
 		else if (was_operator && !strcmp(functor, "+")) {
 			node *tmp = term_next(n);
@@ -2214,6 +2214,12 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			free(self->tok);
 			self->was_atomic = 0;
 			continue;
+		}
+
+		if (!is_noargs(term) && !strcmp(self->tok, "+")) {
+			if (isdigit(*src)) {
+				continue;
+			}
 		}
 
 		if (!is_noargs(term) && !strcmp(self->tok, "-")) {

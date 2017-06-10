@@ -6267,10 +6267,7 @@ static int bif_xtra_see(tpl_query *q)
 
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
-		const char *mode = "read";
-		char tmpbuf[40];
-		strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
-		FILE *fp = fopen(filename, tmpbuf);
+		FILE *fp = fopen(filename, "r");
 
 		if (!fp) {
 			QABORT(ABORT_NOTEXISTFILE);
@@ -6285,7 +6282,7 @@ static int bif_xtra_see(tpl_query *q)
 	} else {
 		stream *sp = term1->val_str;
 		q->curr_stdin_name = strdup(sp->filename);
-		q->curr_stdin = sp->fptr;
+		q->curr_stdin = fdopen(dup(fileno(sp->fptr)), "r");
 	}
 
 	return 1;
@@ -6300,10 +6297,10 @@ static int bif_xtra_seeing(tpl_query *q)
 
 static int bif_xtra_seen(tpl_query *q)
 {
-	if (q->curr_stdin_name) {
+	if (q->curr_stdin != stdin) {
 		free(q->curr_stdin_name);
-		q->curr_stdin_name = NULL;
 		fclose(q->curr_stdin);
+		q->curr_stdin_name = strdup("user");
 		q->curr_stdin = stdin;
 	}
 
@@ -6317,10 +6314,7 @@ static int bif_xtra_tell(tpl_query *q)
 
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
-		const char *mode = "write";
-		char tmpbuf[40];
-		strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
-		FILE *fp = fopen(filename, tmpbuf);
+		FILE *fp = fopen(filename, "w+");
 
 		if (!fp) {
 			QABORT(ABORT_NOTEXISTFILE);
@@ -6335,7 +6329,7 @@ static int bif_xtra_tell(tpl_query *q)
 	} else {
 		stream *sp = term1->val_str;
 		q->curr_stdout_name = strdup(sp->filename);
-		q->curr_stdout = sp->fptr;
+		q->curr_stdin = fdopen(dup(fileno(sp->fptr)), "w+");
 	}
 
 	return 1;
@@ -6350,10 +6344,10 @@ static int bif_xtra_telling(tpl_query *q)
 
 static int bif_xtra_told(tpl_query *q)
 {
-	if (q->curr_stdout_name) {
+	if (q->curr_stdout != stdout) {
 		free(q->curr_stdout_name);
-		q->curr_stdout_name = NULL;
 		fclose(q->curr_stdout);
+		q->curr_stdout_name = strdup("user");
 		q->curr_stdout = stdout;
 	}
 
