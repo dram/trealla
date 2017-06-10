@@ -2678,6 +2678,7 @@ int lexer_consult_file(lexer *self, const char *orig_filename)
 	char *save_name = self->name;
 	self->name = strdup(filename);
 	lexer_consult_fp(self, fp);
+	free(self->name);
 	self->name = save_name;
 	fclose(fp);
 	return self->error ? 0 : 1;
