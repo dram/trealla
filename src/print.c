@@ -282,19 +282,19 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		if (is_hidden(n))
 			n = term_next(n);
 
-		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", strcmp(functor, "[-]") ? functor : "-");
+		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", strcmp(functor, "]-[") ? functor : "-");
 
-		if (strcmp(functor, "[-]"))
+		if (strcmp(functor, "]-["))
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
 
 		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, n, listing?listing:1);
 	}
 	else if (!isop || (nf->flags & FLAG_QUOTED) || (listing == 2) || ignore_ops) {
 		if (!(n->flags & FLAG_CONSING) || (listing >= 2)) {
-			const char *src = strcmp(functor, "[-]") ? functor : "-";
+			const char *src = strcmp(functor, "]-[") ? functor : "-";
 
 			if (!src || (isop && !ignore_ops))
-				src = strcmp(functor, "[-]") ? functor : "-";
+				src = strcmp(functor, "]-[") ? functor : "-";
 
 			if (((nf->flags & FLAG_QUOTED) || needs_quoting(src)) && (!isop || (listing == 2)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");

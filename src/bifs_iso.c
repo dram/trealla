@@ -6470,7 +6470,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("is", 2, bif_iso_is);
 	DEFINE_BIF("=", 2, bif_iso_unify);
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
-	DEFINE_BIF("[-]", 1, bif_iso_reverse);
+	DEFINE_BIF("]-[", 1, bif_iso_reverse);
 	DEFINE_BIF("once", 1, bif_iso_once);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("call", -1, bif_iso_calln);
