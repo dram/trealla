@@ -2222,7 +2222,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 		}
 
-		//printf("*** was_op=%d, was_atomic=%d, was_atom=%d, tok=%s\n", self->was_op, self->was_atomic, self->was_atom, self->tok);
+		//printf("*** is_op=%d, was_op=%d, was_atomic=%d, was_atom=%d, tok=%s\n", self->is_op, self->was_op, self->was_atomic, self->was_atom, self->tok);
 
 		if ((self->was_op || self->was_paren) && !strcmp(self->tok, "-")) {
 			if (isdigit(*src)) {
