@@ -6282,7 +6282,7 @@ static int bif_xtra_see(tpl_query *q)
 	} else {
 		stream *sp = term1->val_str;
 		q->curr_stdin_name = strdup(sp->filename);
-		q->curr_stdin = fdopen(dup(fileno(sp->fptr)), "r");
+		q->curr_stdin = fdopen(fileno(sp->fptr), "r");
 	}
 
 	return 1;
@@ -6329,7 +6329,7 @@ static int bif_xtra_tell(tpl_query *q)
 	} else {
 		stream *sp = term1->val_str;
 		q->curr_stdout_name = strdup(sp->filename);
-		q->curr_stdout = fdopen(dup(fileno(sp->fptr)), "w+");
+		q->curr_stdout = fdopen(fileno(sp->fptr), "w+");
 	}
 
 	return 1;
