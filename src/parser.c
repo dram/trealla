@@ -2219,13 +2219,13 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!is_noargs(term) && !strcmp(self->tok, "+")) {
+		if (self->was_paren && !is_noargs(term) && !strcmp(self->tok, "+")) {
 			if (isdigit(*src)) {
-				;//continue;
+				continue;
 			}
 		}
 
-		if (!is_noargs(term) && !strcmp(self->tok, "-")) {
+		if (self->was_paren && !is_noargs(term) && !strcmp(self->tok, "-")) {
 			if (isdigit(*src)) {
 				self->negate = 1;
 				continue;
