@@ -233,8 +233,8 @@ struct lexer_
 	char *init, *tok, quote, last;
 	uint32_t cpos;
 	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized;
-	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, neg, vars, was_op, is_op;
-	int internal, comment, negate, was_op2, is_op2;
+	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, neg, vars;
+	int internal, comment, negate, was_op, is_op, was_op2, is_op2;
 	int flag_unknown, flag_character_escapes, flag_char_conversion;
 	int flag_debug, flag_double_quotes;
 };

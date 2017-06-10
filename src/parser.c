@@ -2230,7 +2230,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 		}
 
-		if (0 && !self->quoted && !strcmp(self->tok, "-") && !is_noargs(term) && first_neg) { // WTF?
+		if (0 && !self->quoted && !strcmp(self->tok, "-") && !is_noargs(term) && first_neg) {
 			self->was_atom = 0;
 			free(self->tok);
 			self->was_atomic = 0;
