@@ -1678,6 +1678,14 @@ LOOP:								// FIXME someday
 					else if (isdigit(ch)) {
 						int v = ch - '0';
 						ch = get_char_utf8(&s);
+
+						if ((ch < '0') || (ch > '7')) {
+							if (!l->error)
+								printf("ERROR: illegal octal escape sequence\n");
+
+							l->error = 1;
+						}
+
 						v *= 8;
 						v += ch - '0';
 						token_put(&t, v);
@@ -1750,6 +1758,14 @@ LOOP:								// FIXME someday
 						else if (isdigit(ch)) {
 							int v = ch - '0';
 							ch = get_char_utf8(&s);
+
+							if ((ch < '0') || (ch > '7')) {
+								if (!l->error)
+									printf("ERROR: illegal octal escape sequence\n");
+
+								l->error = 1;
+							}
+
 							v *= 8;
 							v += ch - '0';
 							token_put(&t, v);
