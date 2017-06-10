@@ -32,12 +32,12 @@ Current ISO predicates that are (known) not yet implemented:
 Defined operators can ONLY be used as operators. To use them as regular functors they
 must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
 
-Bignums (actually bigints) are considered experimental at this stage. To introduce a bignum use
-the 'B' suffix e.g: *X is 1B*, or *bignum/1* function e.g: *X is bignum(1)*. Thereafter X will
-propagate in calculations as a bignum. Integer literals will automatically promote to a bignum if
-needed during parsing. Not all BIFs handle bignums as yet (*between/3* does). Expect numerical
-programs to run 2-3 times slower when making use of bignums. Integer overflow does *NOT* promote
-to bignums. For example:
+Unbounded ints (aka. bigints or bignums) are considered experimental at this stage. To introduce
+a bignum use the 'B' suffix e.g: *X is 1B*, or *unbounded/1* function e.g: *X is unbounded(1)*.
+Thereafter X will propagate as such in calculations. Integer literals will automatically set to
+unbounded if needed (>INT_MAX) during parsing. Not all BIFs may handle unbounded ints as yet.
+Expect numerical programs to run 2-3 times slower when making use of unbounded ints. Integer
+overflow does *NOT* promote to unbounded (nor is it detected). For example:
 
 	tpl -l samples/factorial.pro -g 'fac(200B,F),writeln(F)'               # OR
 	tpl -l samples/factorial.pro -g 'fac(200,F),writeln(F)' --unbounded
@@ -71,7 +71,7 @@ Usage
 	--http10       - use HTTP/1.0
 	--consult      - consult from STDIN
 	--dbdir=path   - root for persistent database files
-	--unbounded    - use bignums by default for integers
+	--unbounded    - use unbounded ints by default for integers
 
 Files can be filename[.ext] where '.ext' if not specified can be one of the following:
 

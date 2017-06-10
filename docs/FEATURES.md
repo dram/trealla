@@ -125,7 +125,7 @@ found in other Prolog implementations:
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
 	atom_number(+A,?V)          - convert atom to Int or Float
-	bignum(+Int)                - function to convert int to bignum
+	unbounded(+Int)             - function to convert int to unbounded
 
 and for accessing the rule database:
 

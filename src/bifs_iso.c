@@ -6023,7 +6023,7 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 }
 
 #if USE_SSL
-static int bif_xtra_bignum(tpl_query *q)
+static int bif_xtra_unbounded(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -6682,7 +6682,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("forall", 2, bif_xtra_forall);
 
 #if USE_SSL
-	DEFINE_BIF("bignum", 1, bif_xtra_bignum);
+	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded);
 #endif
 
 #endif
