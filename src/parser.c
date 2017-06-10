@@ -591,6 +591,7 @@ static int dir_op(lexer *l, node *n)
 static int dir_initialization(lexer *l, node *n)
 {
 	char tmpbuf[FUNCTOR_SIZE + 10];
+	tmpbuf[0] = 0;
 	term_sprint(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 0);
 	strcat(tmpbuf, ".");
 	l->init = strdup(tmpbuf);

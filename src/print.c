@@ -541,29 +541,31 @@ size_t term_sprint2(char **dstbuf, size_t *bufsize, char **dst, trealla *pl, tpl
 	return sprint2_term(0, dstbuf, bufsize, dst, pl, q, n, listing);
 }
 
-size_t term_sprint(char *dstbuf_, size_t bufsize, trealla *pl, tpl_query *q, node *n, int listing)
+size_t term_sprint(char *dstbuf, size_t bufsize, trealla *pl, tpl_query *q, node *n, int listing)
 {
 	size_t size = PRINTBUF_SIZE;
-	char *dstbuf = (char *)malloc(size + 1);
-	char *dst = dstbuf;
-	dst += sprint2_term(0, &dstbuf, &size, &dst, pl, q, n, listing);
-	strncpy(dstbuf_, dstbuf, bufsize);
-	dstbuf_[bufsize - 1] = '\0';
-	free(dstbuf);
-	return strlen(dstbuf_);
+	char *tmpbuf = (char *)malloc(size + 1);
+	char *dst = tmpbuf;
+	dst += sprint2_term(0, &tmpbuf, &size, &dst, pl, q, n, listing);
+	size_t len = dst - tmpbuf;
+	strncpy(dstbuf, tmpbuf, bufsize);
+	dstbuf[bufsize - 1] = '\0';
+	free(tmpbuf);
+	return len;
 }
 
 void term_print(trealla *pl, tpl_query *q, node *n, int listing)
 {
 	size_t size = PRINTBUF_SIZE;
-	char *dstbuf = (char *)malloc(size + 1);
-	char *dst = dstbuf;
-	dst += sprint2_term(0, &dstbuf, &size, &dst, pl, q, n, listing);
+	char *tmpbuf = (char *)malloc(size + 1);
+	char *dst = tmpbuf;
+	dst += sprint2_term(0, &tmpbuf, &size, &dst, pl, q, n, listing);
+	size_t len = dst - tmpbuf;
 
 	if (q)
-		fwrite(dstbuf, 1, dst-dstbuf, q->curr_stdout);
+		fwrite(tmpbuf, 1, len, q->curr_stdout);
 	else
-		fwrite(dstbuf, 1, dst - dstbuf, stdout);
+		fwrite(tmpbuf, 1, len, stdout);
 
-	free(dstbuf);
+	free(tmpbuf);
 }
