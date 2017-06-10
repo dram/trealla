@@ -2222,6 +2222,15 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 		}
 
+		//printf("*** was_op=%d, was_atomic=%d, was_atom=%d, tok=%s\n", self->was_op, self->was_atomic, self->was_atom, self->tok);
+
+		if ((self->was_op || self->was_paren) && !strcmp(self->tok, "-")) {
+			if (isdigit(*src)) {
+				self->negate = 1;
+				continue;
+			}
+		}
+
 		if (0 && !self->quoted && !strcmp(self->tok, "-") && !is_noargs(term) && first_neg) { // WTF?
 			self->was_atom = 0;
 			free(self->tok);
