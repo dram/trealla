@@ -27,22 +27,27 @@ extern const char *g_anti_escapes;
 char *deescape(char *dst, const char *src, char quote)
 {
 	char *save = dst;
+	int ch;
 
-	while (*src) {
-		const char *ptr = strrchr(g_escapes, *src);
+	while ((ch = get_char_utf8(&src)) != '\0') {
+		const char *ptr = strrchr(g_escapes, ch);
 
 		if (ptr) {
 			*dst++ = '\\';
 			*dst++ = g_anti_escapes[ptr - g_escapes];
 		}
-		else if (quote == *src) {
+		else if (quote == ch) {
 			*dst++ = '\\';
-			*dst++ = *src;
+			*dst++ = ch;
+		}
+		else if (iscntrl(ch)) {
+			int v = ch;
+			*dst++ = '\\';
+			dst += sprintf(dst, "%02o", v);
+			*dst++ = '\\';
 		}
 		else
-			*dst++ = *src;
-
-		src++;
+			dst += put_char_utf8(dst, ch);
 	}
 
 	*dst = 0;
