@@ -694,15 +694,11 @@ int xref_clause(lexer *l, node *term)
 
 	const char *head_functor = "";
 
-#ifndef ISO_ONLY
 	int arity = 0;
-#endif
 
 	if (is_compound(head)) {
 		head_functor = VAL_S(term_first(head));
-#ifndef ISO_ONLY
 		arity = term_arity(head);
-#endif
 	}
 	else if (is_atom(head))
 		head_functor = VAL_S(head);

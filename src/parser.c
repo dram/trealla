@@ -25,9 +25,7 @@
 extern atomic int64_t g_allocs;
 #endif
 
-#if USE_SSL
 int g_force_unbounded = 0;
-#endif
 
 const char *g_escapes = "\e\a\f\b\t\v\r\n";
 const char *g_anti_escapes = "eafbtvrn";

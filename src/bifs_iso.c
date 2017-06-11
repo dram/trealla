@@ -1099,10 +1099,11 @@ static int bif_iso_write_term_3(tpl_query *q)
 		tmpbuf[len] = '\0';
 	}
 
-	stream *sp = term1->val_str;
 	int ok;
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
@@ -1172,7 +1173,6 @@ static int bif_iso_write_canonical_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
-	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
@@ -1186,6 +1186,8 @@ static int bif_iso_write_canonical_2(tpl_query *q)
 	int ok;
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
@@ -1213,7 +1215,6 @@ static int bif_iso_writeq_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
-	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
@@ -1227,6 +1228,8 @@ static int bif_iso_writeq_2(tpl_query *q)
 	int ok;
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
@@ -1254,7 +1257,6 @@ static int bif_iso_write_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
-	stream *sp = term1->val_str;
 	char *tmpbuf;
 	size_t len;
 
@@ -1277,6 +1279,8 @@ static int bif_iso_write_2(tpl_query *q)
 	int ok;
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
@@ -1324,10 +1328,11 @@ static int bif_iso_nl_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
-	stream *sp = term1->val_str;
 	int ok;
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, "\n", 1);
 	else
@@ -1586,7 +1591,6 @@ static int bif_iso_put_char_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom(term2);
-	stream *sp = term1->val_str;
 	const char *src = VAL_S(term2);
 	int ch = get_char_utf8(&src);
 	char tmpbuf[20];
@@ -1594,6 +1598,8 @@ static int bif_iso_put_char_2(tpl_query *q)
 	int ok;
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
@@ -1618,12 +1624,13 @@ static int bif_iso_put_byte_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int(term2);
-	stream *sp = term1->val_str;
 	int ok;
 	char tmpbuf[20];
 	sprintf(tmpbuf, "%c", (int)term1->val_i);
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, 1);
 	else
@@ -1648,12 +1655,13 @@ static int bif_iso_put_code_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int(term2);
-	stream *sp = term1->val_str;
 	char tmpbuf[20];
 	int len = put_char_utf8(tmpbuf, term2->val_i);
 	int ok;
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
@@ -6673,7 +6681,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("read_term_from_atom", 3, bif_xtra_read_term_from_atom);
 	DEFINE_BIF("atom_number", 2, bif_xtra_atom_number);
 	DEFINE_BIF("trace", 0, bif_xtra_trace);
-	DEFINE_BIF("forall", 2, bif_xtra_forall);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded);
@@ -6681,6 +6688,7 @@ void bifs_load_iso(void)
 
 #endif
 
+	DEFINE_BIF("forall", 2, bif_xtra_forall);
 	DEFINE_BIF("time", 1, bif_xtra_time_1);
 	DEFINE_BIF("time", 2, bif_xtra_time_2);
 	DEFINE_BIF("between", 3, bif_xtra_between);

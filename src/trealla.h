@@ -53,9 +53,7 @@ extern const char *g_list_cons;
 extern int g_trealla_memlimit_mb;
 extern const char *g_trealla_version;
 extern volatile int g_abort;
-#if USE_SSL
 extern int g_force_unbounded;
-#endif
 
 #ifndef ISO_ONLY
 extern int g_dbs_merge;
