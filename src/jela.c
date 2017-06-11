@@ -143,17 +143,16 @@ void allocate_frame(tpl_query *q)
 	}
 
 	q->c.mask1 = q->c.mask2 = 0;
+	env *e = &q->envs[q->c.curr_frame];
 	mask_t bit = 1;
 
-	for (unsigned i = 0; i < q->c.frame_size; i++) {
-		env *e = &q->envs[q->c.curr_frame + i];
-
+	for (unsigned i = 0; i < q->c.frame_size; i++, e++) {
 		if (!e->context)
 			q->c.mask1 |= bit;
 		else if (!e->term) {
-			e -= e->binding;
+			env *e2 = e - e->binding;
 
-			if (!e->context)
+			if (!e2->context)
 				q->c.mask2 |= bit;
 		}
 
@@ -164,11 +163,11 @@ void allocate_frame(tpl_query *q)
 void reallocate_frame(tpl_query *q)
 {
 	TRACE("reallocate_frame");
+	env *e = &q->envs[q->c.curr_frame];
 	mask_t bit = 1;
 
-	for (unsigned i = 0; i < q->c.frame_size; i++) {
+	for (unsigned i = 0; i < q->c.frame_size; i++, e++) {
 		if ((q->c.mask1 & bit) && !(q->pins & bit))  {
-			env *e = &q->envs[q->c.curr_frame + i];
 			term_heapcheck(e->term);
 			e->term = NULL;
 			e->context = 0;
