@@ -2475,7 +2475,7 @@ static int bif_retract2(tpl_query *q, int wait)
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
 
-		term_heapcheck(n);
+		term_heapcheck(save_n);
 		return 0;
 	}
 
@@ -2483,7 +2483,7 @@ static int bif_retract2(tpl_query *q, int wait)
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
 
-		term_heapcheck(n);
+		term_heapcheck(save_n);
 		QABORT(ABORT_NOTDYNAMIC);
 		return 0;
 	}
@@ -2599,6 +2599,7 @@ static int bif_retract2(tpl_query *q, int wait)
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
 
+		term_heapcheck(save_n);
 		return 1;
 	}
 
@@ -2694,7 +2695,7 @@ static int bif_iso_retractall(tpl_query *q)
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
 
-		term_heapcheck(n);
+		term_heapcheck(save_n);
 		return 1;
 	}
 
@@ -2702,7 +2703,7 @@ static int bif_iso_retractall(tpl_query *q)
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
 
-		term_heapcheck(n);
+		term_heapcheck(save_n);
 		QABORT(ABORT_NOTDYNAMIC);
 		return 1;
 	}
@@ -2711,7 +2712,7 @@ static int bif_iso_retractall(tpl_query *q)
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
 
-		term_heapcheck(n);
+		term_heapcheck(save_n);
 		return 1;
 	}
 
