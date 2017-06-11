@@ -1036,7 +1036,7 @@ static node *promote(node *term, node *n)
 	return NULL;
 }
 
-static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor)
+static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor, int depth)
 {
 	node *n_prev, *n_next;
 
@@ -1069,7 +1069,7 @@ static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor)
 	term_remove(term, n_next);
 	term_append(tmp, n_next);
 
-	if (strcmp(functor, ":-") && strcmp(functor, "-->"))
+	if (depth || (strcmp(functor, ":-") && strcmp(functor, "-->")))
 		tmp = promote(term, tmp);
 
 	return tmp;
@@ -1131,7 +1131,7 @@ static node *attach_op_postfix(lexer *l, node *term, node *n)
 	return tmp;
 }
 
-static int attach_ops(lexer *l, node *term)
+static int attach_ops(lexer *l, node *term, int depth)
 {
 	if (!is_compound(term) || (term->flags & FLAG_ATTACHED))
 		return 0;
@@ -1141,7 +1141,7 @@ static int attach_ops(lexer *l, node *term)
 	int xfy = 0;
 
 	for (node *n = term_first(term); n != NULL; n = term_next(n)) {
-		while (attach_ops(l, n))
+		while (attach_ops(l, n, depth+1))
 			;
 
 		if (!is_atom(n)) {
@@ -1254,7 +1254,7 @@ static int attach_ops(lexer *l, node *term)
 			}
 		}
 		else if (OP_INFIX(optr->spec)) {
-			n = attach_op_infix(l, term, n, functor);
+			n = attach_op_infix(l, term, n, functor, depth);
 
 			if ((n == NULL) && l->error) {
 				printf("ERROR: infix op '%s' missing params, line %d\n", functor, l->line_nbr);
@@ -1278,7 +1278,7 @@ static int attach_ops(lexer *l, node *term)
 	term->flags |= FLAG_ATTACHED;
 
 	for (node *n = term_first(term); n != NULL; n = term_next(n)) {
-		while (attach_ops(l, n))
+		while (attach_ops(l, n, depth+1))
 			;
 	}
 
@@ -2042,7 +2042,7 @@ static void lexer_finalize(lexer *self)
 	if ((self->r == NULL) || self->error)
 		return;
 
-	while (attach_ops(self, self->r))
+	while (attach_ops(self, self->r, 0))
 		;
 
 	if (!strcmp(term_functor(self->r), "?-")) {
@@ -2067,7 +2067,7 @@ static void lexer_finalize(lexer *self)
 			NLIST_PUSH_BACK(&self->val_l, self->r);
 		}
 	} else {
-		node *r = term_first(self->r);
+		node *n = term_first(self->r);
 
 		if (term_count(self->r) > 1) {
 			printf("ERROR: syntax error, excess terms\n");
@@ -2076,15 +2076,15 @@ static void lexer_finalize(lexer *self)
 			return;
 		}
 
-		dcg_clause(self, r);
-		r->frame_size = self->vars;
-		r->flags |= FLAG_CLAUSE;
+		dcg_clause(self, n);
+		n->frame_size = self->vars;
+		n->flags |= FLAG_CLAUSE;
 
 		if (self->fact)
-			r->flags |= FLAG_FACT;
+			n->flags |= FLAG_FACT;
 
-		term_remove(self->r, r);
-		NLIST_PUSH_BACK(&self->val_l, r);
+		term_remove(self->r, n);
+		NLIST_PUSH_BACK(&self->val_l, n);
 		term_heapcheck(self->r);
 		add_clauses(self);
 		//xref_clauses(self);
