@@ -127,7 +127,8 @@ found in other Prolog implementations:
 	exists_file(+File)          - check if file exists
 	delete_file(+File)          - remove named file
 	make_directory(+Path)       - make dir (mode 0777) if not exists
-
+	display(+Term)
+	display(+Stream,+Term)
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
