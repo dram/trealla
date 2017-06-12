@@ -135,6 +135,8 @@ found in other Prolog implementations:
 	name(?Atomic, ?CodeList)
 	trace(?Int)
 	trace/0                     - same as trace(1)
+	put(+Char)                  - put_code/1 or put_char/1 based on type of Char
+	put(+Stream,+Char)          - put_code/2 or put_char/2 based on type of Char
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
