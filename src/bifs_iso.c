@@ -3439,7 +3439,7 @@ static int bif_iso_univ(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	node *term2 = get_list(term2);
+	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
 		node *s = make_compound();
