@@ -9,8 +9,8 @@ init(Name) :-
 init2(Name) :-
 	sys:concat(Name,'/',?GITDIR,Path),
 	\+ sys:exists_directory(Path),
-	sys:make_directory(Name),
-	sys:make_directory(Path),
+	make_directory(Name),
+	make_directory(Path),
 	sys:concat(Path,'/','HEAD',File),
 	sys:save_file(File,'ref: refs/heads/master'),
 	write('Initialized empty Git repository: '),

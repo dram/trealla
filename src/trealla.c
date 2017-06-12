@@ -1634,8 +1634,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "atomic_list_concat([],_,'').");
 	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> sys:concat(H,Sep,S2,S) ; sys:concat(H,S2,S)), !.");
 #endif
-	trealla_make_rule(pl, "display(T) :- write(T).");
-	trealla_make_rule(pl, "display(S,T) :- write(S,T).");
+	trealla_make_rule(pl, "display(T) :- write_term(T,[ignore_ops(true)]).");
+	trealla_make_rule(pl, "display(S,T) :- write_term(S,T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "get0(Code) :- get_code(Code).");
 	trealla_make_rule(pl, "memberchk(E, L) :- once(member(E, L)).");
 
