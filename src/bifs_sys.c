@@ -55,22 +55,6 @@ static char *strndup(const char *s, size_t n)
 }
 #endif
 
-static int bif_sys_exists_file_1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	const char *filename = VAL_S(term1);
-	struct stat st = {0};
-
-	if (stat(filename, &st) != 0)
-		return 0;
-
-	if ((st.st_mode & S_IFMT) != S_IFREG)
-		return 0;
-
-	return 1;
-}
-
 static int bif_sys_exists_directory_1(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -85,19 +69,6 @@ static int bif_sys_exists_directory_1(tpl_query *q)
 		return 0;
 
 	return 1;
-}
-
-static int bif_sys_make_directory_1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	const char *filename = VAL_S(term1);
-	struct stat st = {0};
-
-	if (stat(filename, &st) == 0)
-		return 0;
-
-	return !mkdir(filename, 0777);
 }
 
 static int bif_sys_make_directory_2(tpl_query *q)
@@ -271,14 +242,6 @@ static int bif_sys_write_file_4(tpl_query *q)
 		return 0;
 
 	return sys_write_file(q, var, term1, term2, from, to);
-}
-
-static int bif_sys_delete_file_1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	remove(VAL_S(term1));
-	return 1;
 }
 
 static int bif_sys_save_file_2(tpl_query *q)
@@ -1207,45 +1170,6 @@ static int bif_sys_munge_2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_getenv_2(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	node *term2 = get_atom_or_var(term2);
-	const char *value = getenv(VAL_S(term1));
-
-	if (!value)
-		return 0;
-
-	return unify_atom(q, term2, strdup(value), 1);
-}
-
-static int bif_sys_setenv_2(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	node *term2 = get_atom_or_int(term2);
-
-	if (is_atom(term2)) {
-		setenv(VAL_S(term1), VAL_S(term2), 1);
-	}
-	else {
-		char tmpbuf[40];
-		sprintf(tmpbuf, "%lld", (long long)term2->val_i);
-		setenv(VAL_S(term1), tmpbuf, 1);
-	}
-
-	return 1;
-}
-
-static int bif_sys_unsetenv_1(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	unsetenv(VAL_S(term1));
-	return 1;
-}
-
 static int bif_sys_system_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1943,11 +1867,8 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:load_file", 2, bif_sys_load_file_2);
 	DEFINE_BIF("sys:save_file", 2, bif_sys_save_file_2);
 	DEFINE_BIF("sys:append_file", 2, bif_sys_append_file_2);
-	DEFINE_BIF("sys:delete_file", 1, bif_sys_delete_file_1);
-	DEFINE_BIF("sys:make_directory", 1, bif_sys_make_directory_1);
 	DEFINE_BIF("sys:make_directory", 2, bif_sys_make_directory_2);
 	DEFINE_BIF("sys:exists_directory", 1, bif_sys_exists_directory_1);
-	DEFINE_BIF("sys:exists_file", 1, bif_sys_exists_file_1);
 	DEFINE_BIF("sys:exists_file", 3, bif_sys_exists_file_3);
 	DEFINE_BIF("sys:write_file", 1 + 2, bif_sys_write_file_2);
 	DEFINE_BIF("sys:write_file", 1 + 4, bif_sys_write_file_4);
@@ -1967,9 +1888,6 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:hdelay", 1, bif_sys_hdelay_1);
 	DEFINE_BIF("sys:rand", 1, bif_sys_rand_1);
 	DEFINE_BIF("sys:uuid", 1, bif_sys_uuid_1);
-	DEFINE_BIF("sys:getenv", 2, bif_sys_getenv_2);
-	DEFINE_BIF("sys:setenv", 2, bif_sys_setenv_2);
-	DEFINE_BIF("sys:unsetenv", 1, bif_sys_unsetenv_1);
 	DEFINE_BIF("sys:stream", 1, bif_sys_stream_1);
 
 	DEFINE_BIF("sys:lput", 4, bif_sys_lput_4);

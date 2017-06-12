@@ -171,13 +171,10 @@ These are an assortment of utilities:
 	getline(-Atom)              - read a line into atom (CR and/or LF removed)
 	getline(+S,-Atom)           - ... same but from file stream
 	exists_directory(+Path)     - check if dir exists
-	make_directory(+Path)       - make dir					(NEW USE DEPRECATED)
 	make_directory(+Path,+Mode) - make dir if not exists
-	exists_file(+File)          - check if file exists		(NEW USE DEPRECATED)
 	exists_file(+File,-L,-S)    - ... length in bytes and last-modified in seconds (C-epoch)
 	load_file(+File,-Blob)      - read named file
 	save_file(+File,+Atom)      - create named file
-	delete_file(+File)          - remove named file			(NEW USE DEPRECATED)
 	append_file(+File,+Atom)    - append to named file
 
 	write_file(+S,+File,+From,+To) - write ranged contents of named file to stream. Range is in
