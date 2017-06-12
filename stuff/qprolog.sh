@@ -17,7 +17,7 @@ command_line_arguments(Args) :-
 
 dbreference(_) :- fail.         % sufficient here
 
-enable_trace(X) : trace(X).
+enable_trace(_).
 
 current_error_output(S) :- current_output(S).
 
