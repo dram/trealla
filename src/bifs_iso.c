@@ -3442,7 +3442,7 @@ static int bif_iso_univ(tpl_query *q)
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
-		QABORT(ABORT_INVALIDARGISVAR);
+		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
