@@ -1633,8 +1633,6 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, sys:concat(H,S2,S).");
 	trealla_make_rule(pl, "atomic_list_concat([],_,'').");
 	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> sys:concat(H,Sep,S2,S) ; sys:concat(H,S2,S)), !.");
-#endif
-
 	trealla_make_rule(pl, "display(T) :- write_term(T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "display(S,T) :- write_term(S,T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "memberchk(E,L) :- once(member(E,L)).");
@@ -1643,6 +1641,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
 	trealla_make_rule(pl, "get0(Code) :- get_code(Code).");
 	trealla_make_rule(pl, "get(Code) :- get_code(Code).");	// FIXME
+#endif
 
 	return pl;
 }
