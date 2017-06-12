@@ -6541,7 +6541,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("var", 1, bif_iso_var);
 	DEFINE_BIF("nonvar", 1, bif_iso_nonvar);
 	DEFINE_BIF("atom", 1, bif_iso_atom);
-	DEFINE_BIF("node", 1, bif_iso_number);
+	DEFINE_BIF("number", 1, bif_iso_number);
 	DEFINE_BIF("integer", 1, bif_iso_integer);
 	DEFINE_BIF("float", 1, bif_iso_float);
 	DEFINE_BIF("compound", 1, bif_iso_compound);
