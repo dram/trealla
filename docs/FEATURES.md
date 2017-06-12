@@ -124,9 +124,10 @@ found in other Prolog implementations:
 	getenv(+Atom,?Term)         - get environment variable
 	setenv(+Atom,+Atomic)       - set environment variable
 	unsetenv(+Atom)             - unset environment variable
-	exists_file(+File)          - check if file exists
-	delete_file(+File)          - remove named file
-	make_directory(+Path)       - make dir (mode 0777) if not exists
+	exists_file(+File)
+	delete_file(+File)
+	rename_file(+Old,+New)
+	make_directory(+Path)
 	display(+Term)
 	display(+Stream,+Term)
 

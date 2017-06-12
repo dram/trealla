@@ -6518,6 +6518,14 @@ static int bif_xtra_delete_file_1(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_rename_file_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_atom(term2);
+	return !rename(VAL_S(term1), VAL_S(term2));
+}
+
 static int bif_xtra_make_directory_1(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6751,6 +6759,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("unsetenv", 1, bif_xtra_unsetenv_1);
 	DEFINE_BIF("exists_file", 1, bif_xtra_exists_file_1);
 	DEFINE_BIF("delete_file", 1, bif_xtra_delete_file_1);
+	DEFINE_BIF("rename_file", 2, bif_xtra_rename_file_2);
 	DEFINE_BIF("make_directory", 1, bif_xtra_make_directory_1);
 
 #if USE_SSL
