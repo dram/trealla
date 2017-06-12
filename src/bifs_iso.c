@@ -3442,20 +3442,8 @@ static int bif_iso_univ(tpl_query *q)
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
-		node *s = make_compound();
-		node *l = term2;
-
-		while (is_list(l)) {
-			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
-			term_append(s, clone_term(q, n));
-			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
-		}
-
-		put_env(q, q->c.curr_frame + term1->slot, s, q->c.curr_frame);
-		term_heapcheck(s);
-		return 1;
+		QABORT(ABORT_INVALIDARGISVAR);
+		return 0;
 	}
 
 	if (is_compound(term1)) {

@@ -172,7 +172,7 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 			continue;
 		}
 
-		if (strcmp(VAL_S(term), "[]")) {
+		if (!is_atom(term) || strcmp(VAL_S(term), "[]")) {
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "|");
 			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing?listing:1);
 		}
