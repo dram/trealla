@@ -6243,6 +6243,17 @@ static int bif_xtra_use_module(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_trace_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int_or_var(term1);
+
+	if (is_integer(term1))
+		q->trace = get_word(term1);
+
+	return unify_int(q, term1, q->trace);
+}
+
 static int bif_xtra_trace_0(tpl_query *q)
 {
 	q->trace = 1;
@@ -6754,6 +6765,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("read_term_from_atom", 3, bif_xtra_read_term_from_atom_3);
 	DEFINE_BIF("atom_number", 2, bif_xtra_atom_number_2);
 	DEFINE_BIF("trace", 0, bif_xtra_trace_0);
+	DEFINE_BIF("trace", 1, bif_xtra_trace_1);
 	DEFINE_BIF("getenv", 2, bif_xtra_getenv_2);
 	DEFINE_BIF("setenv", 2, bif_xtra_setenv_2);
 	DEFINE_BIF("unsetenv", 1, bif_xtra_unsetenv_1);

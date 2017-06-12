@@ -132,6 +132,9 @@ found in other Prolog implementations:
 	display(+Stream,+Term)
 	get0(-Code)
 	memberchk(?Term,+List)
+	name(?Atomic, ?CodeList)
+	trace(?Int)
+	trace/0                     - same as trace(1)
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 

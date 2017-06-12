@@ -17,7 +17,7 @@ command_line_arguments(Args) :-
 
 dbreference(_) :- fail.         % sufficient here
 
-enable_trace(_).
+enable_trace(X) : trace(X).
 
 current_error_output(S) :- current_output(S).
 
@@ -34,10 +34,6 @@ atom_hash(I, [C|R], H1, H2) :-
 
 skip_shebang :- \\+ peek_char('#').
 skip_shebang :- repeat, get0(10).
-
-name(Atom, List) :- atom_codes(Atom, List).
-
-put(S, C) :- put_code(S, C).
 
 append([], []).
 append([List |RestLists], Concatenated) :-
