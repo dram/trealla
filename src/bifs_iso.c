@@ -6494,6 +6494,43 @@ static int bif_xtra_unsetenv_1(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_exists_file_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	const char *filename = VAL_S(term1);
+	struct stat st = {0};
+
+	if (stat(filename, &st) != 0)
+		return 0;
+
+	if ((st.st_mode & S_IFMT) != S_IFREG)
+		return 0;
+
+	return 1;
+}
+
+static int bif_xtra_delete_file_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	remove(VAL_S(term1));
+	return 1;
+}
+
+static int bif_xtra_make_directory_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	const char *filename = VAL_S(term1);
+	struct stat st = {0};
+
+	if (stat(filename, &st) == 0)
+		return 0;
+
+	return !mkdir(filename, 0777);
+}
+
 void bifs_load_iso(void)
 {
 	DEFINE_BIF("true", 0, bif_iso_true);
@@ -6709,9 +6746,12 @@ void bifs_load_iso(void)
 	DEFINE_BIF("read_term_from_atom", 3, bif_xtra_read_term_from_atom_3);
 	DEFINE_BIF("atom_number", 2, bif_xtra_atom_number_2);
 	DEFINE_BIF("trace", 0, bif_xtra_trace_0);
-	DEFINE_BIF("sys:getenv", 2, bif_xtra_getenv_2);
-	DEFINE_BIF("sys:setenv", 2, bif_xtra_setenv_2);
-	DEFINE_BIF("sys:unsetenv", 1, bif_xtra_unsetenv_1);
+	DEFINE_BIF("getenv", 2, bif_xtra_getenv_2);
+	DEFINE_BIF("setenv", 2, bif_xtra_setenv_2);
+	DEFINE_BIF("unsetenv", 1, bif_xtra_unsetenv_1);
+	DEFINE_BIF("exists_file", 1, bif_xtra_exists_file_1);
+	DEFINE_BIF("delete_file", 1, bif_xtra_delete_file_1);
+	DEFINE_BIF("make_directory", 1, bif_xtra_make_directory_1);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
