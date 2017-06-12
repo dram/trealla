@@ -121,6 +121,9 @@ found in other Prolog implementations:
 	atomic_list_concat(+L,+Sep,-S)
 	tab(+Spaces)
 	tab(+Stream,+Spaces)
+	getenv(+Atom,?Term)         - get environment variable
+	setenv(+Atom,+Atomic)       - set environment variable
+	unsetenv(+Atom)             - unset environment variable
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
@@ -211,9 +214,6 @@ These are an assortment of utilities:
 	parse_csv(+Atom,-List)      - parse comma-separated variables into list
 	parse_tab(+Atom,-List)      - parse tab-delimited variables into list
 	exit(+Atom)                 - exit with reason string
-	getenv(+Atom,?Term)         - get environment variable
-	setenv(+Atom,+Atomic)       - set environment variable
-	unsetenv(+Atom)             - unset environment variable
 	system(+Atom)               - execute shell command
 	system(+Atom,?Int)          - execute shell command
 	stream(-S)                  - create a dummy stream

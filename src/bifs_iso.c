@@ -2875,7 +2875,7 @@ static int bif_iso_abolish(tpl_query *q)
 }
 
 #ifndef ISO_ONLY
-static int bif_xtra_asserta(tpl_query *q)
+static int bif_xtra_asserta_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -2927,7 +2927,7 @@ static int bif_xtra_asserta(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_assertz(tpl_query *q)
+static int bif_xtra_assertz_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -2979,7 +2979,7 @@ static int bif_xtra_assertz(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_erase(tpl_query *q)
+static int bif_xtra_erase_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_ptr(term1);
@@ -5442,7 +5442,7 @@ static int bif_iso_truncate(tpl_query *q)
 }
 
 
-static int bif_xtra_between(tpl_query *q)
+static int bif_xtra_between_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -5579,7 +5579,7 @@ static int bif_xtra_time_2(tpl_query *q)
 }
 
 #ifndef ISO_ONLY
-static int bif_xtra_term_to_atom(tpl_query *q)
+static int bif_xtra_term_to_atom_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_nonvar(term1);
@@ -5628,7 +5628,7 @@ static int bif_xtra_term_to_blob(tpl_query *q)
 	return ok;
 }
 
-static int bif_xtra_abolish(tpl_query *q)
+static int bif_xtra_abolish_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -5669,7 +5669,7 @@ static int bif_xtra_abolish(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_is_list(tpl_query *q)
+static int bif_xtra_is_list_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -5682,21 +5682,21 @@ static int bif_xtra_is_list(tpl_query *q)
 	return is_list(term1);
 }
 
-static int bif_xtra_is_tuple(tpl_query *q)
+static int bif_xtra_is_tuple_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	return is_tuple(term1);
 }
 
-static int bif_xtra_is_struct(tpl_query *q)
+static int bif_xtra_is_struct_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	return is_structure(term1);
 }
 
-static int bif_xtra_is_stream(tpl_query *q)
+static int bif_xtra_is_stream_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -5712,21 +5712,21 @@ static int bif_xtra_is_stream(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_consult(tpl_query *q)
+static int bif_xtra_consult_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	return trealla_consult_file(q->pl, VAL_S(term1));
 }
 
-static int bif_xtra_deconsult(tpl_query *q)
+static int bif_xtra_deconsult_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	return trealla_deconsult(q->pl, VAL_S(term1));
 }
 
-static int bif_xtra_reconsult(tpl_query *q)
+static int bif_xtra_reconsult_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -5840,7 +5840,7 @@ static int bif_xtra_maplist_3(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_findnsols(tpl_query *q)
+static int bif_xtra_findnsols_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *var = get_term(var); // FLAG_HIDDEN
@@ -6020,7 +6020,7 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 }
 
 #if USE_SSL
-static int bif_xtra_unbounded(tpl_query *q)
+static int bif_xtra_unbounded_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -6038,7 +6038,7 @@ static int bif_xtra_unbounded(tpl_query *q)
 }
 #endif
 
-static int bif_xtra_random(tpl_query *q)
+static int bif_xtra_random_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
@@ -6063,7 +6063,7 @@ static uint32_t jenkins_one_at_a_time_hash(char *key)
 	return hash;
 }
 
-static int bif_xtra_term_hash(tpl_query *q)
+static int bif_xtra_term_hash_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -6084,7 +6084,7 @@ static int bif_xtra_term_hash(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_atom_number(tpl_query *q)
+static int bif_xtra_atom_number_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -6118,7 +6118,7 @@ static int bif_xtra_atom_number(tpl_query *q)
 	return ok;
 }
 
-static int bif_xtra_read_term_from_atom(tpl_query *q)
+static int bif_xtra_read_term_from_atom_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
@@ -6154,7 +6154,7 @@ int bif_xtra_enter(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_writeln(tpl_query *q)
+static int bif_xtra_writeln_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -6243,7 +6243,7 @@ static int bif_xtra_use_module(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_trace(tpl_query *q)
+static int bif_xtra_trace_0(tpl_query *q)
 {
 	q->trace = 1;
 	return 1;
@@ -6257,7 +6257,7 @@ static int bif_linda_out(tpl_query *q)
 }
 #endif
 
-static int bif_xtra_see(tpl_query *q)
+static int bif_xtra_see_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -6285,14 +6285,14 @@ static int bif_xtra_see(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_seeing(tpl_query *q)
+static int bif_xtra_seeing_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
 	return unify_atom(q, term1, strdup(q->curr_stdin_name), 1);
 }
 
-static int bif_xtra_seen(tpl_query *q)
+static int bif_xtra_seen_0(tpl_query *q)
 {
 	if (q->curr_stdin != stdin) {
 		free(q->curr_stdin_name);
@@ -6304,7 +6304,7 @@ static int bif_xtra_seen(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_tell(tpl_query *q)
+static int bif_xtra_tell_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -6332,14 +6332,14 @@ static int bif_xtra_tell(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_telling(tpl_query *q)
+static int bif_xtra_telling_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
 	return unify_atom(q, term1, strdup(q->curr_stdout_name), 1);
 }
 
-static int bif_xtra_told(tpl_query *q)
+static int bif_xtra_told_0(tpl_query *q)
 {
 	if (q->curr_stdout != stdout) {
 		free(q->curr_stdout_name);
@@ -6372,7 +6372,7 @@ static int bif_xtra_tab_2(tpl_query *q)
 	return ok > 0;
 }
 
-static int bif_xtra_tab(tpl_query *q)
+static int bif_xtra_tab_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -6385,7 +6385,7 @@ static int bif_xtra_tab(tpl_query *q)
 	return ok;
 }
 
-static int bif_xtra_predicate_property(tpl_query *q)
+static int bif_xtra_predicate_property_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -6412,7 +6412,7 @@ static int bif_xtra_predicate_property(tpl_query *q)
 	return 0;
 }
 
-static int bif_xtra_forall(tpl_query *q)
+static int bif_xtra_forall_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -6453,6 +6453,45 @@ static int bif_xtra_forall(tpl_query *q)
 	query_destroy(subq);
 	term_heapcheck(t1);
 	return subok;
+}
+
+static int bif_xtra_getenv_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_atom_or_var(term2);
+	const char *value = getenv(VAL_S(term1));
+
+	if (!value)
+		return 0;
+
+	return unify_atom(q, term2, strdup(value), 1);
+}
+
+static int bif_xtra_setenv_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_atom_or_int(term2);
+
+	if (is_atom(term2)) {
+		setenv(VAL_S(term1), VAL_S(term2), 1);
+	}
+	else {
+		char tmpbuf[40];
+		sprintf(tmpbuf, "%lld", (long long)term2->val_i);
+		setenv(VAL_S(term1), tmpbuf, 1);
+	}
+
+	return 1;
+}
+
+static int bif_xtra_unsetenv_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	unsetenv(VAL_S(term1));
+	return 1;
 }
 
 void bifs_load_iso(void)
@@ -6646,55 +6685,58 @@ void bifs_load_iso(void)
 #ifndef ISO_ONLY
 	DEFINE_BIF("not", 1, bif_iso_not);
 	DEFINE_BIF("div", 2, bif_iso_divint);
-	DEFINE_BIF("consult", 1, bif_xtra_consult);
-	DEFINE_BIF("deconsult", 1, bif_xtra_deconsult);
-	DEFINE_BIF("reconsult", 1, bif_xtra_reconsult);
+	DEFINE_BIF("consult", 1, bif_xtra_consult_1);
+	DEFINE_BIF("deconsult", 1, bif_xtra_deconsult_1);
+	DEFINE_BIF("reconsult", 1, bif_xtra_reconsult_1);
 	DEFINE_BIF("listing", 0, bif_xtra_listing);
 	DEFINE_BIF("listing", 1, bif_xtra_listing);
-	DEFINE_BIF("abolish", 2, bif_xtra_abolish);
-	DEFINE_BIF("writeln", 1, bif_xtra_writeln);
+	DEFINE_BIF("abolish", 2, bif_xtra_abolish_2);
+	DEFINE_BIF("writeln", 1, bif_xtra_writeln_1);
 	DEFINE_BIF("writeln", 2, bif_xtra_writeln_2);
-	DEFINE_BIF("is_list", 1, bif_xtra_is_list);
-	DEFINE_BIF("is_struct", 1, bif_xtra_is_struct);
-	DEFINE_BIF("is_tuple", 1, bif_xtra_is_tuple);
-	DEFINE_BIF("is_stream", 1, bif_xtra_is_stream);
-	DEFINE_BIF("term_to_atom", 2, bif_xtra_term_to_atom);
-	DEFINE_BIF("findnsols", 1 + 4, bif_xtra_findnsols);
+	DEFINE_BIF("is_list", 1, bif_xtra_is_list_1);
+	DEFINE_BIF("is_struct", 1, bif_xtra_is_struct_1);
+	DEFINE_BIF("is_tuple", 1, bif_xtra_is_tuple_1);
+	DEFINE_BIF("is_stream", 1, bif_xtra_is_stream_1);
+	DEFINE_BIF("term_to_atom", 2, bif_xtra_term_to_atom_2);
+	DEFINE_BIF("findnsols", 1 + 4, bif_xtra_findnsols_4);
 	DEFINE_BIF("maplist", 2, bif_xtra_maplist_2);
 	DEFINE_BIF("maplist", 3, bif_xtra_maplist_3);
-	DEFINE_BIF("asserta", 2, bif_xtra_asserta);
-	DEFINE_BIF("assertz", 2, bif_xtra_assertz);
-	DEFINE_BIF("erase", 1, bif_xtra_erase);
-	DEFINE_BIF("random", 1, bif_xtra_random);
-	DEFINE_BIF("term_hash", 2, bif_xtra_term_hash);
-	DEFINE_BIF("read_term_from_atom", 3, bif_xtra_read_term_from_atom);
-	DEFINE_BIF("atom_number", 2, bif_xtra_atom_number);
-	DEFINE_BIF("trace", 0, bif_xtra_trace);
+	DEFINE_BIF("asserta", 2, bif_xtra_asserta_2);
+	DEFINE_BIF("assertz", 2, bif_xtra_assertz_2);
+	DEFINE_BIF("erase", 1, bif_xtra_erase_1);
+	DEFINE_BIF("random", 1, bif_xtra_random_1);
+	DEFINE_BIF("term_hash", 2, bif_xtra_term_hash_2);
+	DEFINE_BIF("read_term_from_atom", 3, bif_xtra_read_term_from_atom_3);
+	DEFINE_BIF("atom_number", 2, bif_xtra_atom_number_2);
+	DEFINE_BIF("trace", 0, bif_xtra_trace_0);
+	DEFINE_BIF("sys:getenv", 2, bif_xtra_getenv_2);
+	DEFINE_BIF("sys:setenv", 2, bif_xtra_setenv_2);
+	DEFINE_BIF("sys:unsetenv", 1, bif_xtra_unsetenv_1);
 
 #if USE_SSL
-	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded);
+	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
 #endif
 
 #endif
 
-	DEFINE_BIF("forall", 2, bif_xtra_forall);
+	DEFINE_BIF("forall", 2, bif_xtra_forall_2);
 	DEFINE_BIF("time", 1, bif_xtra_time_1);
 	DEFINE_BIF("time", 2, bif_xtra_time_2);
-	DEFINE_BIF("between", 3, bif_xtra_between);
+	DEFINE_BIF("between", 3, bif_xtra_between_3);
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
-	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property);
+	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
 
 // These are for Edinburgh-style file handling...
 
-	DEFINE_BIF("see", 1, bif_xtra_see);
-	DEFINE_BIF("seeing", 1, bif_xtra_seeing);
-	DEFINE_BIF("seen", 0, bif_xtra_seen);
-	DEFINE_BIF("tell", 1, bif_xtra_tell);
-	DEFINE_BIF("telling", 1, bif_xtra_telling);
-	DEFINE_BIF("told", 0, bif_xtra_told);
-	DEFINE_BIF("tab", 1, bif_xtra_tab);
+	DEFINE_BIF("see", 1, bif_xtra_see_1);
+	DEFINE_BIF("seeing", 1, bif_xtra_seeing_1);
+	DEFINE_BIF("seen", 0, bif_xtra_seen_0);
+	DEFINE_BIF("tell", 1, bif_xtra_tell_1);
+	DEFINE_BIF("telling", 1, bif_xtra_telling_1);
+	DEFINE_BIF("told", 0, bif_xtra_told_0);
+	DEFINE_BIF("tab", 1, bif_xtra_tab_1);
 	DEFINE_BIF("tab", 2, bif_xtra_tab_2);
 
 #ifndef ISO_ONLY
