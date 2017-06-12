@@ -5441,7 +5441,7 @@ static int bif_iso_truncate(tpl_query *q)
 	return 1;
 }
 
-
+#ifndef ISO_ONLY
 static int bif_xtra_between_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -5578,7 +5578,6 @@ static int bif_xtra_time_2(tpl_query *q)
 	return ok;
 }
 
-#ifndef ISO_ONLY
 static int bif_xtra_term_to_atom_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6260,6 +6259,7 @@ static int bif_xtra_trace_0(tpl_query *q)
 	return 1;
 }
 
+#ifndef ISO_ONLY
 static int bif_linda_out(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6549,6 +6549,7 @@ static int bif_xtra_make_directory_1(tpl_query *q)
 
 	return !mkdir(filename, 0777);
 }
+#endif
 
 void bifs_load_iso(void)
 {
@@ -6738,9 +6739,11 @@ void bifs_load_iso(void)
 
 // These are not ISO-Prolog but are common...
 
-#ifndef ISO_ONLY
 	DEFINE_BIF("not", 1, bif_iso_not);
 	DEFINE_BIF("div", 2, bif_iso_divint);
+	DEFINE_BIF("assert", 1, bif_iso_assertz);
+
+#ifndef ISO_ONLY
 	DEFINE_BIF("consult", 1, bif_xtra_consult_1);
 	DEFINE_BIF("deconsult", 1, bif_xtra_deconsult_1);
 	DEFINE_BIF("reconsult", 1, bif_xtra_reconsult_1);
@@ -6778,19 +6781,18 @@ void bifs_load_iso(void)
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
 #endif
 
-#endif
-
 	DEFINE_BIF("forall", 2, bif_xtra_forall_2);
 	DEFINE_BIF("time", 1, bif_xtra_time_1);
 	DEFINE_BIF("time", 2, bif_xtra_time_2);
 	DEFINE_BIF("between", 3, bif_xtra_between_3);
-	DEFINE_BIF("assert", 1, bif_iso_assertz);
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
+#endif
 
 // These are for Edinburgh-style file handling...
 
+#ifndef ISO_ONLY
 	DEFINE_BIF("see", 1, bif_xtra_see_1);
 	DEFINE_BIF("seeing", 1, bif_xtra_seeing_1);
 	DEFINE_BIF("seen", 0, bif_xtra_seen_0);
@@ -6799,6 +6801,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("told", 0, bif_xtra_told_0);
 	DEFINE_BIF("tab", 1, bif_xtra_tab_1);
 	DEFINE_BIF("tab", 2, bif_xtra_tab_2);
+#endif
 
 #ifndef ISO_ONLY
 	DEFINE_BIF("linda:out", 1, bif_linda_out);
