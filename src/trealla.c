@@ -1637,6 +1637,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "display(T) :- write(T).");
 	trealla_make_rule(pl, "display(S,T) :- write(S,T).");
 	trealla_make_rule(pl, "get0(Code) :- get_code(Code).");
+	trealla_make_rule(pl, "memberchk(E, L) :- once(member(E, L)).");
 
 	return pl;
 }

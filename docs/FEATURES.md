@@ -130,6 +130,8 @@ found in other Prolog implementations:
 	make_directory(+Path)
 	display(+Term)
 	display(+Stream,+Term)
+	get0(-Code)
+	memberchk(?Term,+List)
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
