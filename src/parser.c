@@ -816,8 +816,11 @@ int dir_use_module(lexer *l, node *n)
 		;
 	else if (is_compound(term)) {
 		if (!strcmp(term_functor(term), "library")) {
-			use_lib = 1;
 			term = term_firstarg(term);
+			use_lib = 1;
+
+			if (!strcmp(VAL_S(term), "lists"))
+				return 1;
 		}
 	}
 	else
