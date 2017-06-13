@@ -6264,10 +6264,8 @@ static int bif_xtra_see_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 
-	if (q->curr_stdin != stdin) {
+	if (q->curr_stdin_name)
 		free(q->curr_stdin_name);
-		fclose(q->curr_stdin);
-	}
 
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
@@ -6280,13 +6278,20 @@ static int bif_xtra_see_1(tpl_query *q)
 			return 0;
 		}
 
-		q->curr_stdin_name = strdup(filename);
+		stream *sp = (stream*)calloc(1, sizeof(stream));
+		sp->filename = strdup(filename);
+		sp->fptr = fp;
+		node *n = make_stream(sp);
+		n->flags |= FLAG_FILE;
+		q->curr_stdin_stream = sp;
 		q->curr_stdin = fp;
+		q->curr_stdin_name = strdup(filename);
 	}
 	else {
 		stream *sp = term1->val_str;
+		q->curr_stdin_stream = sp;
+		q->curr_stdin = sp->fptr;
 		q->curr_stdin_name = strdup(sp->filename);
-		q->curr_stdin = fdopen(fileno(sp->fptr), "r");
 	}
 
 	return 1;
@@ -6296,14 +6301,31 @@ static int bif_xtra_seeing_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
-	return unify_atom(q, term1, strdup(q->curr_stdin_name), 1);
+
+	if (q->curr_stdin_stream) {
+		node *n = make_stream(q->curr_stdin_stream);
+		n->flags |= FLAG_FILE | FLAG_CONST;
+		int ok = unify_term(q, term1, n, -1);
+		term_heapcheck(n);
+		return ok;
+	}
+	else
+		return unify_atom(q, term1, strdup(q->curr_stdin_name), 1);
 }
 
 static int bif_xtra_seen_0(tpl_query *q)
 {
 	if (q->curr_stdin != stdin) {
-		free(q->curr_stdin_name);
-		fclose(q->curr_stdin);
+
+		if (q->curr_stdin_name) {
+			free(q->curr_stdin_name);
+			fclose(q->curr_stdin);
+		}
+
+		if (q->curr_stdin_stream)
+			q->curr_stdin_stream->fptr = NULL;
+
+		q->curr_stdin_stream = NULL;
 		q->curr_stdin_name = strdup("user");
 		q->curr_stdin = stdin;
 	}
@@ -6316,10 +6338,8 @@ static int bif_xtra_tell_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 
-	if (q->curr_stdout != stdout) {
+	if (q->curr_stdout_name)
 		free(q->curr_stdout_name);
-		fclose(q->curr_stdout);
-	}
 
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
@@ -6332,13 +6352,18 @@ static int bif_xtra_tell_1(tpl_query *q)
 			return 0;
 		}
 
-		q->curr_stdout_name = strdup(filename);
+		stream *sp = (stream*)calloc(1, sizeof(stream));
+		sp->filename = strdup(filename);
+		sp->fptr = fp;
+		q->curr_stdout_stream = sp;
 		q->curr_stdout = fp;
+		q->curr_stdout_name = strdup(filename);
 	}
 	else {
 		stream *sp = term1->val_str;
+		q->curr_stdout_stream = sp;
+		q->curr_stdout = sp->fptr;
 		q->curr_stdout_name = strdup(sp->filename);
-		q->curr_stdout = fdopen(fileno(sp->fptr), "w");
 	}
 
 	return 1;
@@ -6349,10 +6374,8 @@ static int bif_xtra_append_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 
-	if (q->curr_stdout != stdout) {
+	if (q->curr_stdout_name)
 		free(q->curr_stdout_name);
-		fclose(q->curr_stdout);
-	}
 
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
@@ -6371,7 +6394,8 @@ static int bif_xtra_append_1(tpl_query *q)
 	else {
 		stream *sp = term1->val_str;
 		q->curr_stdout_name = strdup(sp->filename);
-		q->curr_stdout = fdopen(fileno(sp->fptr), "a");
+		q->curr_stdout_stream = sp;
+		q->curr_stdout = sp->fptr;
 	}
 
 	return 1;
@@ -6381,14 +6405,31 @@ static int bif_xtra_telling_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
-	return unify_atom(q, term1, strdup(q->curr_stdout_name), 1);
+
+	if (q->curr_stdout_stream) {
+		node *n = make_stream(q->curr_stdout_stream);
+		n->flags |= FLAG_FILE | FLAG_CONST;
+		int ok = unify_term(q, term1, n, -1);
+		term_heapcheck(n);
+		return ok;
+	}
+	else
+		return unify_atom(q, term1, strdup(q->curr_stdout_name), 1);
 }
 
 static int bif_xtra_told_0(tpl_query *q)
 {
 	if (q->curr_stdout != stdout) {
-		free(q->curr_stdout_name);
-		fclose(q->curr_stdout);
+
+		if (q->curr_stdout_name) {
+			free(q->curr_stdout_name);
+			fclose(q->curr_stdout);
+		}
+
+		if (q->curr_stdout_stream)
+			q->curr_stdout_stream->fptr = NULL;
+
+		q->curr_stdout_stream = NULL;
 		q->curr_stdout_name = strdup("user");
 		q->curr_stdout = stdout;
 	}

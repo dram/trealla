@@ -274,6 +274,7 @@ struct tpl_query_ {
 	tpl_query *parent, *subq;
 	lexer *lex;
 	char *halt_s;
+	stream *curr_stdin_stream, *curr_stdout_stream;
 	char *curr_stdin_name, *curr_stdout_name;
 	node nv;
 
