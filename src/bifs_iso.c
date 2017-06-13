@@ -6264,17 +6264,21 @@ static int bif_xtra_see_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 
+	if (q->curr_stdin != stdin) {
+		free(q->curr_stdin_name);
+		fclose(q->curr_stdin);
+	}
+
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
 		FILE *fp = fopen(filename, "r");
 
 		if (!fp) {
 			QABORT(ABORT_NOTEXISTFILE);
+			q->curr_stdout_name = strdup("user");
+			q->curr_stdout = stdin;
 			return 0;
 		}
-
-		if (q->curr_stdin_name)
-			free(q->curr_stdin_name);
 
 		q->curr_stdin_name = strdup(filename);
 		q->curr_stdin = fp;
@@ -6312,17 +6316,21 @@ static int bif_xtra_tell_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 
+	if (q->curr_stdout != stdout) {
+		free(q->curr_stdout_name);
+		fclose(q->curr_stdout);
+	}
+
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
-		FILE *fp = fopen(filename, "w+");
+		FILE *fp = fopen(filename, "w");
 
 		if (!fp) {
 			QABORT(ABORT_NOTEXISTFILE);
+			q->curr_stdout_name = strdup("user");
+			q->curr_stdout = stdout;
 			return 0;
 		}
-
-		if (q->curr_stdout_name)
-			free(q->curr_stdout_name);
 
 		q->curr_stdout_name = strdup(filename);
 		q->curr_stdout = fp;
@@ -6341,17 +6349,21 @@ static int bif_xtra_append_1(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 
+	if (q->curr_stdout != stdout) {
+		free(q->curr_stdout_name);
+		fclose(q->curr_stdout);
+	}
+
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
-		FILE *fp = fopen(filename, "a+");
+		FILE *fp = fopen(filename, "a");
 
 		if (!fp) {
 			QABORT(ABORT_NOTEXISTFILE);
+			q->curr_stdout_name = strdup("user");
+			q->curr_stdout = stdout;
 			return 0;
 		}
-
-		if (q->curr_stdout_name)
-			free(q->curr_stdout_name);
 
 		q->curr_stdout_name = strdup(filename);
 		q->curr_stdout = fp;
