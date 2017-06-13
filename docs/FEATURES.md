@@ -168,7 +168,7 @@ and for accessing the recorded database:
 	instance(+Ref,-V)
 	current_key(+K)
 
-Plus the Edinburgh file routines: see,seeing, seen, tell, telling and told.
+Plus the Edinburgh file routines: see,seeing, seen, tell (+append), telling and told.
 
 System-extras: namespace 'sys'
 ------------------------------

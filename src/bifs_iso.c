@@ -6336,6 +6336,35 @@ static int bif_xtra_tell_1(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_append_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_stream(term1);
+
+	if (is_atom(term1)) {
+		const char *filename = VAL_S(term1);
+		FILE *fp = fopen(filename, "a+");
+
+		if (!fp) {
+			QABORT(ABORT_NOTEXISTFILE);
+			return 0;
+		}
+
+		if (q->curr_stdout_name)
+			free(q->curr_stdout_name);
+
+		q->curr_stdout_name = strdup(filename);
+		q->curr_stdout = fp;
+	}
+	else {
+		stream *sp = term1->val_str;
+		q->curr_stdout_name = strdup(sp->filename);
+		q->curr_stdout = fdopen(fileno(sp->fptr), "w+");
+	}
+
+	return 1;
+}
+
 static int bif_xtra_telling_1(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6914,6 +6943,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("seeing", 1, bif_xtra_seeing_1);
 	DEFINE_BIF("seen", 0, bif_xtra_seen_0);
 	DEFINE_BIF("tell", 1, bif_xtra_tell_1);
+	DEFINE_BIF("append", 1, bif_xtra_append_1);
 	DEFINE_BIF("telling", 1, bif_xtra_telling_1);
 	DEFINE_BIF("told", 0, bif_xtra_told_0);
 	DEFINE_BIF("tab", 1, bif_xtra_tab_1);
