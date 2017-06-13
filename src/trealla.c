@@ -1621,13 +1621,13 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "find(1,[H|_],H) :- !.");
 	trealla_make_rule(pl, "find(N,[_|T],X) :- N1 is N-1, find(N1,T,X).");
 	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
-	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta(sys_record(K,V),R).");
+	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta('$record'(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
-	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz(sys_record(K,V),R).");
-	trealla_make_rule(pl, "recorded(K,V,R) :- nonvar(K), clause(sys_record(K,V),_,R).");
+	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz('$record'(K,V),R).");
+	trealla_make_rule(pl, "recorded(K,V,R) :- nonvar(K), clause('$record'(K,V),_,R).");
 	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
-	trealla_make_rule(pl, "current_key(K) :- var(K), sys_record(K,_).");
-	trealla_make_rule(pl, "instance(R,V) :- nonvar(R),clause(sys_record(_,V),_,R).");
+	trealla_make_rule(pl, "current_key(K) :- var(K), '$record'(K,_).");
+	trealla_make_rule(pl, "instance(R,V) :- nonvar(R),clause('$record'(_,V),_,R).");
 	trealla_make_rule(pl, "atomic_concat(L,R,S) :- sys:concat(L,R,S).");
 	trealla_make_rule(pl, "atomic_list_concat([],'').");
 	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, sys:concat(H,S2,S).");
