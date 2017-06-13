@@ -6542,6 +6542,95 @@ static int bif_xtra_make_directory_1(tpl_query *q)
 
 	return !mkdir(filename, 0777);
 }
+
+static int bif_xtra_name(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_var(term1);
+	node *term2 = get_list_or_var(term2);
+
+	if (is_var(term1) && is_var(term2)) {
+		QABORT(ABORT_INVALIDARGMISSING);
+		return 0;
+	}
+
+	if (is_list(term2)) {
+		size_t buflen = FUNCTOR_SIZE;
+		char *dstbuf = malloc(buflen);
+		char *dst = dstbuf;
+		node *l = term2;
+
+		while (is_list(l)) {
+			node *head = term_firstarg(l);
+			unsigned this_context = q->latest_context;
+			node *n = get_arg(q, head, this_context);
+
+			if (!is_integer(n) && !is_bignum(n)) {
+				QABORT(ABORT_INVALIDARGNOTINT);
+				return 0;
+			}
+
+			nbr_t v = get_word(n);
+
+			if (v <= 0) {
+				QABORT(ABORT_INVALIDARGNOTINT);
+				return 0;
+			}
+
+			size_t save_len = dst - dstbuf;
+			size_t len2 = 8; // Allow for utf8 char
+
+			if ((buflen - save_len) < len2) {
+				buflen *= 2;
+				buflen += len2;
+				dstbuf = realloc(dstbuf, buflen);
+				dst = dstbuf + save_len;
+			}
+
+			dst += put_char_utf8(dst, v);
+			node *tail = term_next(head);
+			l = get_arg(q, tail, this_context);
+		}
+
+		*dst = '\0';
+		int numeric = NUM_NONE;
+		nbr_t v;
+		parse_number(dstbuf, &v, &numeric);
+		int ok;
+
+		if (isdigit(*dstbuf) && (numeric == NUM_INT))
+			ok = unify_int(q, term1, v);
+		else if (isdigit(*dstbuf) && (numeric == NUM_REAL))
+			ok = unify_float(q, term1, strtod(dstbuf, NULL));
+		else
+			ok = unify_atom(q, term1, strdup(dstbuf), 1);
+
+		free(dstbuf);
+		return ok;
+	}
+
+	node *save_l = make_list();
+	node *l = save_l;
+	const char *src = VAL_S(term1);
+
+	while (*src) {
+		int ch = get_char_utf8(&src);
+		node *tmp = make_int(ch);
+		term_append(l, tmp);
+
+		if (!*src)
+			break;
+
+		tmp = make_list();
+		term_append(l, tmp);
+		l = tmp;
+	}
+
+	term_append(l, make_const_atom("[]", 0));
+	int ok = unify_term(q, term2, save_l, -1);
+	term_heapcheck(save_l);
+	return ok;
+}
 #endif
 
 void bifs_load_iso(void)
@@ -6769,6 +6858,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("delete_file", 1, bif_xtra_delete_file_1);
 	DEFINE_BIF("rename_file", 2, bif_xtra_rename_file_2);
 	DEFINE_BIF("make_directory", 1, bif_xtra_make_directory_1);
+	DEFINE_BIF("name", 2, bif_xtra_name);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);

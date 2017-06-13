@@ -1611,7 +1611,6 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "display(T) :- write_term(T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "display(S,T) :- write_term(S,T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "memberchk(E,L) :- once(member(E,L)).");
-	trealla_make_rule(pl, "name(Atom, List) :- atom_codes(Atom,List)."); // FIXME
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
 	trealla_make_rule(pl, "get0(Code) :- get_code(Code).");
