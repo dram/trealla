@@ -1050,6 +1050,9 @@ static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor,
 	node *tmp = make_compound();
 	tmp->flags |= FLAG_ATTACHED;
 
+	if (l->internal)
+		tmp->flags |= FLAG_HIDDEN;
+
 	if (is_builtin(n)) {
 		tmp->flags |= FLAG_BUILTIN;
 		tmp->bifptr = n->bifptr;
@@ -1086,6 +1089,9 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 	node *tmp = make_compound();
 	tmp->flags |= FLAG_ATTACHED;
 
+	if (l->internal)
+		tmp->flags |= FLAG_HIDDEN;
+
 	if (is_builtin(n)) {
 		tmp->flags |= FLAG_BUILTIN;
 		tmp->bifptr = n->bifptr;
@@ -1112,6 +1118,9 @@ static node *attach_op_postfix(lexer *l, node *term, node *n)
 {
 	node *tmp = make_compound();
 	tmp->flags |= FLAG_ATTACHED;
+
+	if (l->internal)
+		tmp->flags |= FLAG_HIDDEN;
 
 	if (is_builtin(n)) {
 		tmp->flags |= FLAG_BUILTIN;
@@ -2349,6 +2358,9 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			free(self->tok);
 			n = make_compound();
 			n->flags |= FLAG_NOARGS;
+
+			if (self->internal)
+				n->flags |= FLAG_HIDDEN;
 
 			if ((term_count(term) != 0) && !self->was_paren) {
 				node *tmp = term_last(term);
