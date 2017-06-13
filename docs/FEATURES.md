@@ -207,9 +207,9 @@ These are an assortment of utilities:
 	xmlq(+Atom,+N,+Idx,-Atom)   - quick get I'th named value from XML source
 	upper(+Atom,-Atom)          - convert to upper-case
 	lower(+Atom,-Atom)          - convert to lower-case
-	sha1(+Atom,-Atom)           - SHA-1 (128-bit) hash     (NEW USE DEPRECATED)
-	sha256(+Atom,-Atom)         - SHA-256 (256-bit) hash
-	sha512(+Atom,-Atom)         - SHA-512 (512-bit) hash
+	sha1(+Atom,-Atom)           - SHA1 (128-bit) hash     (NEW USE DEPRECATED)
+	sha256(+Atom,-Atom)         - SHA2 (256-bit) hash
+	sha512(+Atom,-Atom)         - SHA2 (512-bit) hash
 	url_encode(+Atom,-Atom)
 	url_decode(+Atom,-Atom)
 	b64_encode(+Atom,-Atom)     - Base64 encode
