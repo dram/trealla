@@ -6546,7 +6546,7 @@ static int bif_xtra_make_directory_1(tpl_query *q)
 static int bif_xtra_name(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom_or_var(term1);
+	node *term1 = get_term(term1);
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -6609,26 +6609,52 @@ static int bif_xtra_name(tpl_query *q)
 		return ok;
 	}
 
-	node *save_l = make_list();
-	node *l = save_l;
-	const char *src = VAL_S(term1);
+	node *n;
 
-	while (*src) {
-		int ch = get_char_utf8(&src);
-		node *tmp = make_int(ch);
-		term_append(l, tmp);
+	if (is_atom(term1) && !VAL_S(term1)) {
+		n = make_const_atom("[]", 0);
+	}
+	else if (is_atom(term1) || is_number(term1)) {
+		size_t buflen = FUNCTOR_SIZE;
 
-		if (!*src)
-			break;
+		if (is_atom(term1) && (LEN(term1) > FUNCTOR_SIZE))
+			buflen = LEN(term1) + 1;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		char *dstbuf = malloc(buflen);
+
+		if (is_atom(term1))
+			strcpy(dstbuf, VAL_S(term1));
+		else
+			term_sprint(dstbuf, buflen, q->pl, q, term1, 0);
+
+		const char *src = dstbuf;
+		node *save_l = make_list();
+		node *l = save_l;
+
+		while (*src) {
+			int ch = get_char_utf8(&src);
+			node *tmp = make_int(ch);
+			term_append(l, tmp);
+
+			if (!*src)
+				break;
+
+			tmp = make_list();
+			term_append(l, tmp);
+			l = tmp;
+		}
+
+		term_append(l, make_const_atom("[]", 0));
+		free(dstbuf);
+		n = save_l;
+	}
+	else {
+		QABORT(ABORT_INVALIDARGNOTATOMIC);
+		return 0;
 	}
 
-	term_append(l, make_const_atom("[]", 0));
-	int ok = unify_term(q, term2, save_l, -1);
-	term_heapcheck(save_l);
+	int ok = unify_term(q, term2, n, -1);
+	term_heapcheck(n);
 	return ok;
 }
 #endif
