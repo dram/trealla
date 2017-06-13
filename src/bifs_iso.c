@@ -6281,8 +6281,6 @@ static int bif_xtra_see_1(tpl_query *q)
 		stream *sp = (stream*)calloc(1, sizeof(stream));
 		sp->filename = strdup(filename);
 		sp->fptr = fp;
-		node *n = make_stream(sp);
-		n->flags |= FLAG_FILE;
 		q->curr_stdin_stream = sp;
 		q->curr_stdin = fp;
 		q->curr_stdin_name = strdup(filename);
@@ -6316,15 +6314,9 @@ static int bif_xtra_seeing_1(tpl_query *q)
 static int bif_xtra_seen_0(tpl_query *q)
 {
 	if (q->curr_stdin != stdin) {
-
-		if (q->curr_stdin_name) {
-			free(q->curr_stdin_name);
-			fclose(q->curr_stdin);
-		}
-
-		if (q->curr_stdin_stream)
-			q->curr_stdin_stream->fptr = NULL;
-
+		free(q->curr_stdin_name);
+		fclose(q->curr_stdin);
+		q->curr_stdin_stream->fptr = NULL;
 		q->curr_stdin_stream = NULL;
 		q->curr_stdin_name = strdup("user");
 		q->curr_stdin = stdin;
@@ -6420,15 +6412,9 @@ static int bif_xtra_telling_1(tpl_query *q)
 static int bif_xtra_told_0(tpl_query *q)
 {
 	if (q->curr_stdout != stdout) {
-
-		if (q->curr_stdout_name) {
-			free(q->curr_stdout_name);
-			fclose(q->curr_stdout);
-		}
-
-		if (q->curr_stdout_stream)
-			q->curr_stdout_stream->fptr = NULL;
-
+		free(q->curr_stdout_name);
+		fclose(q->curr_stdout);
+		q->curr_stdout_stream->fptr = NULL;
 		q->curr_stdout_stream = NULL;
 		q->curr_stdout_name = strdup("user");
 		q->curr_stdout = stdout;
