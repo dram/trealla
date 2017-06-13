@@ -18,9 +18,6 @@ adequate, eg:
 
 The Windows build has been discontinued.
 
-If contributing code, the source style is basically K&R / Linux-kernel with
-hard TABs set to 4 (the goldilocks zone).
-
 Missing / Limitations
 ---------------------
 
