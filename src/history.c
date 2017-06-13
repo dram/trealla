@@ -9,10 +9,16 @@
 #define snprintf _snprintf
 #define msleep Sleep
 #else
+#include <sys/time.h>
 #include <termios.h>
 #include <unistd.h>
-#include <sys/time.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 #include "history.h"
@@ -52,10 +58,7 @@ int history_getch(void)
 	return ch;
 }
 
-char *history_readline(const char *prompt)
-{
-	return history_readline_eol(prompt, '\0');
-}
+char *history_readline(const char *prompt) { return history_readline_eol(prompt, '\0'); }
 
 static void output(const char *fmt, const char *prompt, const char *line)
 {
@@ -76,7 +79,7 @@ static void output(const char *fmt, const char *prompt, const char *line)
 				if (!ispunct(ch) && !isspace(ch))
 					continue;
 
-				size_t n = snprintf(dst, len, "%s%s%s", strcmp(key_words[i],"false")?italic:red, key_words[i], normal);
+				size_t n = snprintf(dst, len, "%s%s%s", strcmp(key_words[i], "false") ? italic : red, key_words[i], normal);
 				dst += n;
 				len -= n;
 				src += strlen(key_words[i]);
@@ -93,10 +96,7 @@ static void output(const char *fmt, const char *prompt, const char *line)
 	free(dstbuf);
 }
 
-void history_output(const char *prompt, const char *line)
-{
-	output("%s%s\n", prompt, line);
-}
+void history_output(const char *prompt, const char *line) { output("%s%s\n", prompt, line); }
 
 static int flash_check(int ch, char *line, char *dst, int quoted, int depth, int rhs, int lhs)
 {
@@ -104,7 +104,7 @@ static int flash_check(int ch, char *line, char *dst, int quoted, int depth, int
 
 	if ((ch == rhs) && (src = strchr(line, lhs)) && (depth > 0) && !quoted) {
 		for (int i = 1; src && (i < depth); i++)
-			src = strchr(src+1, lhs);
+			src = strchr(src + 1, lhs);
 
 		printf("%s\e[%dD", SAVE, (int)(dst - src));
 		fflush(stdout);
@@ -639,10 +639,7 @@ char *history_readline_eol(const char *prompt, char eol)
 	return line;
 }
 
-void history_keywords(const char **word_array)
-{
-	key_words = word_array;
-}
+void history_keywords(const char **word_array) { key_words = word_array; }
 
 void history_load(const char *filename)
 {

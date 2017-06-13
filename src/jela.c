@@ -20,10 +20,14 @@
 #define DEBUGPRINT if (0)
 #endif
 
-#define TRACE(s) DEBUGPRINT { \
-	printf("###[ %s ] ==> frame=%d, size=%u, choice=%u, prev=%u, env=%u, trail=%u, size=%u\n", \
-	s, q->c.curr_frame, q->c.frame_size, q->choice_point, q->c.prev_choice, \
-	q->c.env_point, q->c.trail_point, q->c.trail_size); \
+#define TRACE(s)                                                                                                               \
+	DEBUGPRINT                                                                                                                 \
+	{                                                                                                                          \
+		printf("###[ %s ] ==> frame=%d, size=%u, choice=%u, prev=%u, "                                                         \
+		       "env=%u, "                                                                                                      \
+		       "trail=%u, size=%u\n",                                                                                          \
+		       s, q->c.curr_frame, q->c.frame_size, q->choice_point, q->c.prev_choice, q->c.env_point, q->c.trail_point,       \
+		       q->c.trail_size);                                                                                               \
 	}
 
 static int grow_trail(tpl_query *q)
@@ -40,7 +44,8 @@ static int grow_trail(tpl_query *q)
 		q->trails = (trail *)calloc(1, sizeof(trail) * q->trails_possible * MULT);
 		memcpy(q->trails, q->trail_stack, sizeof(trail) * q->trails_possible);
 		q->def_trail = 0;
-	} else
+	}
+	else
 		q->trails = (trail *)realloc(q->trails, sizeof(trail) * q->trails_possible * MULT);
 
 	q->trails_possible *= MULT;
@@ -61,7 +66,8 @@ int grow_environment(tpl_query *q)
 		q->envs = (env *)calloc(1, sizeof(env) * q->envs_possible * MULT);
 		memcpy(q->envs, q->env_stack, sizeof(env) * q->envs_possible);
 		q->def_env = 0;
-	} else {
+	}
+	else {
 		q->envs = (env *)realloc(q->envs, sizeof(env) * q->envs_possible * MULT);
 		memset(&q->envs[q->envs_possible], 0, sizeof(env) * q->envs_possible);
 	}
@@ -97,7 +103,7 @@ static void reclaim_trail(tpl_query *q)
 	TRACE("reclaim_trail");
 
 	for (unsigned i = 0; i < q->c.trail_size; i++) {
-		env *e = &q->envs[q->trails[q->c.trail_point+i]];
+		env *e = &q->envs[q->trails[q->c.trail_point + i]];
 		term_heapcheck(e->term);
 		e->term = NULL;
 		e->context = 0;
@@ -167,12 +173,12 @@ void reallocate_frame(tpl_query *q)
 	mask_t bit = 1;
 
 	for (unsigned i = 0; i < q->c.frame_size; i++, e++) {
-		if ((q->c.mask1 & bit) && !(q->pins & bit))  {
+		if ((q->c.mask1 & bit) && !(q->pins & bit)) {
 			term_heapcheck(e->term);
 			e->term = NULL;
 			e->context = 0;
 		}
-		else if ((q->c.mask2 & bit) && !(q->pins & bit))  {
+		else if ((q->c.mask2 & bit) && !(q->pins & bit)) {
 			env *e = get_env(q, q->c.curr_frame + i);
 			term_heapcheck(e->term);
 			e->term = NULL;
@@ -210,7 +216,7 @@ static int proceed(tpl_query *q)
 		break;
 	}
 
-	//if (q->trace && q->c.curr_term)
+	// if (q->trace && q->c.curr_term)
 	//	trace(q, 0, 0);
 
 	return q->c.curr_term != NULL;
@@ -335,7 +341,7 @@ static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 		if (from->term != NULL)
 			to->context = from->context;
 		else if (from->binding != 0)
-			;//to->binding = from->binding - q->c.frame_size;
+			; // to->binding = from->binding - q->c.frame_size;
 		else
 			to->context = 0;
 
@@ -361,7 +367,8 @@ static int dynamic(tpl_query *q)
 		node *args = get_args(q);
 		n = args;
 		arity = get_arity(q);
-	} else {
+	}
+	else {
 		n = q->c.curr_term;
 		arity = 0;
 	}
@@ -445,7 +452,8 @@ int call(tpl_query *q)
 			if (is_list(n))
 				n = term_first(n);
 		}
-	} else {
+	}
+	else {
 		status = dynamic(q);
 	}
 
@@ -455,7 +463,8 @@ int call(tpl_query *q)
 
 void begin_query(tpl_query *q, node *term)
 {
-	DEBUGPRINT {
+	DEBUGPRINT
+	{
 		printf("### begin_query ");
 		term_print(q->pl, q, term, 1);
 		printf("\n");
@@ -503,18 +512,20 @@ static void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 		q->envs[point2].binding = (signed)point2 - (signed)point1;
 
 		if ((point2 < q->c.curr_frame) || (point2 >= (q->c.curr_frame + q->c.frame_size)))
-			q->trails[q->c.trail_point+q->c.trail_size++] = point2;
-	} else {
+			q->trails[q->c.trail_point + q->c.trail_size++] = point2;
+	}
+	else {
 		q->envs[point1].binding = (signed)point1 - (signed)point2;
 
 		if ((point1 < q->c.curr_frame) || (point1 >= (q->c.curr_frame + q->c.frame_size)))
-			q->trails[q->c.trail_point+q->c.trail_size++] = point1;
+			q->trails[q->c.trail_point + q->c.trail_size++] = point1;
 	}
 }
 
 static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned context2)
 {
-	DEBUGPRINT {
+	DEBUGPRINT
+	{
 		printf("### unify : ");
 		term_print(q->pl, NULL, term1, 1);
 		printf(" (%d) <==> (%d) ", context1, context2);
@@ -663,7 +674,7 @@ int match(tpl_query *q)
 					return 0;
 				}
 
-				key = (void*)(size_t)fval->val_i;
+				key = (void *)(size_t)fval->val_i;
 			}
 			else
 #endif
@@ -727,7 +738,8 @@ int match(tpl_query *q)
 		const unsigned frame_size = q->c.curr_match->frame_size;
 		prepare_frame(q, frame_size);
 
-		DEBUGPRINT {
+		DEBUGPRINT
+		{
 			printf("### match : ");
 			term_print(q->pl, NULL, q->c.curr_term, 1);
 			printf(" (%u) <==> (%u) ", q->curr_context, q->c.env_point);
@@ -774,7 +786,8 @@ int match(tpl_query *q)
 				reexecute_term(q, head, frame_size);
 			else
 				execute_term(q, head, frame_size);
-		} else {
+		}
+		else {
 			try_me(q);
 			execute_term(q, head, frame_size);
 		}

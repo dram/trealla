@@ -160,7 +160,7 @@ void sb_dump(const skipbuck *l)
 
 		for (int j = 0; j < p->nbr; j++)
 			printf("%llu ", (unsigned long long)(size_t)p->bkt[j].key);
-			//printf("%s ", (const char*)p->bkt[j].key);
+		// printf("%s ", (const char*)p->bkt[j].key);
 
 		printf("\n");
 		p = q;
@@ -814,10 +814,12 @@ sbiter *sb_findkey(const skipbuck *l, const void *key)
 	if (l->compkey(q->bkt[imid].key, key) != 0)
 		return NULL;
 
-	//printf("*** %s (%d/%d)\n", (const char*)key, imid, q->nbr);  sb_dump(l); printf("\n");
+	// printf("*** %s (%d/%d)\n", (const char*)key, imid, q->nbr);
+	// sb_dump(l);
+	// printf("\n");
 
 	sbiter *iter = malloc(sizeof(sbiter));
-	iter->l = (skipbuck*)l;
+	iter->l = (skipbuck *)l;
 	iter->p = q;
 	iter->idx = imid;
 	return iter;
@@ -837,7 +839,7 @@ int sb_nextkey(sbiter *iter, const void *key, void **value)
 
 	if (iter->idx < iter->p->nbr) {
 		if (iter->l->compkey(iter->p->bkt[iter->idx].key, key) != 0) {
-			//free(iter);
+			// free(iter);
 			return 0;
 		}
 

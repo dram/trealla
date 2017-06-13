@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -20,7 +20,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 #ifndef USE_SSL
@@ -33,9 +39,9 @@
 
 #include "trealla.h"
 
+#include "base64.h"
 #include "bifs.h"
 #include "jela.h"
-#include "base64.h"
 
 #define MAX_CHUNK_SIZE (1024LL * 1024 * 1024) // 1GB
 #define MAX_FORM_SIZE (1024LL * 1024 * 64)    // 64MB
@@ -1465,7 +1471,8 @@ static int ws_upgrade(session *s, const char *prot)
 	dst += sprintf(dst, "HTTP/1.1 101 Switching Protocols\r\n");
 	dst += snprintf(dst, 256, "Sec-WebSocket-Protocol: %s\r\n", prot);
 	dst += sprintf(dst, "Sec-WebSocket-Accept: %s\r\n", key);
-	strcat(dst, "Upgrade: websocket\r\nConnection: Upgrade\r\nServer: Trealla\r\n\r\n");
+	strcat(dst, "Upgrade: websocket\r\nConnection: Upgrade\r\nServer: "
+	            "Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
 	session_set_websocket(s);
 	// printf("%s", dstbuf);
@@ -1679,7 +1686,8 @@ static int bif_h2_upgrade_2(tpl_query *q)
 	node *term1 = get_socket(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
-	// const char *sec_set = session_get_stash((session*)sp->sptr, "HTTP2-Settings");
+	// const char *sec_set = session_get_stash((session*)sp->sptr,
+	// "HTTP2-Settings");
 	char dstbuf[1024 * 4];
 	char *dst = dstbuf;
 	dst += sprintf(dst, "HTTP/1.1 101 Switching Protocols\r\n");
@@ -1785,7 +1793,8 @@ static char *stomp_deescape(const char *path, char *path2)
 				*dst++ = ':';
 			else if (*src == '\\')
 				*dst++ = '\\';
-		} else {
+		}
+		else {
 			if ((src[0] == '.') && (src[1] == '.'))
 				src += 2;
 			else

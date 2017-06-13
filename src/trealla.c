@@ -18,8 +18,8 @@
 #include "trealla.h"
 
 #include "bifs.h"
-#include "jela.h"
 #include "history.h"
+#include "jela.h"
 
 #ifndef ISO_ONLY
 #include "uuid.h"
@@ -37,9 +37,8 @@ const char *g_trealla_version = "0.1alpha";
 const char *g_list_cons = ".";
 
 #ifdef DEBUG
-uint64_t g_enqueues = 0, g_rescheds = 0, g_choicepoints = 0, g_heap_used = 0,
-	g_backtracks = 0, g_executes = 0, g_reexecutes = 0, g_tailrecurses = 0, g_cuts = 0,
-	g_u_resolves = 0, g_s_resolves = 0;
+uint64_t g_enqueues = 0, g_rescheds = 0, g_choicepoints = 0, g_heap_used = 0, g_backtracks = 0, g_executes = 0,
+         g_reexecutes = 0, g_tailrecurses = 0, g_cuts = 0, g_u_resolves = 0, g_s_resolves = 0;
 #endif
 
 #ifndef ISO_ONLY
@@ -173,7 +172,7 @@ static int assert_index(lexer *l, node *n, int manual, int *persist, int append_
 		r->db = db;
 		r->dynamic = r->manual = manual > 0;
 		r->hidden = is_hidden(n);
-		//r->idx = sb_string_create();
+		// r->idx = sb_string_create();
 		sl_set(&db->rules, functor, r);
 	}
 
@@ -231,7 +230,7 @@ static int assert_index(lexer *l, node *n, int manual, int *persist, int append_
 			free(dstbuf);
 		}
 		else
-			save_pos +=  n->cpos;
+			save_pos += n->cpos;
 
 		if (r->storage) {
 			node *head = term_firstarg(n);
@@ -256,7 +255,7 @@ static int assert_index(lexer *l, node *n, int manual, int *persist, int append_
 		slnode *iter = sl_startx(&r->procs);
 		tpl_query *who;
 
-		while ((who = (tpl_query*)sl_nextx(&iter, NULL)) != NULL)
+		while ((who = (tpl_query *)sl_nextx(&iter, NULL)) != NULL)
 			process_enqueue(l->pl, NULL, who, NULL, 0);
 
 		sl_clear(&r->procs, NULL);
@@ -388,7 +387,7 @@ char *trealla_readline(lexer *l, FILE *fp, int more)
 				return line;
 			}
 
-			if (dst == (line + maxlen - 8))	// 8 byte spare
+			if (dst == (line + maxlen - 8)) // 8 byte spare
 				break;
 		}
 
@@ -439,7 +438,7 @@ static void rule_done(void *p)
 		slnode *iter = sl_startx(&r->procs);
 		tpl_query *who;
 
-		while ((who = (tpl_query*)sl_nextx(&iter, NULL)) != NULL)
+		while ((who = (tpl_query *)sl_nextx(&iter, NULL)) != NULL)
 			query_destroy(who);
 
 		sl_done(&r->procs, NULL);
@@ -523,7 +522,9 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 
 rule *xref_term(lexer *l, node *term, int arity)
 {
-	//printf("*** XREF_TERM "); term_print(l->pl, NULL, term, 1); printf(" => arity=%d\n", arity);
+	// printf("*** XREF_TERM "); term_print(l->pl, NULL, term, 1); printf("
+	// =>
+	// arity=%d\n", arity);
 
 	const char *functor = VAL_S(term);
 	const char *src = strchr(functor, ':');
@@ -561,7 +562,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 				const char *functor = strdup(tmpbuf);
 				r = calloc(1, sizeof(rule));
 				r->functor = functor;
-				//r->idx = sb_string_create();
+				// r->idx = sb_string_create();
 				sl_set(&db->rules, functor, r);
 			}
 
@@ -623,7 +624,8 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, int is_last)
 {
-	// printf("*** XREF_BODY "); term_print(l->pl, NULL, term, 1); printf("\n");
+	// printf("*** XREF_BODY "); term_print(l->pl, NULL, term, 1);
+	// printf("\n");
 
 	const char *functor = NULL;
 	int arity = -1;
@@ -681,7 +683,8 @@ int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, in
 
 int xref_clause(lexer *l, node *term)
 {
-	//printf("*** XREF_RULE "); term_print(l->pl, NULL, term, 1); printf("\n");
+	// printf("*** XREF_RULE "); term_print(l->pl, NULL, term, 1);
+	// printf("\n");
 
 	// Cross-reference all body functors with the index, and
 	// point to the actual index rule to allow for assert etc.
@@ -712,7 +715,7 @@ int xref_clause(lexer *l, node *term)
 		s->flags |= FLAG_BUILTIN | FLAG_HIDDEN;
 		s->bifptr = &bif_xtra_enter;
 
-		//if (body->bifptr == bif_iso_cut)
+		// if (body->bifptr == bif_iso_cut)
 		//	s->flags |= FLAG_ISCUT;
 
 		node *tmp = make_const_atom("enter", 0);
@@ -820,7 +823,8 @@ static int trealla_make_rule(trealla *self, const char *src)
 		node *r = NLIST_FRONT(&l.val_l);
 		term_heapcheck(r);
 		printf("ERROR: error make_rule\n");
-	} else {
+	}
+	else {
 		xref_clauses(&l);
 	}
 
@@ -828,10 +832,7 @@ static int trealla_make_rule(trealla *self, const char *src)
 	return ok;
 }
 
-int query_parse(tpl_query *self, const char *src)
-{
-	return query_parse_file(self, src, NULL);
-}
+int query_parse(tpl_query *self, const char *src) { return query_parse_file(self, src, NULL); }
 
 int query_parse_file(tpl_query *self, const char *src, FILE *fp)
 {
@@ -1023,25 +1024,13 @@ char *query_get_text(tpl_query *self, unsigned idx)
 	return strdup(tmpbuf);
 }
 
-void query_trace(tpl_query *self)
-{
-	self->trace = !self->trace;
-}
+void query_trace(tpl_query *self) { self->trace = !self->trace; }
 
-int query_choices(tpl_query *self)
-{
-	return self->choice_point > 1;
-}
+int query_choices(tpl_query *self) { return self->choice_point > 1; }
 
-int query_get_haltcode(tpl_query *self)
-{
-	return self->halt_code;
-}
+int query_get_haltcode(tpl_query *self) { return self->halt_code; }
 
-int query_is_halt(tpl_query *self)
-{
-	return self->did_halt;
-}
+int query_is_halt(tpl_query *self) { return self->did_halt; }
 
 static void collect_vars(tpl_query *q, node *n)
 {
@@ -1081,7 +1070,8 @@ void query_dump(tpl_query *self)
 		else if (self->nv.flags == TYPE_BIGNUM)
 			printf(" %s\n", BN_bn2dec(self->nv.val_bn));
 #endif
-	} else {
+	}
+	else {
 		while (sl_next(&vars, (void **)&n) != NULL) {
 			char tmpbuf[PRINTBUF_SIZE];
 			self->latest_context = FUDGE_FACTOR;
@@ -1113,14 +1103,14 @@ tpl_query *query_create_subquery(tpl_query *self)
 			continue;
 
 #if USE_SSL
-		extern node *copy_nbr(node *from);
+		extern node *copy_nbr(node * from);
 
 		if (is_bignum(e_from->term)) {
 			e_to->term = copy_nbr(e_from->term);
 		}
 		else
 #endif
-		if (e_from->term)
+		    if (e_from->term)
 			e_from->term->refcnt++;
 	}
 
@@ -1152,27 +1142,26 @@ void query_stats(tpl_query *self)
 {
 #ifdef DEBUG
 	if (!g_enqueues) {
-		printf("Heap-used: %llu, Backtracks: %llu, Executes: %llu, Reexecutes: %llu\n",
-				(long long unsigned)g_heap_used, (long long unsigned)g_backtracks,
-				(long long unsigned)g_executes, (long long unsigned)g_reexecutes);
-		printf("Cuts: %llu, Choicepoints: %llu\n",
-				(long long unsigned)g_cuts, (long long unsigned)g_choicepoints);
-		printf("Max Env depth: %llu, Choice depth: %llu, Trail depth: %llu\n",
-				(long long unsigned)self->envs_used,
-				(long long unsigned)self->choices_used,
-				(long long unsigned)self->trails_used);
-		printf("System calls: %llu, User: %llu\n",
-				(long long unsigned)g_s_resolves, (long long unsigned)g_u_resolves);
+		printf("Heap-used: %llu, Backtracks: %llu, Executes: %llu, "
+		       "Reexecutes: "
+		       "%llu\n",
+		       (long long unsigned)g_heap_used, (long long unsigned)g_backtracks, (long long unsigned)g_executes,
+		       (long long unsigned)g_reexecutes);
+		printf("Cuts: %llu, Choicepoints: %llu\n", (long long unsigned)g_cuts, (long long unsigned)g_choicepoints);
+		printf("Max Env depth: %llu, Choice depth: %llu, Trail depth: "
+		       "%llu\n",
+		       (long long unsigned)self->envs_used, (long long unsigned)self->choices_used,
+		       (long long unsigned)self->trails_used);
+		printf("System calls: %llu, User: %llu\n", (long long unsigned)g_s_resolves, (long long unsigned)g_u_resolves);
 	}
 #ifndef ISO_ONLY
 	else {
-		printf("System calls: %llu, User: %llu\n",
-			(long long unsigned)g_s_resolves, (long long unsigned)g_u_resolves);
+		printf("System calls: %llu, User: %llu\n", (long long unsigned)g_s_resolves, (long long unsigned)g_u_resolves);
 
 		if (g_enqueues)
-			printf("Process msgs: %llu, Busy: %.1f%%, Reschedules: %.1f%%\n",
-				(long long unsigned)g_enqueues,
-				(100.0 * g_busy) / g_enqueues, (100.0 * g_rescheds) / g_enqueues);
+			printf("Process msgs: %llu, Busy: %.1f%%, Reschedules: "
+			       "%.1f%%\n",
+			       (long long unsigned)g_enqueues, (100.0 * g_busy) / g_enqueues, (100.0 * g_rescheds) / g_enqueues);
 	}
 #endif
 #endif
@@ -1334,8 +1323,10 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 				src++;
 		}
 
-		// Certain directives must currently be parsed on a line by themselves,
-		// hence this kludge, everything else can be parsed in one chunk...
+		// Certain directives must currently be parsed on a line by
+		// themselves,
+		// hence this kludge, everything else can be parsed in one
+		// chunk...
 
 		if ((*src == '.') && (src[1] == '\n')) {
 			*dst++ = *src++;
@@ -1434,7 +1425,8 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 		q->c.curr_db = parent->c.curr_db;
 		q->curr_stdin_name = strdup(parent->curr_stdin_name);
 		q->curr_stdout_name = strdup(parent->curr_stdout_name);
-	} else {
+	}
+	else {
 		q->lex = calloc(1, sizeof(lexer));
 		lexer_init(q->lex, self);
 		q->curr_stdin = stdin;
@@ -1466,35 +1458,17 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 	return q;
 }
 
-tpl_query *trealla_create_query(trealla *self)
-{
-	 return trealla_create_query2(self, NULL);
-}
+tpl_query *trealla_create_query(trealla *self) { return trealla_create_query2(self, NULL); }
 
-void trealla_quiet(trealla *self, int mode)
-{
-	 self->quiet = mode;
-}
+void trealla_quiet(trealla *self, int mode) { self->quiet = mode; }
 
-void trealla_trace(trealla *self, int mode)
-{
-	self->trace = mode;
-}
+void trealla_trace(trealla *self, int mode) { self->trace = mode; }
 
-void trealla_optimize(trealla *self, int mode)
-{
-	self->optimize = mode;
-}
+void trealla_optimize(trealla *self, int mode) { self->optimize = mode; }
 
-int trealla_is_halt(trealla *self)
-{
-	return self->halt == ABORT_HALT;
-}
+int trealla_is_halt(trealla *self) { return self->halt == ABORT_HALT; }
 
-int trealla_get_haltcode(trealla *self)
-{
-	return self->halt_code;
-}
+int trealla_get_haltcode(trealla *self) { return self->halt_code; }
 
 char *trealla_find_library(const char *name)
 {
@@ -1503,7 +1477,7 @@ char *trealla_find_library(const char *name)
 
 	while (lib->name != NULL) {
 		if (!strcmp(lib->name, name)) {
-			return strndup((const char *)lib->start, (lib->end-lib->start));
+			return strndup((const char *)lib->start, (lib->end - lib->start));
 		}
 
 		lib++;
@@ -1602,7 +1576,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,type(P)) :- stream_property_type(S,P).");
 	trealla_make_rule(pl, "stream_property(S,mode(P)) :- stream_property_mode(S,P).");
 	trealla_make_rule(pl, "stream_property(S,position(P)) :- stream_property_position(S,P).");
-	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
+	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- "
+	                      "stream_property_file_name(S,F).");
 
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "member(X,X) :- var(X),!,fail.");
@@ -1621,28 +1596,33 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "find(1,[H|_],H) :- !.");
 	trealla_make_rule(pl, "find(N,[_|T],X) :- N1 is N-1, find(N1,T,X).");
 	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
-	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta('$record'(K,V),R).");
+	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), "
+	                      "asserta('$record'(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
-	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz('$record'(K,V),R).");
+	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), "
+	                      "assertz('$record'(K,V),R).");
 	trealla_make_rule(pl, "recorded(K,V,R) :- nonvar(K), clause('$record'(K,V),_,R).");
 	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
 	trealla_make_rule(pl, "current_key(K) :- var(K), '$record'(K,_).");
 	trealla_make_rule(pl, "instance(R,V) :- nonvar(R),clause('$record'(_,V),_,R).");
 	trealla_make_rule(pl, "atomic_concat(L,R,S) :- sys:concat(L,R,S).");
 	trealla_make_rule(pl, "atomic_list_concat([],'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, sys:concat(H,S2,S).");
+	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- "
+	                      "atomic_list_concat(T,S2), !, sys:concat(H,S2,S).");
 	trealla_make_rule(pl, "atomic_list_concat([],_,'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> sys:concat(H,Sep,S2,S) ; sys:concat(H,S2,S)), !.");
+	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- "
+	                      "atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> "
+	                      "sys:concat(H,Sep,S2,S) ; sys:concat(H,S2,S)), !.");
 	trealla_make_rule(pl, "display(T) :- write_term(T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "display(S,T) :- write_term(S,T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "memberchk(E,L) :- once(member(E,L)).");
-	trealla_make_rule(pl, "name(Atom, List) :- atom_codes(Atom,List).");	// FIXME
+	trealla_make_rule(pl, "name(Atom, List) :- atom_codes(Atom,List)."); // FIXME
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
 	trealla_make_rule(pl, "get0(Code) :- get_code(Code).");
 	trealla_make_rule(pl, "get0(S,Code) :- get_code(S,Code).");
-	trealla_make_rule(pl, "get(Code) :- get_code(Code).");	// FIXME
-	trealla_make_rule(pl, "get(S,Code) :- get_code(S,Code).");	// FIXME
+	trealla_make_rule(pl, "get(Code) :- get_code(Code).");     // FIXME
+	trealla_make_rule(pl, "get(S,Code) :- get_code(S,Code)."); // FIXME
 #endif
 
 	return pl;

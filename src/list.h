@@ -39,10 +39,19 @@ typedef struct list_ list;
 // it to create on the heap. Use 'list_init' then to prepare.
 
 typedef struct lnode_ lnode;
-struct lnode_ { lnode *prev, *next; };
-struct list_ { lnode *front, *back; size_t cnt; };
+struct lnode_ {
+	lnode *prev, *next;
+};
+struct list_ {
+	lnode *front, *back;
+	size_t cnt;
+};
 
-#define list_init(l) { (l)->cnt = 0; (l)->front = (l)->back = NULL; }
+#define list_init(l)                                                                                                           \
+	{                                                                                                                          \
+		(l)->cnt = 0;                                                                                                          \
+		(l)->front = (l)->back = NULL;                                                                                         \
+	}
 #define list_count(l) (l)->cnt
 #define list_front(l) (l)->front
 #define list_back(l) (l)->back

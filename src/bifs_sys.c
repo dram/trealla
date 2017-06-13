@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -19,7 +19,13 @@
 #else
 #include <sys/time.h>
 #include <unistd.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 #ifndef USE_SSL
@@ -150,7 +156,7 @@ static int sys_write_file(tpl_query *q, node *var, node *term1, node *term2, nbr
 					free(tmpbuf);
 					fclose(fp);
 					sp2->fptr = NULL;
-					//QABORT(ABORT_STREAMCLOSED);
+					// QABORT(ABORT_STREAMCLOSED);
 					return 0;
 				}
 
@@ -170,15 +176,15 @@ static int sys_write_file(tpl_query *q, node *var, node *term1, node *term2, nbr
 				free(tmpbuf);
 				fclose(fp);
 				sp2->fptr = NULL;
-				//QABORT(ABORT_STREAMCLOSED);
+				// QABORT(ABORT_STREAMCLOSED);
 				return 0;
 			}
 		}
 
-	size_t rem = to + 1 - ftello(fp);
+		size_t rem = to + 1 - ftello(fp);
 
-	if (rem < buflen)
-		buflen = rem;
+		if (rem < buflen)
+			buflen = rem;
 	}
 
 	free(tmpbuf);
@@ -211,7 +217,7 @@ static int bif_sys_write_file_2(tpl_query *q)
 	if (!st.st_size)
 		return 0;
 
-	return sys_write_file(q, var, term1, term2, 0, st.st_size-1);
+	return sys_write_file(q, var, term1, term2, 0, st.st_size - 1);
 }
 
 static int bif_sys_write_file_4(tpl_query *q)
@@ -415,13 +421,13 @@ static int bif_sys_bwrite_2(tpl_query *q)
 
 	if (is_socket(term1)) {
 		if (!session_write((session *)sp->sptr, VAL_S(term2), len)) {
-			//QABORT(ABORT_STREAMCLOSED);
+			// QABORT(ABORT_STREAMCLOSED);
 			return 0;
 		}
 	}
 	else {
 		if (fwrite(VAL_S(term2), 1, len, sp->fptr) == 0) {
-			//QABORT(ABORT_STREAMCLOSED);
+			// QABORT(ABORT_STREAMCLOSED);
 			return 0;
 		}
 	}
@@ -661,7 +667,6 @@ static int bif_sys_jsonq_4(tpl_query *q)
 	else
 		put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf), 1);
 
-
 	free(tmpbuf);
 	return 1;
 }
@@ -805,7 +810,9 @@ static int bif_sys_parse_rfcdate_2(tpl_query *q)
 		}
 	}
 
-	//printf("### %02d %s(%02d) %04d %02d:%02d:%02d\n", mday, tmp_month, month, year, hour, min, sec);
+	// printf("### %02d %s(%02d) %04d %02d:%02d:%02d\n", mday, tmp_month,
+	// month,
+	// year, hour, min, sec);
 	struct tm tm = {0};
 	tm.tm_year = year - 1900;
 	tm.tm_mon = month;
@@ -859,7 +866,7 @@ static int bif_sys_split_last_4(tpl_query *q)
 		while (*src && strncmp(src, VAL_S(term2), LEN(term2)))
 			*dst++ = *src++;
 
-		if (!strstr(src+2, VAL_S(term2)))
+		if (!strstr(src + 2, VAL_S(term2)))
 			break;
 
 		strncpy(dst, src, LEN(term2));

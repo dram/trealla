@@ -7,11 +7,10 @@ typedef struct skiplist_ skiplist;
 // Define struct so can do static or stack allocation, or malloc
 // it to create on the heap. Use sl_init' then to prepare.
 
-struct skiplist_
-{
+struct skiplist_ {
 	slnode *header, *iter;
-	int (*compare)(const char*, const char*);
-	void (*deleter)(void*);
+	int (*compare)(const char *, const char *);
+	void (*deleter)(void *);
 	int dups, level;
 	unsigned int seed;
 	size_t cnt;
@@ -25,7 +24,7 @@ struct skiplist_
 // For integer keys use NULL as the key deleter function.
 // Otherwise supply your own
 
-extern void sl_init(skiplist *d, int dups, int (*compare)(const char*, const char*), void (*deleter)(void*));
+extern void sl_init(skiplist *d, int dups, int (*compare)(const char *, const char *), void (*deleter)(void *));
 extern int sl_set(skiplist *d, const char *key, void *value);
 extern int sl_get(skiplist *d, const char *key, void **value);
 extern int sl_del(skiplist *d, const char *key, void **value);
@@ -33,7 +32,7 @@ extern int sl_count(skiplist *d);
 
 // There can only be one iteration outstanding.
 extern void sl_start(skiplist *d);
-extern void sl_find(skiplist *d, const char *key);		// >= key
+extern void sl_find(skiplist *d, const char *key); // >= key
 extern const char *sl_next(skiplist *d, void **value);
 
 // These create an iterator on demand
@@ -47,7 +46,7 @@ extern int sl_nextkey(slnode **iter, const char *key, void **value);
 // For integer values use NULL as the value deleter function.
 // Otherwise supply your own
 
-extern void sl_clear(skiplist *d, void (*deleter)(void*));
-extern void sl_done(skiplist *d, void (*deleter)(void*));
+extern void sl_clear(skiplist *d, void (*deleter)(void *));
+extern void sl_done(skiplist *d, void (*deleter)(void *));
 
 #endif

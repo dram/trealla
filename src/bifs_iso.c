@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -102,7 +102,7 @@ node *make_quick_int(nbr_t v)
 
 static int expand_frame(tpl_query *q, unsigned cnt)
 {
-	extern int grow_environment(tpl_query *q);
+	extern int grow_environment(tpl_query * q);
 
 	while ((q->c.env_point + cnt) >= q->envs_possible) {
 		if (!grow_environment(q))
@@ -147,10 +147,7 @@ static int collect_vars2(tpl_query *q, node *term, int depth)
 	return cnt;
 }
 
-static int collect_vars(tpl_query *q, node *n)
-{
-	return collect_vars2(q, n, 1);
-}
+static int collect_vars(tpl_query *q, node *n) { return collect_vars2(q, n, 1); }
 
 node *copy_nbr(node *from)
 {
@@ -353,15 +350,9 @@ static int check_static(module *db, const char *functarity)
 	return 0;
 }
 
-int bif_iso_true(tpl_query *q)
-{
-	return 1;
-}
+int bif_iso_true(tpl_query *q) { return 1; }
 
-int bif_iso_fail(tpl_query *q)
-{
-	return 0;
-}
+int bif_iso_fail(tpl_query *q) { return 0; }
 
 static int bif_iso_halt(tpl_query *q)
 {
@@ -626,10 +617,7 @@ int bif_iso_unify(tpl_query *q)
 	return unify(q, term1, context1, term2, context2);
 }
 
-static int bif_iso_notunify(tpl_query *q)
-{
-	return !bif_iso_unify(q);
-}
+static int bif_iso_notunify(tpl_query *q) { return !bif_iso_unify(q); }
 
 static int compare_terms(tpl_query *q, node *term1, node *term2, int mode);
 enum { CMP_LT = 0, CMP_LE = 1, CMP_EQ = 2 };
@@ -805,9 +793,11 @@ static int bif_iso_set_prolog_flag(tpl_query *q)
 	else if (!strcmp(flag, "debug"))
 		q->lex->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
 	else if (!strcmp(flag, "double_quotes"))
-		q->lex->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
+		q->lex->flag_double_quotes =
+		    !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
 	else if (!strcmp(flag, "unknown"))
-		q->lex->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
+		q->lex->flag_unknown =
+		    !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
 	else
 		return 0;
 
@@ -833,13 +823,19 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	else if (!strcmp(flag, "max_arity"))
 		return unify_int(q, term2, MAX_FRAME_SIZE - 1);
 	else if (!strcmp(flag, "char_conversion"))
-		return unify_const_atom(q, term2, q->lex->flag_char_conversion?"on":"off", 0);
+		return unify_const_atom(q, term2, q->lex->flag_char_conversion ? "on" : "off", 0);
 	else if (!strcmp(flag, "debug"))
-		return unify_const_atom(q, term2, q->lex->flag_debug?"on":"off", 0);
+		return unify_const_atom(q, term2, q->lex->flag_debug ? "on" : "off", 0);
 	else if (!strcmp(flag, "double_quotes"))
-		return unify_const_atom(q, term2, q->lex->flag_double_quotes == 1 ? "atom" : q->lex->flag_double_quotes == 2 ? "chars" : q->lex->flag_double_quotes == 0 ? "codes" : "codes", 0);
+		return unify_const_atom(q, term2,
+		                        q->lex->flag_double_quotes == 1
+		                            ? "atom"
+		                            : q->lex->flag_double_quotes == 2 ? "chars"
+		                                                              : q->lex->flag_double_quotes == 0 ? "codes" : "codes",
+		                        0);
 	else if (!strcmp(flag, "unknown"))
-		return unify_const_atom(q, term2, q->lex->flag_unknown == 1?"error":q->lex->flag_unknown==2?"warning":"fail", 0);
+		return unify_const_atom(q, term2, q->lex->flag_unknown == 1 ? "error" : q->lex->flag_unknown == 2 ? "warning" : "fail",
+		                        0);
 	else if (!strcmp(flag, "bounded"))
 		return unify_const_atom(q, term2, g_force_unbounded ? "false" : "true", 0);
 	else if (!strcmp(flag, "integer_rounding_function"))
@@ -860,9 +856,7 @@ static int bif_iso_current_op(tpl_query *q)
 	// FIXME to backtrack
 
 	const op *cur_op =
-		is_atom(term2) ?
-			get_op_2(q->c.curr_db, VAL_S(term3), VAL_S(term2)) :
-			get_op(q->c.curr_db, VAL_S(term3), 0);
+	    is_atom(term2) ? get_op_2(q->c.curr_db, VAL_S(term3), VAL_S(term2)) : get_op(q->c.curr_db, VAL_S(term3), 0);
 
 	if (!cur_op->fun)
 		return 0;
@@ -966,7 +960,7 @@ static int bif_iso_open_4(tpl_query *q)
 	const char *type = "text";
 	char tmpbuf[40];
 	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
-	node * l = term4;
+	node *l = term4;
 
 	if (is_list(l)) {
 		node *opt = term_firstarg(l);
@@ -1013,7 +1007,7 @@ static int bif_iso_close(tpl_query *q)
 	}
 	else
 #endif
-	if (is_file(term1)) {
+	    if (is_file(term1)) {
 		term1->flags &= ~FLAG_FILE;
 		fclose(sp->fptr);
 	}
@@ -1514,16 +1508,13 @@ static int bif_iso_at_end_of_stream_1(tpl_query *q)
 		return session_on_disconnect((session *)sp->sptr);
 	else
 #endif
-	if (is_file(term1) && sp->fptr)
+	    if (is_file(term1) && sp->fptr)
 		return feof(sp->fptr) > 0;
 
 	return 0;
 }
 
-static int bif_iso_at_end_of_stream(tpl_query *q)
-{
-	return feof(q->curr_stdin) > 0;
-}
+static int bif_iso_at_end_of_stream(tpl_query *q) { return feof(q->curr_stdin) > 0; }
 
 static int bif_iso_set_stream_position(tpl_query *q)
 {
@@ -1872,7 +1863,7 @@ static int bif_iso_number_codes(tpl_query *q)
 	if (is_list(term2)) {
 		int is_real = 0;
 		node *l = term2;
-		char tmpbuf[FUNCTOR_SIZE+10];
+		char tmpbuf[FUNCTOR_SIZE + 10];
 		char *dst = tmpbuf;
 
 		while (is_list(l)) {
@@ -1922,7 +1913,7 @@ static int bif_iso_number_codes(tpl_query *q)
 
 	node *save_l = make_list();
 	node *l = save_l;
-	char tmpbuf[FUNCTOR_SIZE+10];
+	char tmpbuf[FUNCTOR_SIZE + 10];
 	term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, q, term1, 1);
 	const char *src = tmpbuf;
 
@@ -1959,7 +1950,7 @@ static int bif_iso_number_chars(tpl_query *q)
 	if (is_list(term2)) {
 		int is_real = 0;
 		node *l = term2;
-		char tmpbuf[FUNCTOR_SIZE+10];
+		char tmpbuf[FUNCTOR_SIZE + 10];
 		char *dst = tmpbuf;
 
 		while (is_list(l)) {
@@ -2007,7 +1998,7 @@ static int bif_iso_number_chars(tpl_query *q)
 
 	node *save_l = make_list();
 	node *l = save_l;
-	char tmpbuf[FUNCTOR_SIZE+10];
+	char tmpbuf[FUNCTOR_SIZE + 10];
 	term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, q, term1, 1);
 	const char *src = tmpbuf;
 
@@ -2401,7 +2392,7 @@ int bif_iso_assertz(tpl_query *q)
 	}
 	else
 #endif
-{
+	{
 		DBLOCK(q->c.curr_db);
 		bif_assertz(q, n);
 		DBUNLOCK(q->c.curr_db);
@@ -2419,7 +2410,7 @@ int bif_retract(tpl_query *q, node *n, node *n2)
 	retract_index(&l, n, n2, &persist, q->in_tran);
 	lexer_done(&l);
 
-	//if (!(n2->flags & FLAG_DBS_RETRACTALL))
+	// if (!(n2->flags & FLAG_DBS_RETRACTALL))
 	//	term_heapcheck(n2);
 
 	return persist;
@@ -2490,8 +2481,8 @@ static int bif_retract2(tpl_query *q, int wait)
 
 	node *match = NULL;
 	const void *key = NULL;
-	char tmpbuf2[KEY_SIZE+10];
-	sbiter *idx_iter;						// First-arg iterator
+	char tmpbuf2[KEY_SIZE + 10];
+	sbiter *idx_iter; // First-arg iterator
 	int use_iter = 0;
 
 	if (r->idx) {
@@ -2508,7 +2499,7 @@ static int bif_retract2(tpl_query *q, int wait)
 					return 0;
 				}
 
-				key = (void*)(size_t)fval->val_i;
+				key = (void *)(size_t)fval->val_i;
 			}
 			else
 #endif
@@ -2537,7 +2528,7 @@ static int bif_retract2(tpl_query *q, int wait)
 			else
 				match = term_next(match);
 
- 			continue;
+			continue;
 		}
 
 		node *save_match = match, *save_head = NULL;
@@ -2559,7 +2550,11 @@ static int bif_retract2(tpl_query *q, int wait)
 		}
 #endif
 
-		//printf("*** (%u) ", q->c.frame_size); term_print(q->pl, NULL, n, 0); printf(" <==> "); term_print(q->pl, NULL, match, 0); printf(" (%u)\n", q->c.frame_size);
+		// printf("*** (%u) ", q->c.frame_size); term_print(q->pl, NULL,
+		// n, 0);
+		// printf(" <==> "); term_print(q->pl, NULL, match, 0); printf("
+		// (%u)\n",
+		// q->c.frame_size);
 
 		int ok = unify(q, n, context1, match, q->c.env_point);
 
@@ -2636,16 +2631,10 @@ static int bif_retract2(tpl_query *q, int wait)
 #endif
 }
 
-int bif_iso_retract(tpl_query *q)
-{
-	return bif_retract2(q, 0);
-}
+int bif_iso_retract(tpl_query *q) { return bif_retract2(q, 0); }
 
 #ifndef ISO_ONLY
-static int bif_xtra_retractw(tpl_query *q)
-{
-	return bif_retract2(q, 1);
-}
+static int bif_xtra_retractw(tpl_query *q) { return bif_retract2(q, 1); }
 #endif
 
 static int bif_iso_retractall(tpl_query *q)
@@ -2718,8 +2707,8 @@ static int bif_iso_retractall(tpl_query *q)
 
 	node *match = NULL;
 	const void *key = NULL;
-	char tmpbuf2[KEY_SIZE+10];
-	sbiter *idx_iter;						// First-arg iterator
+	char tmpbuf2[KEY_SIZE + 10];
+	sbiter *idx_iter; // First-arg iterator
 	int use_iter = 0;
 
 	if (r->idx) {
@@ -2736,7 +2725,7 @@ static int bif_iso_retractall(tpl_query *q)
 					return 0;
 				}
 
-				key = (void*)(size_t)fval->val_i;
+				key = (void *)(size_t)fval->val_i;
 			}
 			else
 #endif
@@ -2764,7 +2753,7 @@ static int bif_iso_retractall(tpl_query *q)
 			else
 				match = term_next(match);
 
- 			continue;
+			continue;
 		}
 
 		node *save_next = term_next(match);
@@ -2802,7 +2791,6 @@ static int bif_iso_retractall(tpl_query *q)
 			else
 #endif
 				bif_retract(q, save_match, save_n);
-
 		}
 
 		if (save_head)
@@ -3105,7 +3093,12 @@ static int bif_clause(tpl_query *q, int wait)
 			head = term_firstarg(save_head);
 		}
 #endif
-		//printf("***(%u) ", q->c.frame_size); term_print(q->pl, NULL, term1, 0); printf(" <==> "); term_print(q->pl, NULL, head, 0); printf(" (%u)\n", q->c.curr_match->frame_size);
+		// printf("***(%u) ", q->c.frame_size); term_print(q->pl, NULL,
+		// term1,
+		// 0);
+		// printf(" <==> "); term_print(q->pl, NULL, head, 0); printf("
+		// (%u)\n",
+		// q->c.curr_match->frame_size);
 
 		if (!unify(q, term1, context1, head, q->c.env_point)) {
 			if (save_head)
@@ -3168,16 +3161,10 @@ static int bif_clause(tpl_query *q, int wait)
 	return unify_term(q, term2, body, q->c.curr_frame);
 }
 
-static int bif_iso_clause(tpl_query *q)
-{
-	return bif_clause(q, 0);
-}
+static int bif_iso_clause(tpl_query *q) { return bif_clause(q, 0); }
 
 #ifndef ISO_ONLY
-static int bif_xtra_clausew(tpl_query *q)
-{
-	return bif_clause(q, 1);
-}
+static int bif_xtra_clausew(tpl_query *q) { return bif_clause(q, 1); }
 #endif
 
 static int nodecmp(const void *p1, const void *p2)
@@ -3846,12 +3833,12 @@ static int bif_iso_bagof(tpl_query *q)
 	node *acc = NULL, *end = NULL;
 
 	while (ok && !g_abort) {
-		if (sl_get(sp->kvs, (void*)subq->c.curr_match, NULL)) {
+		if (sl_get(sp->kvs, (void *)subq->c.curr_match, NULL)) {
 			ok = query_continue(subq);
 			continue;
 		}
 
-		sl_set(sp->kvs, (void*)subq->c.curr_match, NULL);
+		sl_set(sp->kvs, (void *)subq->c.curr_match, NULL);
 		node *from = get_arg(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
@@ -3978,12 +3965,12 @@ static int bif_iso_setof(tpl_query *q)
 	node *acc = NULL, *end = NULL;
 
 	while (ok && !g_abort) {
-		if (sl_get(sp->kvs, (void*)subq->c.curr_match, NULL)) {
+		if (sl_get(sp->kvs, (void *)subq->c.curr_match, NULL)) {
 			ok = query_continue(subq);
 			continue;
 		}
 
-		sl_set(sp->kvs, (void*)subq->c.curr_match, NULL);
+		sl_set(sp->kvs, (void *)subq->c.curr_match, NULL);
 		node *from = get_arg(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
@@ -4028,7 +4015,7 @@ static int bif_iso_setof(tpl_query *q)
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
 		l = acc;
-		//q->latest_context = save_context;
+		// q->latest_context = save_context;
 		size_t idx = 0;
 
 		while (is_list(l)) {
@@ -4074,7 +4061,7 @@ static int bif_iso_setof(tpl_query *q)
 	return ok;
 }
 
-static int bif_iso_sub_atom(tpl_query *q)			// NOT YET IMPLEMENTED
+static int bif_iso_sub_atom(tpl_query *q) // NOT YET IMPLEMENTED
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -5469,13 +5456,15 @@ static int bif_xtra_between_3(tpl_query *q)
 		if (is_var(term3)) {
 			nbr_t v = get_word(term1);
 			put_int(q, q->c.curr_frame + term3->slot, v);
-		} else {
+		}
+		else {
 			nbr_t v = get_word(term3);
 			return (v >= get_word(term1)) && (v <= get_word(term2));
 		}
 
 		allocate_frame(q);
-	} else {
+	}
+	else {
 		term3 = get_next_arg(q, &args);
 		nbr_t v = term3->val_i + 1;
 
@@ -5756,8 +5745,9 @@ static int bif_xtra_maplist_2(tpl_query *q)
 		node *s = NULL;
 
 		if (is_structure(term1)) {
-			s= clone_term(q, term1);
-		} else {
+			s = clone_term(q, term1);
+		}
+		else {
 			s = make_compound();
 
 			if (is_builtin(term1))
@@ -5811,8 +5801,9 @@ static int bif_xtra_maplist_3(tpl_query *q)
 		node *s = NULL;
 
 		if (is_structure(term1)) {
-			s= clone_term(q, term1);
-		} else {
+			s = clone_term(q, term1);
+		}
+		else {
 			s = make_compound();
 
 			if (is_builtin(term1))
@@ -6163,7 +6154,7 @@ static int bif_xtra_writeln_1(tpl_query *q)
 	dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
 	*dst++ = '\n';
 	*dst = '\0';
-	fwrite(tmpbuf, 1, dst-tmpbuf, q->curr_stdout);
+	fwrite(tmpbuf, 1, dst - tmpbuf, q->curr_stdout);
 	free(tmpbuf);
 	return 1;
 }
@@ -6287,7 +6278,8 @@ static int bif_xtra_see_1(tpl_query *q)
 
 		q->curr_stdin_name = strdup(filename);
 		q->curr_stdin = fp;
-	} else {
+	}
+	else {
 		stream *sp = term1->val_str;
 		q->curr_stdin_name = strdup(sp->filename);
 		q->curr_stdin = fdopen(fileno(sp->fptr), "r");
@@ -6334,7 +6326,8 @@ static int bif_xtra_tell_1(tpl_query *q)
 
 		q->curr_stdout_name = strdup(filename);
 		q->curr_stdout = fp;
-	} else {
+	}
+	else {
 		stream *sp = term1->val_str;
 		q->curr_stdout_name = strdup(sp->filename);
 		q->curr_stdout = fdopen(fileno(sp->fptr), "w+");
@@ -6710,7 +6703,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("setof", 3 + 1, bif_iso_setof);
 	DEFINE_BIF("compare", 3, bif_iso_compare);
 
-	//DEFINE_BIF("include", 1, bif_iso_include);
+	// DEFINE_BIF("include", 1, bif_iso_include);
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 	DEFINE_BIF("op", 3, bif_iso_op);
 
@@ -6729,7 +6722,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("term_to_blob", 2, bif_xtra_term_to_blob);
 	DEFINE_BIF("enter", 1, bif_xtra_enter);
 
-// These are used in the database log...
+	// These are used in the database log...
 
 	DEFINE_BIF("a_", 1, bif_iso_asserta);
 	DEFINE_BIF("z_", 1, bif_iso_assertz);
@@ -6737,7 +6730,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("t_", 0, bif_iso_true);
 #endif
 
-// These are not ISO-Prolog but are common...
+	// These are not ISO-Prolog but are common...
 
 	DEFINE_BIF("not", 1, bif_iso_not);
 	DEFINE_BIF("div", 2, bif_iso_divint);

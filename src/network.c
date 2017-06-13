@@ -52,7 +52,13 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 #ifndef USE_SSL
@@ -69,8 +75,8 @@
 #endif
 
 #if !defined(BSD)
-#if (defined(__bsdi__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
-     defined(__NetBSD__) || defined(__Darwin__) || defined(__DragonFly__))
+#if (defined(__bsdi__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__Darwin__) ||        \
+     defined(__DragonFly__))
 #define BSD 1
 #endif
 #endif
@@ -104,7 +110,7 @@
 #define POLLRDHUP 0
 #endif
 
-#define DEFAULT_CIPHERS "HIGH:!aNULL" //EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
+#define DEFAULT_CIPHERS "HIGH:!aNULL" // EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 
 static const int g_debug = 0;
 extern volatile int g_abort;
@@ -178,10 +184,7 @@ struct session_ {
 static int g_ssl_init = 0;
 #endif
 
-unsigned int *get_seed(session *s)
-{
-	return &s->seed;
-}
+unsigned int *get_seed(session *s) { return &s->seed; }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -337,7 +340,8 @@ session *session_open(const char *host, unsigned port, int tcp, int ssl)
 
 				if (tcp) {
 					if (connect(newfd, (struct sockaddr *)&addr6, sizeof(addr6)) != 0) {
-						// printf("connect6 failed: %s\n", strerror(errno));
+						// printf("connect6 failed:
+						// %s\n", strerror(errno));
 						close(newfd);
 						newfd = -1;
 						continue;
@@ -372,7 +376,8 @@ session *session_open(const char *host, unsigned port, int tcp, int ssl)
 
 				if (tcp) {
 					if (connect(newfd, (struct sockaddr *)&addr4, sizeof(addr4)) != 0) {
-						// printf("connect4 failed: %s\n", strerror(errno));
+						// printf("connect4 failed:
+						// %s\n", strerror(errno));
 						close(newfd);
 						newfd = -1;
 						continue;
@@ -438,7 +443,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 #if USE_SSL
 	if (!g_ssl_init) {
 		g_ssl_init = 1;
-		//SSL_load_error_strings();
+		// SSL_load_error_strings();
 		SSL_library_init();
 	}
 
@@ -462,7 +467,8 @@ int session_enable_tls(session *s, const char *certfile, int level)
 					printf("SSL load certificate failed\n");
 
 				// if (!SSL_CTX_set_default_verify_paths(s_ctx))
-				//	printf("SSL set_default_verify_paths failed\n");
+				//	printf("SSL set_default_verify_paths
+				// failed\n");
 			}
 		}
 
@@ -497,7 +503,8 @@ int session_enable_tls(session *s, const char *certfile, int level)
 
 			return 0;
 		}
-	} else {
+	}
+	else {
 		SSL_set_tlsext_host_name(s->ssl, s->host);
 
 		if (SSL_connect(s->ssl) == -1) {
@@ -596,7 +603,8 @@ static const char *inet_ntop(int family, void *address, char *buffer, socklen_t 
 
 		if (WSAAddressToString((struct sockaddr *)&sin6, sizeof(sin6), NULL, buffer, &buflen) == SOCKET_ERROR)
 			strcpy(buffer, "");
-	} else {
+	}
+	else {
 		struct sockaddr_in sin4 = {0};
 		sin4.sin_family = family;
 		sin4.sin_addr = *((struct in_addr *)address);
@@ -609,10 +617,7 @@ static const char *inet_ntop(int family, void *address, char *buffer, socklen_t 
 }
 #endif
 
-time_t session_get_lasttime(session *s)
-{
-	return s->lasttime;
-}
+time_t session_get_lasttime(session *s) { return s->lasttime; }
 
 void session_set_udata_flag(session *s, unsigned flag) { s->udata_flags |= 1ULL << flag; }
 unsigned session_get_udata_flag(session *s, unsigned flag) { return s->udata_flags & (1ULL << flag); }
@@ -709,7 +714,8 @@ int session_enable_multicast(session *s, int loop, int ttl)
 
 		if (ttl)
 			status = setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (const char *)&ttl, sizeof(ttl));
-	} else {
+	}
+	else {
 		if (loop)
 			status = setsockopt(s->fd, IPPROTO_IP, IP_MULTICAST_LOOP, (const char *)&loop, sizeof(loop));
 
@@ -927,7 +933,8 @@ int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t le
 	if (tmplen == 126) {
 		uint16_t n = htons(len);
 		dst += bufwrite(dst, &n, sizeof(n));
-	} else {
+	}
+	else {
 		if (tmplen == 127) {
 			uint32_t n = htonl((uint64_t)len >> 32);
 			dst += bufwrite(dst, &n, sizeof(n));
@@ -991,7 +998,8 @@ int session_ws_parse(session *s, int *fin, unsigned *opcode, char **dstbuf, size
 			return 0;
 
 		len |= ntohl(n);
-	} else {
+	}
+	else {
 		if (len == 126) {
 			uint16_t n;
 
@@ -1061,7 +1069,8 @@ int session_rawwrite(session *s, const void *buf, size_t len)
 		else if (s->ipv4) {
 			socklen_t alen = sizeof(struct sockaddr_in);
 			wlen = sendto(s->fd, (const char *)buf, len, MSG_NOSIGNAL, (struct sockaddr *)&s->addr4, alen);
-		} else {
+		}
+		else {
 			socklen_t alen = sizeof(struct sockaddr_in6);
 			wlen = sendto(s->fd, (const char *)buf, len, MSG_NOSIGNAL, (struct sockaddr *)&s->addr6, alen);
 		}
@@ -1116,10 +1125,7 @@ int session_write(session *s, const void *_buf, size_t len)
 	return 1;
 }
 
-int session_writemsg(session *s, const char *buf)
-{
-	return session_write(s, buf, strlen(buf));
-}
+int session_writemsg(session *s, const char *buf) { return session_write(s, buf, strlen(buf)); }
 
 int session_bcast(session *s, const void *buf, size_t len)
 {
@@ -1138,10 +1144,7 @@ int session_bcast(session *s, const void *buf, size_t len)
 	return wlen > 0;
 }
 
-int session_bcastmsg(session *s, const char *buf)
-{
-	return session_bcast(s, buf, strlen(buf));
-}
+int session_bcastmsg(session *s, const char *buf) { return session_bcast(s, buf, strlen(buf)); }
 
 int session_read(session *s, void *buf, size_t len)
 {
@@ -1172,11 +1175,12 @@ int session_read(session *s, void *buf, size_t len)
 	else
 #endif
 	    if (s->is_tcp)
-			rlen += recv(s->fd, (char *)buf, len, 0);
+		rlen += recv(s->fd, (char *)buf, len, 0);
 	else if (s->ipv4) {
 		socklen_t tmplen = sizeof(struct sockaddr_in);
 		rlen = recvfrom(s->fd, (char *)buf, len, 0, (struct sockaddr *)&s->addr4, &tmplen);
-	} else {
+	}
+	else {
 		socklen_t tmplen = sizeof(struct sockaddr_in6);
 		rlen = recvfrom(s->fd, (char *)buf, len, 0, (struct sockaddr *)&s->addr6, &tmplen);
 	}
@@ -1258,12 +1262,13 @@ int session_readmsg(session *s, char **buf)
 	else
 #endif
 	    if (s->is_tcp) {
-			rlen = recv(s->fd, (char *)s->srcbuf, READ_BUFLEN - 1, 0);
+		rlen = recv(s->fd, (char *)s->srcbuf, READ_BUFLEN - 1, 0);
 	}
 	else if (s->ipv4) {
 		socklen_t tmplen = sizeof(struct sockaddr_in);
 		rlen = recvfrom(s->fd, s->srcbuf, READ_BUFLEN - 1, 0, (struct sockaddr *)&s->addr4, &tmplen);
-	} else {
+	}
+	else {
 		socklen_t tmplen = sizeof(struct sockaddr_in6);
 		rlen = recvfrom(s->fd, s->srcbuf, READ_BUFLEN - 1, 0, (struct sockaddr *)&s->addr6, &tmplen);
 	}
@@ -1347,10 +1352,7 @@ void session_unshare(session *s)
 	session_free(s);
 }
 
-void session_share(session *s)
-{
-	s->use_cnt++;
-}
+void session_share(session *s) { s->use_cnt++; }
 
 static int handler_force_drop(void *_h, int fd, void *_s)
 {
@@ -2084,7 +2086,7 @@ int handler_set_tls(handler *h, const char *keyfile, const char *certfile)
 #if USE_SSL
 	if (!g_ssl_init) {
 		g_ssl_init = 1;
-		//SSL_load_error_strings();
+		// SSL_load_error_strings();
 		SSL_library_init();
 	}
 
@@ -2208,7 +2210,8 @@ static int leave_multicast4(int fd, const char *addr)
 }
 #endif
 
-extern uncle *uncle_create2(handler *h, const char *binding, unsigned port, const char *scope, const char *maddr6, const char *maddr4);
+extern uncle *uncle_create2(handler *h, const char *binding, unsigned port, const char *scope, const char *maddr6,
+                            const char *maddr4);
 
 int handler_add_uncle(handler *h, const char *binding, unsigned port, const char *scope)
 {
@@ -2231,9 +2234,8 @@ uncle *handler_get_uncle(handler *h, const char *scope)
 	return NULL;
 }
 
-static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v, const char *binding,
-			unsigned port, int tcp, int ssl, int pri, const char *maddr6, const char *maddr4,
-			const char *name)
+static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v, const char *binding, unsigned port, int tcp,
+                               int ssl, int pri, const char *maddr6, const char *maddr4, const char *name)
 {
 	int fd6 = socket(AF_INET6, tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
 
@@ -2258,7 +2260,9 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		addr6.sin6_addr = my_in6addr_any;
 
 		if (bind(fd6, (struct sockaddr *)&addr6, sizeof(addr6)) != 0) {
-			printf("handler_add_server: warning bind6 failed port %u: %s\n", port, strerror(errno));
+			printf("handler_add_server: warning bind6 failed port "
+			       "%u: %s\n",
+			       port, strerror(errno));
 			close(fd6);
 			fd6 = -1;
 			return 0;
@@ -2267,9 +2271,12 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		if (!tcp) {
 			unsigned long flag2 = 1;
 			ioctl(fd6, FIONBIO, &flag2);
-		} else {
+		}
+		else {
 			if (listen(fd6, 128) != 0) {
-				printf("handler_add_server: error listen6 failed port: %u: %s\n", port, strerror(errno));
+				printf("handler_add_server: error listen6 "
+				       "failed port: %u: %s\n",
+				       port, strerror(errno));
 				close(fd6);
 				return 0;
 			}
@@ -2322,7 +2329,9 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		addr4.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		if (bind(fd4, (struct sockaddr *)&addr4, sizeof(addr4)) != 0) {
-			printf("handler_add_server: warning bind4 failed port %u: %s\n", port, strerror(errno));
+			printf("handler_add_server: warning bind4 failed port "
+			       "%u: %s\n",
+			       port, strerror(errno));
 			close(fd4);
 			fd4 = -1;
 			return 0;
@@ -2331,9 +2340,12 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 		if (!tcp) {
 			unsigned long flag2 = 1;
 			ioctl(fd4, FIONBIO, &flag2);
-		} else {
+		}
+		else {
 			if (listen(fd4, 128) != 0) {
-				printf("handler_add_server: error listen4 failed port:%u %s\n", port, strerror(errno));
+				printf("handler_add_server: error listen4 "
+				       "failed port:%u %s\n",
+				       port, strerror(errno));
 				close(fd4);
 				return 0;
 			}
@@ -2377,8 +2389,8 @@ static int handler_add_server2(handler *h, int (*f)(session *, void *v), void *v
 	return 1;
 }
 
-int handler_add_server(handler *h, int (*f)(session *, void *v), void *v, const char *binding,
-			unsigned port, int tcp, int ssl, int pri, const char *name)
+int handler_add_server(handler *h, int (*f)(session *, void *v), void *v, const char *binding, unsigned port, int tcp, int ssl,
+                       int pri, const char *name)
 {
 	return handler_add_server2(h, f, v, binding, port, tcp, ssl, pri, NULL, NULL, name);
 }
@@ -2419,8 +2431,8 @@ int handler_add_tpool(handler *h, tpool *tp)
 	return 1;
 }
 
-int handler_add_multicast(handler *h, int (*f)(session *, void *v), void *v, const char *binding,
-			unsigned port, const char *addr6, const char *addr4, const char *name)
+int handler_add_multicast(handler *h, int (*f)(session *, void *v), void *v, const char *binding, unsigned port,
+                          const char *addr6, const char *addr4, const char *name)
 {
 	return handler_add_server2(h, f, v, binding, port, 0, 0, 0, addr6, addr4, name);
 }

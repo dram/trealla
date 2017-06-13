@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -16,7 +16,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 #ifndef USE_SSL
@@ -209,7 +215,7 @@ static int process_check(tpl_query *q, const tpl_query *who, node *term)
 	return 0;
 }
 
-void process_error(tpl_query *q)	// FIXME
+void process_error(tpl_query *q) // FIXME
 {
 	tpl_query *who = q->parent;
 	node *n = make_tuple();
@@ -865,12 +871,16 @@ static int bif_proc_pid_2(tpl_query *q)
 		for (int i = 0; i < 10; i++, ms *= 2) {
 			msleep(ms);
 
-			printf("DEBUG: Search: scope=%s,name=%s,tcp=%d,tls=%d,pri=%d\n", scope, name, tcp, ssl, pri);
+			printf("DEBUG: Search: "
+			       "scope=%s,name=%s,tcp=%d,tls=%d,pri=%d\n",
+			       scope, name, tcp, ssl, pri);
 
 			if (!uncle_query(u, name, host, &tmp_port, &tcp, &ssl, &pri))
 				continue;
 
-			printf("DEBUG: Discovery: scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", scope, name, tmp_port, tcp, ssl, pri);
+			printf("DEBUG: Discovery: "
+			       "scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n",
+			       scope, name, tmp_port, tcp, ssl, pri);
 			found = 1;
 			break;
 		}
@@ -885,7 +895,9 @@ static int bif_proc_pid_2(tpl_query *q)
 		port = tmp_port;
 	}
 
-	// printf("DEBUG: Client: userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid, passwd, host, port, tcp, ssl,
+	// printf("DEBUG: Client:
+	// userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid,
+	// passwd, host, port, tcp, ssl,
 	// pri);
 
 	session *s = session_open(host, port, tcp, ssl);
@@ -1151,10 +1163,7 @@ static int bif_proc_tmo_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_proc_after_0(tpl_query *q)
-{
-	return q->timed_out;
-}
+static int bif_proc_after_0(tpl_query *q) { return q->timed_out; }
 
 static int bif_proc_erase_0(tpl_query *q)
 {

@@ -1,8 +1,8 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #if (__STDC_VERSION__ >= 201112L) && !defined(ISO_ONLY)
 #include <stdatomic.h>
@@ -15,9 +15,9 @@
 #include "openssl/bn.h"
 #endif
 
-#include "skiplist.h"
-#include "skipbuck.h"
 #include "list.h"
+#include "skipbuck.h"
+#include "skiplist.h"
 
 #ifndef ISO_ONLY
 #include "network.h"
@@ -28,8 +28,8 @@ typedef uint64_t unbr_t;
 typedef double flt_t;
 
 #ifdef DEBUG
-extern uint64_t g_choicepoints, g_heap_used, g_backtracks, g_executes,
-	g_reexecutes, g_cuts, g_enqueues, g_rescheds, g_u_resolves, g_s_resolves;
+extern uint64_t g_choicepoints, g_heap_used, g_backtracks, g_executes, g_reexecutes, g_cuts, g_enqueues, g_rescheds,
+    g_u_resolves, g_s_resolves;
 #endif
 
 extern uint64_t g_busy;
@@ -40,71 +40,71 @@ typedef uint64_t mask_t;
 typedef __uint128_t mask_t;
 #endif
 
-#define MAX_FRAME_SIZE (sizeof(mask_t)*8)
+#define MAX_FRAME_SIZE (sizeof(mask_t) * 8)
 #define MAX_UOPS 100
 
-#define TYPE_INTEGER			(1ULL << 0)
-#define TYPE_FLOAT				(1ULL << 1)
-#define TYPE_ATOM				(1ULL << 2)
-#define TYPE_VAR				(1ULL << 3)
-#define TYPE_COMPOUND			(1ULL << 4)
-#define TYPE_BIGNUM				(1ULL << 5)
+#define TYPE_INTEGER (1ULL << 0)
+#define TYPE_FLOAT (1ULL << 1)
+#define TYPE_ATOM (1ULL << 2)
+#define TYPE_VAR (1ULL << 3)
+#define TYPE_COMPOUND (1ULL << 4)
+#define TYPE_BIGNUM (1ULL << 5)
 
-#define FLAG_HEAP				(1ULL << 10)
-#define FLAG_ATTACHED			(1ULL << 11)
-#define FLAG_TAILRECURSIVE		(1ULL << 12)
-#define FLAG_ISCUT				(1ULL << 13)
-#define FLAG_FACT				(1ULL << 14)
-#define FLAG_BUILTIN			(1ULL << 15)
-#define FLAG_CONSING			(1ULL << 16)
-#define FLAG_TUPLE				(1ULL << 17)
-#define FLAG_QUOTED				(1ULL << 18)
-#define FLAG_CONST				(1ULL << 19)
-#define FLAG_BINARY				(1ULL << 20)
-#define FLAG_OCTAL				(1ULL << 21)
-#define FLAG_HEX				(1ULL << 22)
-#define FLAG_PI					(1ULL << 23)
-#define FLAG_STREAM				(1ULL << 24)
-#define FLAG_HIDDEN				(1ULL << 25)
-#define FLAG_ANON				(1ULL << 26)
-#define FLAG_FILE				(1ULL << 28)
-#define FLAG_SOCKET				(1ULL << 29)
-#define FLAG_BLOB				(1ULL << 30)
-#define FLAG_PID				(1ULL << 31)
-#define FLAG_CLAUSE				(1ULL << 32)
-#define FLAG_SKIPPED			(1ULL << 33)
-#define FLAG_NOFOLLOW			(1ULL << 34)
-#define FLAG_DOUBLE_QUOTE		(1ULL << 35)
-#define FLAG_DELETED			(1ULL << 36)
-#define FLAG_NOARGS				(1ULL << 37)
-#define FLAG_LIST				(1ULL << 38)
-#define FLAG_PTR				(1ULL << 39)
-#define FLAG_PROMOTED			(1ULL << 40)
-#define FLAG_DYNAMIC			(1ULL << 41)
-#define FLAG_PASSTHRU			(1ULL << 42)
-#define FLAG_NOOP				(1ULL << 43)
-#define FLAG_SMALL				(1ULL << 44)
+#define FLAG_HEAP (1ULL << 10)
+#define FLAG_ATTACHED (1ULL << 11)
+#define FLAG_TAILRECURSIVE (1ULL << 12)
+#define FLAG_ISCUT (1ULL << 13)
+#define FLAG_FACT (1ULL << 14)
+#define FLAG_BUILTIN (1ULL << 15)
+#define FLAG_CONSING (1ULL << 16)
+#define FLAG_TUPLE (1ULL << 17)
+#define FLAG_QUOTED (1ULL << 18)
+#define FLAG_CONST (1ULL << 19)
+#define FLAG_BINARY (1ULL << 20)
+#define FLAG_OCTAL (1ULL << 21)
+#define FLAG_HEX (1ULL << 22)
+#define FLAG_PI (1ULL << 23)
+#define FLAG_STREAM (1ULL << 24)
+#define FLAG_HIDDEN (1ULL << 25)
+#define FLAG_ANON (1ULL << 26)
+#define FLAG_FILE (1ULL << 28)
+#define FLAG_SOCKET (1ULL << 29)
+#define FLAG_BLOB (1ULL << 30)
+#define FLAG_PID (1ULL << 31)
+#define FLAG_CLAUSE (1ULL << 32)
+#define FLAG_SKIPPED (1ULL << 33)
+#define FLAG_NOFOLLOW (1ULL << 34)
+#define FLAG_DOUBLE_QUOTE (1ULL << 35)
+#define FLAG_DELETED (1ULL << 36)
+#define FLAG_NOARGS (1ULL << 37)
+#define FLAG_LIST (1ULL << 38)
+#define FLAG_PTR (1ULL << 39)
+#define FLAG_PROMOTED (1ULL << 40)
+#define FLAG_DYNAMIC (1ULL << 41)
+#define FLAG_PASSTHRU (1ULL << 42)
+#define FLAG_NOOP (1ULL << 43)
+#define FLAG_SMALL (1ULL << 44)
 
-#define FLAG_DBS_STORAGE		(1ULL << 50)
-#define FLAG_DBS_ASSERTA		(1ULL << 51)
-#define FLAG_DBS_ASSERTZ		(1ULL << 52)
-#define FLAG_DBS_RETRACT		(1ULL << 53)
-#define FLAG_DBS_RETRACTALL		(1ULL << 54)
+#define FLAG_DBS_STORAGE (1ULL << 50)
+#define FLAG_DBS_ASSERTA (1ULL << 51)
+#define FLAG_DBS_ASSERTZ (1ULL << 52)
+#define FLAG_DBS_RETRACT (1ULL << 53)
+#define FLAG_DBS_RETRACTALL (1ULL << 54)
 
 #define NLIST_INIT(l) list_init(l)
 #define NLIST_COUNT(l) list_count(l)
-#define NLIST_PREV(n) ((node*)(list_prev(&(n)->hdr)-offsetof(node,hdr)))
-#define NLIST_NEXT(n) ((node*)(list_next(&(n)->hdr)-offsetof(node,hdr)))
-#define NLIST_FRONT(l) ((node*)(list_front(l)-offsetof(node,hdr)))
-#define NLIST_BACK(l) (((node*)list_back(l)-offsetof(node,hdr)))
-#define NLIST_REMOVE(l,n) (((node*)list_remove(l,&(n)->hdr)-offsetof(node,hdr)))
-#define NLIST_PUSH_FRONT(l,n) list_push_front(l,&(n)->hdr)
-#define NLIST_PUSH_BACK(l,n) list_push_back(l,&(n)->hdr)
-#define NLIST_POP_FRONT(l) ((node*)(list_pop_front(l)-offsetof(node,hdr)))
-#define NLIST_POP_BACK(l) ((node*)(list_pop_back(l)-offsetof(node,hdr)))
-#define NLIST_INSERT_BEFORE(l,n,v) list_insert_before(l,&(n)->hdr,&(v)->hdr)
-#define NLIST_INSERT_AFTER(l,n,v) list_insert_after(l,&(n)->hdr,&(v)->hdr)
-#define NLIST_CONCAT(l1,l2) list_concat(l1,l2)
+#define NLIST_PREV(n) ((node *)(list_prev(&(n)->hdr) - offsetof(node, hdr)))
+#define NLIST_NEXT(n) ((node *)(list_next(&(n)->hdr) - offsetof(node, hdr)))
+#define NLIST_FRONT(l) ((node *)(list_front(l) - offsetof(node, hdr)))
+#define NLIST_BACK(l) (((node *)list_back(l) - offsetof(node, hdr)))
+#define NLIST_REMOVE(l, n) (((node *)list_remove(l, &(n)->hdr) - offsetof(node, hdr)))
+#define NLIST_PUSH_FRONT(l, n) list_push_front(l, &(n)->hdr)
+#define NLIST_PUSH_BACK(l, n) list_push_back(l, &(n)->hdr)
+#define NLIST_POP_FRONT(l) ((node *)(list_pop_front(l) - offsetof(node, hdr)))
+#define NLIST_POP_BACK(l) ((node *)(list_pop_back(l) - offsetof(node, hdr)))
+#define NLIST_INSERT_BEFORE(l, n, v) list_insert_before(l, &(n)->hdr, &(v)->hdr)
+#define NLIST_INSERT_AFTER(l, n, v) list_insert_after(l, &(n)->hdr, &(v)->hdr)
+#define NLIST_CONCAT(l1, l2) list_concat(l1, l2)
 #define NLIST_CLEAR(l) list_clear(l)
 
 typedef struct node_ node;
@@ -114,58 +114,54 @@ typedef struct stream_ stream;
 // By having all nodes the same size makes the job of
 // the allocator easier and simplifies the code.
 
-struct node_
-{
+struct node_ {
 	lnode hdr;
 
 	union {
 		struct {
-			char *val_s;			// atom or var
-			size_t val_len;			// BLOB length
+			char *val_s;    // atom or var
+			size_t val_len; // BLOB length
 		};
 
 		struct {
 			node *n1, *n2;
 		};
 
-		char val_ch[sizeof(list)];	// small atoms
+		char val_ch[sizeof(list)]; // small atoms
 
-		stream *val_str;			// stream ptr
-		void *val_ptr;				// other ptr
-		flt_t val_f;				// float
-		nbr_t val_i;				// integer signed
-		unbr_t val_u;				// integer unsigned
-		list val_l;					// compound
+		stream *val_str; // stream ptr
+		void *val_ptr;   // other ptr
+		flt_t val_f;     // float
+		nbr_t val_i;     // integer signed
+		unbr_t val_u;    // integer unsigned
+		list val_l;      // compound
 
 #if USE_SSL
-		BIGNUM* val_bn;
+		BIGNUM *val_bn;
 #endif
 	};
 
 	union {
-		int (*bifptr)(tpl_query*);	// built-in function
-		rule *match;				// or rule index
+		int (*bifptr)(tpl_query *); // built-in function
+		rule *match;                // or rule index
 
 #ifndef ISO_ONLY
-		tpl_query *pid;				// sender
+		tpl_query *pid; // sender
 #endif
 	};
 
 	uint64_t flags;
 	atomic uint32_t refcnt;
 	uint8_t slot, frame_size;
-	uint16_t cpos;					// Used in parsing
+	uint16_t cpos; // Used in parsing
 };
 
-typedef struct
-{
+typedef struct {
 	const char *fun, *spec;
 	unsigned priority;
-}
- op;
+} op;
 
-typedef struct
-{
+typedef struct {
 	trealla *pl;
 	char *name, *filename, *dbname;
 	skiplist rules, dict, exports;
@@ -178,26 +174,24 @@ typedef struct
 	lock *guard;
 	nbr_t last_fpos;
 #endif
-}
- module;
+} module;
 
-struct rule_
-{
+struct rule_ {
 	module *db;
 	skipbuck *idx;
 	list val_l;
 	const char *functor;
 
 	struct {
-		unsigned dynamic:1;
-		unsigned manual:1;
-		unsigned hidden:1;
+		unsigned dynamic : 1;
+		unsigned manual : 1;
+		unsigned hidden : 1;
 
 #ifndef ISO_ONLY
-		unsigned notify:1;
-		unsigned numeric:1;
-		unsigned persist:1;
-		unsigned storage:1;
+		unsigned notify : 1;
+		unsigned numeric : 1;
+		unsigned persist : 1;
+		unsigned storage : 1;
 #endif
 	};
 
@@ -206,8 +200,7 @@ struct rule_
 #endif
 };
 
-struct stream_
-{
+struct stream_ {
 	char *filename, *mode, *type;
 	FILE *fptr;
 	node *subqgoal;
@@ -216,8 +209,7 @@ struct stream_
 	void *sptr;
 };
 
-struct lexer_
-{
+struct lexer_ {
 	list val_l;
 	skiplist symtab, ns;
 
@@ -243,8 +235,7 @@ struct lexer_
 // If it is NULL then 'binding' is an offset.
 // A choice point will increment 'choices' in the first slot.
 
-typedef struct
-{
+typedef struct {
 	node *term;
 
 	union {
@@ -253,11 +244,9 @@ typedef struct
 	};
 
 	uint16_t choices;
-}
- env;
+} env;
 
-typedef struct
-{
+typedef struct {
 	sbiter *idx_iter;
 	module *curr_db;
 	node *curr_term, *curr_match;
@@ -265,8 +254,7 @@ typedef struct
 	uint32_t env_point, trail_point, prev_choice, curr_frame;
 	uint8_t frame_size, trail_size;
 	uint8_t cut, nofollow;
-}
- choice;
+} choice;
 
 typedef uint32_t trail;
 
@@ -274,11 +262,10 @@ typedef uint32_t trail;
 #define DEF_CHOICES_BYTES 256
 #define DEF_ENVS_BYTES 512
 
-struct tpl_query_
-{
-	choice choice_stack[DEF_CHOICES_BYTES/sizeof(choice)];
-	env env_stack[DEF_ENVS_BYTES/sizeof(env)];
-	trail trail_stack[DEF_TRAILS_BYTES/sizeof(trail)];
+struct tpl_query_ {
+	choice choice_stack[DEF_CHOICES_BYTES / sizeof(choice)];
+	env env_stack[DEF_ENVS_BYTES / sizeof(env)];
+	trail trail_stack[DEF_TRAILS_BYTES / sizeof(trail)];
 	choice *choices;
 	env *envs;
 	trail *trails;
@@ -291,8 +278,8 @@ struct tpl_query_
 	node nv;
 
 	union {
-		skiplist *d;						// used as a temp
-		uint32_t line_nbr;					// used during parsing
+		skiplist *d;       // used as a temp
+		uint32_t line_nbr; // used during parsing
 	};
 
 	choice c;
@@ -313,7 +300,7 @@ struct tpl_query_
 	uint8_t eval, did_getc, in_tran, ignore_ops;
 
 #ifndef ISO_ONLY
-	list queue;								// process queue
+	list queue; // process queue
 	tpl_query *curr_pid;
 	skiplist *kvs;
 	char *name;
@@ -329,11 +316,10 @@ struct tpl_query_
 
 #define MAX_BIFS 1000
 
-struct trealla_
-{
+struct trealla_ {
 	skiplist mods;
 	module db;
-	const char *keywords[MAX_BIFS+20];
+	const char *keywords[MAX_BIFS + 20];
 	volatile int end_wait, halt_code, halt;
 	uint8_t trace, optimize, tty, quiet, did_halt;
 	uint8_t flag_char_conversion, flag_debug, flag_character_escapes;
@@ -347,13 +333,11 @@ struct trealla_
 #endif
 };
 
-typedef struct
-{
+typedef struct {
 	const char *name;
 	const uint8_t *start;
 	const uint8_t *end;
-}
- library;
+} library;
 
 extern library g_libs[];
 extern void lexer_init(lexer *l, trealla *pl);
@@ -370,8 +354,7 @@ extern int http_get11(session *s, const char *path, int keep, int *status);
 extern tpl_query *query_create_proc(tpl_query *self);
 #endif
 
-enum
-{
+enum {
 	ABORT_NONE,
 	ABORT_HALT,
 	ABORT_ARGTOOBIG,

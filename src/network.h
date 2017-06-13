@@ -1,8 +1,8 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include <time.h>
 #include "thread.h"
+#include <time.h>
 
 typedef struct session_ session;
 typedef struct handler_ handler;
@@ -70,7 +70,7 @@ extern time_t session_get_lasttime(session *s);
 
 extern void session_clr_udata_flags(session *s);
 extern void session_clr_udata_flag(session *s, unsigned flag);
-extern void session_set_udata_flag(session *s, unsigned flag);		// flag=0..63
+extern void session_set_udata_flag(session *s, unsigned flag); // flag=0..63
 extern unsigned session_get_udata_flag(session *s, unsigned flag);
 
 extern void session_set_udata_int(session *s, int64_t data);
@@ -103,28 +103,19 @@ extern unsigned int *get_seed(session *s);
 extern int session_ws_parse(session *s, int *fin, unsigned *opcode, char **dst, size_t *dstlen);
 extern int ws_msg(session *s, unsigned fin, unsigned opcode, const char *src, size_t srclen);
 
-inline static int session_ws_close(session *s, const char *src, size_t len)
-{
-	return ws_msg(s, 1, WS_OP_CLOSE, src, len);
-}
+inline static int session_ws_close(session *s, const char *src, size_t len) { return ws_msg(s, 1, WS_OP_CLOSE, src, len); }
 
-inline static int session_ws_ping(session *s, const char *src, size_t len)
-{
-	return ws_msg(s, 1, WS_OP_PING, src, len);
-}
+inline static int session_ws_ping(session *s, const char *src, size_t len) { return ws_msg(s, 1, WS_OP_PING, src, len); }
 
-inline static int session_ws_pong(session *s, const char *src, size_t len)
-{
-	return ws_msg(s, 1, WS_OP_PONG, src, len);
-}
+inline static int session_ws_pong(session *s, const char *src, size_t len) { return ws_msg(s, 1, WS_OP_PONG, src, len); }
 
 inline static int session_ws_data(session *s, int fin, int binary, const char *src, size_t len)
 {
-	return ws_msg(s, fin?1:0, (binary?WS_OP_BINARY:WS_OP_TEXT), src, len);
+	return ws_msg(s, fin ? 1 : 0, (binary ? WS_OP_BINARY : WS_OP_TEXT), src, len);
 }
 
-extern void session_lock(session *s);		// handler-wide lock will
-extern void session_unlock(session *s);		// block all other sessions
+extern void session_lock(session *s);   // handler-wide lock will
+extern void session_unlock(session *s); // block all other sessions
 
 extern void session_share(session *s);
 extern void session_unshare(session *s);
@@ -156,9 +147,11 @@ extern int handler_add_uncle(handler *h, const char *binding, unsigned port, con
 // If port = 0 then one is assigned, can be located with the uncle
 
 extern int handler_add_tpool(handler *h, tpool *tp);
-extern int handler_add_multicast(handler *h, int (*f)(session*, void *data), void *data, const char *binding, unsigned port, const char *maddr6, const char *maddr4, const char *name);
-extern int handler_add_server(handler *h, int (*f)(session*, void *data), void *data, const char *binding, unsigned port, int tcp, int ssl, int priority, const char *name);
-extern int handler_add_client(handler *h, int (*f)(session*, void *data), void *data, session *s);
+extern int handler_add_multicast(handler *h, int (*f)(session *, void *data), void *data, const char *binding, unsigned port,
+                                 const char *maddr6, const char *maddr4, const char *name);
+extern int handler_add_server(handler *h, int (*f)(session *, void *data), void *data, const char *binding, unsigned port,
+                              int tcp, int ssl, int priority, const char *name);
+extern int handler_add_client(handler *h, int (*f)(session *, void *data), void *data, session *s);
 
 // There is where the action occurs. It will not return until
 // there are no more sockets to monitor unless 'wait=1'.

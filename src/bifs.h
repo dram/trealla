@@ -47,35 +47,165 @@
 #endif
 
 #define get_arity(q) term_arity(q->c.curr_term)
-#define get_args(q) term_first(q->c.curr_term); if (!term_count(q->c.curr_term)) { QABORT(ABORT_INVALIDARGMISSING); return 0; }
-#define get_term(t) get_next_arg(q, &args); if (t == NULL) { QABORT(ABORT_INVALIDARGMISSING); return 0; }
+#define get_args(q)                                                                                                            \
+	term_first(q->c.curr_term);                                                                                                \
+	if (!term_count(q->c.curr_term)) {                                                                                         \
+		QABORT(ABORT_INVALIDARGMISSING);                                                                                       \
+		return 0;                                                                                                              \
+	}
+#define get_term(t)                                                                                                            \
+	get_next_arg(q, &args);                                                                                                    \
+	if (t == NULL) {                                                                                                           \
+		QABORT(ABORT_INVALIDARGMISSING);                                                                                       \
+		return 0;                                                                                                              \
+	}
 
-#define get_atomic(t) get_next_arg(q, &args); if (!is_atomic(t)) { QABORT(ABORT_INVALIDARGNOTATOMIC); return 0; }
-#define get_atom(t) get_next_arg(q, &args); if (!is_atom(t)) { QABORT(ABORT_INVALIDARGNOTATOM); return 0; }
-#define get_atom_or_int(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_integer(t)&&!is_bignum(t)) { QABORT(ABORT_INVALIDARGNOTATOMORINT); return 0; }
-#define get_atom_or_list(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_list(t)) { QABORT(ABORT_INVALIDARGNOTATOMORLIST); return 0; }
-#define get_atom_or_list_or_var(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_list(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTATOMORLIST); return 0; }
-#define get_atom_or_var(t) get_next_arg(q, &args); if (!is_atom(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTATOMORVAR); return 0; }
-#define get_nbr(t) get_next_arg(q, &args); if (!is_number(t)) { QABORT(ABORT_INVALIDARGNOTNBR); return 0; }
-#define get_nbr_or_var(t) get_next_arg(q, &args); if (!is_number(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTNBRORVAR); return 0; }
-#define get_int(t) get_next_arg(q, &args); if (!is_integer(t)&& !is_bignum(t)) { QABORT(ABORT_INVALIDARGNOTINT); return 0; }
-#define get_int_or_var(t) get_next_arg(q, &args); if (!is_integer(t)&&!is_bignum(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTINTORVAR); return 0; }
-#define get_ptr(t) get_next_arg(q, &args); if (!is_ptr(t)) { QABORT(ABORT_INVALIDARGNOTPTR); return 0; }
-#define get_var(t) get_next_arg(q, &args); if (!is_var(t)) { QABORT(ABORT_INVALIDARGNOTVAR); return 0; }
-#define get_nonvar(t) get_next_arg(q, &args); if (is_var(t)) { QABORT(ABORT_INVALIDARGISVAR); return 0; }
-#define get_compound(t) get_next_arg(q, &args); if (!is_compound(t)) { QABORT(ABORT_INVALIDARGNOTCOMPOUND); return 0; }
-#define get_callable(t) get_next_arg(q, &args); if (!is_callable(t)) { QABORT(ABORT_INVALIDARGNOTCALLABLE); return 0; }
-#define get_list_or_callable(t) get_next_arg(q, &args); if (!is_callable(t) && !is_list(t)) { QABORT(ABORT_INVALIDARGNOTCALLABLE); return 0; }
-#define get_structure(t) get_next_arg(q, &args); if (!is_structure(t)) { QABORT(ABORT_INVALIDARGNOTSTRUCTURE); return 0; }
-#define get_list(t) get_next_arg(q, &args); if (!is_list(t)) { QABORT(ABORT_INVALIDARGNOTLIST); return 0; }
-#define get_tuple(t) get_next_arg(q, &args); if (!is_tuple(t)) { QABORT(ABORT_INVALIDARGNOTTUPLE); return 0; }
-#define get_list_or_var(t) get_next_arg(q, &args); if (!is_list(t)&&!is_var(t)) { QABORT(ABORT_INVALIDARGNOTLISTORVAR); return 0; }
-#define get_atom_or_stream(t) get_next_arg(q, &args); if (!is_atom(t) && !is_stream(t)) { QABORT(ABORT_INVALIDARGNOTSTREAM); return 0; }
-#define get_stream(t) get_next_arg(q, &args); if (!is_stream(t)) { QABORT(ABORT_INVALIDARGNOTSTREAM); return 0; }
-#define get_file(t) get_next_arg(q, &args); if (!is_file(t)) { QABORT(ABORT_INVALIDARGNOTFILE); return 0; }
+#define get_atomic(t)                                                                                                          \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atomic(t)) {                                                                                                       \
+		QABORT(ABORT_INVALIDARGNOTATOMIC);                                                                                     \
+		return 0;                                                                                                              \
+	}
+#define get_atom(t)                                                                                                            \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atom(t)) {                                                                                                         \
+		QABORT(ABORT_INVALIDARGNOTATOM);                                                                                       \
+		return 0;                                                                                                              \
+	}
+#define get_atom_or_int(t)                                                                                                     \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atom(t) && !is_integer(t) && !is_bignum(t)) {                                                                      \
+		QABORT(ABORT_INVALIDARGNOTATOMORINT);                                                                                  \
+		return 0;                                                                                                              \
+	}
+#define get_atom_or_list(t)                                                                                                    \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atom(t) && !is_list(t)) {                                                                                          \
+		QABORT(ABORT_INVALIDARGNOTATOMORLIST);                                                                                 \
+		return 0;                                                                                                              \
+	}
+#define get_atom_or_list_or_var(t)                                                                                             \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atom(t) && !is_list(t) && !is_var(t)) {                                                                            \
+		QABORT(ABORT_INVALIDARGNOTATOMORLIST);                                                                                 \
+		return 0;                                                                                                              \
+	}
+#define get_atom_or_var(t)                                                                                                     \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atom(t) && !is_var(t)) {                                                                                           \
+		QABORT(ABORT_INVALIDARGNOTATOMORVAR);                                                                                  \
+		return 0;                                                                                                              \
+	}
+#define get_nbr(t)                                                                                                             \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_number(t)) {                                                                                                       \
+		QABORT(ABORT_INVALIDARGNOTNBR);                                                                                        \
+		return 0;                                                                                                              \
+	}
+#define get_nbr_or_var(t)                                                                                                      \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_number(t) && !is_var(t)) {                                                                                         \
+		QABORT(ABORT_INVALIDARGNOTNBRORVAR);                                                                                   \
+		return 0;                                                                                                              \
+	}
+#define get_int(t)                                                                                                             \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_integer(t) && !is_bignum(t)) {                                                                                     \
+		QABORT(ABORT_INVALIDARGNOTINT);                                                                                        \
+		return 0;                                                                                                              \
+	}
+#define get_int_or_var(t)                                                                                                      \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_integer(t) && !is_bignum(t) && !is_var(t)) {                                                                       \
+		QABORT(ABORT_INVALIDARGNOTINTORVAR);                                                                                   \
+		return 0;                                                                                                              \
+	}
+#define get_ptr(t)                                                                                                             \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_ptr(t)) {                                                                                                          \
+		QABORT(ABORT_INVALIDARGNOTPTR);                                                                                        \
+		return 0;                                                                                                              \
+	}
+#define get_var(t)                                                                                                             \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_var(t)) {                                                                                                          \
+		QABORT(ABORT_INVALIDARGNOTVAR);                                                                                        \
+		return 0;                                                                                                              \
+	}
+#define get_nonvar(t)                                                                                                          \
+	get_next_arg(q, &args);                                                                                                    \
+	if (is_var(t)) {                                                                                                           \
+		QABORT(ABORT_INVALIDARGISVAR);                                                                                         \
+		return 0;                                                                                                              \
+	}
+#define get_compound(t)                                                                                                        \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_compound(t)) {                                                                                                     \
+		QABORT(ABORT_INVALIDARGNOTCOMPOUND);                                                                                   \
+		return 0;                                                                                                              \
+	}
+#define get_callable(t)                                                                                                        \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_callable(t)) {                                                                                                     \
+		QABORT(ABORT_INVALIDARGNOTCALLABLE);                                                                                   \
+		return 0;                                                                                                              \
+	}
+#define get_list_or_callable(t)                                                                                                \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_callable(t) && !is_list(t)) {                                                                                      \
+		QABORT(ABORT_INVALIDARGNOTCALLABLE);                                                                                   \
+		return 0;                                                                                                              \
+	}
+#define get_structure(t)                                                                                                       \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_structure(t)) {                                                                                                    \
+		QABORT(ABORT_INVALIDARGNOTSTRUCTURE);                                                                                  \
+		return 0;                                                                                                              \
+	}
+#define get_list(t)                                                                                                            \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_list(t)) {                                                                                                         \
+		QABORT(ABORT_INVALIDARGNOTLIST);                                                                                       \
+		return 0;                                                                                                              \
+	}
+#define get_tuple(t)                                                                                                           \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_tuple(t)) {                                                                                                        \
+		QABORT(ABORT_INVALIDARGNOTTUPLE);                                                                                      \
+		return 0;                                                                                                              \
+	}
+#define get_list_or_var(t)                                                                                                     \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_list(t) && !is_var(t)) {                                                                                           \
+		QABORT(ABORT_INVALIDARGNOTLISTORVAR);                                                                                  \
+		return 0;                                                                                                              \
+	}
+#define get_atom_or_stream(t)                                                                                                  \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atom(t) && !is_stream(t)) {                                                                                        \
+		QABORT(ABORT_INVALIDARGNOTSTREAM);                                                                                     \
+		return 0;                                                                                                              \
+	}
+#define get_stream(t)                                                                                                          \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_stream(t)) {                                                                                                       \
+		QABORT(ABORT_INVALIDARGNOTSTREAM);                                                                                     \
+		return 0;                                                                                                              \
+	}
+#define get_file(t)                                                                                                            \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_file(t)) {                                                                                                         \
+		QABORT(ABORT_INVALIDARGNOTFILE);                                                                                       \
+		return 0;                                                                                                              \
+	}
 
 #ifndef ISO_ONLY
-#define get_socket(t) get_next_arg(q, &args); if (!is_socket(t)) { QABORT(ABORT_INVALIDARGNOTSOCKET); return 0; }
+#define get_socket(t)                                                                                                          \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_socket(t)) {                                                                                                       \
+		QABORT(ABORT_INVALIDARGNOTSOCKET);                                                                                     \
+		return 0;                                                                                                              \
+	}
 #else
 #endif
 
@@ -98,22 +228,21 @@
 #define KEY_PEMFILE "key.pem"
 #define CERT_PEMFILE "cert.pem"
 
-typedef struct
-{
+typedef struct {
 	char *functor;
-	int (*bifptr)(tpl_query*);
+	int (*bifptr)(tpl_query *);
 	int arity;
-}
- funcs;
+} funcs;
 
-#define DEFINE_BIF(f,a,p) \
-	if (g_bifs_idx < MAX_BIFS) { \
-		g_bifs[g_bifs_idx].functor = (char*)f; \
-		g_bifs[g_bifs_idx].bifptr = p; \
-		g_bifs[g_bifs_idx].arity = a; \
-		g_bifs_idx++; }
+#define DEFINE_BIF(f, a, p)                                                                                                    \
+	if (g_bifs_idx < MAX_BIFS) {                                                                                               \
+		g_bifs[g_bifs_idx].functor = (char *)f;                                                                                \
+		g_bifs[g_bifs_idx].bifptr = p;                                                                                         \
+		g_bifs[g_bifs_idx].arity = a;                                                                                          \
+		g_bifs_idx++;                                                                                                          \
+	}
 
-enum { HELLO,BYE,CMD,HTTP2 };
+enum { HELLO, BYE, CMD, HTTP2 };
 
 extern funcs g_bifs[];
 extern size_t g_bifs_idx;
@@ -125,7 +254,7 @@ extern const char *make_key(trealla *pl, char *dstbuf, node *term);
 extern void reset_arg(tpl_query *q, const node *term, unsigned frame);
 
 #ifndef ISO_ONLY
-extern int configure_server(tpl_query *q, handler *h, node *term, int (*f)(session*, void *data), int *has_uncle);
+extern int configure_server(tpl_query *q, handler *h, node *term, int (*f)(session *, void *data), int *has_uncle);
 extern int process_start_handler(void *data);
 extern int process_restart_handler(void *data);
 extern int process_yield(tpl_query *q, int locked);
@@ -134,7 +263,7 @@ extern node *make_socket(stream *v);
 
 extern node *make_blob(void *s, size_t len);
 extern node *make_int(nbr_t v);
-extern node *make_ptr(void* v);
+extern node *make_ptr(void *v);
 extern node *make_float(flt_t v);
 extern node *make_stream(stream *v);
 extern node *make_atom(char *s, int quoted);
@@ -156,14 +285,14 @@ inline static void put_env(tpl_query *q, unsigned point, node *term, signed fram
 	e -= e->binding;
 
 	if ((point < q->c.curr_frame) || (point >= (q->c.curr_frame + q->c.frame_size)))
-		q->trails[q->c.trail_point+q->c.trail_size++] = point;
+		q->trails[q->c.trail_point + q->c.trail_size++] = point;
 
 	e->binding = frame;
 	e->term = term;
 	term->refcnt++;
 }
 
-inline static void put_ptr(tpl_query *q, unsigned point, void* v)
+inline static void put_ptr(tpl_query *q, unsigned point, void *v)
 {
 	node *n = make_ptr(v);
 	put_env(q, point, n, -1);
@@ -244,26 +373,32 @@ inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 #define DBUNLOCK(db)
 #endif
 
-#define OP_INFIX(spec) (spec && (!strcmp(spec,"yfx") || !strcmp(spec,"xfy") || !strcmp(spec,"xfx")))
-#define OP_PREFIX(spec) (spec && (!strcmp(spec,"fx") || !strcmp(spec,"fy")))
-#define OP_POSTFIX(spec) (spec && (!strcmp(spec,"xf") || !strcmp(spec,"yf")))
+#define OP_INFIX(spec) (spec && (!strcmp(spec, "yfx") || !strcmp(spec, "xfy") || !strcmp(spec, "xfx")))
+#define OP_PREFIX(spec) (spec && (!strcmp(spec, "fx") || !strcmp(spec, "fy")))
+#define OP_POSTFIX(spec) (spec && (!strcmp(spec, "xf") || !strcmp(spec, "yf")))
 #define OP_VALID(spec) (OP_INFIX(spec) || OP_PREFIX(spec) || OP_POSTFIX(spec))
 
-#define is_op(db,f) (get_op((db),(f),0)->fun != NULL)
-#define is_infix(db,f) OP_INFIX(get_op((db),(f),0)->spec)
-#define is_prefix(db,f) OP_PREFIX(get_op((db),(f),0)->spec)
-#define is_postfix(db,f) OP_POSTFIX(get_op((db),(f),0)->spec)
+#define is_op(db, f) (get_op((db), (f), 0)->fun != NULL)
+#define is_infix(db, f) OP_INFIX(get_op((db), (f), 0)->spec)
+#define is_prefix(db, f) OP_PREFIX(get_op((db), (f), 0)->spec)
+#define is_postfix(db, f) OP_POSTFIX(get_op((db), (f), 0)->spec)
 
-#define clone_term(q,n) copy_term2(q,n,1,0)		// make exact copy
-#define copy_term(q,n) copy_term2(q,n,0,0)		// make fresh vars
+#define clone_term(q, n) copy_term2(q, n, 1, 0) // make exact copy
+#define copy_term(q, n) copy_term2(q, n, 0, 0)  // make fresh vars
 
-#define FUNCTOR_LEN 1000				// in UTF-8 characters
-#define FUNCTOR_SIZE (FUNCTOR_LEN*4)	// in encoded bytes
-#define KEY_SIZE (FUNCTOR_SIZE+100)
-#define PRINTBUF_SIZE (1024*64)
+#define FUNCTOR_LEN 1000               // in UTF-8 characters
+#define FUNCTOR_SIZE (FUNCTOR_LEN * 4) // in encoded bytes
+#define KEY_SIZE (FUNCTOR_SIZE + 100)
+#define PRINTBUF_SIZE (1024 * 64)
 #define MAX_UNIFY_DEPTH 1000
-#define QABORT(code) q->halt_code = 1, q->halt = code; q->halt_s = strdup(#code); q->line_nbr = __LINE__;
-#define QABORT2(code,str) q->halt_code = 1, q->halt = code; q->halt_s = strdup(#code " - " str); q->line_nbr = __LINE__;
+#define QABORT(code)                                                                                                           \
+	q->halt_code = 1, q->halt = code;                                                                                          \
+	q->halt_s = strdup(#code);                                                                                                 \
+	q->line_nbr = __LINE__;
+#define QABORT2(code, str)                                                                                                     \
+	q->halt_code = 1, q->halt = code;                                                                                          \
+	q->halt_s = strdup(#code " - " str);                                                                                       \
+	q->line_nbr = __LINE__;
 #define FUDGE_FACTOR 1
 #define PI 3.141592653589793238462643383279502884L
 
@@ -280,11 +415,11 @@ inline static void term_append(node *s, node *n) { NLIST_PUSH_BACK(&s->val_l, n)
 inline static void term_concat(node *s1, node *s2) { NLIST_CONCAT(&s1->val_l, &s2->val_l); }
 inline static int term_count(node *s) { return (int)NLIST_COUNT(&s->val_l); }
 inline static const char *term_functor(node *s) { return VAL_S(NLIST_FRONT(&s->val_l)); }
-inline static int term_arity(node *s) { return ((int)NLIST_COUNT(&s->val_l))-1; }
+inline static int term_arity(node *s) { return ((int)NLIST_COUNT(&s->val_l)) - 1; }
 
 inline static void term_heapcheck(node *n)
 {
-	extern void term_heapclean(node *n);
+	extern void term_heapclean(node * n);
 
 	if (n == NULL)
 		return;
@@ -324,7 +459,7 @@ extern void db_init(module *self, trealla *pl, const char *name, const char *fil
 extern int needs_quoting(const char *s);
 
 #ifndef ISO_ONLY
-extern void dbs_save_node(module *db, FILE* fp, char **dstbuf, size_t *buflen, node *n, int in_tran);
+extern void dbs_save_node(module *db, FILE *fp, char **dstbuf, size_t *buflen, node *n, int in_tran);
 extern nbr_t dbs_get_fpos(module *db);
 extern int dbs_done(module *db);
 #endif
@@ -378,7 +513,7 @@ extern int bif_iso_retract(tpl_query *q);
 extern int bif_iso_asserta(tpl_query *q);
 extern int bif_iso_assertz(tpl_query *q);
 
-enum { NUM_NONE=0, NUM_REAL=1, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
+enum { NUM_NONE = 0, NUM_REAL = 1, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
 
 inline static nbr_t get_word(node *n)
 {
@@ -392,7 +527,6 @@ inline static nbr_t get_word(node *n)
 		return 0;
 }
 
-extern node *dbs_read_entry(module* db, nbr_t fpos);
+extern node *dbs_read_entry(module *db, nbr_t fpos);
 
 #endif
-

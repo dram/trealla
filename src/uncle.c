@@ -16,7 +16,13 @@
 #define msleep Sleep
 #else
 #include <unistd.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 static const int g_debug = 0;
@@ -25,7 +31,7 @@ struct uncle_ {
 	handler *h;
 	skipbuck *db;
 	lock *strand;
-	session *s;				// used to broadcast
+	session *s; // used to broadcast
 	char scope[256];
 	time_t unique;
 
@@ -100,8 +106,7 @@ int uncle_query(uncle *u, const char *name, char *addr, unsigned *port, int *tcp
 	return 1;
 }
 
-static int uncle_db_add(uncle *u, const char *name, int local, const char *addr, unsigned port, int tcp,
-                        int ssl, int pri)
+static int uncle_db_add(uncle *u, const char *name, int local, const char *addr, unsigned port, int tcp, int ssl, int pri)
 {
 	char tmpbuf[1024];
 	sprintf(tmpbuf, "%s/%s/%d/%u/%d/%d/%d", name, addr, local, port, tcp, ssl, pri);
@@ -125,7 +130,8 @@ int uncle_add(uncle *u, const char *name, const char *addr, unsigned port, int t
 	uncle_db_add(u, name, 1, addr, port, tcp, ssl, pri);
 
 	char tmpbuf[1024];
-	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$name\":\"%s\",\"$port\":%u,\"$tcp\":%"
+	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$"
+	                "name\":\"%s\",\"$port\":%u,\"$tcp\":%"
 	                "s,\"$ssl\":%s,\"$pri\":%s}\n",
 	        u->scope, (unsigned long long)u->unique, name, port, tcp ? "true" : "false", ssl ? "true" : "false",
 	        pri ? "true" : "false");
@@ -167,8 +173,9 @@ int uncle_rem(uncle *u, const char *name, const char *addr, int tcp)
 		;
 
 	char tmpbuf[1024];
-	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"-\",\"$name\":\"%s\",\"$tcp\":%s}\n", u->scope,
-	        (unsigned long long)u->unique, name, tcp ? "true" : "false");
+	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"-\",\"$"
+	                "name\":\"%s\",\"$tcp\":%s}\n",
+	        u->scope, (unsigned long long)u->unique, name, tcp ? "true" : "false");
 	if (g_debug)
 		printf("DEBUG: REM %s", tmpbuf);
 	session_writemsg(u->s, tmpbuf);
@@ -179,7 +186,7 @@ static int uncle_iter2(uncle *u, const char *k, const char *v)
 {
 	char name[256], addr[256];
 	name[0] = addr[0] = '\0';
-	unsigned  port = 0;
+	unsigned port = 0;
 	int tcp = 0, ssl = 0, local = 0, pri = 0;
 	sscanf(v, "%255[^/]/%255[^/]/%d/%u/%d/%d/%d", name, addr, &local, &port, &tcp, &ssl, &pri);
 	name[sizeof(name) - 1] = 0;
@@ -200,7 +207,8 @@ static int uncle_iter2(uncle *u, const char *k, const char *v)
 		return 1;
 
 	char tmpbuf[1024];
-	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$name\":\"%s\",\"$port\":%u,\"$tcp\":%"
+	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$"
+	                "name\":\"%s\",\"$port\":%u,\"$tcp\":%"
 	                "s,\"$ssl\":%s,\"$pri\":%s}\n",
 	        u->scope, (unsigned long long)u->unique, name, port, tcp ? "true" : "false", ssl ? "true" : "false",
 	        pri ? "true" : "false");

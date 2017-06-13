@@ -3,7 +3,7 @@
 
 typedef struct lock_ lock;
 typedef struct tpool_ tpool;
-typedef int thread_function(void*);
+typedef int thread_function(void *);
 
 extern lock *lock_create(void);
 extern void lock_lock(lock *l);

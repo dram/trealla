@@ -139,9 +139,11 @@ size_t sprint_uint(char *dst, size_t size, unbr_t n, int base)
 	return dst - save_dst;
 }
 
-static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n, int listing);
+static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n,
+                           int listing);
 
-static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n, int listing)
+static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n,
+                           int listing)
 {
 	if (q) {
 		if (++q->print_depth > MAX_UNIFY_DEPTH) {
@@ -163,7 +165,7 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		node *head = term_firstarg(n);
 		node *tail = term_next(head);
 		node *term = q ? get_arg(q, head, this_context) : head;
-		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing?listing:1);
+		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 		term = q ? get_arg(q, tail, this_context) : tail;
 
 		if (is_list(term)) {
@@ -174,7 +176,7 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 		if (!is_atom(term) || strcmp(VAL_S(term), "[]")) {
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "|");
-			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing?listing:1);
+			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 		}
 
 		break;
@@ -190,7 +192,8 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	return dst - *_dst;
 }
 
-static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n, int listing)
+static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n,
+                               int listing)
 {
 	if (q) {
 		if (++q->print_depth > MAX_UNIFY_DEPTH) {
@@ -220,7 +223,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "{");
 		n = term_next(nf);
 		node *term = q ? get_arg(q, n, save_context) : n;
-		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, -listing?listing:1);
+		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, -listing ? listing : 1);
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "}");
 	}
 	else if ((listing < 2) && pl && is_infix(&pl->db, functor) && (arity > 1) && !ignore_ops) {
@@ -233,16 +236,18 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		if (is_hidden(head))
 			head = term_next(head);
 
-		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, head, listing?listing:1);
+		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, head, listing ? listing : 1);
 
 		if (!is_fact(n)) {
-			if (isalpha(functor[0]) || !strcmp(functor, ":-") || !strcmp(functor, ";") || !strcmp(functor, "-->") || !strcmp(functor, "->"))
+			if (isalpha(functor[0]) || !strcmp(functor, ":-") || !strcmp(functor, ";") || !strcmp(functor, "-->") ||
+			    !strcmp(functor, "->"))
 				if (listing == 1)
 					dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
 
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", tmpbuf);
 
-			if (isalpha(functor[0]) || !strcmp(functor, ":-") || !strcmp(functor, ";") || !strcmp(functor, "-->") || !strcmp(functor, "->"))
+			if (isalpha(functor[0]) || !strcmp(functor, ":-") || !strcmp(functor, ";") || !strcmp(functor, "-->") ||
+			    !strcmp(functor, "->"))
 				if (listing == 1)
 					dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
 
@@ -260,7 +265,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 					continue;
 
 				node *term = q ? get_arg(q, n, save_context) : n;
-				dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing?listing:1);
+				dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 
 				if (term_next(n))
 					if (!is_hidden(term_next(n)))
@@ -273,8 +278,8 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), ")");
 	}
 	else if ((listing < 2) && pl && is_postfix(&pl->db, functor) && !ignore_ops) {
-		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term_next(nf), listing?listing:1);
-		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, nf, listing?listing:1);
+		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term_next(nf), listing ? listing : 1);
+		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, nf, listing ? listing : 1);
 	}
 	else if ((listing < 2) && pl && is_prefix(&pl->db, functor) && !ignore_ops) {
 		node *n = term_next(nf);
@@ -287,7 +292,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		if (strcmp(functor, "]-["))
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
 
-		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, n, listing?listing:1);
+		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, n, listing ? listing : 1);
 	}
 	else if (!isop || (nf->flags & FLAG_QUOTED) || (listing == 2) || ignore_ops) {
 		if (!(n->flags & FLAG_CONSING) || (listing >= 2)) {
@@ -320,7 +325,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 				continue;
 
 			node *term = q ? get_arg(q, n1, save_context) : n1;
-			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing?listing:1);
+			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 			node *n2 = term_next(n1);
 
 			while (n2 && is_hidden(n2))
@@ -335,7 +340,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	else {
 		for (node *n = nf; n != NULL; n = term_next(n)) {
 			node *term = q ? get_arg(q, n, save_context) : n;
-			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing?listing:1);
+			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 
 			if (term_next(n))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
@@ -350,7 +355,8 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	return dst - *_dst;
 }
 
-static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n, int listing)
+static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n,
+                           int listing)
 {
 	if (q) {
 		if (++q->print_depth > MAX_UNIFY_DEPTH) {
@@ -408,7 +414,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
 		OPENSSL_free(src);
 
-		//if (BN_num_bits(n->val_bn) < 64)
+		// if (BN_num_bits(n->val_bn) < 64)
 		//{
 		//	*dst++ = 'B';
 		//	*dst = '\0';
@@ -504,14 +510,15 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"%s\"", deescape(tmp, VAL_S(n), '"'));
 		free(tmp);
 	}
-	else if (listing && flag_character_escapes && is_atom(n) && (n->flags & FLAG_QUOTED) && !(n->flags & FLAG_NOOP) && needs_quoting(VAL_S(n))) {
+	else if (listing && flag_character_escapes && is_atom(n) && (n->flags & FLAG_QUOTED) && !(n->flags & FLAG_NOOP) &&
+	         needs_quoting(VAL_S(n))) {
 		char *tmp = (char *)malloc((strlen(VAL_S(n)) * 2) + 1);
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", deescape(tmp, VAL_S(n), '\''));
 		free(tmp);
 	}
 	else if (listing && is_atom(n) && (n->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(VAL_S(n)))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"%s\"", VAL_S(n));
-	else if (listing && is_atom(n) && (n->flags & FLAG_QUOTED) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP) )
+	else if (listing && is_atom(n) && (n->flags & FLAG_QUOTED) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
 	else if (listing && is_atom(n) && !(n->flags & FLAG_QUOTED) && strchr(VAL_S(n), '/') && 0) {
 		const char *src = VAL_S(n);

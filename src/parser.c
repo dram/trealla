@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #define snprintf _snprintf
@@ -30,72 +30,70 @@ int g_force_unbounded = 0;
 const char *g_escapes = "\e\a\f\b\t\v\r\n";
 const char *g_anti_escapes = "eafbtvrn";
 
-static op g_ops[] = {
-	{":-", "xfx", 1200},
-	{":-", "fx", 1200},
-	{"-->", "xfx", 1200},
-	{"?-", "fx", 1200},
-	{";", "xfy", 1100},
-	{"|", "xfy", 1100},
-	{"->", "xfy", 1050},
-	{"*->", "xfy", 1050},
-	{",", "xfy", 1000},
+static op g_ops[] = {{":-", "xfx", 1200},
+                     {":-", "fx", 1200},
+                     {"-->", "xfx", 1200},
+                     {"?-", "fx", 1200},
+                     {";", "xfy", 1100},
+                     {"|", "xfy", 1100},
+                     {"->", "xfy", 1050},
+                     {"*->", "xfy", 1050},
+                     {",", "xfy", 1000},
 
 #ifndef ISO_ONLY
-	{"receive", "fy", 900},
-	{"undo", "fy", 900},
-	{"public", "fy", 1050},
-	{"export", "fy", 1050},
-	{"import", "fy", 1050},
-	{"use_module", "fy", 1050},
-	{"module", "fy", 1050},
+                     {"receive", "fy", 900},
+                     {"undo", "fy", 900},
+                     {"public", "fy", 1050},
+                     {"export", "fy", 1050},
+                     {"import", "fy", 1050},
+                     {"use_module", "fy", 1050},
+                     {"module", "fy", 1050},
 #endif
 
-	{"dynamic", "fy", 1050},
-	{"initialization", "fy", 1050},
+                     {"dynamic", "fy", 1050},
+                     {"initialization", "fy", 1050},
 
-	{"\\+", "fy", 900},
-	{"is", "xfx", 700},
-	{"=", "xfx", 700},
-	{"\\=", "xfx", 700},
-	{"==", "xfx", 700},
-	{"\\==", "xfx", 700},
-	{"=:=", "xfx", 700},
-	{"=\\=", "xfx", 700},
-	{"<", "xfx", 700},
-	{"=<", "xfx", 700},
-	{">", "xfx", 700},
-	{">=", "xfx", 700},
-	{"@<", "xfx", 700},
-	{"@=<", "xfx", 700},
-	{"@>", "xfx", 700},
-	{"@>=", "xfx", 700},
-	{"=..", "xfx", 700},
-	{":", "xfy", 600},
-	{"+", "yfx", 500},
-	{"-", "yfx", 500},
-	//{"?", "fx", 500},
-	{"*", "yfx", 400},
-	{"/", "yfx", 400},
-	{"//", "yfx", 400},
-	{"div", "yfx", 400},
-	{"\\/", "yfx", 400},
-	{"/\\", "yfx", 400},
-	{"xor", "yfx", 400},
-	{"rem", "yfx", 400},
-	{"mod", "yfx", 400},
-	{"<<", "yfx", 400},
-	{">>", "yfx", 400},
-	{"**", "xfx", 200},
-	{"^", "xfy", 200},
-	{"\\", "fy", 200},
-	{"+", "fy", 200},
-	{"-", "fy", 200},
-	{"]-[", "fy", 200},				// HACK
-	//{"$", "fx", 1},
+                     {"\\+", "fy", 900},
+                     {"is", "xfx", 700},
+                     {"=", "xfx", 700},
+                     {"\\=", "xfx", 700},
+                     {"==", "xfx", 700},
+                     {"\\==", "xfx", 700},
+                     {"=:=", "xfx", 700},
+                     {"=\\=", "xfx", 700},
+                     {"<", "xfx", 700},
+                     {"=<", "xfx", 700},
+                     {">", "xfx", 700},
+                     {">=", "xfx", 700},
+                     {"@<", "xfx", 700},
+                     {"@=<", "xfx", 700},
+                     {"@>", "xfx", 700},
+                     {"@>=", "xfx", 700},
+                     {"=..", "xfx", 700},
+                     {":", "xfy", 600},
+                     {"+", "yfx", 500},
+                     {"-", "yfx", 500},
+                     //{"?", "fx", 500},
+                     {"*", "yfx", 400},
+                     {"/", "yfx", 400},
+                     {"//", "yfx", 400},
+                     {"div", "yfx", 400},
+                     {"\\/", "yfx", 400},
+                     {"/\\", "yfx", 400},
+                     {"xor", "yfx", 400},
+                     {"rem", "yfx", 400},
+                     {"mod", "yfx", 400},
+                     {"<<", "yfx", 400},
+                     {">>", "yfx", 400},
+                     {"**", "xfx", 200},
+                     {"^", "xfy", 200},
+                     {"\\", "fy", 200},
+                     {"+", "fy", 200},
+                     {"-", "fy", 200},
+                     {"]-[", "fy", 200}, // HACK
+                     //{"$", "fx", 1},
 
-	{0}
-};
+                     {0}};
 
 inline static node *term_last(node *s) { return NLIST_BACK(&s->val_l); }
 inline static node *term_prev(node *n) { return NLIST_PREV(n); }
@@ -160,9 +158,9 @@ int needs_quoting(const char *s)
 
 		if (isalpha_utf8(ch) || isdigit(ch) ||
 #ifndef ISO_ONLY
-			(ch == ':') ||
+		    (ch == ':') ||
 #endif
-			(ch == '_'))
+		    (ch == '_'))
 			any_ans = 1;
 		else
 			any_signs = 1;
@@ -472,9 +470,11 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 	else if (!strcmp(flag, "debug"))
 		l->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : 0;
 	else if (!strcmp(flag, "unknown"))
-		l->flag_unknown = !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
+		l->flag_unknown =
+		    !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
 	else if (!strcmp(flag, "double_quotes"))
-		l->flag_double_quotes = !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
+		l->flag_double_quotes =
+		    !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
 }
 
 int dir_dynamic(lexer *l, node *n)
@@ -640,7 +640,8 @@ static int dir_module(lexer *l, node *n)
 				char tmpbuf[FUNCTOR_SIZE + 10];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-				//printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
+				// printf("DEBUG: EXPORT %s:%s\n", l->db->name,
+				// tmpbuf);
 			}
 
 			term2 = term_next(n2);
@@ -714,7 +715,8 @@ static int dir_export(lexer *l, node *n)
 				char tmpbuf[FUNCTOR_SIZE + 10];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-				//printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
+				// printf("DEBUG: EXPORT %s:%s\n", l->db->name,
+				// tmpbuf);
 			}
 
 			term1 = term_next(n2);
@@ -736,7 +738,8 @@ static int dir_export(lexer *l, node *n)
 				char tmpbuf[FUNCTOR_SIZE + 10];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-				//printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
+				// printf("DEBUG: EXPORT %s:%s\n", l->db->name,
+				// tmpbuf);
 			}
 
 			term1 = term_next(n2);
@@ -750,7 +753,7 @@ static int dir_export(lexer *l, node *n)
 			char tmpbuf[FUNCTOR_SIZE + 10];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 			sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-			//printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
+			// printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
 		}
 
 		term1 = term_next(term1);
@@ -797,7 +800,7 @@ static int dir_define(lexer *l, node *n)
 	if (!is_atomic(term2))
 		return 0;
 
-	char tmpbuf[KEY_SIZE+10];
+	char tmpbuf[KEY_SIZE + 10];
 	char *dst = tmpbuf;
 	dst += term_sprint(dst, sizeof(tmpbuf), l->pl, NULL, term2, 1);
 	add_define(l, VAL_S(term1), tmpbuf);
@@ -835,7 +838,7 @@ int dir_use_module(lexer *l, node *n)
 
 	while (use_lib && lib->name != NULL) {
 		if (!strcmp(lib->name, name)) {
-			char *src = strndup((const char *)lib->start, (lib->end-lib->start));
+			char *src = strndup((const char *)lib->start, (lib->end - lib->start));
 			trealla_consult_text(l->pl, src, name);
 			free(src);
 			l->db = save;
@@ -1006,8 +1009,8 @@ static int directive(lexer *l, node *n)
 		dir_unload_file(l, n3);
 #endif
 	else {
-		//if (!xref_term(l, n3, term_arity(n3)))
-			return 0;
+		// if (!xref_term(l, n3, term_arity(n3)))
+		return 0;
 	}
 
 	return 1;
@@ -1139,7 +1142,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 	int xfy = 0;
 
 	for (node *n = term_first(term); n != NULL; n = term_next(n)) {
-		while (attach_ops(l, n, depth+1))
+		while (attach_ops(l, n, depth + 1))
 			;
 
 		if (!is_atom(n)) {
@@ -1233,13 +1236,16 @@ static int attach_ops(lexer *l, node *term, int depth)
 		if (optr->priority != priority)
 			continue;
 
-		//printf("### attach_ops FUNCTOR = '%s' / '%s'\n", functor, optr->spec);
+		// printf("### attach_ops FUNCTOR = '%s' / '%s'\n", functor,
+		// optr->spec);
 
 		if (OP_PREFIX(optr->spec)) {
 			n = attach_op_prefix(l, term, n);
 
 			if ((n == NULL) && l->error) {
-				printf("ERROR: prefix op '%s' missing params, line %d\n", functor, l->line_nbr);
+				printf("ERROR: prefix op '%s' missing params, "
+				       "line %d\n",
+				       functor, l->line_nbr);
 				return 0;
 			}
 		}
@@ -1247,7 +1253,9 @@ static int attach_ops(lexer *l, node *term, int depth)
 			n = attach_op_postfix(l, term, n);
 
 			if ((n == NULL) && l->error) {
-				printf("ERROR: postfix op '%s' missing params, line %d\n", functor, l->line_nbr);
+				printf("ERROR: postfix op '%s' missing params, "
+				       "line %d\n",
+				       functor, l->line_nbr);
 				return 0;
 			}
 		}
@@ -1255,7 +1263,9 @@ static int attach_ops(lexer *l, node *term, int depth)
 			n = attach_op_infix(l, term, n, functor, depth);
 
 			if ((n == NULL) && l->error) {
-				printf("ERROR: infix op '%s' missing params, line %d\n", functor, l->line_nbr);
+				printf("ERROR: infix op '%s' missing params, "
+				       "line %d\n",
+				       functor, l->line_nbr);
 				l->error = 1;
 				return 0;
 			}
@@ -1276,7 +1286,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 	term->flags |= FLAG_ATTACHED;
 
 	for (node *n = term_first(term); n != NULL; n = term_next(n)) {
-		while (attach_ops(l, n, depth+1))
+		while (attach_ops(l, n, depth + 1))
 			;
 	}
 
@@ -1333,7 +1343,7 @@ static int dcg_term(lexer *l, node *term, int i, int j)
 
 static node *dcg_list(lexer *l, node *term)
 {
-	extern int bif_iso_unify(tpl_query *q);
+	extern int bif_iso_unify(tpl_query * q);
 	node *tmp = make_compound();
 	tmp->flags |= FLAG_BUILTIN;
 	tmp->bifptr = bif_iso_unify;
@@ -1376,7 +1386,7 @@ static void dcg_clause(lexer *l, node *term)
 		return;
 
 	node *func = term_first(term);
-	func->val_s = (char*)":-";
+	func->val_s = (char *)":-";
 	node *head = term_next(func);
 	node *body = term_next(head);
 	dcg_term(l, head, 0, -1);
@@ -1390,7 +1400,7 @@ static void dcg_clause(lexer *l, node *term)
 			if (!strcmp(functor, ",") || !strcmp(functor, ";")) {
 				head = term_firstarg(body);
 
-				if (dcg_term(l, head, i, i+1))
+				if (dcg_term(l, head, i, i + 1))
 					i++;
 
 				body = term_next(head);
@@ -1406,7 +1416,7 @@ static void dcg_clause(lexer *l, node *term)
 			body = NULL;
 		}
 		else if (is_atom(body)) {
-			if (dcg_term(l, body, i, i+1))
+			if (dcg_term(l, body, i, i + 1))
 				i++;
 
 			body = NULL;
@@ -1422,12 +1432,10 @@ static void dcg_clause(lexer *l, node *term)
 	}
 }
 
-typedef struct
-{
+typedef struct {
 	char *buf, *dst;
 	size_t maxlen;
-}
- token;
+} token;
 
 static void token_init(token *t)
 {
@@ -1448,10 +1456,7 @@ static void token_put(token *t, int ch)
 	*t->dst = '\0';
 }
 
-static char *token_take(token *t)
-{
-	return t->buf;
-}
+static char *token_take(token *t) { return t->buf; }
 
 const char *parse_number(const char *s, nbr_t *value, int *numeric)
 {
@@ -1544,8 +1549,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 			*value *= 10;
 			*value += ch - '0';
 		}
-	}
-	 while (ch = *s, (ch != '\0'));
+	} while (ch = *s, (ch != '\0'));
 
 #if USE_SSL
 	if ((*numeric == NUM_INT) && g_force_unbounded) {
@@ -1555,7 +1559,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 
 	if ((*numeric == NUM_INT) && (strlen(save_s) > 12)) {
 		BIGNUM *bn = NULL;
-		char *tmpbuf = (char *)malloc(strlen(save_s)+1);
+		char *tmpbuf = (char *)malloc(strlen(save_s) + 1);
 		char *dst = tmpbuf;
 
 		while (isdigit(*save_s))
@@ -1584,7 +1588,7 @@ static const char *get_token(lexer *l, const char *s, char **line)
 	if (!s)
 		return NULL;
 
-LOOP:								// FIXME someday
+LOOP: // FIXME someday
 
 	while (isspace(*s)) {
 		if (*s == '\n')
@@ -1670,7 +1674,10 @@ LOOP:								// FIXME someday
 						token_put(&t, g_escapes[ptr - g_anti_escapes]);
 					else if (ch == '0') {
 						if (!l->error)
-							printf("ERROR: illegal character escape sequence\n");
+							printf("ERROR: illegal "
+							       "character "
+							       "escape "
+							       "sequence\n");
 
 						l->error = 1;
 					}
@@ -1680,7 +1687,12 @@ LOOP:								// FIXME someday
 
 						if ((ch < '0') || (ch > '7')) {
 							if (!l->error)
-								printf("ERROR: illegal octal escape sequence\n");
+								printf("ERROR: "
+								       "illegal"
+								       " octal "
+								       "escape "
+								       "sequenc"
+								       "e\n");
 
 							l->error = 1;
 						}
@@ -1750,7 +1762,13 @@ LOOP:								// FIXME someday
 							token_put(&t, g_escapes[ptr - g_anti_escapes]);
 						else if (ch == '0') {
 							if (!l->error)
-								printf("ERROR: illegal character escape sequence\n");
+								printf("ERROR: "
+								       "illegal"
+								       " charac"
+								       "ter "
+								       "escape "
+								       "sequenc"
+								       "e\n");
 
 							l->error = 1;
 						}
@@ -1760,7 +1778,25 @@ LOOP:								// FIXME someday
 
 							if ((ch < '0') || (ch > '7')) {
 								if (!l->error)
-									printf("ERROR: illegal octal escape sequence\n");
+									printf("ER"
+									       "RO"
+									       "R:"
+									       " i"
+									       "ll"
+									       "eg"
+									       "al"
+									       " o"
+									       "ct"
+									       "al"
+									       " e"
+									       "sc"
+									       "ap"
+									       "e "
+									       "se"
+									       "qu"
+									       "en"
+									       "ce"
+									       "\n");
 
 								l->error = 1;
 							}
@@ -1846,7 +1882,8 @@ LOOP:								// FIXME someday
 					t.dst += sprint_int(t.buf, t.maxlen, l->negate ? -v : v);
 
 				break;
-			} else {
+			}
+			else {
 				const char *src = save_s;
 
 				if (l->negate)
@@ -1899,7 +1936,8 @@ LOOP:								// FIXME someday
 	else
 		l->is_op = 0;
 
-	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\", is=%d, was=%d\n", l->tok, l->numeric, l->quoted, s, l->is_paren, l->was_paren);
+// printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\", is=%d, was=%d\n",
+// l->tok, l->numeric, l->quoted, s, l->is_paren, l->was_paren);
 
 #ifndef ISO_ONLY
 	if (l->tok && is_def) {
@@ -2060,11 +2098,13 @@ static void lexer_finalize(lexer *self)
 			}
 
 			term_heapcheck(self->r);
-		} else {
+		}
+		else {
 			self->r->flags |= FLAG_CLAUSE;
 			NLIST_PUSH_BACK(&self->val_l, self->r);
 		}
-	} else {
+	}
+	else {
 		node *n = term_first(self->r);
 
 		if (term_count(self->r) > 1) {
@@ -2085,7 +2125,7 @@ static void lexer_finalize(lexer *self)
 		NLIST_PUSH_BACK(&self->val_l, n);
 		term_heapcheck(self->r);
 		add_clauses(self);
-		//xref_clauses(self);
+		// xref_clauses(self);
 	}
 
 	sl_clear(&self->symtab, NULL);
@@ -2260,7 +2300,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if ((self->depth == 1) && !self->quoted && (!strcmp(self->tok, ":-") || !strcmp(self->tok, "-->") || !strcmp(self->tok, "?-"))) {
+		if ((self->depth == 1) && !self->quoted &&
+		    (!strcmp(self->tok, ":-") || !strcmp(self->tok, "-->") || !strcmp(self->tok, "?-"))) {
 			if (!strcmp(self->tok, "-->"))
 				self->dcg = 1;
 
@@ -2269,7 +2310,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		node *n = NULL;
 
-		//printf("*** tok='%s' is_paren=%d, was_paren=%d\n", self->tok, self->is_paren, self->was_paren);
+		// printf("*** tok='%s' is_paren=%d, was_paren=%d\n", self->tok,
+		// self->is_paren, self->was_paren);
 
 		if (!self->quoted && !strcmp(self->tok, "{}")) {
 			free(self->tok);
@@ -2327,11 +2369,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 						n->flags &= ~FLAG_NOARGS;
 						n->cpos = tmp->cpos;
 
-						if (!strcmp(functor, "call") || !strcmp(functor, "phrase") ||
-							!strcmp(functor, "bagof") || !strcmp(functor, "setof") ||
-						    !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
+						if (!strcmp(functor, "call") || !strcmp(functor, "phrase") || !strcmp(functor, "bagof") ||
+						    !strcmp(functor, "setof") || !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
 						    !strcmp(functor, "sys:write_file") || !strcmp(functor, "write_file") ||
-							!strcmp(functor, "findnsols")) {
+						    !strcmp(functor, "findnsols")) {
 							node *tmp = term_make();
 							tmp->flags |= TYPE_VAR | FLAG_ANON | FLAG_HIDDEN | FLAG_CONST;
 							char tmpbuf[40];
@@ -2413,17 +2454,18 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			free(self->tok);
 			attach_vars(self, n);
 		}
-		else if (!self->error && !self->quoted && !is_op(self->db, self->tok) &&
-				!isalnum_utf8(self->tok[0]) && strcmp(self->tok, "!") && strcmp(self->tok, ".") &&
-				needs_quoting(self->tok)) {
+		else if (!self->error && !self->quoted && !is_op(self->db, self->tok) && !isalnum_utf8(self->tok[0]) &&
+		         strcmp(self->tok, "!") && strcmp(self->tok, ".") && needs_quoting(self->tok)) {
 			printf("ERROR: unknown operator: '%s'\n", self->tok);
 			self->error = 1;
 			return NULL;
-		} else if ((self->quoted == 2) && (self->flag_double_quotes == 0) && !self->tok[0]) {
+		}
+		else if ((self->quoted == 2) && (self->flag_double_quotes == 0) && !self->tok[0]) {
 			self->was_atom = 1;
 			n = make_const_atom("[]", 0);
 			free(self->tok);
-		} else if ((self->quoted == 2) && (self->flag_double_quotes == 0)) {
+		}
+		else if ((self->quoted == 2) && (self->flag_double_quotes == 0)) {
 			self->was_atom = 1;
 			node *l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;
@@ -2443,11 +2485,13 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 			term_append(l, make_const_atom("[]", 0));
 			free(self->tok);
-		} else if ((self->quoted == 2) && (self->flag_double_quotes == 2) && !self->tok[0]) {
+		}
+		else if ((self->quoted == 2) && (self->flag_double_quotes == 2) && !self->tok[0]) {
 			self->was_atom = 1;
 			n = make_const_atom("[]", 0);
 			free(self->tok);
-		} else if ((self->quoted == 2) && (self->flag_double_quotes == 2)) {
+		}
+		else if ((self->quoted == 2) && (self->flag_double_quotes == 2)) {
 			self->was_atom = 1;
 			node *l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;
@@ -2470,14 +2514,14 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 			term_append(l, make_const_atom("[]", 0));
 			free(self->tok);
-		} else {
+		}
+		else {
 			self->was_atom = 1;
 			n = term_make();
 			n->flags |= TYPE_ATOM;
 
-			if ((self->was_paren || self->was_op) &&
-					!self->quoted && is_op(self->db, self->tok) &&
-						strcmp(self->tok, "\\+")) {	// HACK
+			if ((self->was_paren || self->was_op) && !self->quoted && is_op(self->db, self->tok) &&
+			    strcmp(self->tok, "\\+")) { // HACK
 				n->flags |= FLAG_NOOP;
 				self->quoted = 1;
 			}
@@ -2595,7 +2639,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 	return src;
 }
 
-static const char *exts[] = {".prolog",".pro",".pl",".P", NULL};
+static const char *exts[] = {".prolog", ".pro", ".pl", ".P", NULL};
 
 int lexer_consult_fp(lexer *self, FILE *fp)
 {
@@ -2618,9 +2662,7 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 		if (self->error && (line != NULL)) {
 			printf("ERROR: consult '%s', "
 			       "line=%d, '%s'\n",
-			       (self->name ? self->name : "console"),
-			       self->line_nbr,
-			       (line ? line : "end_of_file reached unexpectedly"));
+			       (self->name ? self->name : "console"), self->line_nbr, (line ? line : "end_of_file reached unexpectedly"));
 
 			free(line);
 			break;
@@ -2650,7 +2692,7 @@ int lexer_consult_file(lexer *self, const char *orig_filename)
 		const char *path = getenv("HOME");
 
 		if (path)
-			snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s", path, orig_filename+1);
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s", path, orig_filename + 1);
 		else
 			snprintf(tmpbuf, sizeof(tmpbuf), "%s", orig_filename);
 	}

@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -17,7 +17,13 @@
 #define msleep Sleep
 #else
 #include <unistd.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 #include "trealla.h"
@@ -166,13 +172,13 @@ node *dbs_read_entry(module *db, nbr_t fpos)
 
 	int len = strlen(line);
 
-	if (line[len-1] == '.')
+	if (line[len - 1] == '.')
 		len--;
 
 	// Make a transaction. Note: trealla_readline
 	// leaves enough empty space at the end for this.
 
-	if (line[len-1] != '_') {
+	if (line[len - 1] != '_') {
 		line[len++] = ',';
 		line[len++] = 't';
 		line[len++] = '_';
@@ -242,8 +248,7 @@ static void dbs_load_file(module *db, const char *filename, int tail)
 			clearerr(db->fp);
 			msleep(tail);
 		}
-	}
-	 while (tail);
+	} while (tail);
 
 	lexer_done(&lex);
 	db->loading = 0;
@@ -305,10 +310,7 @@ static void dbs_load(module *db, int tail, int load)
 	db->loaded = 1;
 }
 
-nbr_t dbs_get_fpos(module *db)
-{
-	return db->loading ? db->last_fpos : ftello(db->fp);
-}
+nbr_t dbs_get_fpos(module *db) { return db->loading ? db->last_fpos : ftello(db->fp); }
 
 int dbs_done(module *db)
 {

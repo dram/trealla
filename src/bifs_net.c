@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -16,7 +16,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#define msleep(ms) { struct timespec tv; tv.tv_sec = (ms)/1000; tv.tv_nsec = ((ms)%1000) * 1000 * 1000; nanosleep(&tv, &tv); }
+#define msleep(ms)                                                                                                             \
+	{                                                                                                                          \
+		struct timespec tv;                                                                                                    \
+		tv.tv_sec = (ms) / 1000;                                                                                               \
+		tv.tv_nsec = ((ms) % 1000) * 1000 * 1000;                                                                              \
+		nanosleep(&tv, &tv);                                                                                                   \
+	}
 #endif
 
 #ifndef USE_SSL
@@ -364,7 +370,9 @@ static int bif_net_client_2(tpl_query *q)
 		sscanf(ptr, ";%*[^=]=%255[^;]", name);
 		name[sizeof(name) - 1] = '\0';
 
-		// printf("DEBUG: Add discovery: %s,port=%u,scope=%s\n", "*", uport, scope);
+		// printf("DEBUG: Add discovery: %s,port=%u,scope=%s\n", "*",
+		// uport,
+		// scope);
 
 		uncle *u = uncle_create(NULL, uport, scope, NULL, NULL);
 		if (!u)
@@ -378,7 +386,10 @@ static int bif_net_client_2(tpl_query *q)
 			if (!uncle_query(u, name, host, &tmp_port, &tcp, &ssl, &pri))
 				continue;
 
-			// printf("DEBUG: Discovery: scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", scope, name, tmp_port, tcp, ssl,
+			// printf("DEBUG: Discovery:
+			// scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n",
+			// scope, name,
+			// tmp_port, tcp, ssl,
 			// pri);
 			found = 1;
 			break;
@@ -394,7 +405,9 @@ static int bif_net_client_2(tpl_query *q)
 		port = tmp_port;
 	}
 
-	// printf("DEBUG: Client: userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid, passwd, host, port, tcp, ssl,
+	// printf("DEBUG: Client:
+	// userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid,
+	// passwd, host, port, tcp, ssl,
 	// pri);
 
 	session *s = session_open(host, port, tcp, ssl);
@@ -513,10 +526,7 @@ static int bif_net_ipv4_2(tpl_query *q)
 	return ok;
 }
 
-static int bif_net_ipv6_2(tpl_query *q)
-{
-	return !bif_net_ipv4_2(q);
-}
+static int bif_net_ipv6_2(tpl_query *q) { return !bif_net_ipv4_2(q); }
 
 static int bif_net_udp_2(tpl_query *q)
 {
@@ -531,10 +541,7 @@ static int bif_net_udp_2(tpl_query *q)
 	return ok;
 }
 
-static int bif_net_tcp_2(tpl_query *q)
-{
-	return !bif_net_udp_2(q);
-}
+static int bif_net_tcp_2(tpl_query *q) { return !bif_net_udp_2(q); }
 
 static int bif_net_tls_2(tpl_query *q)
 {
