@@ -1892,13 +1892,22 @@ LOOP: // FIXME someday
 
 				break;
 			}
-			else {
+			else if (l->numeric == NUM_BIGNUM) {
 				const char *src = save_s;
 
 				if (l->negate)
 					token_put(&t, '-');
 
 				while ((ch = *src++) && isdigit(ch))
+					token_put(&t, ch);
+			}
+			else {
+				const char *src = save_s;
+
+				if (l->negate)
+					token_put(&t, '-');
+
+				while ((ch = *src++) && (src != (s+1)))
 					token_put(&t, ch);
 			}
 
