@@ -1640,7 +1640,9 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
 	trealla_make_rule(pl, "get0(Code) :- get_code(Code).");
+	trealla_make_rule(pl, "get0(S,Code) :- get_code(S,Code).");
 	trealla_make_rule(pl, "get(Code) :- get_code(Code).");	// FIXME
+	trealla_make_rule(pl, "get(S,Code) :- get_code(S,Code).");	// FIXME
 #endif
 
 	return pl;
