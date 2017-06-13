@@ -135,7 +135,7 @@ found in other Prolog implementations:
 	get(-Code)					- same as get_code/1 (DEPRECATED)
 	get(+Stream,-Code)			- same as get_code/2 (DEPRECATED)
 	memberchk(?Term,+List)
-	name(?Atomic, ?CodeList)
+	name(?Atomic,?CodeList)
 	trace(?Int)
 	trace/0                     - same as trace(1)
 	put(+Char)                  - put_code/1 or put_char/1 based on type of Char
