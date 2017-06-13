@@ -6555,7 +6555,7 @@ static int bif_xtra_name(tpl_query *q)
 	}
 
 	if (is_list(term2)) {
-		size_t buflen = FUNCTOR_SIZE;
+		size_t buflen = FUNCTOR_SIZE*2;
 		char *dstbuf = malloc(buflen);
 		char *dst = dstbuf;
 		node *l = term2;
@@ -6595,12 +6595,20 @@ static int bif_xtra_name(tpl_query *q)
 		*dst = '\0';
 		int numeric = NUM_NONE;
 		nbr_t v;
-		parse_number(dstbuf, &v, &numeric);
+
+		if (isdigit(*dstbuf))
+			parse_number(dstbuf, &v, &numeric);
+
 		int ok;
 
 		if (isdigit(*dstbuf) && (numeric == NUM_INT))
 			ok = unify_int(q, term1, v);
-		else if (isdigit(*dstbuf) && (numeric == NUM_REAL))
+		else if (isdigit(*dstbuf) && (numeric == NUM_BIGNUM)) {
+			node *n = make_bignum(dstbuf);
+			ok = unify_term(q, term1, n, q->c.curr_frame);
+			term_heapcheck(n);
+		}
+		else if (numeric == NUM_REAL)
 			ok = unify_float(q, term1, strtod(dstbuf, NULL));
 		else
 			ok = unify_atom(q, term1, strdup(dstbuf), 1);
