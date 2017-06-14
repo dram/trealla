@@ -1210,7 +1210,7 @@ void query_destroy(tpl_query *self)
 	if (self->subq)
 		query_destroy(self->subq);
 
-	if (self->did_getc) {
+	if (self->did_getc && (self->curr_stdin == stdin)) {
 		while ((getc(stdin) != '\n') && !feof(stdin))
 			;
 	}
