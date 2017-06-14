@@ -6495,6 +6495,7 @@ static int bif_xtra_tab_1(tpl_query *q)
 	return ok;
 }
 
+#if 0
 static int bif_xtra_memberchk_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6520,6 +6521,7 @@ static int bif_xtra_memberchk_2(tpl_query *q)
 
 	return 0;
 }
+#endif
 
 static int bif_xtra_predicate_property_2(tpl_query *q)
 {
@@ -7024,7 +7026,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("delete_file", 1, bif_xtra_delete_file_1);
 	DEFINE_BIF("rename_file", 2, bif_xtra_rename_file_2);
 	DEFINE_BIF("make_directory", 1, bif_xtra_make_directory_1);
-	DEFINE_BIF("memberchk", 2, bif_xtra_memberchk_2);
+	//DEFINE_BIF("memberchk", 2, bif_xtra_memberchk_2);
 	DEFINE_BIF("name", 2, bif_xtra_name_2);
 
 #if USE_SSL
