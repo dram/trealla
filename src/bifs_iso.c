@@ -3426,6 +3426,7 @@ static int bif_iso_univ(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
+	unsigned save_context = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -3451,7 +3452,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]", 0));
-		int ok = unify_term(q, term2, save_l, q->c.curr_frame);
+		int ok = unify_term(q, term2, save_l, save_context);
 		term_heapcheck(save_l);
 		return ok;
 	}
