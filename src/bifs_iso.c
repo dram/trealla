@@ -653,12 +653,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 	node *n1 = get_arg(q, term1, q->c.curr_frame);
 	node *n2 = get_arg(q, term2, q->c.curr_frame);
 
-	if (is_integer(n1) || is_bignum(n1)) {
-		if (!is_integer(n2) && !is_bignum(n2)) {
-			//QABORT(ABORT_INVALIDARGNOTINT);
-			return 0;
-		}
-
+	if ((is_integer(n1) || is_bignum(n1)) && (is_integer(n2) || is_bignum(n2))) {
 		if (get_word(n1) < get_word(n2))
 			return -1;
 
@@ -667,12 +662,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 		return 1;
 	}
-	else if (is_float(n1)) {
-		if (!is_float(n2)) {
-			//QABORT(ABORT_INVALIDARGNOTFLOAT);
-			return 0;
-		}
-
+	else if (is_float(n1) && is_float(n2)) {
 		if (n1->val_f < n2->val_f)
 			return -1;
 
@@ -681,20 +671,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 		return 1;
 	}
-	else if (is_atom(n1)) {
-		if (!is_atom(n2)) {
-			//QABORT(ABORT_INVALIDARGNOTATOM);
-			return 0;
-		}
-
-		return strcmp(VAL_S(n1), VAL_S(n2));
-	}
-	else if (is_var(n1)) {
-		if (!is_var(n2)) {
-			//QABORT(ABORT_INVALIDARGNOTVAR);
-			return 0;
-		}
-
+	else if (is_var(n1) && is_var(n2)) {
 		if (n1->slot < n2->slot)
 			return -1;
 
@@ -703,12 +680,10 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 		return 1;
 	}
-	else if (is_compound(n1)) {
-		if (!is_compound(n2)) {
-			//QABORT(ABORT_INVALIDARGNOTCOMPOUND);
-			return 0;
-		}
-
+	else if (is_atom(n1) && is_atom(n2)) {
+		return strcmp(VAL_S(n1), VAL_S(n2));
+	}
+	else if (is_compound(n1) && is_compound(n2)) {
 		return compare_compounds(q, n1, n2, mode);
 	}
 
