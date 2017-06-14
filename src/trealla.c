@@ -1580,14 +1580,14 @@ trealla *trealla_create(const char *name)
 	                      "stream_property_file_name(S,F).");
 
 #ifndef ISO_ONLY
-	trealla_make_rule(pl, "member(X,X) :- var(X),!,fail.");
+	trealla_make_rule(pl, "member(X,X) :- var(X), !, fail.");
 	trealla_make_rule(pl, "member(X,[X|_]).");
 	trealla_make_rule(pl, "member(X,[_|T]) :- member(X,T).");
 	trealla_make_rule(pl, "select(X,[X|T],T).");
 	trealla_make_rule(pl, "select(X,[H|T],[H|Rest]) :- select(X,T,Rest).");
 	trealla_make_rule(pl, "subtract([],_,[]) :- !.");
-	trealla_make_rule(pl, "subtract([Head|Tail],L2,L3) :- memberchk(Head, L2),!,subtract(Tail, L2, L3).");
-	trealla_make_rule(pl, "subtract([Head|Tail1],L2,[Head|Tail3]) :- subtract(Tail1, L2, Tail3).");
+	trealla_make_rule(pl, "subtract([Head|Tail],L2,L3) :- memberchk(Head,L2), !, subtract(Tail,L2,L3).");
+	trealla_make_rule(pl, "subtract([Head|Tail1],L2,[Head|Tail3]) :- subtract(Tail1,L2,Tail3).");
 	trealla_make_rule(pl, "revzap([],L,L) :- !.");
 	trealla_make_rule(pl, "revzap([X|L],L2,L3) :- revzap(L,[X|L2],L3).");
 	trealla_make_rule(pl, "reverse(L1,L2) :- revzap(L1,[],L2).");
@@ -1614,10 +1614,6 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "memberchk(E,L) :- once(member(E,L)).");
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
-	trealla_make_rule(pl, "get0(Code) :- get_code(Code).");
-	trealla_make_rule(pl, "get0(S,Code) :- get_code(S,Code).");
-	trealla_make_rule(pl, "get(Code) :- get_code(Code).");     // FIXME
-	trealla_make_rule(pl, "get(S,Code) :- get_code(S,Code)."); // FIXME
 #endif
 
 	return pl;

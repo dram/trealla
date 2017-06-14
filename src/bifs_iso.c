@@ -6413,6 +6413,54 @@ static int bif_xtra_told_0(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_get_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int_or_var(term1);
+	int ch;
+
+	if (q->pl->tty && !q->curr_stdin_name && !q->did_getc) {
+		printf("| ");
+		fflush(q->curr_stdout);
+	}
+
+LOOP:
+
+	q->did_getc = 1;
+	ch = getc_utf8(q->curr_stdin);
+
+	if (ch == EOF)
+		q->did_getc = 0;
+	else {
+		if (ch == '\n')
+			q->did_getc = 0;
+
+		if (isspace(ch))
+			goto LOOP;
+	}
+
+	return unify_int(q, term1, ch);
+}
+
+static int bif_xtra_get_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_stream(term1);
+	node *term2 = get_int_or_var(term2);
+	int ch;
+
+LOOP:
+
+	ch = getc_utf8(get_input_stream(term1));
+
+	if (ch != EOF) {
+		if (isspace(ch))
+			goto LOOP;
+	}
+
+	return unify_int(q, term2, ch);
+}
+
 static int bif_xtra_tab_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6977,6 +7025,10 @@ void bifs_load_iso(void)
 	DEFINE_BIF("told", 0, bif_xtra_told_0);
 	DEFINE_BIF("tab", 1, bif_xtra_tab_1);
 	DEFINE_BIF("tab", 2, bif_xtra_tab_2);
+	DEFINE_BIF("get0", 1, bif_iso_get_code);
+	DEFINE_BIF("get0", 2, bif_iso_get_code);
+	DEFINE_BIF("get", 1, bif_xtra_get_1);
+	DEFINE_BIF("get", 2, bif_xtra_get_2);
 #endif
 
 #ifndef ISO_ONLY
