@@ -2379,7 +2379,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 						doit = 1;
 					}
 
-					if (!optr->fun || is_quoted(tmp) || doit) {
+					if (!optr->fun || doit) {
 						term_remove(term, tmp);
 						term_append(n, tmp);
 						n->flags &= ~FLAG_NOARGS;
