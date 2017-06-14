@@ -6495,6 +6495,28 @@ static int bif_xtra_tab_1(tpl_query *q)
 	return ok;
 }
 
+static int bif_xtra_memberchk_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	node *term2 = get_list(term2);
+	node *l = term2;
+	allocate_frame(q);
+
+	while (is_list(l)) {
+		node *n = term_firstarg(l);
+
+		if (unify_term(q, term1, n, q->c.curr_frame)) {
+			return 1;
+		}
+
+		reallocate_frame(q);
+		l = term_next(n);
+	}
+
+	return 0;
+}
+
 static int bif_xtra_predicate_property_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -6649,7 +6671,7 @@ static int bif_xtra_make_directory_1(tpl_query *q)
 	return !mkdir(filename, 0777);
 }
 
-static int bif_xtra_name(tpl_query *q)
+static int bif_xtra_name_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -6998,7 +7020,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("delete_file", 1, bif_xtra_delete_file_1);
 	DEFINE_BIF("rename_file", 2, bif_xtra_rename_file_2);
 	DEFINE_BIF("make_directory", 1, bif_xtra_make_directory_1);
-	DEFINE_BIF("name", 2, bif_xtra_name);
+	DEFINE_BIF("memberchk", 2, bif_xtra_memberchk_2);
+	DEFINE_BIF("name", 2, bif_xtra_name_2);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
