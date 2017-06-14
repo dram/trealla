@@ -3443,14 +3443,15 @@ static int bif_iso_univ(tpl_query *q)
 
 			if (!term_next(n))
 				break;
-			node *tmp;
-			term_append(l, tmp = make_list());
+
+			node *tmp = make_list();
+			term_append(l, tmp);
 			l = tmp;
 			n = term_next(n);
 		}
 
 		term_append(l, make_const_atom("[]", 0));
-		int ok = unify_term(q, save_l, term2, q->c.curr_frame);
+		int ok = unify_term(q, term2, save_l, q->c.curr_frame);
 		term_heapcheck(save_l);
 		return ok;
 	}
@@ -3459,7 +3460,7 @@ static int bif_iso_univ(tpl_query *q)
 		node *l = make_list();
 		term_append(l, clone_term(q, term1));
 		term_append(l, make_const_atom("[]", 0));
-		int ok = unify_term(q, l, term2, q->c.curr_frame);
+		int ok = unify_term(q, term2, l, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
 	}
@@ -3637,8 +3638,8 @@ static int bif_iso_length(tpl_query *q)
 		if (i == (cnt - 1))
 			break;
 
-		node *tmp;
-		term_append(l, tmp = make_list());
+		node *tmp = make_list();
+		term_append(l, tmp);
 		l = tmp;
 	}
 
@@ -3679,8 +3680,8 @@ static int bif_iso_term_variables(tpl_query *q)
 		if (!vars.iter)
 			break;
 
-		node *tmp;
-		term_append(l, tmp = make_list());
+		node *tmp = make_list();
+		term_append(l, tmp);
 		l = tmp;
 	}
 
@@ -5888,8 +5889,8 @@ static int bif_xtra_findnsols_4(tpl_query *q)
 			end = acc;
 		}
 		else {
-			node *tmp;
-			term_append(end, tmp = make_list());
+			node *tmp = make_list();
+			term_append(end, tmp);
 			term_append(tmp, res);
 			end = tmp;
 		}
