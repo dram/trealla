@@ -3700,15 +3700,13 @@ static int bif_iso_findall(tpl_query *q)
 	node *term2 = get_callable(term2);
 	node *term3 = get_var(term3);
 
-	if (!q->subq)
-		q->subq = query_create_subquery(q);
+	tpl_query *subq = query_create_subquery(q);
 
-	if (!q->subq) {
+	if (!subq) {
 		QABORT(ABORT_OUTOFMEMORY);
 		return 0;
 	}
 
-	tpl_query *subq = q->subq;
 	int did_lock = 0;
 
 	if (is_dynamic(term2) && !q->in_tran) {
@@ -3749,6 +3747,7 @@ static int bif_iso_findall(tpl_query *q)
 
 	ok = unify_term(q, term3, acc, -1);
 	term_heapcheck(acc);
+	query_destroy(subq);
 	return ok;
 }
 
