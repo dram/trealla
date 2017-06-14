@@ -620,7 +620,7 @@ int bif_iso_unify(tpl_query *q)
 static int bif_iso_notunify(tpl_query *q) { return !bif_iso_unify(q); }
 
 static int compare_terms(tpl_query *q, node *term1, node *term2, int mode);
-enum { CMP_LT = 0, CMP_LE = 1, CMP_EQ = 2 };
+enum { CMP_NONE, CMP_LT, CMP_LE, CMP_EQ };
 
 static int compare_compounds(tpl_query *q, node *term1, node *term2, int mode)
 {
@@ -687,7 +687,11 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 		return compare_compounds(q, n1, n2, mode);
 	}
 
-	return 0;
+	char tmpbuf1[FUNCTOR_SIZE];
+	term_sprint(tmpbuf1, sizeof(tmpbuf1), q->pl, q, n1, 0);
+	char tmpbuf2[FUNCTOR_SIZE];
+	term_sprint(tmpbuf2, sizeof(tmpbuf2), q->pl, q, n2, 0);
+	return strcmp(tmpbuf1, tmpbuf2);
 }
 
 static int bif_iso_slt(tpl_query *q)
