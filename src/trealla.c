@@ -1585,8 +1585,9 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "member(X,[_|T]) :- member(X,T).");
 	trealla_make_rule(pl, "select(X,[X|T],T).");
 	trealla_make_rule(pl, "select(X,[H|T],[H|Rest]) :- select(X,T,Rest).");
-	trealla_make_rule(pl, "efface([],L,L) :- !.");
-	trealla_make_rule(pl, "efface([H|T],L,L2) :- selectall(H,L,L1), efface(T,L1,L2).");
+	trealla_make_rule(pl, "subtract([],_,[]) :- !.");
+	trealla_make_rule(pl, "subtract([Head|Tail],L2,L3) :- memberchk(Head, L2),!,subtract(Tail, L2, L3).");
+	trealla_make_rule(pl, "subtract([Head|Tail1],L2,[Head|Tail3]) :- subtract(Tail1, L2, Tail3).");
 	trealla_make_rule(pl, "revzap([],L,L) :- !.");
 	trealla_make_rule(pl, "revzap([X|L],L2,L3) :- revzap(L,[X|L2],L3).");
 	trealla_make_rule(pl, "reverse(L1,L2) :- revzap(L1,[],L2).");
