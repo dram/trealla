@@ -4930,7 +4930,7 @@ static int bif_iso_bitor(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_bitxor(tpl_query *q)
+static int bif_iso_xor(tpl_query *q)
 {
 	node *args = get_args(q);
 	eval(q, &args);
@@ -6787,7 +6787,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("<<", 2, bif_iso_shiftright);
 	DEFINE_BIF("/\\", 2, bif_iso_bitand);
 	DEFINE_BIF("\\/", 2, bif_iso_bitor);
-	DEFINE_BIF("xor", 2, bif_iso_bitxor);
+	DEFINE_BIF("or", 2, bif_iso_xor);
 	DEFINE_BIF("\\", 2, bif_iso_complement);
 	DEFINE_BIF("abs", 1, bif_iso_abs);
 	DEFINE_BIF("ceiling", 1, bif_iso_ceiling);
