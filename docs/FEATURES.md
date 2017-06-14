@@ -105,8 +105,8 @@ found in other Prolog implementations:
 	maplist(:Goal,+L)           - call goal with every element of list L
 	maplist(:Goal,+L1,+L2)      - call goal with every element of L1 & L2
 	member(?Term,+List)         - does atom occur in the list?
-	select(+Term,+L1,-L2)       - one occurrance of term is removed
-	efface(+List,+L1,-L2)       - remove all of list (maplist on select)
+	select(+Term,+L1,-List)     - one occurrance of term is removed
+	subtract(+L1,+L2,-List)     - remove all L2 elements from L1
 	reverse(+L1,-L2)            - reverse a list
 	append(+L1,+L2,-List)       - make a joined list
 	find(+N,+L,-Term)           - find nth arg of list
