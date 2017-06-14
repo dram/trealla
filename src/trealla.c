@@ -944,7 +944,6 @@ void query_reset(tpl_query *self)
 	lexer_done(self->lex);
 	lexer_init(self->lex, self->pl);
 	self->lex->db = self->c.curr_db;
-	self->c.curr_frame = FUDGE_FACTOR;
 }
 
 int query_continue(tpl_query *self)

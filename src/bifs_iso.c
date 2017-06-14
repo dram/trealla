@@ -208,7 +208,7 @@ static node *copy_var(node *from)
 
 node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 {
-	if (depth > (1024 * 1024)) {
+	if (depth > (1000*1000)) {
 		QABORT2(ABORT_MAXDEPTH, "COPY_TERM");
 		return 0;
 	}
@@ -3699,7 +3699,6 @@ static int bif_iso_findall(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_callable(term2);
 	node *term3 = get_var(term3);
-
 	tpl_query *subq = query_create_subquery(q);
 
 	if (!subq) {
@@ -3714,7 +3713,8 @@ static int bif_iso_findall(tpl_query *q)
 		DBLOCK(q->c.curr_db);
 	}
 
-	begin_query(subq, term2);
+	node *from = clone_term(q, term2);
+	begin_query(subq, from);
 	int ok = query_run(subq);
 	node *acc = NULL, *end = NULL;
 
@@ -3745,10 +3745,11 @@ static int bif_iso_findall(tpl_query *q)
 	else
 		acc = make_const_atom("[]", 0);
 
-	ok = unify_term(q, term3, acc, -1);
+	put_env(q, q->c.curr_frame+term3->slot, acc, -1);
 	term_heapcheck(acc);
+	term_heapcheck(from);
 	query_destroy(subq);
-	return ok;
+	return 1;
 }
 
 static int bif_iso_bagof(tpl_query *q)
