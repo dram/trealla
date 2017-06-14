@@ -145,7 +145,9 @@ int needs_quoting(const char *s)
 	if (!*s)
 		return 1;
 
-	if (isupper(*s) || isdigit(*s) || isspace(*s) || iscntrl(*s))
+	static const char chars[] = "%_\"'`|.,()[]{}";
+
+	if (isupper(*s) || isdigit(*s) || isspace(*s) || iscntrl(*s) || strchr(chars, *s))
 		return 1;
 
 	int any_signs = 0, any_ans = 0;

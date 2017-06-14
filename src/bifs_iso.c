@@ -1718,7 +1718,7 @@ static int bif_iso_get_char(tpl_query *q)
 
 	char tmpbuf[20];
 	put_char_utf8(tmpbuf, ch);
-	return unify_atom(q, term1, strdup(tmpbuf), 1);
+	return unify_atom(q, term1, strdup(tmpbuf), needs_quoting(tmpbuf));
 }
 
 static int bif_iso_get_char_2(tpl_query *q)
@@ -1733,7 +1733,7 @@ static int bif_iso_get_char_2(tpl_query *q)
 
 	char tmpbuf[20];
 	put_char_utf8(tmpbuf, ch);
-	return unify_atom(q, term2, strdup(tmpbuf), 1);
+	return unify_atom(q, term2, strdup(tmpbuf), needs_quoting(tmpbuf));
 }
 
 static int bif_iso_peek_code(tpl_query *q)
@@ -1776,7 +1776,7 @@ static int bif_iso_peek_byte(tpl_query *q)
 	char tmpbuf[2];
 	tmpbuf[0] = (char)ch;
 	tmpbuf[1] = '\0';
-	return unify_atom(q, term1, strdup(tmpbuf), 1);
+	return unify_atom(q, term1, strdup(tmpbuf), needs_quoting(tmpbuf));
 }
 
 static int bif_iso_peek_byte_2(tpl_query *q)
@@ -1793,7 +1793,7 @@ static int bif_iso_peek_byte_2(tpl_query *q)
 	char tmpbuf[2];
 	tmpbuf[0] = (char)ch;
 	tmpbuf[1] = '\0';
-	return unify_atom(q, term1, strdup(tmpbuf), 1);
+	return unify_atom(q, term1, strdup(tmpbuf), needs_quoting(tmpbuf));
 }
 
 static int bif_iso_peek_char(tpl_query *q)
@@ -1808,7 +1808,7 @@ static int bif_iso_peek_char(tpl_query *q)
 	ungetc(ch, q->curr_stdin); // FIXME
 	char tmpbuf[20];
 	put_char_utf8(tmpbuf, ch);
-	return unify_atom(q, term1, strdup(tmpbuf), 1);
+	return unify_atom(q, term1, strdup(tmpbuf), needs_quoting(tmpbuf));
 }
 
 static int bif_iso_peek_char_2(tpl_query *q)
@@ -1824,7 +1824,7 @@ static int bif_iso_peek_char_2(tpl_query *q)
 	ungetc(ch, get_input_stream(term1)); // FIXME
 	char tmpbuf[20];
 	put_char_utf8(tmpbuf, ch);
-	return unify_atom(q, term2, strdup(tmpbuf), 1);
+	return unify_atom(q, term2, strdup(tmpbuf), needs_quoting(tmpbuf));
 }
 
 static int bif_iso_number_codes(tpl_query *q)
@@ -1982,7 +1982,7 @@ static int bif_iso_number_chars(tpl_query *q)
 	const char *src = tmpbuf;
 
 	while (*src) {
-		node *tmp = make_atom(strndup(src, 1), 1);
+		node *tmp = make_atom(strndup(src, 1), 0);
 		term_append(l, tmp);
 
 		if (!*++src)
@@ -2167,7 +2167,7 @@ static int bif_iso_char_code(tpl_query *q)
 		char tmpbuf[2];
 		tmpbuf[0] = (char)term2->val_i;
 		tmpbuf[1] = '\0';
-		int ok = unify_atom(q, term1, strdup(tmpbuf), 1);
+		int ok = unify_atom(q, term1, strdup(tmpbuf), needs_quoting(tmpbuf));
 		return ok;
 	}
 
@@ -6295,7 +6295,7 @@ static int bif_xtra_seeing_1(tpl_query *q)
 		return ok;
 	}
 	else
-		return unify_atom(q, term1, strdup(q->curr_stdin_name), 1);
+		return unify_atom(q, term1, strdup(q->curr_stdin_name), needs_quoting(q->curr_stdin_name));
 }
 
 static int bif_xtra_seen_0(tpl_query *q)
@@ -6396,7 +6396,7 @@ static int bif_xtra_telling_1(tpl_query *q)
 		return ok;
 	}
 	else
-		return unify_atom(q, term1, strdup(q->curr_stdout_name), 1);
+		return unify_atom(q, term1, strdup(q->curr_stdout_name), needs_quoting(q->curr_stdout_name));
 }
 
 static int bif_xtra_told_0(tpl_query *q)
@@ -6601,7 +6601,7 @@ static int bif_xtra_getenv_2(tpl_query *q)
 	if (!value)
 		return 0;
 
-	return unify_atom(q, term2, strdup(value), 1);
+	return unify_atom(q, term2, strdup(value), needs_quoting(value));
 }
 
 static int bif_xtra_setenv_2(tpl_query *q)
