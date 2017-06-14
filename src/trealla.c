@@ -718,11 +718,11 @@ int xref_clause(lexer *l, node *term)
 		// if (body->bifptr == bif_iso_cut)
 		//	s->flags |= FLAG_ISCUT;
 
-		node *tmp = make_const_atom("enter", 0);
+		node *tmp = make_const_atom("enter");
 		tmp->flags |= FLAG_BUILTIN;
 		tmp->bifptr = &bif_xtra_enter;
 		term_append(s, tmp);
-		tmp = make_atom(strdup(l->db->name), 0);
+		tmp = make_atom(strdup(l->db->name));
 		term_append(s, tmp);
 		term_insert_after(term, head, s);
 	}

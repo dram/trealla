@@ -36,17 +36,17 @@ inline static int unify_float(tpl_query *q, node *term, flt_t v)
 	return ok;
 }
 
-inline static int unify_atom(tpl_query *q, node *term, char *v, int quoted)
+inline static int unify_atom(tpl_query *q, node *term, char *v)
 {
-	node *n = make_atom(v, quoted);
+	node *n = make_atom(v);
 	int ok = unify_term(q, term, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
 
-inline static int unify_const_atom(tpl_query *q, node *term, const char *v, int quoted)
+inline static int unify_const_atom(tpl_query *q, node *term, const char *v)
 {
-	node *n = make_const_atom(v, quoted);
+	node *n = make_const_atom(v);
 	int ok = unify_term(q, term, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;

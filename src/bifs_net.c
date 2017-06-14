@@ -443,7 +443,7 @@ static int bif_net_service_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_name((session *)sp->sptr);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
 	return 1;
 }
 
@@ -476,7 +476,7 @@ static int bif_net_local_addr_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_local_addr((session *)sp->sptr, 0);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
 	return 1;
 }
 
@@ -487,7 +487,7 @@ static int bif_net_remote_addr_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_remote_addr((session *)sp->sptr, 0);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
 	return 1;
 }
 
@@ -498,7 +498,7 @@ static int bif_net_local_host_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_local_addr((session *)sp->sptr, 1);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
 	return 1;
 }
 
@@ -509,7 +509,7 @@ static int bif_net_remote_host_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_remote_addr((session *)sp->sptr, 1);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
 	return 1;
 }
 
@@ -520,7 +520,7 @@ static int bif_net_ipv4_2(tpl_query *q)
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	int ok = session_is_ipv4((session *)sp->sptr);
-	node *n = make_const_atom(ok ? "true" : "false", 0);
+	node *n = make_const_atom(ok ? "true" : "false");
 	ok = unify_term(q, term2, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -535,7 +535,7 @@ static int bif_net_udp_2(tpl_query *q)
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	int ok = session_is_udp((session *)sp->sptr);
-	node *n = make_const_atom(ok ? "true" : "false", 0);
+	node *n = make_const_atom(ok ? "true" : "false");
 	ok = unify_term(q, term2, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -550,7 +550,7 @@ static int bif_net_tls_2(tpl_query *q)
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	int ok = session_is_tls((session *)sp->sptr);
-	node *n = make_const_atom(ok ? "true" : "false", 0);
+	node *n = make_const_atom(ok ? "true" : "false");
 	ok = unify_term(q, term2, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -571,7 +571,7 @@ int bif_net_stash_get_4(tpl_query *q)
 	if (!*s)
 		return unify_term(q, term3, term4, q->c.curr_frame);
 
-	node *n = make_atom(strdup(s), 1);
+	node *n = make_atom(strdup(s));
 	int ok = unify_term(q, term3, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -587,7 +587,7 @@ int bif_net_stash_get_3(tpl_query *q)
 	char tmpbuf[KEY_SIZE];
 	const char *key = make_key(q->pl, tmpbuf, term2);
 	const char *s = session_get_stash((session *)sp->sptr, key);
-	node *n = make_atom(strdup(s), 1);
+	node *n = make_atom(strdup(s));
 	int ok = unify_term(q, term3, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
@@ -609,7 +609,7 @@ int bif_net_stash_set_4(tpl_query *q)
 	}
 
 	const char *s = session_get_stash((session *)sp->sptr, key);
-	node *n = make_atom(strdup(s), 1);
+	node *n = make_atom(strdup(s));
 	int ok = unify_term(q, term3, n, q->c.curr_frame);
 	term_heapcheck(n);
 
@@ -646,7 +646,7 @@ int bif_net_stash_clr_3(tpl_query *q)
 	stream *sp = term1->val_str;
 	const char *key = VAL_S(term2);
 	const char *s = session_get_stash((session *)sp->sptr, key);
-	node *n = make_atom(strdup(s), 1);
+	node *n = make_atom(strdup(s));
 	int ok = unify_term(q, term3, n, q->c.curr_frame);
 	term_heapcheck(n);
 
@@ -683,7 +683,7 @@ static int bif_net_readmsg_2(tpl_query *q)
 	if (session_on_disconnect((session *)sp->sptr))
 		return 0;
 
-	put_atom(q, q->c.curr_frame + term2->slot, line, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, line);
 	return 1;
 }
 

@@ -352,7 +352,7 @@ static int bif_sys_concat_N(tpl_query *q)
 	if (any_blobs)
 		n = make_blob(tmpbuf, dst - tmpbuf);
 	else
-		n = make_atom(tmpbuf, 1);
+		n = make_atom(tmpbuf);
 
 	put_env(q, q->c.curr_frame + var->slot, n, -1);
 	term_heapcheck(n);
@@ -382,7 +382,7 @@ static int bif_sys_getline_2(tpl_query *q)
 		}
 	}
 
-	put_atom(q, q->c.curr_frame + term2->slot, line, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, line);
 	return 1;
 }
 
@@ -407,7 +407,7 @@ static int bif_sys_getline_1(tpl_query *q)
 		}
 	}
 
-	put_atom(q, q->c.curr_frame + term1->slot, line, 1);
+	put_atom(q, q->c.curr_frame + term1->slot, line);
 	return 1;
 }
 
@@ -647,7 +647,7 @@ static int bif_sys_jsonq_3(tpl_query *q)
 		return 0;
 	}
 
-	put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf));
 	free(tmpbuf);
 	return 1;
 }
@@ -663,9 +663,9 @@ static int bif_sys_jsonq_4(tpl_query *q)
 	char *tmpbuf = (char *)malloc(len + 1);
 
 	if (!jsonq(VAL_S(term1), VAL_S(term2), tmpbuf, len))
-		put_atom(q, q->c.curr_frame + term3->slot, strdup(VAL_S(term4)), 1);
+		put_atom(q, q->c.curr_frame + term3->slot, strdup(VAL_S(term4)));
 	else
-		put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf), 1);
+		put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf));
 
 	free(tmpbuf);
 	return 1;
@@ -687,7 +687,7 @@ static int bif_sys_xmlq_4(tpl_query *q)
 		return 0;
 	}
 
-	put_atom(q, q->c.curr_frame + term4->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term4->slot, strdup(tmpbuf));
 	free(tmpbuf);
 	return 1;
 }
@@ -725,7 +725,7 @@ static int bif_sys_xmlq_3(tpl_query *q)
 	}
 
 	try_me(q);
-	put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(tmpbuf));
 	free(tmpbuf);
 	return 1;
 }
@@ -746,7 +746,7 @@ static int bif_sys_upper_2(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->c.curr_frame + term2->slot, dstbuf, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, dstbuf);
 	return 1;
 }
 
@@ -766,7 +766,7 @@ static int bif_sys_lower_2(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->c.curr_frame + term2->slot, dstbuf, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, dstbuf);
 	return 1;
 }
 
@@ -788,7 +788,7 @@ static int bif_sys_format_rfcdate_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	char tmpbuf[80];
 	format_rfcdate(tmpbuf, term1->val_i);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf));
 	return 1;
 }
 
@@ -878,7 +878,7 @@ static int bif_sys_split_last_4(tpl_query *q)
 		src++;
 
 	*dst = '\0';
-	int ok = unify_atom(q, term3, strdup(dstbuf), 1);
+	int ok = unify_atom(q, term3, strdup(dstbuf));
 
 	if (!ok) {
 		free(dstbuf);
@@ -900,7 +900,7 @@ static int bif_sys_split_last_4(tpl_query *q)
 		*dst++ = *src++;
 
 	*dst = '\0';
-	ok = unify_atom(q, term4, strdup(dstbuf), 1);
+	ok = unify_atom(q, term4, strdup(dstbuf));
 	free(dstbuf);
 	return ok;
 }
@@ -926,7 +926,7 @@ static int bif_sys_split_4(tpl_query *q)
 		src++;
 
 	*dst = '\0';
-	int ok = unify_atom(q, term3, strdup(dstbuf), 1);
+	int ok = unify_atom(q, term3, strdup(dstbuf));
 
 	if (!ok) {
 		free(dstbuf);
@@ -948,7 +948,7 @@ static int bif_sys_split_4(tpl_query *q)
 		*dst++ = *src++;
 
 	*dst = '\0';
-	ok = unify_atom(q, term4, strdup(dstbuf), 1);
+	ok = unify_atom(q, term4, strdup(dstbuf));
 	free(dstbuf);
 	return ok;
 }
@@ -965,7 +965,7 @@ static int bif_sys_split_all_3(tpl_query *q)
 		src++;
 
 	if (!*src) {
-		node *tmp = make_const_atom("[]", 0);
+		node *tmp = make_const_atom("[]");
 		put_env(q, q->c.curr_frame + term3->slot, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
 		return 1;
@@ -989,7 +989,7 @@ static int bif_sys_split_all_3(tpl_query *q)
 		}
 
 		*dst = '\0';
-		node *tmp = make_atom(strdup(dstbuf), 1);
+		node *tmp = make_atom(strdup(dstbuf));
 		term_append(l, tmp);
 
 		if (!*src)
@@ -1001,7 +1001,7 @@ static int bif_sys_split_all_3(tpl_query *q)
 	}
 
 	free(dstbuf);
-	term_append(l, make_const_atom("[]", 0));
+	term_append(l, make_const_atom("[]"));
 	put_env(q, q->c.curr_frame + term3->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
@@ -1054,7 +1054,7 @@ static int bif_sys_replace_4(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->c.curr_frame + term4->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term4->slot, strdup(dstbuf));
 	free(dstbuf);
 	return 1;
 }
@@ -1108,7 +1108,7 @@ static int bif_sys_left_3(tpl_query *q)
 	if (is_atom(term3))
 		return !strncmp(src, VAL_S(term3), len);
 
-	put_atom(q, q->c.curr_frame + term3->slot, strndup(src, len), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strndup(src, len));
 	return 1;
 }
 
@@ -1138,7 +1138,7 @@ static int bif_sys_right_3(tpl_query *q)
 	if (is_atom(term3))
 		return !strcmp(src, VAL_S(term3));
 
-	put_atom(q, q->c.curr_frame + term3->slot, strdup(src), 1);
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(src));
 	return 1;
 }
 
@@ -1173,7 +1173,7 @@ static int bif_sys_munge_2(tpl_query *q)
 	}
 
 	*dst = '\0';
-	put_atom(q, q->c.curr_frame + term2->slot, tmpbuf, 1);
+	put_atom(q, q->c.curr_frame + term2->slot, tmpbuf);
 	return 1;
 }
 
@@ -1202,7 +1202,7 @@ static int bif_sys_uuid_1(tpl_query *q)
 	uuid_gen(&u);
 	char tmpbuf[64];
 	uuid_to_string(&u, tmpbuf, sizeof(tmpbuf));
-	put_atom(q, q->c.curr_frame + term1->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term1->slot, strdup(tmpbuf));
 	return 1;
 }
 
@@ -1224,7 +1224,7 @@ static int bif_sys_sha1_2(tpl_query *q)
 		buflen -= len;
 	}
 
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf));
 	return 1;
 }
 
@@ -1245,7 +1245,7 @@ static int bif_sys_sha256_2(tpl_query *q)
 		buflen -= len;
 	}
 
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf));
 	return 1;
 }
 
@@ -1266,7 +1266,7 @@ static int bif_sys_sha512_2(tpl_query *q)
 		buflen -= len;
 	}
 
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(tmpbuf));
 	return 1;
 }
 #endif
@@ -1320,7 +1320,7 @@ static int bif_sys_url_encode_2(tpl_query *q)
 	size_t len = LEN(term1);
 	char *dstbuf = (char *)malloc((len * 3) + 1);
 	url_encode(VAL_S(term1), len, dstbuf);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf));
 	free(dstbuf);
 	return 1;
 }
@@ -1333,7 +1333,7 @@ static int bif_sys_url_decode_2(tpl_query *q)
 	size_t len = LEN(term1);
 	char *dstbuf = (char *)malloc(len + 1);
 	url_decode(VAL_S(term1), dstbuf);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf));
 	free(dstbuf);
 	return 1;
 }
@@ -1346,7 +1346,7 @@ static int bif_sys_b64_encode_2(tpl_query *q)
 	size_t len = LEN(term1);
 	char *dstbuf = (char *)malloc((len * 3) + 1);
 	b64_encode(VAL_S(term1), len, &dstbuf, 0, 0);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf), 1);
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf));
 	free(dstbuf);
 	return 1;
 }
@@ -1430,7 +1430,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 		}
 
 		if (was_quoted || bad || (dots > 1))
-			tmp = make_atom(strdup(dstbuf), 1);
+			tmp = make_atom(strdup(dstbuf));
 		else {
 			nbr_t v = 0;
 			int numeric = 0;
@@ -1459,7 +1459,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 	}
 
 	free(dstbuf);
-	term_append(l, make_const_atom("[]", 0));
+	term_append(l, make_const_atom("[]"));
 	put_env(q, q->c.curr_frame + term2->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
@@ -1530,7 +1530,7 @@ static int bif_sys_parse_tab_2(tpl_query *q)
 		}
 
 		if (was_quoted || bad || (dots > 1))
-			tmp = make_atom(strdup(dstbuf), 1);
+			tmp = make_atom(strdup(dstbuf));
 		else {
 			nbr_t v = 0;
 			int numeric = 0;
@@ -1559,7 +1559,7 @@ static int bif_sys_parse_tab_2(tpl_query *q)
 	}
 
 	free(dstbuf);
-	term_append(l, make_const_atom("[]", 0));
+	term_append(l, make_const_atom("[]"));
 	put_env(q, q->c.curr_frame + term2->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
@@ -1629,9 +1629,9 @@ static int bif_sys_lput_4(tpl_query *q)
 	SYSLOCK(q->pl);
 
 	if (!sp->kvs)
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 	else if (!sl_get(sp->kvs, VAL_S(term1), (void **)&value))
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 
 	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
@@ -1759,9 +1759,9 @@ static int bif_sys_lget_3(tpl_query *q)
 	SYSLOCK(q->pl);
 
 	if (!sp->kvs)
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 	else if (!sl_get(sp->kvs, VAL_S(term1), (void **)&value))
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 
 	SYSUNLOCK(q->pl);
 	int ok = unify_term(q, term2, value, q->c.curr_frame);
@@ -1791,7 +1791,7 @@ static int bif_sys_get_keys_3(tpl_query *q)
 				continue;
 			}
 
-			node *tmp = make_atom(strdup(key), 1);
+			node *tmp = make_atom(strdup(key));
 			term_append(l, tmp);
 			cnt++;
 
@@ -1807,11 +1807,11 @@ static int bif_sys_get_keys_3(tpl_query *q)
 	SYSUNLOCK(q->pl);
 
 	if (cnt) {
-		term_append(l, make_const_atom("[]", 0));
+		term_append(l, make_const_atom("[]"));
 		ok = unify_term(q, term2, save_l, q->c.curr_frame);
 	}
 	else {
-		ok = unify_const_atom(q, term2, "[]", 0);
+		ok = unify_const_atom(q, term2, "[]");
 	}
 
 	term_heapcheck(save_l);
@@ -1837,7 +1837,7 @@ static int bif_sys_get_2(tpl_query *q)
 			node *n = make_tuple();
 			node *n2 = make_compound();
 			term_append(n2, make_and());
-			term_append(n2, make_atom(strdup(key), 1));
+			term_append(n2, make_atom(strdup(key)));
 			term_append(n2, clone_term(q, value));
 			term_append(n, n2);
 			term_append(l, n);
@@ -1855,11 +1855,11 @@ static int bif_sys_get_2(tpl_query *q)
 	SYSUNLOCK(q->pl);
 
 	if (cnt) {
-		term_append(l, make_const_atom("[]", 0));
+		term_append(l, make_const_atom("[]"));
 		ok = unify_term(q, term1, save_l, q->c.curr_frame);
 	}
 	else {
-		ok = unify_const_atom(q, term1, "[]", 0);
+		ok = unify_const_atom(q, term1, "[]");
 	}
 
 	term_heapcheck(save_l);

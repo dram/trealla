@@ -266,8 +266,8 @@ extern node *make_int(nbr_t v);
 extern node *make_ptr(void *v);
 extern node *make_float(flt_t v);
 extern node *make_stream(stream *v);
-extern node *make_atom(char *s, int quoted);
-extern node *make_const_atom(const char *s, int quoted);
+extern node *make_atom(char *s);
+extern node *make_const_atom(const char *s);
 extern node *make_compound(void);
 extern node *make_list(void);
 extern node *make_var(tpl_query *q);
@@ -313,16 +313,16 @@ inline static void put_float(tpl_query *q, unsigned point, flt_t v)
 	n->refcnt--;
 }
 
-inline static void put_atom(tpl_query *q, unsigned point, char *s, int quoted)
+inline static void put_atom(tpl_query *q, unsigned point, char *s)
 {
-	node *n = make_atom(s, quoted);
+	node *n = make_atom(s);
 	put_env(q, point, n, -1);
 	n->refcnt--;
 }
 
-inline static void put_const_atom(tpl_query *q, unsigned point, const char *s, int quoted)
+inline static void put_const_atom(tpl_query *q, unsigned point, const char *s)
 {
-	node *n = make_const_atom(s, quoted);
+	node *n = make_const_atom(s);
 	put_env(q, point, n, -1);
 	n->refcnt--;
 }
@@ -444,7 +444,7 @@ extern rule *xref_term(lexer *l, node *term, int arity);
 extern int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, int is_last);
 
 extern node *term_make(void);
-extern node *make_const_atom(const char *s, int quoted);
+extern node *make_const_atom(const char *s);
 extern node *make_and(void);
 extern node *make_true(void);
 

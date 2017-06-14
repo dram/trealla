@@ -221,11 +221,11 @@ void process_error(tpl_query *q) // FIXME
 	node *n = make_tuple();
 	node *n2 = make_compound();
 	term_append(n2, make_and());
-	term_append(n2, make_const_atom("EXIT", 1));
+	term_append(n2, make_const_atom("EXIT"));
 	node *n3 = make_compound();
 	term_append(n3, make_and());
 	term_append(n3, make_int(q->halt));
-	term_append(n3, make_atom(strdup(q->halt_s), 1));
+	term_append(n3, make_atom(strdup(q->halt_s)));
 	term_append(n2, n3);
 	term_append(n, n2);
 	process_enqueue(q->pl, q, who, n, 1);
@@ -1203,9 +1203,9 @@ static int bif_proc_lput_3(tpl_query *q)
 	}
 
 	if (!q->kvs)
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 	else if (!sl_get(q->kvs, VAL_S(term1), (void **)&value))
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 
 	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
@@ -1309,9 +1309,9 @@ static int bif_proc_lget_2(tpl_query *q)
 	node *value = NULL;
 
 	if (!q->kvs)
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 	else if (!sl_get(q->kvs, VAL_S(term1), (void **)&value))
-		value = make_const_atom("[]", 0);
+		value = make_const_atom("[]");
 
 	int ok = unify_term(q, term2, value, q->c.curr_frame);
 	term_heapcheck(value);
@@ -1337,7 +1337,7 @@ static int bif_proc_get_keys_2(tpl_query *q)
 				continue;
 			}
 
-			node *tmp = make_atom(strdup(key), 1);
+			node *tmp = make_atom(strdup(key));
 			term_append(l, tmp);
 			cnt++;
 
@@ -1351,11 +1351,11 @@ static int bif_proc_get_keys_2(tpl_query *q)
 	}
 
 	if (cnt) {
-		term_append(l, make_const_atom("[]", 0));
+		term_append(l, make_const_atom("[]"));
 		ok = unify_term(q, term2, save_l, q->c.curr_frame);
 	}
 	else {
-		node *tmp = make_const_atom("[]", 0);
+		node *tmp = make_const_atom("[]");
 		ok = unify_term(q, term2, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
 	}
@@ -1380,7 +1380,7 @@ static int bif_proc_get_1(tpl_query *q)
 			node *n = make_tuple();
 			node *n2 = make_compound();
 			term_append(n2, make_and());
-			term_append(n2, make_atom(strdup(key), 1));
+			term_append(n2, make_atom(strdup(key)));
 			term_append(n2, clone_term(q, value));
 			term_append(n, n2);
 			term_append(l, n);
@@ -1396,11 +1396,11 @@ static int bif_proc_get_1(tpl_query *q)
 	}
 
 	if (cnt) {
-		term_append(l, make_const_atom("[]", 0));
+		term_append(l, make_const_atom("[]"));
 		ok = unify_term(q, term1, save_l, q->c.curr_frame);
 	}
 	else {
-		node *tmp = make_const_atom("[]", 0);
+		node *tmp = make_const_atom("[]");
 		ok = unify_term(q, term1, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
 	}
@@ -1509,15 +1509,15 @@ static int bif_proc_wait_0(tpl_query *q)
 static int bif_linda_init_0(tpl_query *q)
 {
 	node *tmp = make_compound();
-	term_append(tmp, make_const_atom("dynamic", 0));
+	term_append(tmp, make_const_atom("dynamic"));
 	node *tmp2 = make_compound();
-	term_append(tmp2, make_const_atom("/", 0));
-	term_append(tmp2, make_const_atom("{}", 0));
+	term_append(tmp2, make_const_atom("/"));
+	term_append(tmp2, make_const_atom("{}"));
 	term_append(tmp2, make_int(1));
 	term_append(tmp, tmp2);
 	node *tmp3 = make_list();
-	term_append(tmp3, make_const_atom("notify", 0));
-	term_append(tmp3, make_const_atom("[]", 0));
+	term_append(tmp3, make_const_atom("notify"));
+	term_append(tmp3, make_const_atom("[]"));
 	term_append(tmp, tmp3);
 	dir_dynamic(q->lex, tmp2);
 	term_heapcheck(tmp);
@@ -1536,15 +1536,15 @@ static int bif_linda_init_1(tpl_query *q)
 	}
 
 	node *tmp = make_compound();
-	term_append(tmp, make_const_atom("dynamic", 0));
+	term_append(tmp, make_const_atom("dynamic"));
 	node *tmp2 = make_compound();
-	term_append(tmp2, make_const_atom("/", 0));
-	term_append(tmp2, make_const_atom("{}", 0));
+	term_append(tmp2, make_const_atom("/"));
+	term_append(tmp2, make_const_atom("{}"));
 	term_append(tmp2, make_int(1));
 	term_append(tmp, tmp2);
 	node *tmp3 = make_list();
 	term_append(tmp, tmp3);
-	term_append(tmp3, make_const_atom("notify", 0));
+	term_append(tmp3, make_const_atom("notify"));
 
 	while (is_list(term1)) {
 		node *n2 = term_firstarg(term1);
@@ -1553,7 +1553,7 @@ static int bif_linda_init_1(tpl_query *q)
 			if (strcmp(VAL_S(n2), "notify")) {
 				node *tmp4 = make_list();
 				term_append(tmp3, tmp4);
-				term_append(tmp4, make_const_atom(VAL_S(n2), 1));
+				term_append(tmp4, make_const_atom(VAL_S(n2)));
 				tmp3 = tmp4;
 			}
 		}
@@ -1561,7 +1561,7 @@ static int bif_linda_init_1(tpl_query *q)
 		term1 = term_next(n2);
 	}
 
-	term_append(tmp3, make_const_atom("[]", 0));
+	term_append(tmp3, make_const_atom("[]"));
 	dir_dynamic(q->lex, tmp2);
 	term_heapcheck(tmp);
 	return 1;

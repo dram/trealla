@@ -264,28 +264,24 @@ node *make_stream(stream *v)
 	return n;
 }
 
-static node *make_basic_atom(char *s, int quoted)
+static node *make_basic_atom(char *s)
 {
 	node *n = term_make();
 	n->flags |= TYPE_ATOM;
-
-	if (quoted)
-		n->flags |= FLAG_QUOTED;
-
 	n->val_s = s;
 	return n;
 }
 
-node *make_const_atom(const char *s, int quoted)
+node *make_const_atom(const char *s)
 {
-	node *n = make_basic_atom((char *)s, quoted);
+	node *n = make_basic_atom((char *)s);
 	n->flags |= FLAG_CONST;
 	return n;
 }
 
-node *make_atom(char *s, int quoted)
+node *make_atom(char *s)
 {
-	node *n = make_basic_atom((char *)s, quoted);
+	node *n = make_basic_atom(s);
 
 	if (strlen(s) < sizeof(n->val_ch)) {
 		n->flags |= FLAG_CONST | FLAG_SMALL;
@@ -317,7 +313,7 @@ node *make_list(void)
 {
 	node *n = make_compound();
 	n->flags |= FLAG_LIST;
-	term_append(n, make_const_atom(g_list_cons, 0));
+	term_append(n, make_const_atom(g_list_cons));
 	return n;
 }
 
@@ -343,7 +339,7 @@ node *make_tuple(void)
 {
 	node *n = make_compound();
 	n->flags |= FLAG_TUPLE;
-	term_append(n, make_const_atom("{}", 0));
+	term_append(n, make_const_atom("{}"));
 	return n;
 }
 
@@ -358,7 +354,7 @@ node *make_var(tpl_query *q)
 
 node *make_true(void)
 {
-	node *n = make_const_atom("true", 0);
+	node *n = make_const_atom("true");
 	n->flags |= FLAG_BUILTIN;
 	n->bifptr = bif_iso_true;
 	return n;
@@ -366,7 +362,7 @@ node *make_true(void)
 
 node *make_and(void)
 {
-	node *n = make_const_atom(",", 0);
+	node *n = make_const_atom(",");
 	n->flags |= FLAG_BUILTIN;
 	n->bifptr = bif_iso_and;
 	return n;
@@ -374,7 +370,7 @@ node *make_and(void)
 
 static node *make_cut(void)
 {
-	node *n = make_const_atom("!", 0);
+	node *n = make_const_atom("!");
 	n->flags |= FLAG_BUILTIN;
 	n->bifptr = bif_iso_cut;
 	return n;
@@ -382,7 +378,7 @@ static node *make_cut(void)
 
 static node *make_cutfail(void)
 {
-	node *n = make_const_atom("!fail", 0);
+	node *n = make_const_atom("!fail");
 	n->flags |= FLAG_BUILTIN;
 	n->bifptr = bif_xtra_cutfail;
 	return n;
@@ -1361,7 +1357,7 @@ static node *dcg_list(lexer *l, node *term)
 	node *tmp = make_compound();
 	tmp->flags |= FLAG_BUILTIN;
 	tmp->bifptr = bif_iso_unify;
-	node *n = make_const_atom("=", 0);
+	node *n = make_const_atom("=");
 	n->flags |= FLAG_BUILTIN;
 	term_append(tmp, n);
 	n = term_make();
@@ -2080,10 +2076,10 @@ void lexer_done(lexer *self)
 static void lexer_finalize(lexer *self)
 {
 	if (self->fact) {
-		node *tmp = make_const_atom(":-", 0);
+		node *tmp = make_const_atom(":-");
 		tmp->flags |= FLAG_BUILTIN;
 		term_append(self->r, tmp);
-		tmp = make_const_atom("true", 0);
+		tmp = make_const_atom("true");
 		tmp->flags |= FLAG_BUILTIN | FLAG_HIDDEN;
 		tmp->bifptr = bif_iso_true;
 		term_append(self->r, tmp);
@@ -2329,11 +2325,11 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		if (!self->quoted && !strcmp(self->tok, "{}")) {
 			free(self->tok);
-			n = make_const_atom("{}", 0);
+			n = make_const_atom("{}");
 		}
 		else if (!self->quoted && !strcmp(self->tok, "[]")) {
 			free(self->tok);
-			n = make_const_atom("[]", 0);
+			n = make_const_atom("[]");
 		}
 		else if (!self->quoted && !strcmp(self->tok, "[")) {
 			free(self->tok);
@@ -2479,7 +2475,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		}
 		else if ((self->quoted == 2) && (self->flag_double_quotes == 0) && !self->tok[0]) {
 			self->was_atom = 1;
-			n = make_const_atom("[]", 0);
+			n = make_const_atom("[]");
 			free(self->tok);
 		}
 		else if ((self->quoted == 2) && (self->flag_double_quotes == 0)) {
@@ -2500,12 +2496,12 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				l = tmp;
 			}
 
-			term_append(l, make_const_atom("[]", 0));
+			term_append(l, make_const_atom("[]"));
 			free(self->tok);
 		}
 		else if ((self->quoted == 2) && (self->flag_double_quotes == 2) && !self->tok[0]) {
 			self->was_atom = 1;
-			n = make_const_atom("[]", 0);
+			n = make_const_atom("[]");
 			free(self->tok);
 		}
 		else if ((self->quoted == 2) && (self->flag_double_quotes == 2)) {
@@ -2519,7 +2515,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				char tmpbuf[20];
 				char *dst = tmpbuf;
 				put_char_utf8(dst, ch);
-				term_append(l, make_atom(strdup(tmpbuf), 1));
+				term_append(l, make_atom(strdup(tmpbuf)));
 
 				if (!*src)
 					break;
@@ -2529,7 +2525,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				l = tmp;
 			}
 
-			term_append(l, make_const_atom("[]", 0));
+			term_append(l, make_const_atom("[]"));
 			free(self->tok);
 		}
 		else {
