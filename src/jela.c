@@ -778,8 +778,9 @@ int match(tpl_query *q)
 		int is_cut = body->flags & FLAG_ISCUT;
 		int is_lastmatch = (term_next(q->c.curr_match) == NULL) || is_cut;
 		int is_lastcall = term_next(q->c.curr_term) == NULL;
+		int is_det = q->is_det;
 
-		if ((q->optimize > 1) && is_lastcall && is_lastmatch) {
+		if ((q->optimize > 1) && is_lastcall && is_lastmatch && is_det) {
 			int is_tco = is_tailrecursive(q->c.curr_term) && !q->envs[q->c.curr_frame].choices;
 
 			if ((q->optimize > 2) && is_tco && q->is_det)
