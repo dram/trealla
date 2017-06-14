@@ -655,7 +655,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 	if (is_integer(n1) || is_bignum(n1)) {
 		if (!is_integer(n2) && !is_bignum(n2)) {
-			QABORT(ABORT_INVALIDARGNOTINT);
+			//QABORT(ABORT_INVALIDARGNOTINT);
 			return 0;
 		}
 
@@ -669,7 +669,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 	}
 	else if (is_float(n1)) {
 		if (!is_float(n2)) {
-			QABORT(ABORT_INVALIDARGNOTFLOAT);
+			//QABORT(ABORT_INVALIDARGNOTFLOAT);
 			return 0;
 		}
 
@@ -683,7 +683,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 	}
 	else if (is_atom(n1)) {
 		if (!is_atom(n2)) {
-			QABORT(ABORT_INVALIDARGNOTATOM);
+			//QABORT(ABORT_INVALIDARGNOTATOM);
 			return 0;
 		}
 
@@ -691,7 +691,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 	}
 	else if (is_var(n1)) {
 		if (!is_var(n2)) {
-			QABORT(ABORT_INVALIDARGNOTVAR);
+			//QABORT(ABORT_INVALIDARGNOTVAR);
 			return 0;
 		}
 
@@ -705,7 +705,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 	}
 	else if (is_compound(n1)) {
 		if (!is_compound(n2)) {
-			QABORT(ABORT_INVALIDARGNOTCOMPOUND);
+			//QABORT(ABORT_INVALIDARGNOTCOMPOUND);
 			return 0;
 		}
 
