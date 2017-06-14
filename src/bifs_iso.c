@@ -6499,7 +6499,11 @@ static int bif_xtra_memberchk_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	node *term2 = get_list(term2);
+	node *term2 = get_atom_or_list(term2);
+
+	if (is_atom(term2))
+		return 0;
+
 	node *l = term2;
 	allocate_frame(q);
 
