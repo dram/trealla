@@ -294,24 +294,24 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 
 		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, n, listing ? listing : 1);
 	}
-	else if (!isop || (nf->flags & FLAG_QUOTED) || (listing == 2) || ignore_ops) {
+	else if (!isop || (listing == 2) || ignore_ops) {
 		if (!(n->flags & FLAG_CONSING) || (listing >= 2)) {
 			const char *src = strcmp(functor, "]-[") ? functor : "-";
 
 			if (!src || (isop && !ignore_ops))
 				src = strcmp(functor, "]-[") ? functor : "-";
 
-			if (((nf->flags & FLAG_QUOTED) || needs_quoting(src)) && (!isop || (listing == 2)))
-				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");
-			else if (((nf->flags & FLAG_DOUBLE_QUOTE) || needs_quoting(src)) && (!isop || (listing == 2)))
+			if (((nf->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(src)) && (!isop || (listing == 2)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"");
+			else if ((needs_quoting(src)) && (!isop || (listing == 2)))
+				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");
 
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
 
-			if (((nf->flags & FLAG_QUOTED) || needs_quoting(src)) && (!isop || (listing == 2)))
-				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");
-			else if (((nf->flags & FLAG_DOUBLE_QUOTE) || needs_quoting(src)) && (!isop || (listing == 2)))
+			if (((nf->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(src)) && (!isop || (listing == 2)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"");
+			else if ((needs_quoting(src)) && (!isop || (listing == 2)))
+				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");
 
 			n = term_next(nf);
 		}
@@ -513,14 +513,14 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"%s\"", deescape(tmp, VAL_S(n), '"'));
 		free(tmp);
 	}
-	else if (listing && flag_character_escapes && is_atom(n) && (n->flags & FLAG_QUOTED) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP)) {
+	else if (listing && flag_character_escapes && is_atom(n) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP)) {
 		char *tmp = (char *)malloc((strlen(VAL_S(n)) * 2) + 1);
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", deescape(tmp, VAL_S(n), '\''));
 		free(tmp);
 	}
 	else if (listing && is_atom(n) && (n->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(VAL_S(n)))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"%s\"", VAL_S(n));
-	else if (listing && is_atom(n) && (n->flags & FLAG_QUOTED) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP))
+	else if (listing && is_atom(n) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
 	else if ((listing == 2) && is_atom(n) && needs_quoting(VAL_S(n)))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
