@@ -3509,23 +3509,26 @@ static int bif_iso_functor(tpl_query *q)
 	int arity = 0;
 
 	if (is_atom(term2) && (is_integer(term3) || is_bignum(term3))) {
-		nbr_t v;
-		v = get_word(term3);
+		nbr_t v = get_word(term3);
 
 		if (v > 0) {
+			if (is_var(term1)) {
+				if (!expand_frame(q, v))
+					return 0;
 
-			if (!expand_frame(q, v))
-				return 0;
+				node *s = make_compound();
+				term_append(s, clone_term(q, term2));
 
-			node *s = make_compound();
-			term_append(s, clone_term(q, term2));
+				for (int i = 0; i < v; i++)
+					term_append(s, make_var(q));
 
-			for (int i = 0; i < v; i++)
-				term_append(s, make_var(q));
-
-			int ok = unify_term(q, term1, s, q->c.curr_frame);
-			term_heapcheck(s);
-			return ok;
+				put_env(q, q->c.curr_frame+term1->slot, s, q->c.curr_frame);
+				term_heapcheck(s);
+				return 1;
+			}
+			else {
+				return !strcmp(term_functor(term1), VAL_S(term2)) && (term_arity(term1) == v);
+			}
 		}
 		else if (v == 0)
 			return unify_term(q, term1, term2, -1);
