@@ -655,7 +655,7 @@ Hyper-Text Transfer Protocol:
 	head10(+S,+Path,+Keep,-Status)
 	get10(+S,+Path,+Keep,-Status)
 	del10(+S,+Path,+Keep,-Status)
-	put10(+S,+Path,+Type,+Len,+Keep,-Status)
+	post10(+S,+Path,+Type,+Len,+Keep,-Status)
 
 	head11(+S,+Path,+Keep,-Status)
 	get11(+S,+Path,+Keep,-Status)
@@ -809,8 +809,8 @@ Provides basic HTTP/1.0 client functionality:
 
 	get10_data(+Host,+Path,-Data)
 	get10_file(+Host,+Path,+Filename)
-	put10_data(+Host,+Path,+MimeType,+Data)
-	put10_file(+Host,+Path,+Filename)
+	post10_data(+Host,+Path,+MimeType,+Data)
+	post10_file(+Host,+Path,+Filename)
 
 Provides basic HTTP/1.1 client functionality:
 

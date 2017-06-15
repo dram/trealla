@@ -1,5 +1,5 @@
 :-module(http_client).
-:-export([get10_data/3,get10_file/3,put10_data/4,put10_file/3]).
+:-export([get10_data/3,get10_file/3,post10_data/4,post10_file/3]).
 :-export([get11_data/3,get11_file/3,pu11_data/4,put11_file/3]).
 :-import(library(mime)).
 :-define(ConnKeep,1).
@@ -18,20 +18,20 @@ get10_file(Host,Path,Filename) :-
 	close(S),
 	save_file(Filename,Data).
 
-put10_data(Host,Path,MimeType,Data) :-
+post10_data(Host,Path,MimeType,Data) :-
 	net:client(Host,S),
 	term_to_blob(Data,Data2),
 	atom_length(Data2,Len),
-	http:put10(S,Path,MimeType,Len,?ConnClose,Status),
+	http:post10(S,Path,MimeType,Len,?ConnClose,Status),
 	Status = 200,
 	write(S,Data2),
 	close(S).
 
-put10_file(Host,Path,Filename) :-
+post10_file(Host,Path,Filename) :-
 	exists_file(Filename,Len,Mod),
 	net:client(Host,S),
 	mime:mime_type(Filename,MimeType),
-	http:put10(S,Path,MimeType,Len,?ConnClose,Status),
+	http:post10(S,Path,MimeType,Len,?ConnClose,Status),
 	Status = 200,
 	write_file(S,Filename),
 	close(S).
