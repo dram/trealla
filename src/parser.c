@@ -2137,7 +2137,10 @@ static void lexer_finalize(lexer *self)
 		term_remove(self->r, n);
 		NLIST_PUSH_BACK(&self->val_l, n);
 		term_heapcheck(self->r);
-		add_clauses(self);
+
+		if (self->consult)
+			add_clauses(self);
+
 		// xref_clauses(self);
 	}
 

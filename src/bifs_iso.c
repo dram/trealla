@@ -1327,8 +1327,8 @@ static int bif_iso_read_2(tpl_query *q)
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
-	char *line = NULL;
 	node *term = NULL, *save_term;
+	char *line = NULL;
 
 #ifndef ISO_ONLY
 	if (is_socket(term1)) {
@@ -1351,19 +1351,48 @@ static int bif_iso_read_2(tpl_query *q)
 		return 0;
 
 	char *tmpbuf = (char *)malloc(strlen(line)+10);
-	sprintf(tmpbuf, "?- %s", line);
-	free(line);
+	int clause = 0;
+
+	if (strstr(line, ":-")) {
+		sprintf(tmpbuf, "%s", line);
+		clause = 1;
+	}
+	else
+		sprintf(tmpbuf, "?- %s", line);
+
 	lexer l;
 	lexer_init(&l, q->pl);
 	l.fp = q->curr_stdin;
 	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
-	free(tmpbuf);
 	save_term = term = NLIST_FRONT(&l.val_l);
-	xref_clause(&l, term);
-	lexer_done(&l);
-	term = term_firstarg(term);
+	free(tmpbuf);
 
-	int ok = unify_term(q, term2, term, q->c.env_point);
+	if (l.error) {
+		printf("ERROR: error make_rule: %s\n", line);
+		lexer_done(&l);
+		free(line);
+		return 0;
+	}
+
+	free(line);
+	skiplist vars;
+	sl_init(&vars, 0, NULL, NULL);
+	q->d = &vars;
+	int cnt = collect_vars(q, term);
+	sl_clear(&vars, NULL);
+
+	if (cnt) {
+		expand_frame(q, cnt);
+		node *tmp = copy_term(q, term);
+		term_heapcheck(term);
+		save_term = term = tmp;
+	}
+
+	sl_done(&vars, NULL);
+	q->d = NULL;
+	lexer_done(&l);
+	term = clause ? term : term_firstarg(term);
+	int ok = unify_term(q, term1, term, q->c.env_point);
 	term_heapcheck(save_term);
 	return ok;
 }
@@ -1372,8 +1401,8 @@ static int bif_iso_read(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	char *line;
 	node *term = NULL, *save_term;
+	char *line;
 
 	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
 		return unify_const_atom(q, term1, END_OF_FILE);
@@ -1382,29 +1411,47 @@ static int bif_iso_read(tpl_query *q)
 		return 0;
 
 	char *tmpbuf = (char *)malloc(strlen(line)+10);
-	sprintf(tmpbuf, "?- %s", line);
-	free(line);
+	int clause = 0;
+
+	if (strstr(line, ":-")) {
+		sprintf(tmpbuf, "%s", line);
+		clause = 1;
+	}
+	else
+		sprintf(tmpbuf, "?- %s", line);
+
 	lexer l;
 	lexer_init(&l, q->pl);
 	l.fp = q->curr_stdin;
 	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
-	free(tmpbuf);
 	save_term = term = NLIST_FRONT(&l.val_l);
+	free(tmpbuf);
 
-	// skiplist vars;
-	// sl_init(&vars, 0, NULL, NULL);
-	// q->d = &vars;
-	// int cnt = collect_vars(q, term);
-	// sl_clear(&vars, NULL);
-	// if (cnt) expand_frame(q, cnt);
-	// term = copy_term3(q, term, 0);
-	// sl_done(&vars, NULL);
-	// q->d = NULL;
+	if (l.error) {
+		printf("ERROR: error make_rule: %s\n", line);
+		lexer_done(&l);
+		free(line);
+		return 0;
+	}
 
-	xref_clause(&l, term);
+	free(line);
+	skiplist vars;
+	sl_init(&vars, 0, NULL, NULL);
+	q->d = &vars;
+	int cnt = collect_vars(q, term);
+	sl_clear(&vars, NULL);
+
+	if (cnt) {
+		expand_frame(q, cnt);
+		node *tmp = copy_term(q, term);
+		term_heapcheck(term);
+		save_term = term = tmp;
+	}
+
+	sl_done(&vars, NULL);
+	q->d = NULL;
 	lexer_done(&l);
-	term = term_firstarg(term);
-
+	term = clause ? term : term_firstarg(term);
 	int ok = unify_term(q, term1, term, q->c.env_point);
 	term_heapcheck(save_term);
 	return ok;
