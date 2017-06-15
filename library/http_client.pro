@@ -49,6 +49,24 @@ get11_file(Host,Path,Filename) :-
 	close(S),
 	save_file(Filename,Data).
 
+post11_data(Host,Path,MimeType,Data) :-
+	net:client(Host,S),
+	term_to_blob(Data,Data2),
+	atom_length(Data2,Len),
+	http:post11(S,Path,MimeType,Len,?ConnClose,Status),
+	Status = 200,
+	write(S,Data2),
+	close(S).
+
+post11_file(Host,Path,Filename) :-
+	exists_file(Filename,Len,Mod),
+	net:client(Host,S),
+	mime:mime_type(Filename,MimeType),
+	http:post11(S,Path,MimeType,Len,?ConnClose,Status),
+	Status = 200,
+	write_file(S,Filename),
+	close(S).
+
 put11_data(Host,Path,MimeType,Data) :-
 	net:client(Host,S),
 	term_to_blob(Data,Data2),
