@@ -815,6 +815,8 @@ Provides basic HTTP/1.1 client functionality:
 
 	get11_data(+Host,+Path,-Data)
 	get11_file(+Host,+Path,+Filename)
+	post11_data(+Host,+Path,+MimeType,+Data)
+	post11_file(+Host,+Path,+Filename)
 	put11_data(+Host,+Path,+MimeType,+Data)
 	put11_file(+Host,+Path,+Filename)
 
