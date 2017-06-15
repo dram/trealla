@@ -1328,7 +1328,7 @@ static int bif_iso_read_2(tpl_query *q)
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	char *line = NULL;
-	node *term = NULL;
+	node *term = NULL, *save_term;
 
 	for (;;) {
 #ifndef ISO_ONLY
@@ -1346,7 +1346,7 @@ static int bif_iso_read_2(tpl_query *q)
 		else
 #endif
 		{
-			if (!(line = trealla_readline(q->lex, get_input_stream(term1), 0))) {
+			if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1))) {
 				put_const_atom(q, q->c.curr_frame + term2->slot, END_OF_FILE);
 				return 1;
 			}
@@ -1355,48 +1355,24 @@ static int bif_iso_read_2(tpl_query *q)
 		if (!line[0])
 			return 0;
 
-		const char *src = line;
-
-		while (isspace(*src))
-			src++;
-
-		if (*src == '%') {
-			while (*src != '\n')
-				src++;
-
-			free(line);
-			continue;
-		}
-
+		char *tmpbuf = (char *)malloc(strlen(line)+10);
+		sprintf(tmpbuf, "?- %s", line);
+		free(line);
 		lexer l;
 		lexer_init(&l, q->pl);
-		l.fp = sp->fptr;
-		lexer_parse(&l, l.r, src, &line);
-		free(line);
-		term = NLIST_POP_FRONT(&l.val_l);
-
-		if (!is_clause(term)) {
-			lexer_done(&l);
-			continue;
-		}
-
-		// skiplist vars;
-		// sl_init(&vars, 0, NULL, NULL);
-		// q->d = &vars;
-		// int cnt = collect_vars(q, term);
-		// sl_clear(&vars, NULL);
-		// if (cnt) expand_frame(q, cnt);
-		// term = copy_term3(q, term, 0);
-		// sl_done(&vars, NULL);
-		// q->d = NULL;
-
+		l.fp = q->curr_stdin;
+		lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
+		free(tmpbuf);
+		term = NLIST_FRONT(&l.val_l);
 		xref_clause(&l, term);
 		lexer_done(&l);
+		save_term = term;
+		term = term_firstarg(term);
 		break;
 	}
 
 	int ok = unify_term(q, term2, term, q->c.env_point);
-	term_heapcheck(term);
+	term_heapcheck(save_term);
 	return ok;
 }
 
@@ -1405,10 +1381,10 @@ static int bif_iso_read(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	char *line;
-	node *term = NULL;
+	node *term = NULL, *save_term;
 
 	for (;;) {
-		if (!(line = trealla_readline(q->lex, q->curr_stdin, 0))) {
+		if (!(line = trealla_readline(q->lex, q->curr_stdin, 1))) {
 			put_const_atom(q, q->c.curr_frame + term1->slot, END_OF_FILE);
 			return 1;
 		}
@@ -1416,49 +1392,24 @@ static int bif_iso_read(tpl_query *q)
 		if (!line[0])
 			return 0;
 
-		const char *src = line;
-
-		while (isspace(*src))
-			src++;
-
-		if (*src == '%') {
-			while (*src != '\n')
-				src++;
-
-			free(line);
-			continue;
-		}
-
+		char *tmpbuf = (char *)malloc(strlen(line)+10);
+		sprintf(tmpbuf, "?- %s", line);
+		free(line);
 		lexer l;
 		lexer_init(&l, q->pl);
 		l.fp = q->curr_stdin;
-		lexer_parse(&l, l.r, src, NULL);
-		free(line);
+		lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
+		free(tmpbuf);
 		term = NLIST_FRONT(&l.val_l);
-
-		if (!is_clause(term)) {
-			lexer_done(&l);
-			continue;
-		}
-
-		// skiplist vars;
-		// sl_init(&vars, 0, NULL, NULL);
-		// q->d = &vars;
-		// int cnt = collect_vars(q, term);
-		// sl_clear(&vars, NULL);
-		// if (q->halt) return 0;
-		// if (cnt) expand_frame(q, cnt);
-		// term = copy_term3(q, term, 0);
-		// sl_done(&vars, NULL);
-		// q->d = NULL;
-
 		xref_clause(&l, term);
 		lexer_done(&l);
+		save_term = term;
+		term = term_firstarg(term);
 		break;
 	}
 
 	int ok = unify_term(q, term1, term, q->c.env_point);
-	term_heapcheck(term);
+	term_heapcheck(save_term);
 	return ok;
 }
 
