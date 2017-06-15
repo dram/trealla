@@ -1330,42 +1330,38 @@ static int bif_iso_read_2(tpl_query *q)
 	char *line = NULL;
 	node *term = NULL, *save_term;
 
-	for (;;) {
 #ifndef ISO_ONLY
-		if (is_socket(term1)) {
-			if (!session_readmsg((session *)sp->sptr, &line)) {
-				q->is_yielded = 1;
-				return 0;
-			}
-
-			if (session_on_disconnect((session *)sp->sptr))
-				return unify_const_atom(q, term2, END_OF_FILE);
-		}
-		else
-#endif
-		{
-			if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1)))
-				return unify_const_atom(q, term2, END_OF_FILE);
-		}
-
-		if (!line[0])
+	if (is_socket(term1)) {
+		if (!session_readmsg((session *)sp->sptr, &line)) {
+			q->is_yielded = 1;
 			return 0;
+		}
 
-		char *tmpbuf = (char *)malloc(strlen(line)+10);
-		sprintf(tmpbuf, "?- %s", line);
-		free(line);
-		lexer l;
-		lexer_init(&l, q->pl);
-		l.fp = q->curr_stdin;
-		lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
-		free(tmpbuf);
-		term = NLIST_FRONT(&l.val_l);
-		xref_clause(&l, term);
-		lexer_done(&l);
-		save_term = term;
-		term = term_firstarg(term);
-		break;
+		if (session_on_disconnect((session *)sp->sptr))
+			return unify_const_atom(q, term2, END_OF_FILE);
 	}
+	else
+#endif
+	{
+		if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1)))
+			return unify_const_atom(q, term2, END_OF_FILE);
+	}
+
+	if (!line[0])
+		return 0;
+
+	char *tmpbuf = (char *)malloc(strlen(line)+10);
+	sprintf(tmpbuf, "?- %s", line);
+	free(line);
+	lexer l;
+	lexer_init(&l, q->pl);
+	l.fp = q->curr_stdin;
+	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
+	free(tmpbuf);
+	save_term = term = NLIST_FRONT(&l.val_l);
+	xref_clause(&l, term);
+	lexer_done(&l);
+	term = term_firstarg(term);
 
 	int ok = unify_term(q, term2, term, q->c.env_point);
 	term_heapcheck(save_term);
@@ -1379,28 +1375,35 @@ static int bif_iso_read(tpl_query *q)
 	char *line;
 	node *term = NULL, *save_term;
 
-	for (;;) {
-		if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
-			return unify_const_atom(q, term1, END_OF_FILE);
+	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
+		return unify_const_atom(q, term1, END_OF_FILE);
 
-		if (!line[0])
-			return 0;
+	if (!line[0])
+		return 0;
 
-		char *tmpbuf = (char *)malloc(strlen(line)+10);
-		sprintf(tmpbuf, "?- %s", line);
-		free(line);
-		lexer l;
-		lexer_init(&l, q->pl);
-		l.fp = q->curr_stdin;
-		lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
-		free(tmpbuf);
-		term = NLIST_FRONT(&l.val_l);
-		xref_clause(&l, term);
-		lexer_done(&l);
-		save_term = term;
-		term = term_firstarg(term);
-		break;
-	}
+	char *tmpbuf = (char *)malloc(strlen(line)+10);
+	sprintf(tmpbuf, "?- %s", line);
+	free(line);
+	lexer l;
+	lexer_init(&l, q->pl);
+	l.fp = q->curr_stdin;
+	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
+	free(tmpbuf);
+	save_term = term = NLIST_FRONT(&l.val_l);
+
+	// skiplist vars;
+	// sl_init(&vars, 0, NULL, NULL);
+	// q->d = &vars;
+	// int cnt = collect_vars(q, term);
+	// sl_clear(&vars, NULL);
+	// if (cnt) expand_frame(q, cnt);
+	// term = copy_term3(q, term, 0);
+	// sl_done(&vars, NULL);
+	// q->d = NULL;
+
+	xref_clause(&l, term);
+	lexer_done(&l);
+	term = term_firstarg(term);
 
 	int ok = unify_term(q, term1, term, q->c.env_point);
 	term_heapcheck(save_term);
