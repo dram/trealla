@@ -247,13 +247,13 @@ The *stream/1* predicate creates a dummy stream for use as a dictionary. The all
 are the same as the per-process dictionary. Like all streams, it should be disposed of by a call to
 close/1. Dictionary operations are not undone on bactracking nor are they backed to the database.
 
-The parse_XXX/2 predicates accept double-quoted column items, and remove any spurious whitespace
+The parse_XXX/2 predicates accept double-quoted column items, and removes any spurious whitespace
 before and after items.
 
-BLOBs and atoms can often be used interchangeably, as the code checks the type. While BLOBs can
-contain embedded NULs etc, atoms can't. Atoms have a terminating NUL that is not returned as part
-of the length, but BLOBs also store a length internally. BLOBS can be written and read in
-back-quotes in which case the enclosed characters are output base64-encoded, eg.
+BLOBs and atoms can often be used interchangeably. While BLOBs can contain embedded NULs etc,
+atoms can't. Atoms have a terminating NUL that is not returned as part of the length, but BLOBs
+also store a length internally. BLOBS can be written and read in back-quotes in which case the
+enclosed characters are output base64-encoded in canonical form, eg.
 
 	`SGVsbG8sIHdvcmxkIQ==` == 'Hello, world!'
 
