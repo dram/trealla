@@ -1344,11 +1344,9 @@ static int bif_read_term(tpl_query *q, char *line, node *term1, node *opts)
 	if (l.error) {
 		printf("ERROR: error make_rule: %s\n", line);
 		lexer_done(&l);
-		free(line);
 		return 0;
 	}
 
-	free(line);
 	skiplist vars;
 	sl_init(&vars, 0, NULL, NULL);
 	q->d = &vars;
@@ -1392,10 +1390,14 @@ static int bif_iso_read_term_2(tpl_query *q)
 	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
 		return unify_const_atom(q, term1, END_OF_FILE);
 
-	if (!line[0])
+	if (!line[0]) {
+		free(line);
 		return 0;
+	}
 
-	return bif_read_term(q, line, term1, term2);
+	int ok = bif_read_term(q, line, term1, term2);
+	free(line);
+	return ok;
 }
 
 static int bif_iso_read_term_3(tpl_query *q)
@@ -1435,10 +1437,14 @@ static int bif_iso_read_term_3(tpl_query *q)
 			return unify_const_atom(q, term2, END_OF_FILE);
 	}
 
-	if (!line[0])
+	if (!line[0]) {
+		free(line);
 		return 0;
+	}
 
-	return bif_read_term(q, line, term2, term3);
+	int ok = bif_read_term(q, line, term2, term3);
+	free(line);
+	return ok;
 }
 
 static int bif_iso_flush_output_1(tpl_query *q)
@@ -6079,7 +6085,7 @@ static int bif_xtra_read_term_from_atom_3(tpl_query *q)
 	node *term3 = get_atom_or_list(term3);
 	char *line = VAL_S(term1);
 
-	if (!LEN(term1))
+	if (!line[0])
 		return 0;
 
 	return bif_read_term(q, line, term2, term3);
