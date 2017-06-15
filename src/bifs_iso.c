@@ -1321,7 +1321,7 @@ static int bif_iso_nl(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_read_2(tpl_query *q)
+static int bif_iso_read_term_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -1397,7 +1397,7 @@ static int bif_iso_read_2(tpl_query *q)
 	return ok;
 }
 
-static int bif_iso_read(tpl_query *q)
+static int bif_iso_read_term(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -6937,10 +6937,10 @@ void bifs_load_iso(void)
 	DEFINE_BIF("write", 2, bif_iso_write_2);
 	DEFINE_BIF("nl", 0, bif_iso_nl);
 	DEFINE_BIF("nl", 1, bif_iso_nl_1);
-	DEFINE_BIF("read_term", 2, bif_iso_read);
-	DEFINE_BIF("read_term", 3, bif_iso_read_2);
-	DEFINE_BIF("read", 1, bif_iso_read);
-	DEFINE_BIF("read", 2, bif_iso_read_2);
+	DEFINE_BIF("read_term", 2, bif_iso_read_term);
+	DEFINE_BIF("read_term", 3, bif_iso_read_term_2);
+	DEFINE_BIF("read", 1, bif_iso_read_term);
+	DEFINE_BIF("read", 2, bif_iso_read_term_2);
 	DEFINE_BIF("put_char", 1, bif_iso_put_char);
 	DEFINE_BIF("put_char", 2, bif_iso_put_char_2);
 	DEFINE_BIF("put_byte", 1, bif_iso_put_byte);
