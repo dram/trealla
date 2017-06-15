@@ -1321,94 +1321,8 @@ static int bif_iso_nl(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_read_term_2(tpl_query *q)
+static int bif_read_term(tpl_query *q, char *line, node *term1, node *opts)
 {
-	node *args = get_args(q);
-	node *term1 = get_atom_or_stream(term1);
-	node *term2 = get_term(term2);
-	stream *sp = term1->val_str;
-	char *line = NULL;
-
-#ifndef ISO_ONLY
-	if (is_socket(term1)) {
-		if (!session_readmsg((session *)sp->sptr, &line)) {
-			q->is_yielded = 1;
-			return 0;
-		}
-
-		if (session_on_disconnect((session *)sp->sptr))
-			return unify_const_atom(q, term2, END_OF_FILE);
-	}
-	else
-#endif
-	{
-		if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1)))
-			return unify_const_atom(q, term2, END_OF_FILE);
-	}
-
-	if (!line[0])
-		return 0;
-
-	char *tmpbuf = (char *)malloc(strlen(line)+10);
-	node *term = NULL, *save_term;
-	int clause = 0;
-
-	if (strstr(line, ":-")) {
-		sprintf(tmpbuf, "%s", line);
-		clause = 1;
-	}
-	else
-		sprintf(tmpbuf, "?- %s", line);
-
-	lexer l;
-	lexer_init(&l, q->pl);
-	l.fp = q->curr_stdin;
-	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
-	save_term = term = NLIST_FRONT(&l.val_l);
-	free(tmpbuf);
-
-	if (l.error) {
-		printf("ERROR: error make_rule: %s\n", line);
-		lexer_done(&l);
-		free(line);
-		return 0;
-	}
-
-	free(line);
-	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
-	q->d = &vars;
-	int cnt = collect_vars(q, term);
-	sl_clear(&vars, NULL);
-
-	if (cnt) {
-		expand_frame(q, cnt);
-		node *tmp = copy_term(q, term);
-		term_heapcheck(term);
-		save_term = term = tmp;
-	}
-
-	sl_done(&vars, NULL);
-	q->d = NULL;
-	lexer_done(&l);
-	term = clause ? term : term_firstarg(term);
-	int ok = unify_term(q, term2, term, q->c.env_point);
-	term_heapcheck(save_term);
-	return ok;
-}
-
-static int bif_iso_read_term(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	char *line;
-
-	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
-		return unify_const_atom(q, term1, END_OF_FILE);
-
-	if (!line[0])
-		return 0;
-
 	char *tmpbuf = (char *)malloc(strlen(line)+10);
 	node *term = NULL, *save_term;
 	int clause = 0;
@@ -1455,6 +1369,76 @@ static int bif_iso_read_term(tpl_query *q)
 	int ok = unify_term(q, term1, term, q->c.env_point);
 	term_heapcheck(save_term);
 	return ok;
+}
+
+static int bif_iso_read_term_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	node *term2 = get_next_arg(q, &args);
+	char *line;
+
+	if (term2) {
+		if (is_atom(term2) && strcmp(VAL_S(term2), "[]")) {
+			QABORT(ABORT_INVALIDARGNOTLIST);
+			return 0;
+		}
+		else if (!is_atom(term2) && !is_list(term2)) {
+			QABORT(ABORT_INVALIDARGNOTLIST);
+			return 0;
+		}
+	}
+
+	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
+		return unify_const_atom(q, term1, END_OF_FILE);
+
+	if (!line[0])
+		return 0;
+
+	return bif_read_term(q, line, term1, term2);
+}
+
+static int bif_iso_read_term_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_stream(term1);
+	node *term2 = get_term(term2);
+	node *term3 = get_next_arg(q, &args);
+	stream *sp = term1->val_str;
+	char *line = NULL;
+
+	if (term3) {
+		if (is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+			QABORT(ABORT_INVALIDARGNOTLIST);
+			return 0;
+		}
+		else if (!is_atom(term3) && !is_list(term3)) {
+			QABORT(ABORT_INVALIDARGNOTLIST);
+			return 0;
+		}
+	}
+
+#ifndef ISO_ONLY
+	if (is_socket(term1)) {
+		if (!session_readmsg((session *)sp->sptr, &line)) {
+			q->is_yielded = 1;
+			return 0;
+		}
+
+		if (session_on_disconnect((session *)sp->sptr))
+			return unify_const_atom(q, term2, END_OF_FILE);
+	}
+	else
+#endif
+	{
+		if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1)))
+			return unify_const_atom(q, term2, END_OF_FILE);
+	}
+
+	if (!line[0])
+		return 0;
+
+	return bif_read_term(q, line, term2, term3);
 }
 
 static int bif_iso_flush_output_1(tpl_query *q)
@@ -6937,10 +6921,10 @@ void bifs_load_iso(void)
 	DEFINE_BIF("write", 2, bif_iso_write_2);
 	DEFINE_BIF("nl", 0, bif_iso_nl);
 	DEFINE_BIF("nl", 1, bif_iso_nl_1);
-	DEFINE_BIF("read_term", 2, bif_iso_read_term);
-	DEFINE_BIF("read_term", 3, bif_iso_read_term_2);
-	DEFINE_BIF("read", 1, bif_iso_read_term);
-	DEFINE_BIF("read", 2, bif_iso_read_term_2);
+	DEFINE_BIF("read_term", 2, bif_iso_read_term_2);
+	DEFINE_BIF("read_term", 3, bif_iso_read_term_3);
+	DEFINE_BIF("read", 1, bif_iso_read_term_2);
+	DEFINE_BIF("read", 2, bif_iso_read_term_3);
 	DEFINE_BIF("put_char", 1, bif_iso_put_char);
 	DEFINE_BIF("put_char", 2, bif_iso_put_char_2);
 	DEFINE_BIF("put_byte", 1, bif_iso_put_byte);
