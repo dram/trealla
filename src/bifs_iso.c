@@ -6082,50 +6082,7 @@ static int bif_xtra_read_term_from_atom_3(tpl_query *q)
 	if (!LEN(term1))
 		return 0;
 
-	node *term = NULL, *save_term;
-	char *tmpbuf = (char *)malloc(strlen(line)+10);
-	int clause = 0;
-
-	if (strstr(line, ":-")) {
-		sprintf(tmpbuf, "%s", line);
-		clause = 1;
-	}
-	else
-		sprintf(tmpbuf, "?- %s", line);
-
-	lexer l;
-	lexer_init(&l, q->pl);
-	l.fp = q->curr_stdin;
-	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
-	save_term = term = NLIST_FRONT(&l.val_l);
-	free(tmpbuf);
-
-	if (l.error) {
-		printf("ERROR: error make_rule: %s\n", line);
-		lexer_done(&l);
-		return 0;
-	}
-
-	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
-	q->d = &vars;
-	int cnt = collect_vars(q, term);
-	sl_clear(&vars, NULL);
-
-	if (cnt) {
-		expand_frame(q, cnt);
-		node *tmp = copy_term(q, term);
-		term_heapcheck(term);
-		save_term = term = tmp;
-	}
-
-	sl_done(&vars, NULL);
-	q->d = NULL;
-	lexer_done(&l);
-	term = clause ? term : term_firstarg(term);
-	int ok = unify_term(q, term2, term, q->c.env_point);
-	term_heapcheck(save_term);
-	return ok;
+	return bif_read_term(q, line, term2, term3);
 }
 
 int bif_xtra_enter(tpl_query *q)
