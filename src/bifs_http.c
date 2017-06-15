@@ -1106,6 +1106,90 @@ static int bif_http_post10_6(tpl_query *q)
 	return ok;
 }
 
+static int http_post11(session *s, const char *path, const char *cttype, int ctlen, int keep, int *status)
+{
+	const char *host = session_get_stash(s, "HOST");
+	const char *user = session_get_stash(s, "USER");
+	const char *pass = session_get_stash(s, "PASS");
+	char dstbuf[1024 * 8];
+	char *dst = dstbuf;
+	dst += snprintf(dst, 1024 * 4, "POST %s HTTP/1.1\r\n", path);
+	dst += snprintf(dst, 256, "Host: %s\r\n", host);
+
+	if (user[0]) {
+		dst += snprintf(dst, 256, "Authorization: Basic ");
+		char tmpbuf[1024];
+		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
+		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
+		dst += sprintf(dst, "\r\n");
+	}
+
+	if (cttype[0])
+		dst += snprintf(dst, 256, "Content-Type: %s\r\n", cttype);
+
+	if (ctlen >= 0)
+		dst += sprintf(dst, "Content-Length: %lu\r\n", (long unsigned)ctlen);
+	else
+		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
+
+	if (!keep)
+		dst += sprintf(dst, "Connection: %s\r\n", "close");
+
+	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
+	session_writemsg(s, dstbuf);
+	// printf("%s", dstbuf);
+	char *bufptr = NULL;
+	int len;
+
+	while ((len = session_readmsg(s, &bufptr)) > 0) {
+		// printf("> %s", bufptr);
+
+		if (!session_get_udata_flag(s, CMD)) {
+			session_set_udata_flag(s, CMD);
+			char ver[20];
+			ver[0] = '\0';
+			sscanf(bufptr, "HTTP/%19s %d", ver, status);
+			free(bufptr);
+			ver[sizeof(ver) - 1] = '\0';
+			char tmpbuf[20];
+			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
+			session_set_stash(s, "X_STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
+			continue;
+		}
+
+		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
+			free(bufptr);
+			session_clr_udata_flag(s, CMD);
+			if (strlen(session_get_stash(s, "Content-Length")))
+				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+			if (strlen(session_get_stash(s, "Content-Type")))
+				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			return 1;
+		}
+
+		parse_header(s, bufptr, len);
+	}
+
+	return 0;
+}
+
+static int bif_http_post11_6(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_atom(term3);
+	node *term4 = get_int(term4);
+	node *term5 = get_int(term5);
+	node *term6 = get_var(term6);
+	stream *sp = term1->val_str;
+	int status = 0;
+	int ok = http_post11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, &status);
+	put_int(q, q->c.curr_frame + term6->slot, status);
+	return ok;
+}
+
 static int http_put11(session *s, const char *path, const char *cttype, int ctlen, int keep, int *status)
 {
 	const char *host = session_get_stash(s, "HOST");
@@ -1187,80 +1271,6 @@ static int bif_http_put11_6(tpl_query *q)
 	int status = 0;
 	int ok = http_put11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, &status);
 	put_int(q, q->c.curr_frame + term6->slot, status);
-	return ok;
-}
-
-static int http_delete10(session *s, const char *path, int keep, int *status)
-{
-	const char *host = session_get_stash(s, "HOST");
-	const char *user = session_get_stash(s, "USER");
-	const char *pass = session_get_stash(s, "PASS");
-	char dstbuf[1024 * 8];
-	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "DELETE %s HTTP/1.0\r\n", path);
-	dst += snprintf(dst, 256, "Host: %s\r\n", host);
-
-	if (user[0]) {
-		dst += snprintf(dst, 256, "Authorization: Basic ");
-		char tmpbuf[1024];
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
-		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
-		dst += sprintf(dst, "\r\n");
-	}
-
-	if (keep)
-		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
-
-	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
-	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
-	char *bufptr = NULL;
-	int len;
-
-	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
-		if (!session_get_udata_flag(s, CMD)) {
-			session_set_udata_flag(s, CMD);
-			char ver[20];
-			ver[0] = '\0';
-			sscanf(bufptr, "HTTP/%19s %d", ver, status);
-			free(bufptr);
-			ver[sizeof(ver) - 1] = '\0';
-			char tmpbuf[20];
-			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "X_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP", ver);
-			continue;
-		}
-
-		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
-			free(bufptr);
-			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length")))
-				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type")))
-				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-			return 1;
-		}
-
-		parse_header(s, bufptr, len);
-	}
-
-	return 0;
-}
-
-static int bif_http_delete10_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_int(term3);
-	node *term4 = get_var(term4);
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_delete10((session *)sp->sptr, VAL_S(term2), term3->val_i, &status);
-	put_int(q, q->c.curr_frame + term4->slot, status);
 	return ok;
 }
 
@@ -2035,12 +2045,12 @@ void bifs_load_http(void)
 
 	DEFINE_BIF("http:head10", 4, bif_http_head10_4);
 	DEFINE_BIF("http:get10", 4, bif_http_get10_4);
-	DEFINE_BIF("http:delete10", 4, bif_http_delete10_4);
 	DEFINE_BIF("http:post10", 6, bif_http_post10_6);
 
 	DEFINE_BIF("http:head11", 4, bif_http_head11_4);
 	DEFINE_BIF("http:get11", 4, bif_http_get11_4);
 	DEFINE_BIF("http:delete11", 4, bif_http_delete11_4);
+	DEFINE_BIF("http:post11", 6, bif_http_post11_6);
 	DEFINE_BIF("http:put11", 6, bif_http_put11_6);
 
 	DEFINE_BIF("http:get11_chunk", 3, bif_http_get11_chunk_3);

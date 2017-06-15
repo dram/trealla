@@ -654,7 +654,6 @@ Hyper-Text Transfer Protocol:
 
 	head10(+S,+Path,+Keep,-Status)
 	get10(+S,+Path,+Keep,-Status)
-	del10(+S,+Path,+Keep,-Status)
 	post10(+S,+Path,+Type,+Len,+Keep,-Status)
 
 	head11(+S,+Path,+Keep,-Status)
