@@ -1338,18 +1338,14 @@ static int bif_iso_read_2(tpl_query *q)
 				return 0;
 			}
 
-			if (session_on_disconnect((session *)sp->sptr)) {
-				put_const_atom(q, q->c.curr_frame + term2->slot, END_OF_FILE);
-				return 1;
-			}
+			if (session_on_disconnect((session *)sp->sptr))
+				return unify_const_atom(q, term2, END_OF_FILE);
 		}
 		else
 #endif
 		{
-			if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1))) {
-				put_const_atom(q, q->c.curr_frame + term2->slot, END_OF_FILE);
-				return 1;
-			}
+			if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1)))
+				return unify_const_atom(q, term2, END_OF_FILE);
 		}
 
 		if (!line[0])
@@ -1384,10 +1380,8 @@ static int bif_iso_read(tpl_query *q)
 	node *term = NULL, *save_term;
 
 	for (;;) {
-		if (!(line = trealla_readline(q->lex, q->curr_stdin, 1))) {
-			put_const_atom(q, q->c.curr_frame + term1->slot, END_OF_FILE);
-			return 1;
-		}
+		if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
+			return unify_const_atom(q, term1, END_OF_FILE);
 
 		if (!line[0])
 			return 0;
