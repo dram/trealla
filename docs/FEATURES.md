@@ -713,6 +713,15 @@ For example:
 
 See *samples/ws_server.pro* & *samples/testws.pro* for guidance.
 
+Lists library module: namespace 'lists'
+-------------------------------------
+
+This is a dummy module:
+
+	:-import(library(lists)).
+
+can be used for member/2 compatability with other Prologs.
+
 Dictionary library module: namespace  'dict'
 --------------------------------------------
 
