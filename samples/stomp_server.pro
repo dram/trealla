@@ -25,7 +25,7 @@ start_server(Bind,Param) :-
 
 process_request(S,Log,Param,Ver,Cmd) :-
 	member(Cmd,['CONNECT','STOMP']),
-	concat('server:trealla\nversion:',Ver,'\n',Hdrs),
+	atomic_list_concat(['server:trealla\nversion:',Ver,'\n'],Hdrs),
 	stomp:msg(S,'CONNECTED',Hdrs,''),
 	log_message(S,Log,1).
 
@@ -57,7 +57,7 @@ process_request(S,Log,Param,Ver,'SEND') :-
 	lget(Dest,Subs),
 	uuid(Mid),
 	send_message(S,Subs,Mid,Data),
-	concat('message-id:',Mid,'\n',Hdrs),
+	atomic_list_concat(['message-id:',Mid,'\n'],Hdrs),
 	process_receipt(S,Hdrs),
 	log_message(S,Log,1).
 
@@ -67,7 +67,7 @@ send_message(S,[Who|Rest],Mid,Data) :-
 	stash_get(S,'Destination',Dest,_),
 	stash_get(S,'CONTENT_TYPE',Ct,'text/plain'),
 	stash_get(S,'CONTENT_LENGTH',Len,0),
-	concat('destination:',Dest,'\ncontent-type:',Ct,'\ncontent-length:',Len,'\nmessage-id:',Mid,'\n',Hdrs),
+	atomic_list_concat(['destination:',Dest,'\ncontent-type:',Ct,'\ncontent-length:',Len,'\nmessage-id:',Mid,'\n'],Hdrs),
 	stomp:msg(Who,'MESSAGE',Hdrs,Data),
 	send_message(S,Rest,Mid,Data).
 
@@ -97,7 +97,7 @@ process_request(S,Log,Param,Ver,'ABORT') :-
 	log_message(S,Log,1).
 
 process_request(S,Log,Param,Ver,Cmd) :-
-	concat('server:trealla\nversion:',Ver,'\n',Hdrs),
+	atomic_list_concat(['server:trealla\nversion:',Ver,'\n'],Hdrs),
 	stomp:msg(S,'ERROR',Hdrs,''),
 	log_message(S,Log,0),
 	close(S).
@@ -108,7 +108,7 @@ process_receipt(S) :-
 process_receipt(S,Hdrs) :-
 	stash_get(S,'Receipt',Rcpt,_),
 	nonvar(Rcpt),
-	concat('receipt:',Rcpt,'\n',Hdrs,Hdrs2),
+	atomic_list_concat(['receipt:',Rcpt,'\n',Hdrs],Hdrs2),
 	stomp:msg(S,'RECEIPT',Hdrs2,'').
 
 process_receipt(S,Hdrs).
@@ -122,6 +122,6 @@ log_message(S,Log,Status) :-
 	stash_get(S,'CONTENT_LENGTH',Len,'0'),
 	Path = '',
 	Refer = '',
-	concat('"',Date,'","',Addr,'","STOMP/',VerStr,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"',Msg),
+	atomic_list_concat(['"',Date,'","',Addr,'","STOMP/',VerStr,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"'],Msg),
 	writeln(Log,Msg),
 	true.

@@ -67,7 +67,7 @@ security(S,Log,Path) :-
 	stash_get(S,'SERVER_NAME',Host,''),
 	stash_get(S,'SERVER_PORT',Port,''),
 	stash_set(S,'Connection',_,'close'),
-	concat(S,'HTTP/',VerStr,' ',Code,' ',Msg,'\r\nLocation: https://',Host,Path,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',VerStr,' ',Code,' ',Msg,'\r\nLocation: https://',Host,Path,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'],Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0),
 	fail.                          % NOTE
@@ -94,21 +94,21 @@ process_get(S,Log,Ver,Cmd,Path) :-
 	warn_message(S,Log,Ver,400,'BAD REQUEST').
 
 warn_message(S,Log,Ver,Code,Msg) :-
-	concat('<html><body><h1>',Msg,Msg1),
-	concat(Msg1,'</h1></body></html>\r\n',Msg2),
+	atomic_list_concat(['<html><body><h1>',Msg],Msg1),
+	atomic_list_concat([Msg1,'</h1></body></html>\r\n'],Msg2),
 	atom_length(Msg2,Len2),
 	stash_get(S,'HTTP',VerStr,''),
 	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 = 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
-	concat(S,'HTTP/',VerStr,' ',Code,' ',Msg,'\r\nServer: Trealla\r\nConnection: ',Conn3,'\r\nContent-Type: text/html\r\nContent-Length: ',Len2,'\r\n\r\n',Msg2,Msg3),
+	atomic_list_concat(['HTTP/',VerStr,' ',Code,' ',Msg,'\r\nServer: Trealla\r\nConnection: ',Conn3,'\r\nContent-Type: text/html\r\nContent-Length: ',Len2,'\r\n\r\n',Msg2],Msg3),
 	write(S,Ms3),
 	log_message(S,Log,Code,0).
 
 error_message(S,Log,Code,Msg) :-
 	stash_get(S,'HTTP',VerStr,''),
 	stash_set(S,'Connection',_,'close'),
-	concat('HTTP/',VerStr,' ',Code,' ',Msg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',VerStr,' ',Code,' ',Msg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'],Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0),
 	fail.                          % NOTE
@@ -121,7 +121,7 @@ log_message(S,Log,Status,Len) :-
 	stash_get(S,'REMOTE_ADDR',Addr,''),
 	stash_get(S,'Referer',Refer,''),
 	stash_get(S,'SERVER_NAME',Host,''),
-	concat('"',Date,'","',Addr,'","HTTP/',VerStr,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"',Msg),
+	atomic_list_concat(['"',Date,'","',Addr,'","HTTP/',VerStr,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"'],Msg),
 	writeln(Log,Msg),
 	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),

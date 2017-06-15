@@ -21,12 +21,12 @@ verify(Key) :-
 		write(Key),write(' '),write(Idx),write(' ... '),
 		LastIdx is Idx - 1,
 		once(block(Key,LastIdx,LastTs,LastData,LastHash,LastPrevHash)),
-		sys:concat(Key,LastIdx,LastPrevHash,LastTs,LastData,Tmp),
-		sys:sha256(Tmp,VerifyHash), 
-		( 
-			PrevHash = VerifyHash -> 
-				writeln('.') ; 
-				writeln('*** ERROR ***') 
+		atomic_list_concat([Key,LastIdx,LastPrevHash,LastTs,LastData],Tmp),
+		sys:sha256(Tmp,VerifyHash),
+		(
+			PrevHash = VerifyHash ->
+				writeln('.') ;
+				writeln('*** ERROR ***')
 		),
 		fail.
 verify(Key).
@@ -81,7 +81,7 @@ store_block(Key,Idx,Ts,Data,Hash) :-
 	get_block(Key,LastIdx,_,_,LastHash,_),
 	Idx is LastIdx + 1,                                       % Verify
 	term_to_blob(Data,Blob),
-	sys:concat(Key,Idx,LastHash,Ts,Blob,Tmp),
+	atomic_list_concat([Key,Idx,LastHash,Ts,Blob],Tmp),
 	sys:sha256(Tmp,VerifyHash),
 	Hash = VerifyHash,                                        % Verify
 	asserta(block(Key,Idx,Ts,Blob,Hash,LastHash)),
@@ -89,7 +89,7 @@ store_block(Key,Idx,Ts,Data,Hash) :-
 
 get_block(Key,Idx,Ts,Data,Hash,PrevHash) :-
 	nonvar(Key),
-	block(Key,Idx,Ts,Data,Hash,PrevHash), 
+	block(Key,Idx,Ts,Data,Hash,PrevHash),
 	!.
 get_block(Key,Idx,Ts,Data,Hash,PrevHash) :-
 	nonvar(Key),

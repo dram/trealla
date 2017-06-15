@@ -57,7 +57,7 @@ start_server(Bind,Root) :-
 process_request(S,Log,Root,Ver,Cmd,Path) :-
 	security(S,Log,Path),
 	stash_get(S,'SERVER_NAME',Host,''),
-	concat(Root,'/',Host,?DirFiles,Path,Path2),
+	atomic_list_concat([Root,'/',Host,?DirFiles,Path],Path2),
 	check_method(S,Log,Ver,Cmd,Path,Path2).
 
 security(S,Log,Path) :-
@@ -69,9 +69,9 @@ security(S,Log,Path) :-
 	stash_get(S,'SERVER_NAME',Host,''),
 	stash_get(S,'SERVER_PORT',Port,''),
 	stash_set(S,'Connection',_,'close'),
-	concat('HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\n',Msg1),
-	concat(Msg1,'Location: https://',Host,Path,'\r\n',Msg2),
-	concat(Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\n'],Msg1),
+	atomic_list_concat([Msg1,'Location: https://',Host,Path,'\r\n'],Msg2),
+	atomic_list_concat([Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n'],Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0).
 
@@ -88,9 +88,9 @@ authorize(S,Log,Path) :-
 	stash_set(S,'Connection',_,'close'),
 	stash_get(S,'SERVER_NAME',Host,''),
 	Code = 401,
-	concat('HTTP/',Ver,' ',Code,' Unauthorized\r\n',Msg1),
-	concat(Msg1,'WWW-Authenticate: Basic realm="',Host,'"\r\n',Msg2),
-	concat(Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',Ver,' ',Code,' Unauthorized\r\n'],Msg1),
+	atomic_list_concat([Msg1,'WWW-Authenticate: Basic realm="',Host,'"\r\n'],Msg2),
+	atomic_list_concat([Msg2,'Connection: close\r\nContent-Length: 0\r\n\r\n'],Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0).
 
@@ -132,7 +132,7 @@ process_get(S,Log,Ver,Cmd,Path,FullPath) :-
 
 process_get(S,Log,Ver,Cmd,Path,FullPath) :-
 	exists_directory(FullPath), !,
-	concat(FullPath,?FileDefault,NewFullPath),
+	atomic_list_concat([FullPath,?FileDefault],NewFullPath),
 	process_get(S,Log,Ver,Cmd,Path,NewFullPath).
 
 process_get(S,Log,Ver,Cmd,Path,FullPath) :-
@@ -152,7 +152,7 @@ check_modified(S,Log,Ver,Lmod,Len,Cmd,Path,FullPath) :-
 	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
-	concat('HTTP/',Ver,' 304 NOT MODIFIED\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nConnection: ',Conn3,'\r\nContent-Length: 0\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',Ver,' 304 NOT MODIFIED\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nConnection: ',Conn3,'\r\nContent-Length: 0\r\n\r\n'],Msg),
 	write(S,Msg),
 	log_message(S,Log,304,0).
 
@@ -164,7 +164,7 @@ process_file(S,Ver,Lmod,Len,'HEAD',FullPath) :- !,
 	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
-	concat('HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Length: ',Len,'\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Length: ',Len,'\r\n\r\n'],Msg),
 	write(S,Msg).
 
 process_file(S,Ver,Lmod,Len,'GET',FullPath) :- !,
@@ -172,25 +172,25 @@ process_file(S,Ver,Lmod,Len,'GET',FullPath) :- !,
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
 	mime:mime_type(FullPath,Ct),
-	concat('HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Type: ',Ct,'\r\nContent-Length: ',Len,'\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',Ver,' 200 OK\r\nServer: Trealla\r\nCache-Control: max-age=',?MaxAge,'\r\nLast-Modified: ',Lmod,'\r\nConnection: ',Conn3,'\r\nContent-Type: ',Ct,'\r\nContent-Length: ',Len,'\r\n\r\n'],Msg),
 	write(S,Msg),
 	write_file(S,FullPath).
 
 info_message(S,Log,Code,InfoMsg) :-
-	concat('<html><body><h1>',InfoMsg,'</h1></body></html>\r\n',Body),
+	atomic_list_concat(['<html><body><h1>',InfoMsg,'</h1></body></html>\r\n'],Body),
 	atom_length(Body,Len),
 	stash_get(S,'HTTP',Ver,''),
 	stash_get(S,'Connection',Conn,'keep-alive'),
 	lower(Conn,Conn2),
 	(Conn2 == 'close' -> Conn3 = 'close' ; Conn3 = 'keep-alive'),
-	concat('HTTP/',Ver,' ',Code,' ',InfoMsg,'\r\nServer: Trealla\r\nConnection: ',Conn3,'\r\nContent-Type: text/html\r\nContent-Length: ',Len,'\r\n\r\n',Body,Msg),
+	atomic_list_concat(['HTTP/',Ver,' ',Code,' ',InfoMsg,'\r\nServer: Trealla\r\nConnection: ',Conn3,'\r\nContent-Type: text/html\r\nContent-Length: ',Len,'\r\n\r\n',Body],Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0).
 
 error_message(S,Log,Code,ErrMsg) :-
 	stash_get(S,'HTTP',Ver,''),
 	stash_set(S,'Connection',_,'close'),
-	concat('HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n',Msg),
+	atomic_list_concat(['HTTP/',Ver,' ',Code,' ',ErrMsg,'\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'],Msg),
 	write(S,Msg),
 	log_message(S,Log,Code,0).
 
@@ -203,7 +203,7 @@ log_message(S,Log,Status,Len) :-
 	stash_get(S,'REMOTE_ADDR',Addr,''),
 	stash_get(S,'Referer',Refer,''),
 	stash_get(S,'SERVER_NAME',Host,''),
-	concat('"',Date,'","',Addr,'","HTTP/',Ver,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"\n',Msg),
+	atomic_list_concat(['"',Date,'","',Addr,'","HTTP/',Ver,'","',Status,'","',Host,'","',Cmd,'","',Path,'","',Len,'","',Refer,'"\n'],Msg),
 	write(Log,Msg),
 	%flush_output(Log),
 	stash_get(S,'Connection',Conn,'keep-alive'),
