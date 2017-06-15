@@ -179,7 +179,6 @@ These are an assortment of utilities:
 	timestamp(-Usecs)           - get the useconds C-epoch
 	sleep(+Secs)                - yield for seconds (also hsleep/1 for hard-sleep)
 	delay(+Msecs)               - yield for milli-seconds (also hdelay/1 ...)
-	concat(+Atomic,...,-Atom)   - concatenates all atomics to atom or BLOB
 	getline(-Atom)              - read a line into atom (CR and/or LF removed)
 	getline(+S,-Atom)           - ... same but from file stream
 	exists_directory(+Path)     - check if dir exists
