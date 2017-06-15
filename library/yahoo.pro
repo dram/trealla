@@ -24,14 +24,14 @@
 get_chart(Symbol,Data) :-
 	atom(Symbol),
 	sys:url_encode(Symbol,Symbol2),
-	sys:concat('/table.csv?s=',Symbol2,Path),
+	atomic_list_concat(['/table.csv?s=',Symbol2],Path),
 	http_client:get11_data(?CHART_SERVER,Path,Data).
 
 get_fields(Symbols,Fields,Data) :-
 	atom(Symbols),
 	sys:url_encode(Fields,Fields2),
 	sys:url_encode(Symbols,Symbols2),
-	sys:concat('/d/quotes?s=',Symbols2,'&d=t&f=',Fields2,Path),
+	atomic_list_concat(['/d/quotes?s=',Symbols2,'&d=t&f=',Fields2],Path),
 	http_client:get11_data(?QUOTE_SERVER,Path,Data).
 
 get_quote(Symbols,Data) :-

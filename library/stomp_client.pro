@@ -12,7 +12,7 @@ test(Host) :-
 connect(Host,S) :-
 	net:client(Host,S),
 	split(Host,':',Name,_),
-	concat('host:',Name,'\naccept-version:1.0,1.1,1.2\n',Hdrs),
+	atomic_list_concat(['host:',Name,'\naccept-version:1.0,1.1,1.2\n'],Hdrs),
 	stomp:msg(S,'CONNECT',Hdrs,''),
 	stomp:parse(S,Ver,Cmd),
 	Cmd = 'CONNECTED',
@@ -20,7 +20,7 @@ connect(Host,S) :-
 
 disconnect(S) :-
 	uuid(Id),
-	concat('receipt:',Id,'\n',Hdrs),
+	atomic_list_concat(['receipt:',Id,'\n'],Hdrs),
 	stomp:msg(S,'DISCONNECT',Hdrs,''),
 	repeat,
 		stomp:parse(S,_,Cmd),
@@ -31,7 +31,7 @@ disconnect(S) :-
 % Send blindly:
 
 send(S,Dest,Ct,Data) :-
-	concat('destination:',Dest,'\ncontent-type:',Ct,'\n',Hdrs),
+	atomic_list_concat(['destination:',Dest,'\ncontent-type:',Ct,'\n'],Hdrs),
 	stomp:msg(S,'SEND',Hdrs,Data).
 
 % Send and ask for a receipt, which will be processed internally. Any
@@ -39,7 +39,7 @@ send(S,Dest,Ct,Data) :-
 
 send_with_receipt({S,Pid},Dest,Ct,Data,Id) :-
 	uuid(Id),
-	concat('receipt:',Id,'\ndestination:',Dest,'\ncontent-type:',Ct,'\n',Hdrs),
+	atomic_list_concat(['receipt:',Id,'\ndestination:',Dest,'\ncontent-type:',Ct,'\n'],Hdrs),
 	stomp:msg(S,'SEND',Hdrs,Data),
 	wait_receipt({S,Pid}).
 
@@ -47,21 +47,21 @@ send_with_receipt({S,Pid},Dest,Ct,Data,Id) :-
 
 subscribe(S,Dest,Id) :-
 	uuid(Id),
-	concat('id:',Id,'\ndestination:',Dest,'\n',Hdrs),
+	atomic_list_concat(['id:',Id,'\ndestination:',Dest,'\n'],Hdrs),
 	stomp:msg(S,'SUBSCRIBE',Hdrs,'').
 
 subscribe_with_receipt({S,Pid},Dest,Id) :-
 	uuid(Id),
-	concat('id:',Id,'\nreceipt:',Id,'\ndestination:',Dest,'\n',Hdrs),
+	atomic_list_concat(['id:',Id,'\nreceipt:',Id,'\ndestination:',Dest,'\n'],Hdrs),
 	stomp:msg(S,'SUBSCRIBE',Hdrs,''),
 	wait_receipt({S,Pid}).
 
 unsubscribe(S,Id) :-
-	concat('id:',Id,'\n',Hdrs),
+	atomic_list_concat(['id:',Id,'\n'],Hdrs),
 	stomp:msg(S,'UNSUBSCRIBE',Hdrs,'').
 
 unsubscribe_with_receipt({S,Pid},Id) :-
-	concat('id:',Id,'receipt:',Id,'\n',Hdrs),
+	atomic_list_concat(['id:',Id,'receipt:',Id,'\n'],Hdrs),
 	stomp:msg(S,'UNSUBSCRIBE',Hdrs,''),
 	wait_receipt({S,Pid}).
 

@@ -43,27 +43,27 @@ send(Server,From,To,Subject,Body,ContentType) :-
 	reply(S,220),
 
 	net:local_host(S,Name),
-	concat('HELO ',Name,'\r\n',Helo),
+	atomic_list_concat(['HELO ',Name,'\r\n'],Helo),
 	write(S,Helo),
 	reply(S,250),
 
-	concat('MAIL FROM: <',From,'>\r\n',MailFrom),
+	atomic_list_(['MAIL FROM: <',From,'>\r\n'],MailFrom),
 	write(S,MailFrom),
 	reply(S,250),
 
-	concat('RCPT TO: <',To,'>\r\n',RcptTo),
+	atomic_list_concat(['RCPT TO: <',To,'>\r\n'],RcptTo),
 	write(S,RcptTo),
 	reply(S,250),
 
-	concat('DATA\r\n',Data),
+	atomic_list_concat(['DATA\r\n'],Data),
 	write(S,Data),
 	reply(S,354),
 
-	concat('From: <',From,'>\r\n',Hdr1),
-	concat(Hdr1,'To: <',To,'>\r\n',Hdr2),
-	concat(Hdr2,'Subject: ',Subject,'\r\n',Hdr3),
-	concat(Hdr3,'Content-Type: ',ContentType,'\r\n',Hdr4),
-	concat(Hdr4,'MIME-Version: 1.0\r\n\r\n',Body,'\r\n.\r\n',Msg),
+	atomic_list_concat(['From: <',From,'>\r\n'],Hdr1),
+	atomic_list_concat([Hdr1,'To: <',To,'>\r\n'],Hdr2),
+	atomic_list_concat([Hdr2,'Subject: ',Subject,'\r\n'],Hdr3),
+	atomic_list_concat([Hdr3,'Content-Type: ',ContentType,'\r\n'],Hdr4),
+	atomic_list_concat([Hdr4,'MIME-Version: 1.0\r\n\r\n',Body,'\r\n.\r\n'],Msg),
 	write(S,Msg),
 	reply(S,250),
 

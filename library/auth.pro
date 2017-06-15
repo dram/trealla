@@ -41,7 +41,7 @@ init :-
 
 adduser(User,Pass) :-
 	rand(Salt),
-	concat(Salt,Pass,Str),
+	atomic_list_concat([Salt,Pass],Str),
 	sha256(Str,Hash),
 	split(User,'@',L,R),
 	dict:set([],?FieldCreated,Now,D0),
@@ -69,7 +69,7 @@ login(User,Pass,SessId,Keep,Expires) :-
 	auth_user(User,D),
 	dict:get(D,?FieldSalt,Salt),
 	dict:get(D,?FieldHash,Hash),
-	concat(Salt,Pass,Str),
+	atomic_list_concat([Salt,Pass],Str),
 	sha256(Str,Hash2),
 	Hash == Hash2,
 	dict:get(D,?FieldDeleted,0),
@@ -153,7 +153,7 @@ getuser_locked(User,Locked) :-
 setuser_pass(User,Pass) :-
 	now(Now),
 	rand(Salt),
-	concat(Salt,Pass,Str),
+	atomic_list_concat([Salt,Pass],Str),
 	sha256(Str,Hash),
 	dbs:begin,
 	retract(auth_user(User,D)),
@@ -170,14 +170,14 @@ getuser_uuid(User,Uuid) :-
 session_set(SessId,Name,Value) :-
 	dbs:begin,
 	retract(auth_session(SessId,D)),
-	concat('user$',Name,ActualName),
+	atomic_list_concat(['user$',Name],ActualName),
 	dict:set(D,ActualName,Value,D1),
 	assertz(auth_session(SessId,D1)),
 	dbs:end.
 
 session_get(SessId,Name,Value) :-
 	auth_session(SessId,D),
-	concat('user$',Name,ActualName),
+	atomic_list_concat(['user$',Name],ActualName),
 	dict:get(D,ActualName,Value).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
