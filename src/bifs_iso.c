@@ -1327,7 +1327,6 @@ static int bif_iso_read_2(tpl_query *q)
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
-	node *term = NULL, *save_term;
 	char *line = NULL;
 
 #ifndef ISO_ONLY
@@ -1351,6 +1350,7 @@ static int bif_iso_read_2(tpl_query *q)
 		return 0;
 
 	char *tmpbuf = (char *)malloc(strlen(line)+10);
+	node *term = NULL, *save_term;
 	int clause = 0;
 
 	if (strstr(line, ":-")) {
@@ -1392,7 +1392,7 @@ static int bif_iso_read_2(tpl_query *q)
 	q->d = NULL;
 	lexer_done(&l);
 	term = clause ? term : term_firstarg(term);
-	int ok = unify_term(q, term1, term, q->c.env_point);
+	int ok = unify_term(q, term2, term, q->c.env_point);
 	term_heapcheck(save_term);
 	return ok;
 }
@@ -1401,7 +1401,6 @@ static int bif_iso_read(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	node *term = NULL, *save_term;
 	char *line;
 
 	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
@@ -1411,6 +1410,7 @@ static int bif_iso_read(tpl_query *q)
 		return 0;
 
 	char *tmpbuf = (char *)malloc(strlen(line)+10);
+	node *term = NULL, *save_term;
 	int clause = 0;
 
 	if (strstr(line, ":-")) {
@@ -6093,22 +6093,54 @@ static int bif_xtra_read_term_from_atom_3(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom_or_var(term2);
 	node *term3 = get_atom_or_list(term3);
-	char *src = VAL_S(term1);
-	int len = LEN(term1);
+	char *line = VAL_S(term1);
 
-	if (!len)
+	if (!LEN(term1))
 		return 0;
+
+	node *term = NULL, *save_term;
+	char *tmpbuf = (char *)malloc(strlen(line)+10);
+	int clause = 0;
+
+	if (strstr(line, ":-")) {
+		sprintf(tmpbuf, "%s", line);
+		clause = 1;
+	}
+	else
+		sprintf(tmpbuf, "?- %s", line);
 
 	lexer l;
 	lexer_init(&l, q->pl);
-	lexer_parse(&l, l.r, src, NULL);
-	xref_clause(&l, l.r);
-	node *term = term_first(l.r);
-	term = copy_term(q, term);
-	term_heapcheck(l.r);
+	l.fp = q->curr_stdin;
+	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
+	save_term = term = NLIST_FRONT(&l.val_l);
+	free(tmpbuf);
+
+	if (l.error) {
+		printf("ERROR: error make_rule: %s\n", line);
+		lexer_done(&l);
+		return 0;
+	}
+
+	skiplist vars;
+	sl_init(&vars, 0, NULL, NULL);
+	q->d = &vars;
+	int cnt = collect_vars(q, term);
+	sl_clear(&vars, NULL);
+
+	if (cnt) {
+		expand_frame(q, cnt);
+		node *tmp = copy_term(q, term);
+		term_heapcheck(term);
+		save_term = term = tmp;
+	}
+
+	sl_done(&vars, NULL);
+	q->d = NULL;
 	lexer_done(&l);
-	int ok = unify_term(q, term2, term, q->c.curr_frame);
-	term_heapcheck(term);
+	term = clause ? term : term_firstarg(term);
+	int ok = unify_term(q, term2, term, q->c.env_point);
+	term_heapcheck(save_term);
 	return ok;
 }
 

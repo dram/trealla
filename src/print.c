@@ -389,9 +389,10 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += sprint2_list(++depth, dstbuf, bufsize, &dst, pl, q, n, listing);
 	else if (is_compound(n))
 		dst += sprint2_compound(++depth, dstbuf, bufsize, &dst, pl, q, n, listing);
-	else if (is_file(n)) {
+	else if (is_file(n) && needs_quoting(n->val_str->filename) && listing)
+		dst += sprintf(dst, "'%s'", n->val_str->filename);
+	else if (is_file(n))
 		dst += sprintf(dst, "%s", n->val_str->filename);
-	}
 	else if (is_ptr(n) && listing) {
 		*dst++ = '@';
 		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);
