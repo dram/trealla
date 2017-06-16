@@ -415,7 +415,7 @@ inline static void term_append(node *s, node *n) { NLIST_PUSH_BACK(&s->val_l, n)
 inline static void term_concat(node *s1, node *s2) { NLIST_CONCAT(&s1->val_l, &s2->val_l); }
 inline static int term_count(node *s) { return (int)NLIST_COUNT(&s->val_l); }
 inline static const char *term_functor(node *s) { return VAL_S(NLIST_FRONT(&s->val_l)); }
-inline static int term_arity(node *s) { return ((int)NLIST_COUNT(&s->val_l)) - 1; }
+inline static int term_arity(node *s) { return (int)(NLIST_COUNT(&s->val_l) > 0 ? (NLIST_COUNT(&s->val_l)) -1 : 0); }
 
 inline static void term_heapcheck(node *n)
 {
