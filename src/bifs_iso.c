@@ -3485,7 +3485,7 @@ static int bif_iso_functor(tpl_query *q)
 				return 1;
 			}
 			else {
-				return !strcmp(term_functor(term1), VAL_S(term2)) && (term_arity(term1) == v);
+				return (term_arity(term1) == v) && !strcmp(term_functor(term1), VAL_S(term2));
 			}
 		}
 		else if (v == 0)
