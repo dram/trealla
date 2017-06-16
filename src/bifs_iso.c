@@ -6761,7 +6761,7 @@ static int bif_xtra_name_2(tpl_query *q)
 	return ok;
 }
 
-static int bif_xtra_concat(tpl_query *q)
+static int bif_xtra_sys_concat(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_next_arg(q, &args);
@@ -7047,7 +7047,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
-	DEFINE_BIF("sys_concat", -1, bif_xtra_concat);
+	DEFINE_BIF("sys_concat", -1, bif_xtra_sys_concat);
 #endif
 
 // These are for Edinburgh-style file handling...
