@@ -7047,7 +7047,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
-	DEFINE_BIF("sys_concat", -1, bif_xtra_sys_concat);
+	DEFINE_BIF("$concat", -1, bif_xtra_sys_concat);
 #endif
 
 // These are for Edinburgh-style file handling...
