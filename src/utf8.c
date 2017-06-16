@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef unix
+#include <unistd.h>
+#endif
+
 size_t strlen_utf8(const char *s)
 {
 	size_t cnt = 0;
@@ -156,6 +160,49 @@ int get_char_utf8(const char **_src)
 	}
 
 	*_src = (const char *)src;
+	return (int)n;
+}
+
+int readc_utf8(int fd)
+{
+	unsigned int n = 0;
+	int expect = 1;
+
+	while (expect--) {
+		unsigned char ch;
+
+		if (read(fd, &ch, 1) == -1)
+			return EOF;
+
+		if ((ch & 0b11111100) == 0b11111100) {
+			n = ch & 0b00000001;
+			expect = 5;
+		}
+		else if ((ch & 0b11111000) == 0b11111000) {
+			n = ch & 0b00000011;
+			expect = 4;
+		}
+		else if ((ch & 0b11110000) == 0b11110000) {
+			n = ch & 0b00000111;
+			expect = 3;
+		}
+		else if ((ch & 0b11100000) == 0b11100000) {
+			n = ch & 0b00001111;
+			expect = 2;
+		}
+		else if ((ch & 0b11000000) == 0b11000000) {
+			n = ch & 0b00011111;
+			expect = 1;
+		}
+		else if ((ch & 0b10000000) == 0b10000000) {
+			n <<= 6;
+			n |= ch & 0b00111111;
+		}
+		else {
+			n = ch;
+		}
+	}
+
 	return (int)n;
 }
 

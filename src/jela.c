@@ -55,6 +55,10 @@ static int grow_trail(tpl_query *q)
 int grow_environment(tpl_query *q)
 {
 	TRACE("grow_environment\n");
+
+	//if (!q->parent)
+	//	printf("*** %lld\n", (long long)q->envs_possible);
+
 	int MULT = 2;
 
 	if ((sizeof(env) * q->envs_possible * MULT / 1024 / 1024) > g_trealla_memlimit_mb) {

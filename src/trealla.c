@@ -31,7 +31,7 @@ static size_t g_instances = 0;
 atomic int64_t g_allocs = 0;
 #endif
 
-int g_trealla_memlimit_mb = 1024;
+int g_trealla_memlimit_mb = 1024 * 4;
 volatile int g_abort = 0;
 const char *g_trealla_version = "0.1alpha";
 const char *g_list_cons = ".";
