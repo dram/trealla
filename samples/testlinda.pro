@@ -18,14 +18,10 @@ producer :-
 		linda:out({msg:I}),
 		fail.
 producer :-
-	sys:delay(10),
 	linda:end_wait.
 
 consumer(N) :-
 	linda:in({msg:Y}),
-		sys:concat('consumer ',N,' got = ',Y,Line),
+		atomic_list_concat(['consumer ',N,' got = ',Y],Line),
 		writeln(Line),
 		fail.
-consumer(N) :-
-	sys:concat('Done ',N,Msg),
-	writeln(Msg).

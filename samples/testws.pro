@@ -7,7 +7,7 @@ echo(Server,Msg) :-
 	ws:msg(S,'data',Msg),
 	ws:parse(S,Op2,Resp),
 	Op2 = 'data',
-	concat('Sent: "',Msg,'", Data: "',Resp,'"',Msg2),
+	atomic_list_concat(['Sent: "',Msg,'", Data: "',Resp,'"'],Msg2),
 	write(Msg2), nl,
 	close(S).
 
@@ -18,7 +18,7 @@ ping(Server,Msg) :-
 	ws:msg(S,'ping',Msg),
 	ws:parse(S,Op2,Resp),
 	Op2 = 'pong',
-	concat('Ping: "',Msg,'", Pong: "',Resp,'"',Msg2),
+	atomic_list_concat(['Ping: "',Msg,'", Pong: "',Resp,'"'],Msg2),
 	write(Msg2), nl,
 	close(S).
 

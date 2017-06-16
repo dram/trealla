@@ -42,17 +42,17 @@ test0 :-
 
 parent0 :-
 	N=10,
-	concat('Synchronous exchange ',N,' messages...',Msg),
+	atomic_list_concat(['Synchronous exchange ',N,' messages...'],Msg),
 	writeln(Msg),
 	between(1,N,I),
 		rsvp(I,Msg),
-		concat('Parent got: ',Msg,Msg2),
+		atomic_list_concat(['Parent got: ',Msg],Msg2),
 		writeln(Msg2),
 		fail.
 
 parent0 :-
 	rsvp(false,Msg),
-	concat('Parent got: ',Msg,Msg2),
+	atomic_list_concat(['Parent got: ',Msg],Msg2),
 	writeln(Msg2),
 	end_wait.
 
@@ -77,7 +77,7 @@ test1 :-
 	writeln('Test spawning child with timeout after 3 secs'),
 	spawn(child1),
 	recv(Resp),
-	concat('Parent got: ',Resp,Msg),
+	atomic_list_concat(['Parent got: ',Resp],Msg),
 	writeln(Msg),
 	end_wait.
 
@@ -103,7 +103,7 @@ test2 :-
 	wait.
 
 parent2(N) :-
-	concat('Test spawning ',N,' procs...',Msg),
+	atomic_list_concat(['Test spawning ',N,' procs...'],Msg),
 	writeln(Msg),
 	between(1,N,I),
 		spawn(I,child2),
@@ -111,7 +111,7 @@ parent2(N) :-
 
 parent2(N) :-
 	procinfo(pids,Procs),
-	atomic-concat('Processes: ',Procs,Msg),
+	atomic_list_concat(['Processes: ',Procs],Msg),
 	writeln(Msg),
 	writeln('Now RSVP...'),
 	between(1,N,I),
@@ -121,7 +121,7 @@ parent2(N) :-
 parent2(_) :-
 	writeln('Done...'),
 	procinfo(pids,Procs),
-	concat('Processes: ',Procs,Msg),
+	atomic_list_concat(['Processes: ',Procs],Msg),
 	writeln(Msg),
 	writeln('Parent abort wait'),
 	end_wait.
@@ -142,7 +142,7 @@ test3 :-
 
 parent3 :-
 	N=10000,
-	concat('Test spawning ',N,' procs with 3 sec timeout',Msg),
+	atomic_list_concat(['Test spawning ',N,' procs with 3 sec timeout'],Msg),
 	writeln(Msg),
 	between(1,N,_),
 		spawn(child3),
@@ -150,7 +150,7 @@ parent3 :-
 
 parent3 :-
 	procinfo(pids,N),
-	concat('Processes: ',N,Msg),
+	atomic_list_concat(['Processes: ',N],Msg),
 	writeln(Msg),
 	writeln('Parent done'),
 	sleep(4),
@@ -174,7 +174,7 @@ test4 :-
 	wait.
 
 parent4(N) :-
-	concat('Test spawning ',N,' procs in a ring...',Msg),
+	atomic_list_concat(['Test spawning ',N,' procs in a ring...'],Msg),
 	writeln(Msg),
 	between(1,N,I),
 		spawn(I,child4(I,N)),
@@ -194,8 +194,8 @@ child4(I,N) :-
 		send(Next,Msg),
 		I=1,
 		timestamp(T),
-		term_to_atom(T,S),atom_concat(S,': Zoom got: ',S2),
-		atom_concat(S2,Msg,S3),
+		term_to_atom(T,S),atomic_list_concat([S,': Zoom got: '],S2),
+		atomic_list_concat([S2,Msg],S3),
 		writeln(S3),
 		fail.
 

@@ -32,7 +32,7 @@ echod2 :-
 	wait.
 
 echo2(Host,Msg) :-
-	concat(Host,':',9000,Server),
+	atomic_list_concat([Host,':',9000],Server),
 	pid(Server,Pid),
 	rsvp(Pid,Msg,Resp),
 	writeln(Resp).
