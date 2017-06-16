@@ -1577,8 +1577,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,type(P)) :- stream_property_type(S,P).");
 	trealla_make_rule(pl, "stream_property(S,mode(P)) :- stream_property_mode(S,P).");
 	trealla_make_rule(pl, "stream_property(S,position(P)) :- stream_property_position(S,P).");
-	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- "
-	                      "stream_property_file_name(S,F).");
+	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "member(X,X) :- var(X), !, fail.");
@@ -1605,11 +1604,11 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
 	trealla_make_rule(pl, "current_key(K) :- var(K), '$record'(K,_).");
 	trealla_make_rule(pl, "instance(R,V) :- nonvar(R), clause('$record'(_,V),_,R).");
-	trealla_make_rule(pl, "atomic_concat(L,R,S) :- sys:concat(L,R,S).");
+	trealla_make_rule(pl, "atomic_concat(L,R,S) :- atomic_list_concat([L,R],S).");
 	trealla_make_rule(pl, "atomic_list_concat([],'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, sys:concat(H,S2,S).");
+	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, '$concat'(H,S2,S).");
 	trealla_make_rule(pl, "atomic_list_concat([],_,'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> sys:concat(H,Sep,S2,S) ; sys:concat(H,S2,S)), !.");
+	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> '$concat'(H,Sep,S2,S) ; '$concat'(H,S2,S)), !.");
 	trealla_make_rule(pl, "display(T) :- write_term(T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "display(S,T) :- write_term(S,T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");

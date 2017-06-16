@@ -6760,6 +6760,52 @@ static int bif_xtra_name_2(tpl_query *q)
 	term_heapcheck(n);
 	return ok;
 }
+
+static int bif_xtra_concat(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_next_arg(q, &args);
+	node *save_args = args;
+	node *term = term1;
+	int any_blobs = 0;
+
+	while (term) {
+		any_blobs += is_blob(term);
+		term = get_next_arg(q, &args);
+	}
+
+	args = save_args;
+	term = term1;
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
+	node *var = NULL;
+
+	while (term) {
+		if (is_var(term))
+			var = term;
+		else if (is_atomic(term))
+			dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term, 0);
+
+		term = get_next_arg(q, &args);
+	}
+
+	if (!var) {
+		free(tmpbuf);
+		return 0;
+	}
+
+	node *n;
+
+	if (any_blobs)
+		n = make_blob(tmpbuf, dst - tmpbuf);
+	else
+		n = make_atom(tmpbuf);
+
+	put_env(q, q->c.curr_frame + var->slot, n, -1);
+	term_heapcheck(n);
+	return 1;
+}
 #endif
 
 void bifs_load_iso(void)
@@ -7001,6 +7047,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
+	DEFINE_BIF("$concat", -1, bif_xtra_concat);
 #endif
 
 // These are for Edinburgh-style file handling...

@@ -313,52 +313,6 @@ static int bif_sys_load_file_2(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_concat_N(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_next_arg(q, &args);
-	node *save_args = args;
-	node *term = term1;
-	int any_blobs = 0;
-
-	while (term) {
-		any_blobs += is_blob(term);
-		term = get_next_arg(q, &args);
-	}
-
-	args = save_args;
-	term = term1;
-	size_t max_len = PRINTBUF_SIZE;
-	char *tmpbuf = (char *)malloc(max_len + 1);
-	char *dst = tmpbuf;
-	node *var = NULL;
-
-	while (term) {
-		if (is_var(term))
-			var = term;
-		else if (is_atomic(term))
-			dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term, 0);
-
-		term = get_next_arg(q, &args);
-	}
-
-	if (!var) {
-		free(tmpbuf);
-		return 0;
-	}
-
-	node *n;
-
-	if (any_blobs)
-		n = make_blob(tmpbuf, dst - tmpbuf);
-	else
-		n = make_atom(tmpbuf);
-
-	put_env(q, q->c.curr_frame + var->slot, n, -1);
-	term_heapcheck(n);
-	return 1;
-}
-
 static int bif_sys_getline_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1868,7 +1822,6 @@ static int bif_sys_get_2(tpl_query *q)
 
 void bifs_load_sys(void)
 {
-	DEFINE_BIF("sys:concat", -1, bif_sys_concat_N);
 	DEFINE_BIF("sys:system", 2, bif_sys_system_2);
 	DEFINE_BIF("sys:system", 1, bif_sys_system_1);
 	DEFINE_BIF("sys:load_file", 2, bif_sys_load_file_2);
