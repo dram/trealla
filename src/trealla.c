@@ -1593,7 +1593,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
 #endif
 
-	// Add library(lists) as a default module...
+	// Add library(lists) as a default...
 
 	const char *mod_name = "lists";
 	library *lib = g_libs;
