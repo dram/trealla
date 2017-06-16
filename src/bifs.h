@@ -406,7 +406,6 @@ inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 
 inline static node *term_first(node *s) { return NLIST_FRONT(&s->val_l); }
 inline static node *term_next(node *n) { return NLIST_NEXT(n); }
-inline static node *term_firstarg(node *s) { return term_next(term_first(s)); }
 inline static node *term_remove(node *s, node *n) { return NLIST_REMOVE(&s->val_l, n); }
 inline static void term_insert_before(node *s, node *n1, node *n2) { NLIST_INSERT_BEFORE(&s->val_l, n1, n2); }
 inline static void term_insert_after(node *s, node *n1, node *n2) { NLIST_INSERT_AFTER(&s->val_l, n1, n2); }
@@ -414,8 +413,15 @@ inline static void term_prepend(node *s, node *n) { NLIST_PUSH_FRONT(&s->val_l, 
 inline static void term_append(node *s, node *n) { NLIST_PUSH_BACK(&s->val_l, n); }
 inline static void term_concat(node *s1, node *s2) { NLIST_CONCAT(&s1->val_l, &s2->val_l); }
 inline static int term_count(node *s) { return (int)NLIST_COUNT(&s->val_l); }
-inline static const char *term_functor(node *s) { return VAL_S(NLIST_FRONT(&s->val_l)); }
 inline static int term_arity(node *s) { return (int)(NLIST_COUNT(&s->val_l) > 0 ? (NLIST_COUNT(&s->val_l)) -1 : 0); }
+
+#ifdef DEBUG
+inline static const char *term_functor(node *s) { assert(NLIST_FRONT(&s->val_l)); return VAL_S(NLIST_FRONT(&s->val_l)); }
+inline static node *term_firstarg(node *s) { assert(term_first(s)); return term_next(term_first(s)); }
+#else
+inline static const char *term_functor(node *s) { return VAL_S(NLIST_FRONT(&s->val_l)); }
+inline static node *term_firstarg(node *s) { return term_next(term_first(s)); }
+#endif
 
 inline static void term_heapcheck(node *n)
 {
