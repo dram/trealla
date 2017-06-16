@@ -86,10 +86,9 @@ then:
 Built-in Functions
 ------------------
 
-BIFs are either compiled-in C functions or Prolog rules.
-
-Some common and/or miscellaneous functions that are extra to the ISO standard but are commonly
-found in other Prolog implementations:
+BIFs are either compiled-in C functions or Prolog rules. Some common and/or miscellaneous
+functions that are extra to the ISO standard but are commonly found in other Prolog
+implementations:
 
 	consult(+File)              - consult file
 	deconsult(+File)            - deconsult file
@@ -102,16 +101,6 @@ found in other Prolog implementations:
 	is_tuple(+Term)             - is the arg a tuple?
 	is_stream(+Term)            - is the arg a stream?
 	findnsols(+N,@Term,:G,-L)   - as per SWI-Prolog
-	maplist(:Goal,+L)           - call goal with every element of list L
-	maplist(:Goal,+L1,+L2)      - call goal with every element of L1 & L2
-	member(?Term,+List)         - does atom occur in the list?
-	select(+Term,+L1,-L)        - one occurrance of term is removed
-	subtract(+L1,+L2,?L)        - remove all L2 elements from L1
-	union(+L1,+L2,?L)           - union of L1 & L2
-	intersection(+L1,+L2,?L)    - intersection of L1 & L2
-	reverse(+L1,-L2)            - reverse a list
-	append(+L1,+L2,-List)       - make a joined list
-	find(+N,+L,-Term)           - find nth arg of list
 	time(:Goal,-Float)          - run goal and return elapsed time (seconds)
 	time(:Goal)                 - run goal and print elapsed time
 	writeln(+Term1)             - does buffered write/1 + nl/0 to stdout
@@ -119,10 +108,10 @@ found in other Prolog implementations:
 	random(-Float)              - random float value >= 0.0 and <= 1.0
 	term_hash(+Term,-Int)		- 32-bit non-crypto hash
 	atomic_concat(+S1,+S2,-S)
-	atomic_list_concat(+L,-S)
-	atomic_list_concat(+L,+Sep,-S)
 	tab(+Spaces)
 	tab(+Stream,+Spaces)
+	atomic_list_concat(+L,-S)
+	atomic_list_concat(+L,+Sep,-S)
 	getenv(+Atom,?Term)         - get environment variable
 	setenv(+Atom,+Atomic)       - set environment variable
 	unsetenv(+Atom)             - unset environment variable
@@ -136,7 +125,6 @@ found in other Prolog implementations:
 	get0(+Stream,-Code)			- same as get_code/2 (DEPRECATED)
 	get(-Code)
 	get(+Stream,-Code)
-	memberchk(?Term,+List)
 	name(?Atomic,?CodeList)
 	trace(?Int)
 	trace/0                     - same as trace(1)
@@ -715,13 +703,25 @@ For example:
 See *samples/ws_server.pro* & *samples/testws.pro* for guidance.
 
 Lists library module: namespace 'lists'
--------------------------------------
+---------------------------------------
 
-This is a dummy module:
+This is an auto-loaded module:
 
 	:-import(library(lists)).
 
-can be used for member/2 compatability with other Prologs.
+and can be used for compatability with other Prologs:
+
+	maplist(:Goal,+L)           - call goal with every element of list L
+	maplist(:Goal,+L1,+L2)      - call goal with every element of L1 & L2
+	member(?Term,+List)         - does atom occur in the list?
+	memberchk(?Term,+List)      - same as once(member(...))
+	select(+Term,+L1,-L)        - one occurrance of term is removed
+	subtract(+L1,+L2,?L)        - remove all L2 elements from L1
+	union(+L1,+L2,?L)           - union of L1 & L2
+	intersection(+L1,+L2,?L)    - intersection of L1 & L2
+	reverse(+L1,-L2)            - reverse a list
+	append(+L1,+L2,-List)       - make a joined list
+	find(+N,+L,-Term)           - find nth arg of list
 
 Dictionary library module: namespace  'dict'
 --------------------------------------------
@@ -831,7 +831,7 @@ Provides basic HTTP/1.1 client functionality:
 	put11_file(+Host,+Path,+Filename)
 
 STOMP library module: namespace 'stomp'
--------------------------------------
+---------------------------------------
 
 This is a compiled-in module that must be imported:
 
