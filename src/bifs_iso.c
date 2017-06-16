@@ -1680,7 +1680,22 @@ static int bif_iso_get_byte_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int_or_var(term2);
-	int ch = fgetc(get_input_stream(term1));
+	int ch;
+
+	if (is_socket(term1)) {
+		stream *sp = (stream *)term1->val_str;
+		char c;
+
+		if (!session_read(sp->sptr, &c, 1)) {
+			q->is_yielded = 1;
+			return 0;
+		}
+
+		ch = c;
+	}
+	else
+		ch = fgetc(get_input_stream(term1));
+
 	return unify_int(q, term2, ch);
 }
 
@@ -1716,7 +1731,18 @@ static int bif_iso_get_char_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom_or_var(term2);
-	int ch = getc_utf8(get_input_stream(term1));
+	int ch;
+
+	if (is_socket(term1)) {
+		stream *sp = (stream *)term1->val_str;
+
+		if (!readc_utf8(session_getfd(sp->sptr), &ch)) {
+			q->is_yielded = 1;
+			return 0;
+		}
+	}
+	else
+		ch = getc_utf8(get_input_stream(term1));
 
 	if (ch == EOF)
 		return unify_const_atom(q, term2, END_OF_FILE);
@@ -1742,7 +1768,7 @@ static int bif_iso_peek_code(tpl_query *q)
 static int bif_iso_peek_code_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom_or_stream(term1);
+	node *term1 = get_atom_or_file(term1);
 	node *term2 = get_int_or_var(term2);
 	int ch = fgetc(get_input_stream(term1));
 
@@ -1772,7 +1798,7 @@ static int bif_iso_peek_byte(tpl_query *q)
 static int bif_iso_peek_byte_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom_or_stream(term1);
+	node *term1 = get_atom_or_file(term1);
 	node *term2 = get_atom_or_var(term2);
 	int ch = fgetc(get_input_stream(term1));
 
@@ -1804,7 +1830,7 @@ static int bif_iso_peek_char(tpl_query *q)
 static int bif_iso_peek_char_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom_or_stream(term1);
+	node *term1 = get_atom_or_file(term1);
 	node *term2 = get_atom_or_var(term2);
 	int ch = getc_utf8(get_input_stream(term1));
 

@@ -180,6 +180,12 @@
 		QABORT(ABORT_INVALIDARGNOTLISTORVAR);                                                                                  \
 		return 0;                                                                                                              \
 	}
+#define get_atom_or_file(t)                                                                                                    \
+	get_next_arg(q, &args);                                                                                                    \
+	if (!is_atom(t) && !is_file(t)) {                                                                                          \
+		QABORT(ABORT_INVALIDARGNOTFILE);                                                                                       \
+		return 0;                                                                                                              \
+	}
 #define get_atom_or_stream(t)                                                                                                  \
 	get_next_arg(q, &args);                                                                                                    \
 	if (!is_atom(t) && !is_stream(t)) {                                                                                        \
