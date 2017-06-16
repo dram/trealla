@@ -172,13 +172,13 @@ int readc_utf8(int fd, int *res)
 		unsigned char ch;
 		int len;
 
-		if ((len = read(fd, &ch, 1)) == -1) {
+		if ((len = read(fd, &ch, 1)) == 0) {
 			*res = EOF;
 			return 1;
 		}
 
-		if (!len)
-			return len;
+		if (len == -1)
+			return 0;
 
 		if ((ch & 0b11111100) == 0b11111100) {
 			n = ch & 0b00000001;
