@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef unix
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 
