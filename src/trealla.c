@@ -1600,7 +1600,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta('$record'(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
 	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz('$record'(K,V),R).");
-	trealla_make_rule(pl, "recorded(K,V,R) :- nonvar(K), clause('$record'(K,V),_,R).");
+	trealla_make_rule(pl, "recorded(K,V,R) :- clause('$record'(K,V),_,R).");
 	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
 	trealla_make_rule(pl, "current_key(K) :- var(K), '$record'(K,_).");
 	trealla_make_rule(pl, "instance(R,V) :- nonvar(R), clause('$record'(_,V),_,R).");
