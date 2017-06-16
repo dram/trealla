@@ -34,8 +34,8 @@ static int grow_trail(tpl_query *q)
 {
 	TRACE("grow_trail\n");
 
-	if (!q->parent)
-		printf("*** TRAIL %lld = %lld\n", (long long)q->trails_possible, (long long)(sizeof(trail)*q->trails_possible));
+	//if (!q->parent)
+	//	printf("*** TRAIL %lld = %lld\n", (long long)q->trails_possible, (long long)(sizeof(trail)*q->trails_possible));
 
 	int MULT = 2;
 
@@ -60,8 +60,8 @@ int grow_environment(tpl_query *q)
 {
 	TRACE("grow_environment\n");
 
-	if (!q->parent)
-		printf("*** ENV %lld = %lld\n", (long long)q->envs_possible, (long long)(sizeof(env)*q->envs_possible));
+	//if (!q->parent)
+	//	printf("*** ENV %lld = %lld\n", (long long)q->envs_possible, (long long)(sizeof(env)*q->envs_possible));
 
 	int MULT = 2;
 
@@ -88,8 +88,8 @@ static int grow_choice(tpl_query *q)
 {
 	TRACE("grow_choice\n");
 
-	if (!q->parent)
-		printf("*** CHOICE %lld = %lld\n", (long long)q->choices_possible, (long long)(sizeof(choice)*q->choices_possible));
+	//if (!q->parent)
+	//	printf("*** CHOICE %lld = %lld\n", (long long)q->choices_possible, (long long)(sizeof(choice)*q->choices_possible));
 
 	int MULT = 2;
 
