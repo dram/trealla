@@ -1606,9 +1606,9 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "instance(R,V) :- nonvar(R), clause('$record'(_,V),_,R).");
 	trealla_make_rule(pl, "atomic_concat(L,R,S) :- atomic_list_concat([L,R],S).");
 	trealla_make_rule(pl, "atomic_list_concat([],'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, '$concat'(H,S2,S).");
+	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, sys_concat(H,S2,S).");
 	trealla_make_rule(pl, "atomic_list_concat([],_,'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> '$concat'(H,Sep,S2,S) ; '$concat'(H,S2,S)), !.");
+	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> sys_concat(H,Sep,S2,S) ; sys_concat(H,S2,S)), !.");
 	trealla_make_rule(pl, "display(T) :- write_term(T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "display(S,T) :- write_term(S,T,[ignore_ops(true)]).");
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
