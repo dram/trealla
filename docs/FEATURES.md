@@ -646,7 +646,7 @@ HTTP processing: namespace 'http'
 
 Hyper-Text Transfer Protocol:
 
-	parse(+S,-Ver,-Cmd,-Path)    - parse & decode request (except content)
+	parse(+S,-Ver,-Cmd,-Path)    - parse headers (except content)
 	www_form(+S)                 - decode form data on POST (urlencoded)
 	form(+S,+Name,-Atom)         - get named form value (or '' if non-exist)
 	query(+S,+Name,-Atom)        - get named query value (or '' if non-exist)
@@ -839,7 +839,7 @@ This is a compiled-in module that must be imported:
 
 The Simple(/Streaming) Text Oriented Messaging Protocol:
 
-	parse(+S,-Cmd,-Len)       - parse message (except content)
+	parse(+S,-Cmd,-Len)       - parse headers (except content)
 	msg(+S,+Cmd,+Hdrs,+Atom)  - send ANY request ('Data' can be BLOB or atom)
 
 While superficially similar to HTTP, STOMP is actually bidirectional, so *parse/3* and *msg/4*
