@@ -18,7 +18,7 @@ fetch(Code,Xml) :-
 build(S,S1,S2) :-
 	bread(S,Len,Line),
 	\+ at_end_of_stream(S),
-	atom_concat(S1,Line,S3),
+	atomic_list_concat([S1,Line],S3),
 	build(S,S3,S2).
 
 build(_,S1,S2) :-
