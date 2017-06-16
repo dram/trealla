@@ -315,11 +315,16 @@ static int bif_sys_load_file_2(tpl_query *q)
 
 static int bif_sys_getline_2(tpl_query *q)
 {
+	extern int bif_net_readmsg_2(tpl_query *q);
+
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	char *line;
+
+	if (is_socket(term1))
+		return bif_net_readmsg_2(q);
 
 	if (!(line = trealla_readline(q->lex, sp->fptr, 0)))
 		line = strdup(END_OF_FILE);

@@ -667,7 +667,7 @@ static int bif_net_start_tls_1(tpl_query *q)
 	return session_enable_tls((session *)sp->sptr, NULL, 0);
 }
 
-static int bif_net_readmsg_2(tpl_query *q)
+int bif_net_readmsg_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
