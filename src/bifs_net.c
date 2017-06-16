@@ -670,10 +670,15 @@ static int bif_net_start_tls_1(tpl_query *q)
 int bif_net_readmsg_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_socket(term1);
+	node *term1 = get_stream(term1);
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	char *line = NULL;
+
+	if (is_file(term1)) {
+		extern int bif_sys_getline_2(tpl_query *q);
+		return bif_sys_getline_2(q);
+	}
 
 	if (!session_readmsg((session *)sp->sptr, &line)) {
 		q->is_yielded = 1;
