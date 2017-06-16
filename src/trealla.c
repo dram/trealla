@@ -1545,12 +1545,6 @@ trealla *trealla_create(const char *name)
 		idx++;
 	}
 
-	pl->keywords[idx++] = "member";
-	pl->keywords[idx++] = "select";
-	pl->keywords[idx++] = "efface";
-	pl->keywords[idx++] = "reverse";
-	pl->keywords[idx++] = "append";
-	pl->keywords[idx++] = "find";
 	history_keywords((const char **)pl->keywords);
 
 #ifndef ISO_ONLY
@@ -1580,28 +1574,6 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
 #ifndef ISO_ONLY
-	trealla_make_rule(pl, "member(X,X) :- var(X), !, fail.");
-	trealla_make_rule(pl, "member(X,[X|_]).");
-	trealla_make_rule(pl, "member(X,[_|T]) :- member(X,T).");
-	trealla_make_rule(pl, "select(X,[X|T],T).");
-	trealla_make_rule(pl, "select(X,[H|T],[H|Rest]) :- select(X,T,Rest).");
-	trealla_make_rule(pl, "subtract([],_,[]) :- !.");
-	trealla_make_rule(pl, "subtract([Head|Tail],L2,L3) :- memberchk(Head,L2), !, subtract(Tail,L2,L3).");
-	trealla_make_rule(pl, "subtract([Head|Tail1],L2,[Head|Tail3]) :- subtract(Tail1,L2,Tail3).");
-	trealla_make_rule(pl, "union([],X,X).");
-	trealla_make_rule(pl, "union([X|R],Y,Z):- member(X,Y), !, union(R,Y,Z).");
-	trealla_make_rule(pl, "union([X|R],Y,[X|Z]):- union(R,Y,Z).");
-	trealla_make_rule(pl, "intersection([],X,[]).");
-	trealla_make_rule(pl, "intersection([X|R],Y,[X|Z]) :- member(X,Y), !, intersection(R,Y,Z).");
-	trealla_make_rule(pl, "intersection([X|R],Y,Z) :- intersection(R,Y,Z).");
-	trealla_make_rule(pl, "revzap([],L,L) :- !.");
-	trealla_make_rule(pl, "revzap([X|L],L2,L3) :- revzap(L,[X|L2],L3).");
-	trealla_make_rule(pl, "reverse(L1,L2) :- revzap(L1,[],L2).");
-	trealla_make_rule(pl, "append([],L,L).");
-	trealla_make_rule(pl, "append([H|T],L2,[H|L3]) :- append(T,L2,L3).");
-	trealla_make_rule(pl, "find(N,[],X) :- !.");
-	trealla_make_rule(pl, "find(1,[H|_],H) :- !.");
-	trealla_make_rule(pl, "find(N,[_|T],X) :- N1 is N-1, find(N1,T,X).");
 	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta('$record'(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
@@ -1620,6 +1592,22 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
 #endif
+
+	// Add library(lists) as a default module...
+
+	const char *mod_name = "lists";
+	library *lib = g_libs;
+
+	while (lib->name != NULL) {
+		if (!strcmp(lib->name, mod_name)) {
+			char *src = strndup((const char *)lib->start, (lib->end - lib->start));
+			trealla_consult_text(pl, src, mod_name);
+			free(src);
+			break;
+		}
+
+		lib++;
+	}
 
 	return pl;
 }

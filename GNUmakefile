@@ -9,7 +9,7 @@ OBJECTS_ALL = $(OBJECTS_ISO) src/base64.o src/bifs_sys.o src/bifs_http.o \
 			src/jsonq.o src/bifs_net.o src/bifs_proc.o \
 			src/network.o src/thread.o src/uncle.o \
 			src/uuid.o src/xmlq.o src/bifs_dbs.o src/library.o \
-			src/auth.o src/blog.o src/dict.o \
+			src/auth.o src/blog.o src/dict.o src/lists.o \
 			src/http_client.o src/smtp_client.o src/stomp_client.o \
 			src/yahoo.o src/mime.o
 
@@ -65,6 +65,12 @@ src/dict.o: library/dict.pro
 src/http_client.o: library/http_client.pro
 	ld -r -b binary -o src/http_client.o library/http_client.pro
 
+src/lists.o: library/lists.pro
+	ld -r -b binary -o src/lists.o library/lists.pro
+
+src/mime.o: library/mime.pro
+	ld -r -b binary -o src/mime.o library/mime.pro
+
 src/smtp_client.o: library/smtp_client.pro
 	ld -r -b binary -o src/smtp_client.o library/smtp_client.pro
 
@@ -73,9 +79,6 @@ src/stomp_client.o: library/stomp_client.pro
 
 src/yahoo.o: library/yahoo.pro
 	ld -r -b binary -o src/yahoo.o library/yahoo.pro
-
-src/mime.o: library/mime.pro
-	ld -r -b binary -o src/mime.o library/mime.pro
 
 #
 
