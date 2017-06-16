@@ -26,6 +26,8 @@ extern int session_is_ipv6(session *s);
 extern int session_is_nonblocking(session *s);
 extern int session_is_websocket(session *s);
 
+extern int session_getfd(session *s);
+
 // With UDP this will enable multicast sending.
 // LOOP = 1 (the default) allow loopback to same host.
 // HOPS = 0 same host only, 1 (the default) same sub-net etc.

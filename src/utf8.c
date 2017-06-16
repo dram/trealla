@@ -163,16 +163,22 @@ int get_char_utf8(const char **_src)
 	return (int)n;
 }
 
-int readc_utf8(int fd)
+int readc_utf8(int fd, int *res)
 {
 	unsigned int n = 0;
 	int expect = 1;
 
 	while (expect--) {
 		unsigned char ch;
+		int len;
 
-		if (read(fd, &ch, 1) == -1)
-			return EOF;
+		if ((len = read(fd, &ch, 1)) == -1) {
+			*res = EOF;
+			return 1;
+		}
+
+		if (!len)
+			return len;
 
 		if ((ch & 0b11111100) == 0b11111100) {
 			n = ch & 0b00000001;
@@ -203,7 +209,8 @@ int readc_utf8(int fd)
 		}
 	}
 
-	return (int)n;
+	*res = (int)n;
+	return 1;
 }
 
 int getc_utf8(FILE *fp)

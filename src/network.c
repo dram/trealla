@@ -568,6 +568,7 @@ int session_on_connect(session *s)
 	return 0;
 }
 
+int session_getfd(session *s) { return s->fd; }
 int session_on_disconnect(session *s) { return s->disconnected; }
 int session_is_server(session *s) { return !s->is_client; }
 int session_is_websocket(session *s) { return s->is_ws; }

@@ -1645,7 +1645,19 @@ static int bif_iso_get_code_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int_or_var(term2);
-	int ch = getc_utf8(get_input_stream(term1));
+	int ch;
+
+	if (is_socket(term1)) {
+		stream *sp = (stream *)term1->val_str;
+
+		if (!readc_utf8(session_getfd(sp->sptr), &ch)) {
+			q->is_yielded = 1;
+			return 0;
+		}
+	}
+	else
+		ch = getc_utf8(get_input_stream(term1));
+
 	return unify_int(q, term2, ch);
 }
 

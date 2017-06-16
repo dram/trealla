@@ -5,7 +5,7 @@
 
 // These relate to similar stdc functions...
 
-extern int readc_utf8(int fd);
+extern int readc_utf8(int fd, int *ch);
 extern int getc_utf8(FILE *fp);
 extern size_t strlen_utf8(const char *s);
 extern int isalpha_utf8(int ch);
