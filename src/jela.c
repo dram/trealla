@@ -33,9 +33,13 @@
 static int grow_trail(tpl_query *q)
 {
 	TRACE("grow_trail\n");
+
+	if (!q->parent)
+		printf("*** TRAIL %lld = %lld\n", (long long)q->trails_possible, (long long)(sizeof(trail)*q->trails_possible));
+
 	int MULT = 2;
 
-	if ((sizeof(trail) * q->trails_possible * MULT / 1024 / 1024) > g_trealla_memlimit_mb) {
+	if (((sizeof(trail) * q->trails_possible / 1024 / 1024) * MULT) >= g_trealla_memlimit_mb) {
 		QABORT(ABORT_MAXTRAILS);
 		return 0;
 	}
@@ -56,12 +60,12 @@ int grow_environment(tpl_query *q)
 {
 	TRACE("grow_environment\n");
 
-	//if (!q->parent)
-	//	printf("*** %lld\n", (long long)q->envs_possible);
+	if (!q->parent)
+		printf("*** ENV %lld = %lld\n", (long long)q->envs_possible, (long long)(sizeof(env)*q->envs_possible));
 
 	int MULT = 2;
 
-	if ((sizeof(env) * q->envs_possible * MULT / 1024 / 1024) > g_trealla_memlimit_mb) {
+	if (((sizeof(env) * q->envs_possible / 1024 / 1024) * MULT) >= g_trealla_memlimit_mb) {
 		QABORT(ABORT_MAXENVS);
 		return 0;
 	}
@@ -73,7 +77,7 @@ int grow_environment(tpl_query *q)
 	}
 	else {
 		q->envs = (env *)realloc(q->envs, sizeof(env) * q->envs_possible * MULT);
-		memset(&q->envs[q->envs_possible], 0, sizeof(env) * q->envs_possible);
+		memset(&q->envs[q->envs_possible], 0, sizeof(env) * q->envs_possible * (MULT-1));
 	}
 
 	q->envs_possible *= MULT;
@@ -83,9 +87,13 @@ int grow_environment(tpl_query *q)
 static int grow_choice(tpl_query *q)
 {
 	TRACE("grow_choice\n");
+
+	if (!q->parent)
+		printf("*** CHOICE %lld = %lld\n", (long long)q->choices_possible, (long long)(sizeof(choice)*q->choices_possible));
+
 	int MULT = 2;
 
-	if ((sizeof(choice) * q->choices_possible * MULT / 1024 / 1024) > g_trealla_memlimit_mb) {
+	if (((sizeof(choice) * q->choices_possible) / 1024 / 1024) * MULT >= g_trealla_memlimit_mb) {
 		QABORT(ABORT_MAXCHOICES);
 		return 0;
 	}
@@ -119,7 +127,7 @@ void prepare_frame(tpl_query *q, unsigned frame_size)
 	TRACE("prepare_frame");
 	q->curr_context = q->c.curr_frame;
 
-	if ((q->c.env_point + frame_size) > q->envs_used) {
+	if ((q->c.env_point + frame_size) >= q->envs_used) {
 		q->envs_used = q->c.env_point + frame_size;
 
 		while ((q->c.env_point + frame_size) >= q->envs_possible) {
@@ -143,7 +151,7 @@ void allocate_frame(tpl_query *q)
 	TRACE("allocate_frame");
 	q->c.trail_size = 0;
 
-	if ((q->c.trail_point + MAX_FRAME_SIZE) > q->trails_used) {
+	if ((q->c.trail_point + MAX_FRAME_SIZE) >= q->trails_used) {
 		q->trails_used = q->c.trail_point + MAX_FRAME_SIZE;
 
 		while ((q->c.trail_point + MAX_FRAME_SIZE) >= q->trails_possible) {
@@ -263,7 +271,7 @@ void try_me2(tpl_query *q, int nofollow, int nochoice)
 	if (q->choice_point <= q->choices_used)
 		return;
 
-	if (q->choice_point == q->choices_possible)
+	if (q->choice_point >= q->choices_possible)
 		grow_choice(q);
 
 	q->choices_used = q->choice_point;
