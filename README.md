@@ -17,12 +17,37 @@ It supports much of ISO-PROLOG plus:
  - definite clause grammar (DCG)
 
 There are no bindings to an external database system. The combination of indexing, persistency,
-and transactions means that Prolog facts can be used as an efficient relational database. SQL
-queries can be mapped closely to Prolog queries.
-
-The rule database usage is currently immediate update view (the traditional way). ISO-PROLOG
-however specifies logical update view (ie. snapshot), so this may change in future (a flag?).
+transactions and *efficiency* means that in Trealla facts can be used as an efficient relational
+database. SQL queries can be mapped closely to Prolog queries.
 
 Writen in plain-old C with a permissive license. This is alpha release software at this point and
 is subject to great change.
 
+Example
+-------
+
+	:-initialization(main).
+	:-using([linda]).
+
+	main :-
+		init,
+		eval(consumer('A')),
+		eval(consumer('B')),
+		producer,
+		halt.
+
+	producer :-
+		between(1,100,I),
+			random(R),
+			Ms is ((R * 99) // 1) + 1,
+			sys:delay(Ms),
+			out({msg:I}),
+			fail.
+	producer :-
+		true.
+
+	consumer(N) :-
+		in({msg:Y}),
+			atomic_list_concat(['consumer ',N,' got = ',Y],Line),
+			writeln(Line),
+			fail.

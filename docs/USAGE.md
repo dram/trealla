@@ -41,6 +41,9 @@ overflow does *NOT* promote to unbounded (nor is it detected). For example:
 	tpl -l samples/factorial.pro -g 'fac(200B,F),writeln(F)'               # OR
 	tpl -l samples/factorial.pro -g 'fac(200,F),writeln(F)' --unbounded
 
+The rule database usage is currently immediate update view (the traditional way). ISO-PROLOG
+however specifies logical update view (ie. snapshot), so this may change in future (a flag?).
+
 Usage
 -----
 
