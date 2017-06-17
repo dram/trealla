@@ -2,13 +2,10 @@
 :-using([linda]).
 
 main :-
-	fork,
 	init,
 	eval(consumer('A')),
 	eval(consumer('B')),
-	producer.
-main :-
-	wait,
+	producer,
 	halt.
 
 producer :-
@@ -19,7 +16,7 @@ producer :-
 		out({msg:I}),
 		fail.
 producer :-
-	end_wait.
+	true.
 
 consumer(N) :-
 	in({msg:Y}),
