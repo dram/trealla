@@ -61,6 +61,6 @@ main :-
 	test([pickup,the,white,small,box]),
 	test([pickup,the,small,box]),
 	test([pickup,the,box]),
-	test([pickup,box]),
-	test([paint,the,box]),
+	test([pickup,box]),				% should error
+	test([paint,the,box]),			% should error
 	halt.
