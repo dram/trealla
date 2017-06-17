@@ -2044,14 +2044,22 @@ void bifs_load_http(void)
 	DEFINE_BIF("http:cookie", 3, bif_http_cookie_3);
 
 	DEFINE_BIF("http:head10", 4, bif_http_head10_4);
+	DEFINE_BIF("http:head10", 5, bif_http_head10_4);
 	DEFINE_BIF("http:get10", 4, bif_http_get10_4);
+	DEFINE_BIF("http:get10", 5, bif_http_get10_4);
 	DEFINE_BIF("http:post10", 6, bif_http_post10_6);
+	DEFINE_BIF("http:post10", 7, bif_http_post10_6);
 
 	DEFINE_BIF("http:head11", 4, bif_http_head11_4);
+	DEFINE_BIF("http:head11", 5, bif_http_head11_4);
 	DEFINE_BIF("http:get11", 4, bif_http_get11_4);
+	DEFINE_BIF("http:get11", 5, bif_http_get11_4);
 	DEFINE_BIF("http:delete11", 4, bif_http_delete11_4);
+	DEFINE_BIF("http:delete11", 5, bif_http_delete11_4);
 	DEFINE_BIF("http:post11", 6, bif_http_post11_6);
+	DEFINE_BIF("http:post11", 7, bif_http_post11_6);
 	DEFINE_BIF("http:put11", 6, bif_http_put11_6);
+	DEFINE_BIF("http:put11", 7, bif_http_put11_6);
 
 	DEFINE_BIF("http:get11_chunk", 3, bif_http_get11_chunk_3);
 	DEFINE_BIF("http:put11_chunk", 2, bif_http_put11_chunk_2);

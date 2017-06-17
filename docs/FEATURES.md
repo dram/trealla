@@ -644,35 +644,45 @@ Hyper-Text Transfer Protocol:
 	cookie(+S,+Name,-Atom)       - get named cookie value (or '' if non-exist)
 	basic_auth(+S,-User,-Pass)   - decode Basic auth token (if present)
 
-	head10(+S,+Path,+Keep,-Status)
-	get10(+S,+Path,+Keep,-Status)
-	post10(+S,+Path,+Type,+Len,+Keep,-Status)
+	head10(+S,+Path,+Keep,-Status,+XHdrs)
+	get10(+S,+Path,+Keep,-Status,+XHdrs)
+	post10(+S,+Path,+Type,+Len,+Keep,-Status,+XHdrs)
 
-	head11(+S,+Path,+Keep,-Status)
-	get11(+S,+Path,+Keep,-Status)
-	del11(+S,+Path,+Keep,-Status)
-	put11(+S,+Path,+Type,+Len,+Keep,-Status)
+	head11(+S,+Path,+Keep,-Status,+XHdrs)
+	get11(+S,+Path,+Keep,-Status,+XHdrs)
+	post11(+S,+Path,+Type,+Len,+Keep,-Status,+XHdrs)
+	del11(+S,+Path,+Keep,-Status,+XHdrs)
+	put11(+S,+Path,+Type,+Len,+Keep,-Status,+XHdrs)
 
-If *put11/6* arg *Len* is -1 then use *put11_chunk/2* to write:
+Note: *XHdrs* is an optional list of extra headers to include with the request. Each such header
+must *not* include a trailing CRLF (this will be added for you). When the arg is omitted it is
+assumed the same as *[]*. Examples:
+
+	http:get11(S,'/index.html',1,Status)           (DEPRECATED FOR NEW USE)
+	http:get11(S,'/index.html',1,Status,[])
+	http:get11(S,'/index.html',1,Status,['X-Hdr1: value1','X-Hdr2: value2'])
+
+If *put11/6+7* arg *Len* is -1 then use *put11_chunk/2* to write:
 
 	put11_chunk(+S,+Atom)
 	get11_chunk(+S,-Blob,-Len)
 
+and should *not* contain a trailing *\r\n* sequence. That will be added for you per header.
+
 The *Keep* arg indicates whether to keep alive (persist) the connection. If 0 the connection should
 be closed after the operation is completed. If 1 then the connection may be used mutiple times.
 
-With *parse/4* and *get/3* header values are saved to the stash and can be accessed by name. Ditto
+With *parse/4* and *getXX/4* header values are saved to the stash and can be accessed by name. Ditto
 with cookie crumbs. With *parse/4* query args can also be accessed by name. These functions succeed
 only when all headers have been consumed and content (if any) is ready for reading. Stash keys are
-case-insensitive. The path and query values are URL-decoded. Currently only the HEAD and GET methods
-are supported.
+case-insensitive. The path and query values are URL-decoded.
 
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
 HTTP2 processing: namespace 'h2'
 ---------------------------------
 
-Under development.
+Under consideration.
 
 WebSocket: namespace 'ws'
 -------------------------
