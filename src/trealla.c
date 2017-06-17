@@ -1574,27 +1574,6 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
 #ifndef ISO_ONLY
-	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
-	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta('$record'(K,V),R).");
-	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
-	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz('$record'(K,V),R).");
-	trealla_make_rule(pl, "recorded(K,V,R) :- clause('$record'(K,V),_,R).");
-	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
-	trealla_make_rule(pl, "current_key(K) :- var(K), '$record'(K,_).");
-	trealla_make_rule(pl, "instance(R,V) :- nonvar(R), clause('$record'(_,V),_,R).");
-	trealla_make_rule(pl, "atomic_concat(L,R,S) :- atomic_list_concat([L,R],S).");
-	trealla_make_rule(pl, "atomic_list_concat([],'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, '$concat'(H,S2,S).");
-	trealla_make_rule(pl, "atomic_list_concat([],_,'').");
-	trealla_make_rule(pl, "atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !, (S2 \\= '' -> '$concat'(H,Sep,S2,S) ; '$concat'(H,S2,S)), !.");
-	trealla_make_rule(pl, "display(T) :- write_term(T,[ignore_ops(true)]).");
-	trealla_make_rule(pl, "display(S,T) :- write_term(S,T,[ignore_ops(true)]).");
-	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
-	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
-#endif
-
-	// Add library(lists) as a default...
-
 	const char *mod_name = "lists";
 	library *lib = g_libs;
 
@@ -1608,6 +1587,7 @@ trealla *trealla_create(const char *name)
 
 		lib++;
 	}
+#endif
 
 	return pl;
 }
