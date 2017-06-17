@@ -486,11 +486,11 @@ static int bif_sys_exit_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_sys_now0(tpl_query *q)
+static int bif_sys_now_0(tpl_query *q)
 {
 	q->nv.val_i = time(NULL);
 	q->nv.flags = TYPE_INTEGER;
-	return 0;
+	return 1;
 }
 
 static int bif_sys_now_1(tpl_query *q)
@@ -1839,7 +1839,7 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:write_file", 1 + 4, bif_sys_write_file_4);
 	DEFINE_BIF("sys:getline", 1, bif_sys_getline_1);
 	DEFINE_BIF("sys:getline", 2, bif_sys_getline_2);
-	DEFINE_BIF("sys:now", 0, bif_sys_now0);
+	DEFINE_BIF("sys:now", 0, bif_sys_now_0);
 	DEFINE_BIF("sys:now", 1, bif_sys_now_1);
 	DEFINE_BIF("sys:exit", 1, bif_sys_exit_1);
 	DEFINE_BIF("sys:timestamp", 1, bif_sys_timestamp_1);
