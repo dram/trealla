@@ -28,26 +28,38 @@ Example
 
 	:-initialization(main).
 	:-using([linda]).
+	:-define(LOOPS,100).
 
 	main :-
 		init,
 		eval(consumer('A')),
 		eval(consumer('B')),
-		producer,
+		\+ producer,
 		halt.
 
 	producer :-
-		between(1,100,I),
-			random(R),
-			Ms is ((R * 99) // 1) + 1,
+		between(1,?LOOPS,I),
+			random(R), Ms is ((R * 99) // 1) + 1,
 			sys:delay(Ms),
 			out({msg:I}),
 			fail.
-	producer :-
-		true.
 
 	consumer(N) :-
 		in({msg:Y}),
-			atomic_list_concat(['consumer ',N,' got = ',Y],Line),
-			writeln(Line),
-			fail.
+		atomic_list_concat(['consumer ',N,' got = ',Y],Line),
+		writeln(Line),
+		fail.
+
+Output
+
+	$ ./tpl -l samples/testlinda.pro
+	consumer B got = 1
+	consumer B got = 2
+	consumer A got = 3
+	consumer A got = 4
+	consumer B got = 5
+	consumer A got = 6
+	consumer A got = 7
+	consumer A got = 8
+	consumer A got = 9
+	consumer B got = 10
