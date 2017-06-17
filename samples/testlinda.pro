@@ -1,13 +1,14 @@
 :-initialization(main).
+:-using([linda]).
 
 main :-
-	linda:fork,
-	linda:init,
-	linda:eval(consumer('A')),
-	linda:eval(consumer('B')),
+	fork,
+	init,
+	eval(consumer('A')),
+	eval(consumer('B')),
 	producer.
 main :-
-	linda:wait,
+	wait,
 	halt.
 
 producer :-
@@ -15,13 +16,13 @@ producer :-
 		random(R),
 		Ms is ((R * 99) // 1) + 1,
 		sys:delay(Ms),
-		linda:out({msg:I}),
+		out({msg:I}),
 		fail.
 producer :-
-	linda:end_wait.
+	end_wait.
 
 consumer(N) :-
-	linda:in({msg:Y}),
+	in({msg:Y}),
 		atomic_list_concat(['consumer ',N,' got = ',Y],Line),
 		writeln(Line),
 		fail.
