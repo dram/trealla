@@ -1,6 +1,8 @@
 Trealla Prolog
 ==============
 
+[Usage](docs/USAGE.md) | [Features](docs/FEATURES.md)
+
 Trealla is a Prolog interpreter that parses to an AST and uses deep-binding and structure sharing.
 It supports much of ISO-PROLOG plus:
 
@@ -24,4 +26,3 @@ however specifies logical update view (ie. snapshot), so this may change in futu
 Writen in plain-old C with a permissive license. This is alpha release software at this point and
 is subject to great change.
 
-[Usage](docs/USAGE.md) | [Features](docs/FEATURES.md)

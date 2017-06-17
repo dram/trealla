@@ -1,6 +1,9 @@
 Trealla Prolog
 ==============
 
+[Home](../README.md) | [Usage](docs/USAGE.md)
+
+
 Pair operator
 -------------
 
