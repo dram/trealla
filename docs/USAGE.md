@@ -1,7 +1,7 @@
 Trealla Prolog
 ==============
 
-[Home](../README.md) | [Features](docs/FEATURES.md)
+[Home](../README.md) | [Features](../docs/FEATURES.md)
 
 Getting / Building
 ------------------
