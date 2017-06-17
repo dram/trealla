@@ -49,10 +49,8 @@ atomic_list_concat([],'').
 atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, '$concat'(H,S2,S).
 atomic_list_concat([],_,'').
 
-atomic_list_concat([H|T],Sep,S) :-
-	atomic_list_concat(T,Sep,S2), !,
-	(S2 \\= '' -> '$concat'(H,Sep,S2,S) ; '$concat'(H,S2,S)),
-	!.
+atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !,
+	(S2 \= '' -> '$concat'(H,Sep,S2,S) ; '$concat'(H,S2,S)), !.
 
 display(T) :- write_term(T,[ignore_ops(true)]).
 display(S,T) :- write_term(S,T,[ignore_ops(true)]).
