@@ -2256,7 +2256,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		if (!self->quoted && !strcmp(self->tok, ",") && !is_noargs(term)) {
 			self->was_atom = 0;
 
-			if (*src == ']') {
+			if ((*src == ']') || (*src == ')') || (*src == '}')) {
 				printf("ERROR: syntax error, missing arg\n");
 				self->error = 1;
 				return NULL;
