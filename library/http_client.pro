@@ -22,7 +22,7 @@ post10_data(Host,Path,MimeType,Data) :-
 	net:client(Host,S),
 	term_to_blob(Data,Data2),
 	atom_length(Data2,Len),
-	http:post10(S,Path,MimeType,Len,?ConnClose,Status),
+	http:post10(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	Status = 200,
 	write(S,Data2),
 	close(S).
@@ -31,7 +31,7 @@ post10_file(Host,Path,Filename) :-
 	exists_file(Filename,Len,Mod),
 	net:client(Host,S),
 	mime:mime_type(Filename,MimeType),
-	http:post10(S,Path,MimeType,Len,?ConnClose,Status),
+	http:post10(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	Status = 200,
 	write_file(S,Filename),
 	close(S).
@@ -53,7 +53,7 @@ post11_data(Host,Path,MimeType,Data) :-
 	net:client(Host,S),
 	term_to_blob(Data,Data2),
 	atom_length(Data2,Len),
-	http:post11(S,Path,MimeType,Len,?ConnClose,Status),
+	http:post11(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	Status = 200,
 	write(S,Data2),
 	close(S).
@@ -62,7 +62,7 @@ post11_file(Host,Path,Filename) :-
 	exists_file(Filename,Len,Mod),
 	net:client(Host,S),
 	mime:mime_type(Filename,MimeType),
-	http:post11(S,Path,MimeType,Len,?ConnClose,Status),
+	http:post11(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	Status = 200,
 	write_file(S,Filename),
 	close(S).
@@ -71,7 +71,7 @@ put11_data(Host,Path,MimeType,Data) :-
 	net:client(Host,S),
 	term_to_blob(Data,Data2),
 	atom_length(Data2,Len),
-	http:put11(S,Path,MimeType,Len,?ConnClose,Status),
+	http:put11(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	Status = 200,
 	write(S,Data2),
 	close(S).
@@ -80,7 +80,7 @@ put11_file(Host,Path,Filename) :-
 	exists_file(Filename,Len,Mod),
 	net:client(Host,S),
 	mime:mime_type(Filename,MimeType),
-	http:put11(S,Path,MimeType,Len,?ConnClose,Status),
+	http:put11(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	Status = 200,
 	write_file(S,Filename),
 	close(S).
@@ -88,7 +88,7 @@ put11_file(Host,Path,Filename) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 get10_internal(S,Path,Keep,Data) :-
-	http:get10(S,Path,Keep,Status),
+	http:get10(S,Path,Keep,Status,[]),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
 	atom_number(LenStr,Len),
@@ -102,7 +102,7 @@ get10_block(S,Running,Data) :-
 get10_block(S,Data,Data).
 
 get11_internal(S,Path,Keep,Data) :-
-	http:get11(S,Path,Keep,Status,['X-Hdrs1: blah1','X-Hdrs2: blah2']),
+	http:get11(S,Path,Keep,Status,[]),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'-1'),
 	atom_number(LenStr,Len),
