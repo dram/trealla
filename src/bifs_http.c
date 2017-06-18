@@ -94,7 +94,7 @@ static char *http_cleanup(const char *path, char *path2)
 
 static char *list_to_string(tpl_query *q, node *args, node *l)
 {
-	size_t dstlen = 1024 * 8 * 2;
+	size_t dstlen = 1024 * 8;
 	char *dstbuf = (char*)malloc(dstlen);
 	char *dst = dstbuf;
 
@@ -581,7 +581,7 @@ int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs)
 		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
 
 	if (xhdrs) {
-		if (strlen(xhdrs) < sizeof(1024*8))
+		if (strlen(xhdrs) < (1024*8))
 			dst += sprintf(dst, "%s", xhdrs);
 
 		free(xhdrs);
@@ -678,7 +678,7 @@ static int http_head10(session *s, const char *path, int keep, int *status, char
 		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
 
 	if (xhdrs) {
-		if (strlen(xhdrs) < sizeof(1024*8))
+		if (strlen(xhdrs) < (1024*8))
 			dst += sprintf(dst, "%s", xhdrs);
 
 		free(xhdrs);
