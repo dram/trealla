@@ -322,23 +322,29 @@ int bif_sys_getline_2(tpl_query *q)
 	char *line;
 
 	if (is_socket(term1)) {
-		extern int bif_net_readmsg_2(tpl_query *q);
-		return bif_net_readmsg_2(q);
+		if (!session_readmsg((session *)sp->sptr, &line)) {
+			q->is_yielded = 1;
+			return 0;
+			}
+
+		if (session_on_disconnect((session *)sp->sptr))
+			line = strdup(END_OF_FILE);
+	}
+	else {
+		if (!(line = trealla_readline(q->lex, sp->fptr, 0)))
+			line = strdup(END_OF_FILE);
 	}
 
-	if (!(line = trealla_readline(q->lex, sp->fptr, 0)))
-		line = strdup(END_OF_FILE);
-	else {
-		size_t len = strlen(line);
+	size_t len = strlen(line);
 
-		if (len) {
-			if (line[len - 1] == '\n')
-				len--;
-			if (line[len - 1] == '\r')
-				len--;
+	if (len) {
+		if (line[len - 1] == '\n')
+			len--;
 
-			line[len] = '\0';
-		}
+		if (line[len - 1] == '\r')
+			len--;
+
+		line[len] = '\0';
 	}
 
 	put_atom(q, q->c.curr_frame + term2->slot, line);
