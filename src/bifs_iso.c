@@ -4867,6 +4867,10 @@ static int bif_iso_shiftleft(tpl_query *q)
 
 	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER))
 		q->nv.val_u = nv1.val_u << nv2.val_u;
+#if USE_SSL
+	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
+		q->nv.val_u = get_word(&nv1) << get_word(&nv2);
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4884,8 +4888,12 @@ static int bif_iso_shiftright(tpl_query *q)
 	eval(q, &args);
 	node nv2 = q->nv;
 
-	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER))
+	if (is_integer(&nv1) && is_integer(&nv2))
 		q->nv.val_u = nv1.val_u >> nv2.val_u;
+#if USE_SSL
+	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
+		q->nv.val_u = get_word(&nv1) >> get_word(&nv2);
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4903,8 +4911,12 @@ static int bif_iso_bitand(tpl_query *q)
 	eval(q, &args);
 	node nv2 = q->nv;
 
-	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER))
+	if (is_integer(&nv1) && is_integer(&nv2))
 		q->nv.val_u = nv1.val_u & nv2.val_u;
+#if USE_SSL
+	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
+		q->nv.val_u = get_word(&nv1) & get_word(&nv2);
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4922,8 +4934,12 @@ static int bif_iso_bitor(tpl_query *q)
 	eval(q, &args);
 	node nv2 = q->nv;
 
-	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER))
+	if (is_integer(&nv1) && is_integer(&nv2))
 		q->nv.val_u = nv1.val_u | nv2.val_u;
+#if USE_SSL
+	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
+		q->nv.val_u = get_word(&nv1) | get_word(&nv2);
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4941,8 +4957,12 @@ static int bif_iso_xor(tpl_query *q)
 	eval(q, &args);
 	node nv2 = q->nv;
 
-	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER))
+	if (is_integer(&nv1) && is_integer(&nv2))
 		q->nv.val_u = nv1.val_u ^ nv2.val_u;
+#if USE_SSL
+	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
+		q->nv.val_u = get_word(&nv1) ^ get_word(&nv2);
+#endif
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -5279,6 +5299,14 @@ static int bif_iso_max(tpl_query *q)
 
 	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER))
 		np = nv1.val_i > nv2.val_i ? &nv1 : &nv2;
+#if USE_SSL
+	else if (((nv1.flags & TYPE_BIGNUM) || (nv1.flags & TYPE_INTEGER)) && ((nv2.flags & TYPE_BIGNUM) || (nv2.flags & TYPE_INTEGER)))
+		np = get_word(&nv1) > get_word(&nv2) ? &nv1 : &nv2;
+	else if ((nv1.flags & TYPE_BIGNUM) && (nv2.flags & TYPE_FLOAT))
+		np = get_word(&nv1) > nv2.val_f ? &nv1 : &nv2;
+	else if ((nv1.flags & TYPE_FLOAT) && (nv2.flags & TYPE_BIGNUM))
+		np = nv1.val_f > get_word(&nv2) ? &nv1 : &nv2;
+#endif
 	else if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_FLOAT))
 		np = nv1.val_i > nv2.val_f ? &nv1 : &nv2;
 	else if ((nv1.flags & TYPE_FLOAT) && (nv2.flags & TYPE_FLOAT))
@@ -5305,6 +5333,14 @@ static int bif_iso_min(tpl_query *q)
 
 	if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_INTEGER))
 		np = nv1.val_i < nv2.val_i ? &nv1 : &nv2;
+#if USE_SSL
+	else if (((nv1.flags & TYPE_BIGNUM) || (nv1.flags & TYPE_INTEGER)) && ((nv2.flags & TYPE_BIGNUM) || (nv2.flags & TYPE_INTEGER)))
+		np = get_word(&nv1) < get_word(&nv2) ? &nv1 : &nv2;
+	else if ((nv1.flags & TYPE_BIGNUM) && (nv2.flags & TYPE_FLOAT))
+		np = get_word(&nv1) < nv2.val_f ? &nv1 : &nv2;
+	else if ((nv1.flags & TYPE_FLOAT) && (nv2.flags & TYPE_BIGNUM))
+		np = nv1.val_f < get_word(&nv2) ? &nv1 : &nv2;
+#endif
 	else if ((nv1.flags & TYPE_INTEGER) && (nv2.flags & TYPE_FLOAT))
 		np = nv1.val_i < nv2.val_f ? &nv1 : &nv2;
 	else if ((nv1.flags & TYPE_FLOAT) && (nv2.flags & TYPE_FLOAT))
@@ -5327,6 +5363,10 @@ static int bif_iso_sign(tpl_query *q)
 
 	if (q->nv.flags & TYPE_INTEGER)
 		q->nv.val_i = q->nv.val_i < 0 ? -1 : q->nv.val_i > 0 ? 1 : 0;
+#if USE_SSL
+	else if (q->nv.flags & TYPE_BIGNUM)
+		q->nv.val_i = get_word(&q->nv) < 0 ? -1 : get_word(&q->nv) > 0 ? 1 : 0;
+#endif
 	else if (q->nv.flags & TYPE_FLOAT)
 		q->nv.val_f = q->nv.val_f < (flt_t)0.0 ? (flt_t)-1.0 : q->nv.val_f > (flt_t)0.0 ? (flt_t)1.0 : (flt_t)0.0;
 	else {
@@ -6895,8 +6935,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("@=<", 2, bif_iso_sle);
 	DEFINE_BIF("@>", 2, bif_iso_sgt);
 	DEFINE_BIF("@>=", 2, bif_iso_sge);
-	DEFINE_BIF(">>", 2, bif_iso_shiftleft);
-	DEFINE_BIF("<<", 2, bif_iso_shiftright);
+	DEFINE_BIF("<<", 2, bif_iso_shiftleft);
+	DEFINE_BIF(">>", 2, bif_iso_shiftright);
 	DEFINE_BIF("/\\", 2, bif_iso_bitand);
 	DEFINE_BIF("\\/", 2, bif_iso_bitor);
 	DEFINE_BIF("or", 2, bif_iso_xor);
