@@ -1981,10 +1981,17 @@ LOOP: // FIXME someday
 			get_token(l, tmpbuf, line);
 			return s;
 		}
-		else if (!strcmp(key, "TIMESTR")) {
+		else if (!strcmp(key, "SYSRANDOMSTR")) {
 			free(l->tok);
 			char tmpbuf[80];
-			sprintf(tmpbuf, "'%lld'", (long long)time(NULL));
+			sprintf(tmpbuf, "'$%d'", (int)rand());
+			get_token(l, tmpbuf, line);
+			return s;
+		}
+		else if (!strcmp(key, "SYSTIMESTR")) {
+			free(l->tok);
+			char tmpbuf[80];
+			sprintf(tmpbuf, "'$%lld'", (long long)time(NULL));
 			get_token(l, tmpbuf, line);
 			return s;
 		}

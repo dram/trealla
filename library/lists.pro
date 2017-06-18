@@ -28,32 +28,65 @@ find(N,[],L) :- !.
 find(1,[H|_],H) :- !.
 find(N,[_|T],L) :- N1 is N-1, find(N1,T,L).
 
-% Misc other stuff that belongs elsewhere
+% Use a random string as the functor to make the record database opaque.
 
-recorda(K,V) :- recorda(K,V,_).
-recorda(K,V,R) :- nonvar(K), nonvar(V), var(R), asserta('$record'(K,V),R).
+:-define(RECORD,?SYSRANDOMSTR).
 
-recordz(K,V) :- recordz(K,V,_).
-recordz(K,V,R) :- nonvar(K), nonvar(V), var(R), assertz('$record'(K,V),R).
+recorda(K,V) :-
+	recorda(K,V,_).
 
-recorded(K,V) :- recorded(K,V,_).
-recorded(K,V,R) :- clause('$record'(K,V),_,R).
+recorda(K,V,R) :-
+	nonvar(K), nonvar(V), var(R),
+	asserta(?RECORD(K,V),R).
 
-current_key(K) :- var(K), '$record'(K,_).
+recordz(K,V) :-
+	recordz(K,V,_).
 
-instance(R,V) :- nonvar(R), clause('$record'(_,V),_,R).
+recordz(K,V,R) :-
+	nonvar(K), nonvar(V), var(R),
+	assertz(?RECORD(K,V),R).
 
-atomic_concat(L,R,S) :- atomic_list_concat([L,R],S).
+recorded(K,V) :-
+	recorded(K,V,_).
+
+recorded(K,V,R) :-
+	clause(?RECORD(K,V),_,R).
+
+current_key(K) :-
+	var(K),
+	?RECORD(K,_).
+
+instance(R,V) :-
+	nonvar(R),
+	clause(?RECORD(_,V),_,R).
+
+atomic_concat(L,R,S) :-
+	atomic_list_concat([L,R],S).
 
 atomic_list_concat([],'').
-atomic_list_concat([H|T],S) :- atomic_list_concat(T,S2), !, '$concat'(H,S2,S).
+atomic_list_concat([H|T],S) :-
+	atomic_list_concat(T,S2), !,
+	'$concat'(H,S2,S).
 atomic_list_concat([],_,'').
 
-atomic_list_concat([H|T],Sep,S) :- atomic_list_concat(T,Sep,S2), !,
-	(S2 \= '' -> '$concat'(H,Sep,S2,S) ; '$concat'(H,S2,S)), !.
+atomic_list_concat([H|T],Sep,S) :-
+	atomic_list_concat(T,Sep,S2), !,
+	(S2 \= '' ->
+		'$concat'(H,Sep,S2,S) ;
+		'$concat'(H,S2,S)), !.
 
-display(T) :- write_term(T,[ignore_ops(true)]).
-display(S,T) :- write_term(S,T,[ignore_ops(true)]).
+display(T) :-
+	write_term(T,[ignore_ops(true)]).
 
-put(C) :- integer(C) -> put_code(C) ; put_char(C).
-put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).
+display(S,T) :-
+	write_term(S,T,[ignore_ops(true)]).
+
+put(C) :-
+	integer(C) ->
+		put_code(C) ;
+		put_char(C).
+
+put(S,C) :-
+	integer(C) ->
+		put_code(S,C) ;
+		put_char(S,C).
