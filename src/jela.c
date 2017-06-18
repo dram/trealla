@@ -805,7 +805,7 @@ int match(tpl_query *q)
 		if ((q->optimize > 1) && is_lastcall && is_lastmatch && is_det) {
 			int is_tco = is_tailrecursive(q->c.curr_term) && !q->envs[q->c.curr_frame].choices;
 
-			if ((q->optimize > 2) && is_tco && q->is_det)
+			if ((q->optimize > 2) && is_tco)
 				reexecute_term(q, head, frame_size);
 			else
 				execute_term(q, head, frame_size);
