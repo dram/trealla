@@ -277,9 +277,8 @@ int assertz_index(lexer *l, node *n, int manual, int *persist, int in_tran)
 
 // Should be called with DBLOCK in effect
 
-int retract_index(lexer *l, node *n, node *n2, int *persist, int in_tran)
+int retract_index(module *db, node *n, node *n2, int *persist, int in_tran)
 {
-	module *db = l->db;
 	node *tmp = term_first(n);
 	node *head = tmp = term_next(tmp), *idx = NULL;
 	int arity = 0;
@@ -316,7 +315,7 @@ int retract_index(lexer *l, node *n, node *n2, int *persist, int in_tran)
 #endif
 		{
 			char tmpbuf[KEY_SIZE];
-			const char *key = make_key(l->pl, tmpbuf, idx);
+			const char *key = make_key(db->pl, tmpbuf, idx);
 
 			if (!sb_string_erase(r->idx, key, n, NULL))
 				printf("DEBUG: retract '%s' not found in index\n", key);

@@ -2399,11 +2399,7 @@ int bif_iso_assertz(tpl_query *q)
 int bif_retract(tpl_query *q, node *n, node *n2)
 {
 	int persist;
-	lexer l;
-	lexer_init(&l, q->pl);
-	l.db = q->c.curr_db;
-	retract_index(&l, n, n2, &persist, q->in_tran);
-	lexer_done(&l);
+	retract_index(q->c.curr_db, n, n2, &persist, q->in_tran);
 
 	// if (!(n2->flags & FLAG_DBS_RETRACTALL))
 	//	term_heapcheck(n2);
