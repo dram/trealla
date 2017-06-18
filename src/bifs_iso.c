@@ -6114,8 +6114,12 @@ static int bif_xtra_read_term_from_atom_3(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_atom_or_list(term3);
-	char *line = VAL_S(term1);
-	return bif_read_term(q, line, term2, term3);
+	char *src = VAL_S(term1);
+	char *line = (char *)malloc(strlen(src) + 10);
+	sprintf(line, "%s.", src);
+	int ok = bif_read_term(q, line, term2, term3);
+	free(line);
+	return ok;
 }
 
 int bif_xtra_enter(tpl_query *q)
