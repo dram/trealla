@@ -719,9 +719,6 @@ static int dir_export(lexer *l, node *n)
 			}
 
 			term1 = term_next(n2);
-
-			if (!term1)		// FIXME - parse
-				break;
 		}
 
 		return 1;
