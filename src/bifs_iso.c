@@ -2580,7 +2580,11 @@ static int bif_retract2(tpl_query *q, int wait)
 		}
 		else
 #endif
+		{
 			bif_retract(q, save_match, save_n);
+			NLIST_REMOVE(&r->val_l, save_match);
+			term_heapcheck(save_match);
+		}
 
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
@@ -2781,7 +2785,11 @@ static int bif_iso_retractall(tpl_query *q)
 			}
 			else
 #endif
+			{
 				bif_retract(q, save_match, save_n);
+				NLIST_REMOVE(&r->val_l, save_match);
+				term_heapcheck(save_match);
+			}
 		}
 
 		if (save_head)
@@ -2986,9 +2994,7 @@ static int bif_clause(tpl_query *q, int wait)
 	unsigned context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
 	node *term3 = get_next_arg(q, &args);
-#ifndef ISO_ONLY
 	node *save_match = q->c.curr_match;
-#endif
 	node *head = NULL;
 	rule *r = NULL;
 
@@ -3025,14 +3031,10 @@ static int bif_clause(tpl_query *q, int wait)
 			if (did_lock)
 				DBUNLOCK(q->c.curr_db);
 
-#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NULL;
-#endif
 		}
-#ifndef ISO_ONLY
 		else
 			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
-#endif
 
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
@@ -3044,16 +3046,10 @@ static int bif_clause(tpl_query *q, int wait)
 		r = q->curr_rule;
 
 		if (!q->c.curr_match)
-#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
-#else
-			;
-#endif
 		else {
 			r = q->curr_rule;
-#ifndef ISO_ONLY
 			save_match = q->c.curr_match;
-#endif
 			q->c.curr_match = term_next(q->c.curr_match);
 		}
 	}
@@ -3115,8 +3111,14 @@ static int bif_clause(tpl_query *q, int wait)
 		break;
 	}
 
-	if (!q->c.curr_match && !wait)
+	if (!q->c.curr_match && !wait) {
+		if (save_match && is_deleted(save_match)) {
+			NLIST_REMOVE(&r->val_l, save_match);
+			term_heapcheck(save_match);
+		}
+
 		return 0;
+	}
 
 #ifndef ISO_ONLY
 	int is_eof = !q->c.curr_match;
@@ -3139,6 +3141,11 @@ static int bif_clause(tpl_query *q, int wait)
 		return process_yield_locked(q);
 	}
 #endif
+
+	if (save_match && is_deleted(save_match)) {
+		NLIST_REMOVE(&r->val_l, save_match);
+		term_heapcheck(save_match);
+	}
 
 	try_me_nofollow(q);
 

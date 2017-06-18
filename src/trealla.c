@@ -322,12 +322,7 @@ int retract_index(module *db, node *n, node *n2, int *persist, int in_tran)
 		}
 	}
 
-#if 0
-	NLIST_REMOVE(&r->val_l, n);
-	term_heapcheck(n);
-#else
 	n->flags |= FLAG_DELETED;
-#endif
 
 #ifndef ISO_ONLY
 	if (r->persist) {

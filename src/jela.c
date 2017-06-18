@@ -669,6 +669,7 @@ int match(tpl_query *q)
 		return 0;
 	}
 
+	node *save_match = q->c.curr_match;
 	const void *key = NULL;
 	int use_iter = 0;
 
@@ -701,15 +702,19 @@ int match(tpl_query *q)
 			if (!sb_nextkey(q->c.idx_iter, key, (void **)&q->c.curr_match))
 				q->c.curr_match = NULL;
 		}
-		else if (q->retry)
+		else if (q->retry) {
+			save_match = q->c.curr_match;
 			q->c.curr_match = term_next(q->c.curr_match);
+		}
 		else
-			q->c.curr_match = NLIST_FRONT(&r->val_l);
+			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 	}
-	else if (q->retry)
+	else if (q->retry) {
+		save_match = q->c.curr_match;
 		q->c.curr_match = term_next(q->c.curr_match);
+	}
 	else
-		q->c.curr_match = NLIST_FRONT(&r->val_l);
+		save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 
 	if (!q->retry)
 		allocate_frame(q);
@@ -786,6 +791,11 @@ int match(tpl_query *q)
 			continue;
 		}
 
+		if (save_match && is_deleted(save_match)) {
+			NLIST_REMOVE(&r->val_l, save_match);
+			term_heapcheck(save_match);
+		}
+
 		node *body = term_next(head);
 		int is_cut = body->flags & FLAG_ISCUT;
 		int is_lastmatch = (term_next(q->c.curr_match) == NULL) || is_cut;
@@ -806,6 +816,11 @@ int match(tpl_query *q)
 		}
 
 		return 1;
+	}
+
+	if (save_match && is_deleted(save_match)) {
+		NLIST_REMOVE(&r->val_l, save_match);
+		term_heapcheck(save_match);
 	}
 
 	return 0;
