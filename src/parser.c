@@ -641,8 +641,7 @@ static int dir_module(lexer *l, node *n)
 				char tmpbuf[FUNCTOR_SIZE + 10];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-				// printf("DEBUG: EXPORT %s:%s\n", l->db->name,
-				// tmpbuf);
+				// printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
 			}
 
 			term2 = term_next(n2);
@@ -716,11 +715,13 @@ static int dir_export(lexer *l, node *n)
 				char tmpbuf[FUNCTOR_SIZE + 10];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-				// printf("DEBUG: EXPORT %s:%s\n", l->db->name,
-				// tmpbuf);
+				// printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
 			}
 
 			term1 = term_next(n2);
+
+			if (!term1)		// FIXME - parse
+				break;
 		}
 
 		return 1;
@@ -739,8 +740,7 @@ static int dir_export(lexer *l, node *n)
 				char tmpbuf[FUNCTOR_SIZE + 10];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 				sl_set(&l->db->exports, strdup(tmpbuf), NULL);
-				// printf("DEBUG: EXPORT %s:%s\n", l->db->name,
-				// tmpbuf);
+				// printf("DEBUG: EXPORT %s:%s\n", l->db->name, tmpbuf);
 			}
 
 			term1 = term_next(n2);
@@ -2258,6 +2258,12 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 		if (!self->quoted && !strcmp(self->tok, ",") && !is_noargs(term)) {
 			self->was_atom = 0;
+
+			if (*src == ']') {
+				printf("ERROR: syntax error, missing arg\n");
+				self->error = 1;
+				return NULL;
+			}
 
 			if (term->flags & FLAG_CONSING) {
 				free(self->tok);
