@@ -350,8 +350,8 @@ extern void add_clauses(lexer *l);
 extern void xref_clauses(lexer *l);
 
 #ifndef ISO_ONLY
-extern int http_get10(session *s, const char *path, int keep, int *status);
-extern int http_get11(session *s, const char *path, int keep, int *status);
+extern int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs);
+extern int http_get11(session *s, const char *path, int keep, int *status, char *xhdrs);
 extern tpl_query *query_create_proc(tpl_query *self);
 #endif
 

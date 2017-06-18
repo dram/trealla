@@ -102,7 +102,7 @@ get10_block(S,Running,Data) :-
 get10_block(S,Data,Data).
 
 get11_internal(S,Path,Keep,Data) :-
-	http:get11(S,Path,Keep,Status),
+	http:get11(S,Path,Keep,Status,['X-Hdrs1: blah1','X-Hdrs2: blah2']),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'-1'),
 	atom_number(LenStr,Len),
