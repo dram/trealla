@@ -325,7 +325,7 @@ int bif_sys_getline_2(tpl_query *q)
 		if (!session_readmsg((session *)sp->sptr, &line)) {
 			q->is_yielded = 1;
 			return 0;
-			}
+		}
 
 		if (session_on_disconnect((session *)sp->sptr))
 			line = strdup(END_OF_FILE);
