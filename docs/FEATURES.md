@@ -663,13 +663,13 @@ and the response can be parsed...
 	parse(+S,-Ver,-Status)
 
 Note: *XHdrs* is an optional list of extra headers to include with the request. Each such header
-can be specified complete as an atom or by parts as a tuple. It must *not* include a trailing CRLF
+can be specified complete as an atom or by parts as a pair. It must *not* include a trailing CRLF
 (this will be added for you). When the arg is omitted it is assumed the same as *[]*. Examples:
 
 	http:get11(S,'/index.html',1,Status)           (DEPRECATED FOR NEW USE)
 	http:get11(S,'/index.html',1,Status,[])
 	http:get11(S,'/index.html',1,Status,['X-Hdr1: one-one','X-Hdr2: 22'])
-	http:get11(S,'/index.html',1,Status,[{'X-Hdr1':'one-one'},{'X-Hdr2':22}])
+	http:get11(S,'/index.html',1,Status,['X-Hdr1':'one-one','X-Hdr2':22])
 
 If *put11/4* arg *Len* is -1 then use *put11_chunk/2* to write:
 
