@@ -9,7 +9,7 @@
 
 get10_data(Host,Path,Data) :-
 	net:client(Host,S),
-	get10_internal(S,Path,?ConnClose,Data),
+	get10_internal(S,Path,?ConnClose,Data) ->
 	close(S).
 
 get10_file(Host,Path,Filename) :-
@@ -25,8 +25,8 @@ post10_data(Host,Path,MimeType,Data) :-
 	http:post10(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	write(S,Data2),
 	http:parse(S,Ver,Status),
-	Status = 200,
-	close(S).
+	close(S),
+	Status = 200.
 
 post10_file(Host,Path,Filename) :-
 	exists_file(Filename,Len,Mod),
@@ -35,8 +35,8 @@ post10_file(Host,Path,Filename) :-
 	http:post10(S,Path,MimeType,Len,?ConnClose,Status,[]),
 	write_file(S,Filename),
 	http:parse(S,Ver,Status),
-	Status = 200,
-	close(S).
+	close(S),
+	Status = 200.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -58,8 +58,8 @@ post11_data(Host,Path,MimeType,Data) :-
 	http:post11(S,Path,MimeType,Len,?ConnClose,[]),
 	write(S,Data2),
 	http:parse(S,Ver,Status),
-	Status = 200,
-	close(S).
+	close(S),
+	Status = 200.
 
 post11_file(Host,Path,Filename) :-
 	exists_file(Filename,Len,Mod),
@@ -78,8 +78,8 @@ put11_data(Host,Path,MimeType,Data) :-
 	http:put11(S,Path,MimeType,Len,?ConnClose,[]),
 	write(S,Data2),
 	http:parse(S,Ver,Status),
-	Status = 200,
-	close(S).
+	close(S),
+	Status = 200.
 
 put11_file(Host,Path,Filename) :-
 	exists_file(Filename,Len,Mod),
@@ -88,8 +88,8 @@ put11_file(Host,Path,Filename) :-
 	http:put11(S,Path,MimeType,Len,?ConnClose,[]),
 	write_file(S,Filename),
 	http:parse(S,Ver,Status),
-	Status = 200,
-	close(S).
+	close(S),
+	Status = 200.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
