@@ -1321,7 +1321,7 @@ static int bif_iso_nl(tpl_query *q)
 	return 1;
 }
 
-static int bif_read_term(tpl_query *q, char *line, node *term1, node *opts)
+static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *fp)
 {
 	if (!*line)
 		return 0;
@@ -1339,7 +1339,30 @@ static int bif_read_term(tpl_query *q, char *line, node *term1, node *opts)
 
 	lexer l;
 	lexer_init(&l, q->pl);
-	l.fp = q->curr_stdin;
+	l.fp = fp;
+
+	while (is_list(term2)) {
+		node *head = term_firstarg(term2);
+		node *opt = get_arg(q, head, q->c.curr_frame);
+
+		if (is_compound(opt)) {
+			const char *f = term_functor(opt);
+
+			if (!strcmp(f, "double_quotes")) {
+				node *n = term_firstarg(opt);
+
+				if (is_atom(n)) {
+					l.flag_double_quotes =
+						!strcmp(VAL_S(n), "atom") ? 1 : !strcmp(VAL_S(n), "chars") ? 2 : !strcmp(VAL_S(n), "codes") ? 0 : 0;
+				}
+			}
+		}
+
+		term2 = term_next(head);
+	}
+
+	printf("*** %d\n", l.flag_double_quotes);
+
 	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
 	save_term = term = NLIST_FRONT(&l.val_l);
 	free(tmpbuf);
@@ -1393,7 +1416,7 @@ static int bif_iso_read_term_2(tpl_query *q)
 	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
 		return unify_const_atom(q, term1, END_OF_FILE);
 
-	int ok = bif_read_term(q, line, term1, term2);
+	int ok = read_term(q, line, term1, term2, q->curr_stdin);
 	free(line);
 	return ok;
 }
@@ -1435,7 +1458,7 @@ static int bif_iso_read_term_3(tpl_query *q)
 			return unify_const_atom(q, term2, END_OF_FILE);
 	}
 
-	int ok = bif_read_term(q, line, term2, term3);
+	int ok = read_term(q, line, term2, term3, get_input_stream(term1));
 	free(line);
 	return ok;
 }
@@ -6160,7 +6183,7 @@ static int bif_xtra_read_term_from_atom_3(tpl_query *q)
 	char *src = VAL_S(term1);
 	char *line = (char *)malloc(strlen(src) + 10);
 	sprintf(line, "%s.", src);
-	int ok = bif_read_term(q, line, term2, term3);
+	int ok = read_term(q, line, term2, term3, NULL);
 	free(line);
 	return ok;
 }
