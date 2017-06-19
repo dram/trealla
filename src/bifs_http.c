@@ -1137,7 +1137,7 @@ static int bif_http_put_file_2(tpl_query *q)
 }
 #endif
 
-static int http_post10(session *s, const char *path, const char *cttype, int64_t ctlen, int keep, int *status, char *xhdrs)
+static int http_post10(session *s, const char *path, const char *cttype, int64_t ctlen, int keep, char *xhdrs)
 {
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
@@ -1174,40 +1174,7 @@ static int http_post10(session *s, const char *path, const char *cttype, int64_t
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
 	// printf("%s", dstbuf);
-	char *bufptr = NULL;
-	int len;
-
-	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
-		if (!session_get_udata_flag(s, CMD)) {
-			session_set_udata_flag(s, CMD);
-			char ver[20];
-			ver[0] = '\0';
-			sscanf(bufptr, "HTTP/%19s %d", ver, status);
-			free(bufptr);
-			ver[sizeof(ver) - 1] = '\0';
-			char tmpbuf[20];
-			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "X_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP", ver);
-			continue;
-		}
-
-		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
-			free(bufptr);
-			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length")))
-				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type")))
-				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-			return 1;
-		}
-
-		parse_header(s, bufptr, len);
-	}
-
-	return 0;
+	return 1;
 }
 
 static int bif_http_post10_6(tpl_query *q)
@@ -1218,31 +1185,88 @@ static int bif_http_post10_6(tpl_query *q)
 	node *term3 = get_atom(term3);
 	node *term4 = get_int(term4);
 	node *term5 = get_int(term5);
-	node *term6 = get_var(term6);
-	node *term7 = get_next_arg(q, &args);
+	node *term6 = get_next_arg(q, &args);
 	char *xhdrs = NULL;
 
-	if (term7 && is_atom(term7) && strcmp(VAL_S(term7), "[]")) {
+	if (term6 && is_atom(term6) && strcmp(VAL_S(term6), "[]")) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term7 && !is_atom(term7) && !is_list(term7)) {
+	if (term6 && !is_atom(term6) && !is_list(term6)) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term7 && is_list(term7))
-		xhdrs = list_to_string(q, args, term7);
+	if (term6 && is_list(term6))
+		xhdrs = list_to_string(q, args, term6);
 
 	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_post10((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, &status, xhdrs);
-	put_int(q, q->c.curr_frame + term6->slot, status);
-	return ok;
+	return http_post10((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, xhdrs);
 }
 
-static int http_post11(session *s, const char *path, const char *cttype, int ctlen, int keep, int *status, char *xhdrs)
+static int bif_http_parse_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	node *term2 = get_var(term2);
+	node *term3 = get_var(term3);
+	stream *sp = term1->val_str;
+	session *s = sp->sptr;
+
+	if (!is_socket(term1)) {
+		q->halt_code = 1;
+		q->halt = ABORT_HALT;
+		return 0;
+	}
+
+	if (session_on_disconnect(s)) {
+		q->is_yielded = 1;
+		return 0;
+	}
+
+	char *bufptr = NULL;
+	int len;
+
+	while ((len = session_readmsg(s, &bufptr)) > 0) {
+		// printf("> %s", bufptr);
+
+		if (!session_get_udata_flag(s, CMD)) {
+			session_set_udata_flag(s, CMD);
+			int status = 0;
+			char ver[20];
+			ver[0] = '\0';
+			sscanf(bufptr, "HTTP/%19s %d", ver, &status);
+			free(bufptr);
+			ver[sizeof(ver) - 1] = '\0';
+			put_atom(q, q->c.curr_frame + term2->slot, strdup(ver));
+			put_int(q, q->c.curr_frame + term3->slot, status);
+			char tmpbuf[20];
+			snprintf(tmpbuf, sizeof(tmpbuf), "%d", status);
+			session_set_stash(s, "X_STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
+			continue;
+		}
+
+		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
+			free(bufptr);
+			session_clr_udata_flag(s, CMD);
+
+			if (strlen(session_get_stash(s, "Content-Length")))
+				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+
+			if (strlen(session_get_stash(s, "Content-Type")))
+				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			return 1;
+		}
+
+		parse_header(s, bufptr, len);
+	}
+
+	return 1;
+}
+
+static int http_post11(session *s, const char *path, const char *cttype, int ctlen, int keep, char *xhdrs)
 {
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
@@ -1281,40 +1305,7 @@ static int http_post11(session *s, const char *path, const char *cttype, int ctl
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
 	// printf("%s", dstbuf);
-	char *bufptr = NULL;
-	int len;
-
-	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
-		if (!session_get_udata_flag(s, CMD)) {
-			session_set_udata_flag(s, CMD);
-			char ver[20];
-			ver[0] = '\0';
-			sscanf(bufptr, "HTTP/%19s %d", ver, status);
-			free(bufptr);
-			ver[sizeof(ver) - 1] = '\0';
-			char tmpbuf[20];
-			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "X_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP", ver);
-			continue;
-		}
-
-		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
-			free(bufptr);
-			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length")))
-				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type")))
-				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-			return 1;
-		}
-
-		parse_header(s, bufptr, len);
-	}
-
-	return 0;
+	return 1;
 }
 
 static int bif_http_post11_6(tpl_query *q)
@@ -1325,31 +1316,27 @@ static int bif_http_post11_6(tpl_query *q)
 	node *term3 = get_atom(term3);
 	node *term4 = get_int(term4);
 	node *term5 = get_int(term5);
-	node *term6 = get_var(term6);
-	node *term7 = get_next_arg(q, &args);
+	node *term6 = get_next_arg(q, &args);
 	char *xhdrs = NULL;
 
-	if (term7 && is_atom(term7) && strcmp(VAL_S(term7), "[]")) {
+	if (term6 && is_atom(term6) && strcmp(VAL_S(term6), "[]")) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term7 && !is_atom(term7) && !is_list(term7)) {
+	if (term6 && !is_atom(term6) && !is_list(term6)) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term7 && is_list(term7))
-		xhdrs = list_to_string(q, args, term7);
+	if (term6 && is_list(term6))
+		xhdrs = list_to_string(q, args, term6);
 
 	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_post11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, &status, xhdrs);
-	put_int(q, q->c.curr_frame + term6->slot, status);
-	return ok;
+	return http_post11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, xhdrs);
 }
 
-static int http_put11(session *s, const char *path, const char *cttype, int ctlen, int keep, int *status, char *xhdrs)
+static int http_put11(session *s, const char *path, const char *cttype, int ctlen, int keep, char *xhdrs)
 {
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
@@ -1388,40 +1375,7 @@ static int http_put11(session *s, const char *path, const char *cttype, int ctle
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
 	// printf("%s", dstbuf);
-	char *bufptr = NULL;
-	int len;
-
-	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
-		if (!session_get_udata_flag(s, CMD)) {
-			session_set_udata_flag(s, CMD);
-			char ver[20];
-			ver[0] = '\0';
-			sscanf(bufptr, "HTTP/%19s %d", ver, status);
-			free(bufptr);
-			ver[sizeof(ver) - 1] = '\0';
-			char tmpbuf[20];
-			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "X_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP", ver);
-			continue;
-		}
-
-		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
-			free(bufptr);
-			session_clr_udata_flag(s, CMD);
-			if (strlen(session_get_stash(s, "Content-Length")))
-				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-			if (strlen(session_get_stash(s, "Content-Type")))
-				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-			return 1;
-		}
-
-		parse_header(s, bufptr, len);
-	}
-
-	return 0;
+	return 1;
 }
 
 static int bif_http_put11_6(tpl_query *q)
@@ -1432,28 +1386,24 @@ static int bif_http_put11_6(tpl_query *q)
 	node *term3 = get_atom(term3);
 	node *term4 = get_int(term4);
 	node *term5 = get_int(term5);
-	node *term6 = get_var(term6);
-	node *term7 = get_next_arg(q, &args);
+	node *term6 = get_next_arg(q, &args);
 	char *xhdrs = NULL;
 
-	if (term7 && is_atom(term7) && strcmp(VAL_S(term7), "[]")) {
+	if (term6 && is_atom(term6) && strcmp(VAL_S(term6), "[]")) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term7 && !is_atom(term7) && !is_list(term7)) {
+	if (term6 && !is_atom(term6) && !is_list(term6)) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term7 && is_list(term7))
-		xhdrs = list_to_string(q, args, term7);
+	if (term6 && is_list(term6))
+		xhdrs = list_to_string(q, args, term6);
 
 	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_put11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, &status, xhdrs);
-	put_int(q, q->c.curr_frame + term6->slot, status);
-	return ok;
+	return http_put11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, xhdrs);
 }
 
 static int http_delete11(session *s, const char *path, int keep, int *status, char *xhdrs)
@@ -2243,6 +2193,7 @@ static int bif_stomp_msg_4(tpl_query *q)
 void bifs_load_http(void)
 {
 	DEFINE_BIF("http:parse", 4, bif_http_parse_4);
+	DEFINE_BIF("http:parse", 3, bif_http_parse_3);
 	DEFINE_BIF("http:www_form", 1, bif_http_www_form_1);
 	DEFINE_BIF("http:query", 3, bif_http_query_3);
 	DEFINE_BIF("http:form", 3, bif_http_form_3);

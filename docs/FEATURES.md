@@ -644,15 +644,23 @@ Hyper-Text Transfer Protocol:
 	cookie(+S,+Name,-Atom)       - get named cookie value (or '' if non-exist)
 	basic_auth(+S,-User,-Pass)   - decode Basic auth token (if present)
 
-	head10(+S,+Path,+Keep,-Status,+XHdrs)
-	get10(+S,+Path,+Keep,-Status,+XHdrs)
-	post10(+S,+Path,+Type,+Len,+Keep,-Status,+XHdrs)
+The following send a request and parse the response...
 
+	head10(+S,+Path,+Keep,-Status,+XHdrs)
 	head11(+S,+Path,+Keep,-Status,+XHdrs)
+	get10(+S,+Path,+Keep,-Status,+XHdrs)
 	get11(+S,+Path,+Keep,-Status,+XHdrs)
-	post11(+S,+Path,+Type,+Len,+Keep,-Status,+XHdrs)
 	del11(+S,+Path,+Keep,-Status,+XHdrs)
-	put11(+S,+Path,+Type,+Len,+Keep,-Status,+XHdrs)
+
+The following send a request only...
+
+	post10(+S,+Path,+Type,+Len,+Keep,+XHdrs)
+	post11(+S,+Path,+Type,+Len,+Keep,+XHdrs)
+	put11(+S,+Path,+Type,+Len,+Keep,+XHdrs)
+
+and the response can be parsed...
+
+	parse(+S,-Ver,-Status)
 
 Note: *XHdrs* is an optional list of extra headers to include with the request. Each such header
 must *not* include a trailing CRLF (this will be added for you). When the arg is omitted it is
