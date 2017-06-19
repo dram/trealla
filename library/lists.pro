@@ -36,14 +36,14 @@ recorda(K,V) :-
 	recorda(K,V,_).
 
 recorda(K,V,R) :-
-	nonvar(K), nonvar(V), var(R),
+	nonvar(K), nonvar(V),
 	asserta(?RECORD(K,V),R).
 
 recordz(K,V) :-
 	recordz(K,V,_).
 
 recordz(K,V,R) :-
-	nonvar(K), nonvar(V), var(R),
+	nonvar(K), nonvar(V),
 	assertz(?RECORD(K,V),R).
 
 recorded(K,V) :-
@@ -53,7 +53,6 @@ recorded(K,V,R) :-
 	clause(?RECORD(K,V),_,R).
 
 current_key(K) :-
-	var(K),
 	?RECORD(K,_).
 
 instance(R,V) :-
