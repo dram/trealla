@@ -1361,8 +1361,6 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 		term2 = term_next(head);
 	}
 
-	printf("*** %d\n", l.flag_double_quotes);
-
 	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
 	save_term = term = NLIST_FRONT(&l.val_l);
 	free(tmpbuf);
