@@ -349,6 +349,8 @@ extern void lexer_done(lexer *l);
 extern void add_clauses(lexer *l);
 extern void xref_clauses(lexer *l);
 
+enum { DQ_CODES=0, DQ_ATOM=1, DQ_CHARS=2 };
+
 #ifndef ISO_ONLY
 extern int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs);
 extern int http_get11(session *s, const char *path, int keep, int *status, char *xhdrs);

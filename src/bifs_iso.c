@@ -768,15 +768,21 @@ static int bif_iso_set_prolog_flag(tpl_query *q)
 	const char *flag = VAL_S(term1);
 
 	if (!strcmp(flag, "char_conversion"))
-		q->lex->flag_char_conversion = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
+		q->lex->flag_char_conversion =
+			!strcmp(VAL_S(term2), "on") ? 1 :
+			!strcmp(VAL_S(term2), "off") ? 0 : 0;
 	else if (!strcmp(flag, "debug"))
 		q->lex->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
 	else if (!strcmp(flag, "double_quotes"))
 		q->lex->flag_double_quotes =
-		    !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
+		    !strcmp(VAL_S(term2), "atom") ? DQ_ATOM :
+		    !strcmp(VAL_S(term2), "chars") ? DQ_CHARS :
+		    !strcmp(VAL_S(term2), "codes") ? DQ_CODES : DQ_CODES;
 	else if (!strcmp(flag, "unknown"))
 		q->lex->flag_unknown =
-		    !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
+		    !strcmp(VAL_S(term2), "error") ? 1 :
+		    !strcmp(VAL_S(term2), "warning") ? 2 :
+		    !strcmp(VAL_S(term2), "fail") ? 0 : 0;
 	else
 		return 0;
 
@@ -807,11 +813,11 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 		return unify_const_atom(q, term2, q->lex->flag_debug ? "on" : "off");
 	else if (!strcmp(flag, "double_quotes"))
 		return unify_const_atom(q, term2,
-		                        q->lex->flag_double_quotes == 1
-		                            ? "atom"
-		                            : q->lex->flag_double_quotes == 2 ? "chars"
-		                                                              : q->lex->flag_double_quotes == 0 ? "codes" : "codes"
-		                       );
+				q->lex->flag_double_quotes == DQ_ATOM
+				? "atom"
+				: q->lex->flag_double_quotes == DQ_CHARS ? "chars"
+				: q->lex->flag_double_quotes == DQ_CODES ? "codes" : "codes"
+			   );
 	else if (!strcmp(flag, "unknown"))
 		return unify_const_atom(q, term2, q->lex->flag_unknown == 1 ? "error" : q->lex->flag_unknown == 2 ? "warning" : "fail"
 		                        );
@@ -1353,7 +1359,16 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 
 				if (is_atom(n)) {
 					l.flag_double_quotes =
-						!strcmp(VAL_S(n), "atom") ? 1 : !strcmp(VAL_S(n), "chars") ? 2 : !strcmp(VAL_S(n), "codes") ? 0 : 0;
+						!strcmp(VAL_S(n), "atom") ? DQ_ATOM :
+						!strcmp(VAL_S(n), "chars") ? DQ_CHARS :
+						!strcmp(VAL_S(n), "codes") ? DQ_CODES : DQ_CODES;
+				}
+			}
+			else if (!strcmp(f, "char_conversion")) {
+				node *n = term_firstarg(opt);
+
+				if (is_atom(n)) {
+					l.flag_char_conversion = !strcmp(VAL_S(n), "on") ? 1 : 0;
 				}
 			}
 		}

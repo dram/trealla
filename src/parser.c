@@ -475,7 +475,9 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 		    !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
 	else if (!strcmp(flag, "double_quotes"))
 		l->flag_double_quotes =
-		    !strcmp(VAL_S(term2), "atom") ? 1 : !strcmp(VAL_S(term2), "chars") ? 2 : !strcmp(VAL_S(term2), "codes") ? 0 : 0;
+		    !strcmp(VAL_S(term2), "atom") ? DQ_ATOM :
+		    !strcmp(VAL_S(term2), "chars") ? DQ_CHARS :
+		    !strcmp(VAL_S(term2), "codes") ? DQ_CODES : DQ_CODES;
 }
 
 int dir_dynamic(lexer *l, node *n)
@@ -2489,12 +2491,12 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			self->error = 1;
 			return NULL;
 		}
-		else if ((self->quoted == 2) && (self->flag_double_quotes == 0) && !self->tok[0]) {
+		else if ((self->quoted == 2) && (self->flag_double_quotes != DQ_ATOM) && !self->tok[0]) {
 			self->was_atom = 1;
 			n = make_const_atom("[]");
 			free(self->tok);
 		}
-		else if ((self->quoted == 2) && (self->flag_double_quotes == 0)) {
+		else if ((self->quoted == 2) && (self->flag_double_quotes == DQ_CODES)) {
 			self->was_atom = 1;
 			node *l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;
@@ -2515,12 +2517,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			term_append(l, make_const_atom("[]"));
 			free(self->tok);
 		}
-		else if ((self->quoted == 2) && (self->flag_double_quotes == 2) && !self->tok[0]) {
-			self->was_atom = 1;
-			n = make_const_atom("[]");
-			free(self->tok);
-		}
-		else if ((self->quoted == 2) && (self->flag_double_quotes == 2)) {
+		else if ((self->quoted == 2) && (self->flag_double_quotes == DQ_CHARS)) {
 			self->was_atom = 1;
 			node *l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;
