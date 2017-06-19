@@ -102,7 +102,18 @@ static char *list_to_string(tpl_query *q, node *args, node *l)
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
 		node *n = get_arg(q, head, this_context);
-		dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
+
+		if (is_compound(n) && !strcmp(term_functor(n), "{}")) {
+			node *n2 = term_firstarg(n);
+			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
+			*dst++ += ':';
+			*dst++ += ' ';
+			n2 = term_next(n2);
+			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
+		}
+		else
+			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
+
 		*dst++ = '\r';
 		*dst++ = '\n';
 		*dst = '\0';
