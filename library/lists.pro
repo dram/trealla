@@ -60,7 +60,7 @@ instance(R,V) :-
 	nonvar(R),
 	clause(?RECORD(_,V),_,R).
 
-% These should somewhere else, but for now...
+% These should be somewhere else, but for now...
 
 atomic_concat(L,R,S) :-
 	atomic_list_concat([L,R],S).
