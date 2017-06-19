@@ -668,8 +668,8 @@ can be specified complete as an atom or by parts as a pair. It must *not* includ
 
 	http:get11(S,'/index.html',1,Status)           (DEPRECATED FOR NEW USE)
 	http:get11(S,'/index.html',1,Status,[])
-	http:get11(S,'/index.html',1,Status,['X-Hdr1: one-one','X-Hdr2: 22'])
-	http:get11(S,'/index.html',1,Status,['X-Hdr1':'one-one','X-Hdr2':22])
+	http:get11(S,'/index.html',1,Status,['X-Hdr1: o-n-e', 'X-Hdr2: 2'])
+	http:get11(S,'/index.html',1,Status,['X-Hdr1':'o-n-e', 'X-Hdr2':2])
 
 If *put11/4* arg *Len* is -1 then use *put11_chunk/2* to write:
 
