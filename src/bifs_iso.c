@@ -1341,7 +1341,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 	lexer_init(&l, q->pl);
 	l.fp = fp;
 
-	while (is_list(term2)) {
+	while (term2 && is_list(term2)) {
 		node *head = term_firstarg(term2);
 		node *opt = get_arg(q, head, q->c.curr_frame);
 
