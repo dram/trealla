@@ -644,7 +644,7 @@ Hyper-Text Transfer Protocol:
 	cookie(+S,+Name,-Atom)       - get named cookie value (or '' if non-exist)
 	basic_auth(+S,-User,-Pass)   - decode Basic auth token (if present)
 
-The following send a request and parse the response...
+The following send a request and parse the response. They do not send any content...
 
 	head10(+S,+Path,+Keep,-Status,+XHdrs)
 	head11(+S,+Path,+Keep,-Status,+XHdrs)
@@ -658,7 +658,7 @@ The following send a request only...
 	post11(+S,+Path,+Type,+Len,+Keep,+XHdrs)
 	put11(+S,+Path,+Type,+Len,+Keep,+XHdrs)
 
-and the response can be parsed...
+Content can be sent afterwards and the response parsed...
 
 	parse(+S,-Ver,-Status)
 
