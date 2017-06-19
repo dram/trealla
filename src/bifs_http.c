@@ -105,11 +105,15 @@ static char *list_to_string(tpl_query *q, node *args, node *l)
 
 		if (is_compound(n) && !strcmp(term_functor(n), "{}")) {
 			node *n2 = term_firstarg(n);
-			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
-			*dst++ += ':';
-			*dst++ += ' ';
-			n2 = term_next(n2);
-			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
+
+			if (is_compound(n2) && !strcmp(term_functor(n2), ":")) {
+				node *n = term_firstarg(n2);
+				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
+				*dst++ += ':';
+				*dst++ += ' ';
+				n = term_next(n);
+				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
+			}
 		}
 		else
 			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
