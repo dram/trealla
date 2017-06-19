@@ -28,7 +28,7 @@ find(N,[],L) :- !.
 find(1,[H|_],H) :- !.
 find(N,[_|T],L) :- N1 is N-1, find(N1,T,L).
 
-% Use a random string as the functor to make the record database opaque.
+% Use a random string as the predicate name to make the record database opaque.
 
 :-define(RECORD,?SYSRANDOMSTR).
 
@@ -59,6 +59,8 @@ current_key(K) :-
 instance(R,V) :-
 	nonvar(R),
 	clause(?RECORD(_,V),_,R).
+
+% These should somewhere else, but for now...
 
 atomic_concat(L,R,S) :-
 	atomic_list_concat([L,R],S).
