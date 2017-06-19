@@ -598,6 +598,30 @@ static int bif_sys_delay_1(tpl_query *q)
 	return process_yield_locked(q);
 }
 
+static int bif_sys_jsonqi_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_int(term2);
+	node *term3 = get_var(term3);
+	node *term4 = get_var(term4);
+	const size_t len = LEN(term1);
+	char *tmpbuf = (char *)malloc(len + 1);
+	char *nambuf = (char *)malloc(len + 1);
+
+	if (!jsonqi(VAL_S(term1), get_word(term2), nambuf, len, tmpbuf, len)) {
+		free(nambuf);
+		free(tmpbuf);
+		return 0;
+	}
+
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(nambuf));
+	put_atom(q, q->c.curr_frame + term4->slot, strdup(tmpbuf));
+	free(nambuf);
+	free(tmpbuf);
+	return 1;
+}
+
 static int bif_sys_jsonq_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1849,6 +1873,7 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:now", 1, bif_sys_now_1);
 	DEFINE_BIF("sys:exit", 1, bif_sys_exit_1);
 	DEFINE_BIF("sys:timestamp", 1, bif_sys_timestamp_1);
+	DEFINE_BIF("sys:jsonqi", 4, bif_sys_jsonqi_4);
 	DEFINE_BIF("sys:jsonq", 3, bif_sys_jsonq_3);
 	DEFINE_BIF("sys:jsonq", 4, bif_sys_jsonq_4);
 	DEFINE_BIF("sys:xmlq", 1 + 4, bif_sys_xmlq_4);

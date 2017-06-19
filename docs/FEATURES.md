@@ -193,13 +193,11 @@ These are an assortment of utilities:
 	split_all(+Atom,+Sep,-L)    - split atom based on separator into list
 	split(+Atom,+Sep,?L,?R)     - split atom based on first separator into left & right
 	split_last(+Atom,+Sep,?L,?R) - split atom based on last separator into left & right
-	jsonq(+Atom,+N,-Atom)       - quick get named value from JSON source
-	jsonq(+Atom,+N,-Atom,+Def)  - quick get named value from JSON source (or default)
 	xmlq(+Atom,+N,-Atom)        - quick get named value from XML source (can retry))
 	xmlq(+Atom,+N,+Idx,-Atom)   - quick get I'th named value from XML source
 	upper(+Atom,-Atom)          - convert to upper-case
 	lower(+Atom,-Atom)          - convert to lower-case
-	sha1(+Atom,-Atom)           - SHA1 (128-bit) hash     (NEW USE DEPRECATED)
+	sha1(+Atom,-Atom)           - SHA1 (128-bit) hash
 	sha256(+Atom,-Atom)         - SHA2 (256-bit) hash
 	sha512(+Atom,-Atom)         - SHA2 (512-bit) hash
 	url_encode(+Atom,-Atom)
@@ -222,6 +220,12 @@ These are an assortment of utilities:
 	system(+Atom)               - execute shell command
 	system(+Atom,?Int)          - execute shell command
 	stream(-S)                  - create a dummy stream
+
+The following are designed for quickly getting top-level config values:
+
+	jsonq(+Atom,+Name,-Atom)       - quick get named value from JSON source
+	jsonq(+Atom,+Name,-Atom,+Def)  - quick get named value from JSON source (or default)
+	jsonqi(+Atom,+Idx,-Name,-Atom) - quick get indexed name+value from JSON source
 
 Each stream has access to it's own private in-memory dictionary:
 
