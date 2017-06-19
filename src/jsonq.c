@@ -23,8 +23,10 @@ static const char *jsonq_internal(const char *s, const char *name, char *dstbuf,
 	while (isspace(*s))
 		s++;
 
-	if (*s++ != '{')
+	if ((*s != '{') && (*s != '['))
 		return dstbuf;
+
+	s++;
 
 	while ((ch = *s++) != 0) {
 		if (!quoted && isspace(ch))
@@ -35,6 +37,7 @@ static const char *jsonq_internal(const char *s, const char *name, char *dstbuf,
 			quoted = 0;
 		else if (quoted && lhs && (ch == '\\')) {
 			const char *ptr = strchr(anti_escapes, ch = *src++);
+
 			if (ptr)
 				*dst++ = escapes[ptr - anti_escapes];
 			else
@@ -139,8 +142,10 @@ int jsonq_null(const char *s, const char *name)
 {
 	char tmpbuf[256];
 	jsonq(s, name, tmpbuf, sizeof(tmpbuf));
+
 	if (!tmpbuf[0])
 		return 1;
+
 	return !strcmp(tmpbuf, "null");
 }
 
