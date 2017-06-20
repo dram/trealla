@@ -257,7 +257,7 @@ Note: *atom_length/2* returns the number of UTF-8 characters in an atom while fo
 stored length. Atoms are assumed UTF-8.
 
 Database store: namespace 'dbs'
-------------------------------
+-------------------------------
 
 The rule database exists per module (or *default*) and will index on the first argument any
 asserted clauses that have first been declared dynamic:
