@@ -769,10 +769,10 @@ static int bif_iso_set_prolog_flag(tpl_query *q)
 
 	if (!strcmp(flag, "char_conversion"))
 		q->lex->flag_char_conversion =
-			!strcmp(VAL_S(term2), "on") ? 1 :
-			!strcmp(VAL_S(term2), "off") ? 0 : 0;
+			!strcmp(VAL_S(term2), "on") || !strcmp(VAL_S(term2), "true") ? 1 : 0;
 	else if (!strcmp(flag, "debug"))
-		q->lex->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : !strcmp(VAL_S(term2), "off") ? 0 : 0;
+		q->lex->flag_debug =
+			!strcmp(VAL_S(term2), "on") || !strcmp(VAL_S(term2), "true")? 1 : 0;
 	else if (!strcmp(flag, "double_quotes"))
 		q->lex->flag_double_quotes =
 		    !strcmp(VAL_S(term2), "atom") ? DQ_ATOM :
@@ -808,9 +808,9 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	else if (!strcmp(flag, "max_arity"))
 		return unify_int(q, term2, MAX_FRAME_SIZE - 1);
 	else if (!strcmp(flag, "char_conversion"))
-		return unify_const_atom(q, term2, q->lex->flag_char_conversion ? "on" : "off");
-	else if (!strcmp(flag, "debug"))
-		return unify_const_atom(q, term2, q->lex->flag_debug ? "on" : "off");
+		return
+			unify_const_atom(q, term2, q->lex->flag_char_conversion ? "true" : "false") ||
+			unify_const_atom(q, term2, q->lex->flag_char_conversion ? "on" : "off");
 	else if (!strcmp(flag, "double_quotes"))
 		return unify_const_atom(q, term2,
 				q->lex->flag_double_quotes == DQ_ATOM
@@ -822,11 +822,15 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 		return unify_const_atom(q, term2, q->lex->flag_unknown == 1 ? "error" : q->lex->flag_unknown == 2 ? "warning" : "fail"
 		                        );
 	else if (!strcmp(flag, "bounded"))
-		return unify_const_atom(q, term2, g_force_unbounded ? "false" : "true");
+		return
+			unify_const_atom(q, term2, g_force_unbounded ? "false" : "true") ||
+			unify_const_atom(q, term2, g_force_unbounded ? "off" : "on");
 	else if (!strcmp(flag, "integer_rounding_function"))
 		return unify_const_atom(q, term2, "down");
 	else if (!strcmp(flag, "debug"))
-		return unify_const_atom(q, term2, q->lex->flag_debug ? "on" : "off");
+		return
+			unify_const_atom(q, term2, q->lex->flag_debug ? "true" : "false") ||
+			unify_const_atom(q, term2, q->lex->flag_debug ? "on" : "off");
 
 	return 0;
 }
@@ -1364,11 +1368,11 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 						!strcmp(VAL_S(n), "codes") ? DQ_CODES : DQ_CODES;
 				}
 			}
-			else if (!strcmp(f, "char_conversion")) {
+			else if (!strcmp(f, "character_escapes")) {
 				node *n = term_firstarg(opt);
 
 				if (is_atom(n)) {
-					l.flag_char_conversion = !strcmp(VAL_S(n), "on") ? 1 : 0;
+					l.flag_character_escapes = !strcmp(VAL_S(n), "on") || !strcmp(VAL_S(n), "true") ? 1 : 0;
 				}
 			}
 		}

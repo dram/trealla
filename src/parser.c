@@ -467,9 +467,9 @@ static void dir_set_prolog_flag(lexer *l, node *n)
 	const char *flag = VAL_S(n);
 
 	if (!strcmp(flag, "char_conversion"))
-		l->flag_char_conversion = !strcmp(VAL_S(term2), "on") ? 1 : 0;
+		l->flag_char_conversion = !strcmp(VAL_S(term2), "on") || !strcmp(VAL_S(term2), "true") ? 1 : 0;
 	else if (!strcmp(flag, "debug"))
-		l->flag_debug = !strcmp(VAL_S(term2), "on") ? 1 : 0;
+		l->flag_debug = !strcmp(VAL_S(term2), "on") || !strcmp(VAL_S(term2), "true") ? 1 : 0;
 	else if (!strcmp(flag, "unknown"))
 		l->flag_unknown =
 		    !strcmp(VAL_S(term2), "error") ? 1 : !strcmp(VAL_S(term2), "warning") ? 2 : !strcmp(VAL_S(term2), "fail") ? 0 : 0;
