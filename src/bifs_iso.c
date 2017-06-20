@@ -1350,6 +1350,8 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 	lexer l;
 	lexer_init(&l, q->pl);
 	l.fp = fp;
+	l.vars = q->c.frame_size;
+	node *the_vars = NULL;
 
 	while (term2 && is_list(term2)) {
 		node *head = term_firstarg(term2);
@@ -1360,6 +1362,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 
 			if (!strcmp(f, "double_quotes")) {
 				node *n = term_firstarg(opt);
+				n = get_arg(q, n, q->c.curr_frame);
 
 				if (is_atom(n)) {
 					l.flag_double_quotes =
@@ -1370,12 +1373,17 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 			}
 			else if (!strcmp(f, "character_escapes")) {
 				node *n = term_firstarg(opt);
+				n = get_arg(q, n, q->c.curr_frame);
 
-				if (is_atom(n)) {
+				if (is_atom(n))
 					l.flag_character_escapes = !strcmp(VAL_S(n), "on") || !strcmp(VAL_S(n), "true") ? 1 : 0;
-				}
 			}
 			else if (!strcmp(f, "variables")) {
+				node *n = term_firstarg(opt);
+				n = get_arg(q, n, q->c.curr_frame);
+
+				if (is_var(n))
+					the_vars = n;
 			}
 		}
 
@@ -1396,7 +1404,6 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 	sl_init(&vars, 0, NULL, NULL);
 	q->d = &vars;
 	int cnt = collect_vars(q, term);
-	sl_clear(&vars, NULL);
 
 	if (cnt) {
 		expand_frame(q, cnt);
@@ -1405,6 +1412,35 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 		//save_term = term = tmp;
 	}
 
+	if (the_vars) {
+		node *save_l = NULL;
+
+		if (cnt) {
+			node *l = save_l = make_list();
+			sl_start(&vars);
+			node *n;
+
+			while ((sl_next(&vars, (void **)&n)) != NULL) {
+				q->latest_context = q->c.curr_frame;
+				term_append(l, n=clone_term(q, n));
+				q->c.frame_size++;
+
+				if (!vars.iter)
+					break;
+
+				term_append(l, n = make_list());
+				l = n;
+			}
+
+			term_append(l, make_const_atom("[]"));
+		}
+		else
+			save_l = make_const_atom("[]");
+
+		put_env(q, q->c.curr_frame + the_vars->slot, save_l, q->c.curr_frame);
+	}
+
+	sl_clear(&vars, NULL);
 	sl_done(&vars, NULL);
 	q->d = NULL;
 	lexer_done(&l);

@@ -2094,8 +2094,10 @@ static void lexer_finalize(lexer *self)
 		term_append(self->r, tmp);
 	}
 
-	if ((self->r == NULL) || self->error)
+	if ((self->r == NULL) || self->error) {
+		self->vars = 0;
 		return;
+	}
 
 	while (attach_ops(self, self->r, 0))
 		;
@@ -2130,6 +2132,7 @@ static void lexer_finalize(lexer *self)
 			printf("ERROR: syntax error, excess terms\n");
 			term_heapcheck(self->r);
 			self->error = 1;
+			self->vars = 0;
 			return;
 		}
 
@@ -2151,6 +2154,7 @@ static void lexer_finalize(lexer *self)
 	}
 
 	sl_clear(&self->symtab, NULL);
+	self->vars = 0;
 	self->r = NULL;
 }
 
@@ -2191,7 +2195,6 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 		if (!self->r) {
 			self->r = term = make_compound();
 			self->term = NULL;
-			self->vars = 0;
 			self->fact = 1;
 			self->dcg = 0;
 			self->dcg_passthru = 0;
