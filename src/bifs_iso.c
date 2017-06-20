@@ -1375,6 +1375,8 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 					l.flag_character_escapes = !strcmp(VAL_S(n), "on") || !strcmp(VAL_S(n), "true") ? 1 : 0;
 				}
 			}
+			else if (!strcmp(f, "variables")) {
+			}
 		}
 
 		term2 = term_next(head);
@@ -1398,9 +1400,9 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 
 	if (cnt) {
 		expand_frame(q, cnt);
-		node *tmp = copy_term(q, term);
-		term_heapcheck(term);
-		save_term = term = tmp;
+		//node *tmp = copy_term(q, term);
+		//term_heapcheck(term);
+		//save_term = term = tmp;
 	}
 
 	sl_done(&vars, NULL);
