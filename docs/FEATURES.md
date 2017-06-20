@@ -19,10 +19,6 @@ the module namespace from the functor, but more generally it allows JSON-like sy
       ]
     }.
 
-to find the author just provide the anti-tuple:
-
-  Item = {author:Author,_}, writeln(Author).
-
 Modules
 -------
 
