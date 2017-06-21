@@ -21,10 +21,7 @@
 #include "jsonq.h"
 #endif
 
-#ifdef DEBUG
 extern atomic int64_t g_allocs;
-#endif
-
 int g_force_unbounded = 0;
 
 const char *g_escapes = "\e\a\f\b\t\v\r\n";
@@ -219,10 +216,10 @@ node *term_make(void)
 
 #ifdef DEBUG
 	assert(n);
-	g_allocs++;
 	g_heap_used++;
 #endif
 
+	g_allocs++;
 	n->flags = FLAG_HEAP;
 	n->refcnt = 1;
 	return n;
@@ -2230,10 +2227,10 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 
 			if (term_arity(term) == 0) {
-				*term = *term_first(term);
-#ifdef DEBUG
+				node *tmp = term_first(term);
+				*term = *tmp;
+				free(tmp);
 				g_allocs--;
-#endif
 			}
 
 			self->was_atomic = 0;

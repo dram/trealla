@@ -26,10 +26,7 @@
 #endif
 
 static size_t g_instances = 0;
-
-#ifdef DEBUG
 atomic int64_t g_allocs = 0;
-#endif
 
 int g_trealla_memlimit_mb = 1024 * 4;
 volatile int g_abort = 0;
@@ -122,10 +119,7 @@ void term_heapclean(node *n)
 #endif
 	}
 
-#ifdef DEBUG
 	g_allocs--;
-#endif
-
 	free(n);
 }
 
@@ -1615,10 +1609,8 @@ void trealla_destroy(trealla *self)
 	db_done(&self->db);
 	g_instances--;
 
-#ifdef DEBUG
 	if (g_allocs != 0)
 		printf("DEBUG: orphaned=%lld\n", (long long)g_allocs);
-#endif
 
 	free(self);
 }
