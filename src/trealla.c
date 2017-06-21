@@ -1248,10 +1248,8 @@ void query_destroy(tpl_query *self)
 	}
 #endif
 
-	if (!self->parent) {
-		lexer_done(self->lex);
-		free(self->lex);
-	}
+	if (!self->parent)
+		lexer_destroy(self->lex);
 
 	free(self);
 }
@@ -1316,10 +1314,8 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 				src++;
 		}
 
-		// Certain directives must currently be parsed on a line by
-		// themselves,
-		// hence this kludge, everything else can be parsed in one
-		// chunk...
+		// Certain directives must currently be parsed on a line by themselves,
+		// hence this kludge, everything else can be parsed in one chunk...
 
 		if ((*src == '.') && (src[1] == '\n')) {
 			*dst++ = *src++;
