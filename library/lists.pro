@@ -1,3 +1,22 @@
+:-module(lists).
+:-export([member/2]).
+:-export([select/3]).
+:-export([subtract/3]).
+:-export([union/3]).
+:-export([intersection/3]).
+:-export([reverse/2]).
+:-export([append/3]).
+:-export([find/3]).
+:-export([recorda/2,recorda/3]).
+:-export([recordz/2,recordz/3]).
+:-export([recorded/2,recorded/3]).
+:-export([current_key/1]).
+:-export([instance/2]).
+:-export([atomic_concat/3]).
+:-export([atomic_list_concat/2,atomic_list_concat/3]).
+:-export([display/1,display/2]).
+:-export([put/1,put/2]).
+
 member(X,X) :- var(X), !, fail.
 member(X,[X|_]).
 member(X,[_|T]) :- member(X,T).

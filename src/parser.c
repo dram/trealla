@@ -629,8 +629,8 @@ static int dir_module(lexer *l, node *n)
 	sl_set(&l->ns, strdup(name), NULL);
 	add_define(l, "MODULE", name);
 
-	if (!l->pl->quiet)
-		printf("INFO: module: %s\n", name);
+	//if (!l->pl->quiet)
+	//	printf("INFO: module: %s\n", name);
 
 	if (term2 && is_list(term2)) {
 		while (is_list(term2)) {
@@ -2051,6 +2051,7 @@ void lexer_init(lexer *self, trealla *pl)
 #ifndef ISO_ONLY
 	sl_init(&self->defines, 0, &strcmp, &free);
 	sl_init(&self->funs, 0, &strcmp, &free);
+	sl_set(&self->ns, strdup("lists"), NULL);
 #endif
 
 	self->pl = pl;
