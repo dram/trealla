@@ -532,6 +532,8 @@ static void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 		if ((point1 < q->c.curr_frame) || (point1 >= (q->c.curr_frame + q->c.frame_size)))
 			q->trails[q->c.trail_point + q->c.trail_size++] = point1;
 	}
+
+	q->is_det = 0;
 }
 
 static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned context2)
