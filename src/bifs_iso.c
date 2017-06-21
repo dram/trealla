@@ -3738,12 +3738,9 @@ static int bif_iso_term_variables(tpl_query *q)
 	sl_init(&vars, 0, NULL, NULL);
 	q->d = &vars;
 	int cnt = collect_vars(q, term1);
-
-	if (q->halt)
-		return 0;
+	q->d = NULL;
 
 	if (!cnt) {
-		q->d = NULL;
 		sl_done(&vars, NULL);
 		return unify_const_atom(q, term2, "[]");
 	}
@@ -3759,12 +3756,10 @@ static int bif_iso_term_variables(tpl_query *q)
 		if (!vars.iter)
 			break;
 
-		node *tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		term_append(l, n = make_list());
+		l = n;
 	}
 
-	q->d = NULL;
 	sl_done(&vars, NULL);
 	term_append(l, make_const_atom("[]"));
 	int ok = unify_term(q, term2, save_l, q->latest_context);
