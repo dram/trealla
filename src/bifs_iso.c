@@ -1405,7 +1405,6 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 	int cnt = collect_vars(q, term);
 
 	if (cnt) {
-		printf("*** BEFORE FRAME=%d, SPACE=%d, EXP=%d\n", q->c.frame_size, (int)(q->c.env_point-q->c.curr_frame), cnt);
 		expand_frame(q, cnt);
 		//node *tmp = copy_term(q, term);
 		//term_heapcheck(term);
@@ -1421,9 +1420,8 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 			node *n;
 
 			while ((sl_next(&vars, (void **)&n)) != NULL) {
-				q->latest_context = q->c.curr_frame;
+				//q->latest_context = q->c.curr_frame;
 				term_append(l, n=clone_term(q, n));
-				printf("*** SLOT %s=%d\n", VAL_S(n), n->slot);
 				q->c.frame_size++;
 
 				if (!vars.iter)
@@ -1442,14 +1440,11 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 		save_l->refcnt--;
 	}
 
-	if (cnt)
-		printf("*** AFTER FRAME=%d, SPACE=%d\n", q->c.frame_size, (int)(q->c.env_point-q->c.curr_frame));
-
 	q->d = NULL;
 	sl_done(&vars, NULL);
 	lexer_done(&l);
 	term = clause ? term : term_firstarg(term);
-	int ok = unify_term(q, term1, term, q->c.env_point);
+	int ok = unify_term(q, term1, term, q->c.curr_frame);
 	term_heapcheck(save_term);
 	return ok;
 }

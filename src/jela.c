@@ -125,7 +125,7 @@ static void reclaim_trail(tpl_query *q)
 void prepare_frame(tpl_query *q, unsigned frame_size)
 {
 	TRACE("prepare_frame");
-	q->curr_context = q->c.curr_frame;
+	//q->curr_context = q->c.curr_frame;
 
 	if ((q->c.env_point + frame_size) >= q->envs_used) {
 		q->envs_used = q->c.env_point + frame_size;
