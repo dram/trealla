@@ -82,8 +82,12 @@ int sl_set(skiplist *d, const char *key, void *value)
 	}
 
 	if (!d->dups) {
-		if (q && (d->compare(q->key, key) == 0))
+		if (q && (d->compare(q->key, key) == 0)) {
+			if (d->deleter)
+				d->deleter((char *)key);
+
 			return 0;
+		}
 	}
 
 	k = random_level(&d->seed);
