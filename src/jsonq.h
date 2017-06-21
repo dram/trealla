@@ -3,8 +3,6 @@
 
 // JSON quick and dirty search for named value.
 //
-// Accepts single quotes as a convenience.
-//
 // Calls can be concatenated, eg:
 //
 // char *s = "{'a':1,'b':2,'c':{'c1':31,'c2':32,'c3':33},'d',4}";

@@ -5,6 +5,8 @@
 
 #include "xmlq.h"
 
+#define MAX_NAME_LEN 1024
+
 const char *xmlq(const char *s, int idx, const char *name, char *dstbuf, int dstlen)
 {
 	const char *save_s = s;
@@ -14,10 +16,10 @@ const char *xmlq(const char *s, int idx, const char *name, char *dstbuf, int dst
 
 	*dstbuf = 0;
 
-	if (strlen(name) >= 1024)
+	if (strlen(name) >= MAX_NAME_LEN)
 		return NULL;
 
-	char tmpbuf1[1024], tmpbuf2[1024], tmpbuf3[1024];
+	char tmpbuf1[MAX_NAME_LEN+10], tmpbuf2[MAX_NAME_LEN+10], tmpbuf3[MAX_NAME_LEN+10];
 	char *dst = dstbuf;
 	int i = 0;
 
@@ -27,9 +29,9 @@ const char *xmlq(const char *s, int idx, const char *name, char *dstbuf, int dst
 	if (*s != '<')
 		return NULL;
 
-	sprintf(tmpbuf1, "<%s>", name);
-	sprintf(tmpbuf2, "<%s ", name);
-	sprintf(tmpbuf3, "</%s>", name);
+	snprintf(tmpbuf1, sizeof(tmpbuf1), "<%s>", name);
+	snprintf(tmpbuf2, sizeof(tmpbuf2), "<%s ", name);
+	snprintf(tmpbuf3, sizeof(tmpbuf3), "</%s>", name);
 
 	const char *ptr = NULL, *ptr3;
 

@@ -5,6 +5,8 @@
 
 #include "jsonq.h"
 
+#define MAX_NAME_LEN 1024
+
 static const char *jsonq_internal(const char *s, const char *name, char *dstbuf, int dstlen, int idx, char *nambuf, int namlen)
 {
 	static const char *escapes = "\a\f\b\t\v\r\n";
@@ -15,7 +17,7 @@ static const char *jsonq_internal(const char *s, const char *name, char *dstbuf,
 
 	*dstbuf = 0;
 	const char *src = s;
-	char tmpbuf[1024]; // only used for name
+	char tmpbuf[MAX_NAME_LEN+10]; // only used for name
 	char *dst = tmpbuf;
 	int found = 0, quoted = 0, level = 0, lhs = 1, i = 0;
 	char ch;
@@ -29,6 +31,9 @@ static const char *jsonq_internal(const char *s, const char *name, char *dstbuf,
 	s++;
 
 	while ((ch = *s++) != 0) {
+		if (lhs && ((dst-tmpbuf) >= MAX_NAME_LEN))
+			break;
+
 		if (!quoted && isspace(ch))
 			;
 		else if (!quoted && (ch == '"'))
@@ -45,7 +50,6 @@ static const char *jsonq_internal(const char *s, const char *name, char *dstbuf,
 		}
 		else if (!quoted && lhs && !found && !level && (ch == ':')) {
 			*dst = 0;
-			dst = tmpbuf;
 
 			while (isspace(*s))
 				s++;
@@ -60,6 +64,7 @@ static const char *jsonq_internal(const char *s, const char *name, char *dstbuf,
 				src = s;
 			}
 
+			dst = dstbuf;
 			lhs = 0;
 		}
 		else if (found && !level && ((ch == ',') || (ch == '}'))) {
