@@ -64,7 +64,7 @@ static const char *jsonq_internal(const char *s, const char *name, char *dstbuf,
 				src = s;
 			}
 
-			dst = dstbuf;
+			dst = tmpbuf;
 			lhs = 0;
 		}
 		else if (found && !level && ((ch == ',') || (ch == '}'))) {
