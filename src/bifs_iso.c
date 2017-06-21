@@ -3754,7 +3754,7 @@ static int bif_iso_term_variables(tpl_query *q)
 	sl_start(&vars);
 
 	while ((sl_next(&vars, (void **)&n)) != NULL) {
-		term_append(l, copy_term(q, n));
+		term_append(l, clone_term(q, n));
 
 		if (!vars.iter)
 			break;
