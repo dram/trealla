@@ -111,9 +111,9 @@ static int expand_frame(tpl_query *q, unsigned cnt)
 
 	prepare_frame(q, cnt);
 	q->c.env_point += cnt;
-	choice *c = &q->choices[q->choice_point];
-	c->frame_size += cnt;
-	c->env_point += cnt;
+	//choice *c = &q->choices[q->choice_point];
+	//c->frame_size += cnt;
+	//c->env_point += cnt;
 	return 1;
 }
 
@@ -223,16 +223,15 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 		if (clone)
 			return copy_var(from);
 
-		env *e = get_env(q, q->latest_context + from->slot);
-		node *tmp;
-
 		if (!q->d) {
 			QABORT(ABORT_INVALIDARGMISSING);
 			return 0;
 		}
 
-		if (!sl_get(q->d, (char *)e, (void **)&tmp))
-			sl_set(q->d, (char *)e, tmp = make_var(q));
+		node *tmp;
+
+		if (!sl_get(q->d, (char *)(size_t)from->slot, (void **)&tmp))
+			sl_set(q->d, (char *)(size_t)from->slot, tmp = make_var(q));
 		else
 			tmp = copy_var(tmp);
 
@@ -1351,7 +1350,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 	lexer_init(&l, q->pl);
 	l.fp = fp;
 	l.vars = q->c.frame_size;
-	node *the_vars = NULL;
+	node *varlist = NULL;
 
 	while (term2 && is_list(term2)) {
 		node *head = term_firstarg(term2);
@@ -1383,7 +1382,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 				n = get_arg(q, n, q->c.curr_frame);
 
 				if (is_var(n))
-					the_vars = n;
+					varlist = n;
 			}
 		}
 
@@ -1406,13 +1405,14 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 	int cnt = collect_vars(q, term);
 
 	if (cnt) {
+		printf("*** BEFORE FRAME=%d, SPACE=%d, EXP=%d\n", q->c.frame_size, (int)(q->c.env_point-q->c.curr_frame), cnt);
 		expand_frame(q, cnt);
 		//node *tmp = copy_term(q, term);
 		//term_heapcheck(term);
 		//save_term = term = tmp;
 	}
 
-	if (the_vars) {
+	if (varlist) {
 		node *save_l = NULL;
 
 		if (cnt) {
@@ -1423,6 +1423,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 			while ((sl_next(&vars, (void **)&n)) != NULL) {
 				q->latest_context = q->c.curr_frame;
 				term_append(l, n=clone_term(q, n));
+				printf("*** SLOT %s=%d\n", VAL_S(n), n->slot);
 				q->c.frame_size++;
 
 				if (!vars.iter)
@@ -1437,12 +1438,15 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 		else
 			save_l = make_const_atom("[]");
 
-		put_env(q, q->c.curr_frame + the_vars->slot, save_l, q->c.curr_frame);
+		put_env(q, q->c.curr_frame + varlist->slot, save_l, q->c.curr_frame);
+		save_l->refcnt--;
 	}
 
-	sl_clear(&vars, NULL);
-	sl_done(&vars, NULL);
+	if (cnt)
+		printf("*** AFTER FRAME=%d, SPACE=%d\n", q->c.frame_size, (int)(q->c.env_point-q->c.curr_frame));
+
 	q->d = NULL;
+	sl_done(&vars, NULL);
 	lexer_done(&l);
 	term = clause ? term : term_firstarg(term);
 	int ok = unify_term(q, term1, term, q->c.env_point);
