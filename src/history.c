@@ -650,7 +650,7 @@ void history_load(const char *filename)
 
 	char line[1024 * 8]; // FIXME
 
-	while (fgets(line, sizeof(line), g_histfile) > 0) {
+	while (fgets(line, sizeof(line), g_histfile) != NULL) {
 		line[strlen(line) - 1] = '\0';
 		cmd *n = (cmd *)malloc(sizeof(cmd));
 		n->line = strdup(line);

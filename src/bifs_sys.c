@@ -244,7 +244,7 @@ static int bif_sys_write_file_4(tpl_query *q)
 		to = st.st_size - 1;
 	}
 
-	if ((term3 < 0) || (term4 <= term3))
+	if ((get_word(term3) < 0) || (get_word(term4) <= get_word(term3)))
 		return 0;
 
 	return sys_write_file(q, var, term1, term2, from, to);

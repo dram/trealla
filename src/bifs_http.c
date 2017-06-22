@@ -1949,7 +1949,7 @@ void bifs_load_http(void)
 	DEFINE_BIF("h2:upgrade", 2, bif_h2_upgrade_2);
 	DEFINE_BIF("h2:parse", 3, bif_h2_parse_3);
 	DEFINE_BIF("h2:msg", 3, bif_h2_msg_3);
-};
+}
 
 void bifs_load_ws(void)
 {
@@ -1962,10 +1962,10 @@ void bifs_load_ws(void)
 	DEFINE_BIF("ws:parse", 3, bif_ws_parse_3);
 	DEFINE_BIF("ws:msg", 3, bif_ws_msg_3);
 	DEFINE_BIF("ws:is_ws", 2, bif_ws_is_ws);
-};
+}
 
 void bifs_load_stomp(void)
 {
 	DEFINE_BIF("stomp:parse", 3, bif_stomp_parse_3);
 	DEFINE_BIF("stomp:msg", 4, bif_stomp_msg_4);
-};
+}

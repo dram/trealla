@@ -725,4 +725,4 @@ void bifs_load_net(void)
 	DEFINE_BIF("net:stash_set", 3, bif_net_stash_set_3);
 	DEFINE_BIF("net:stash_clr", 3, bif_net_stash_clr_3);
 	DEFINE_BIF("net:start_tls", 1, bif_net_start_tls_1);
-};
+}
