@@ -663,7 +663,7 @@ Client-side:
 	length(+Integer)             - content-length in bytes
 	type(+Atom)                  - content-type (eg: 'text/html')
 	agent(+String)               - user-agent string
-	cmd(+Atom)                   - send arbitrary command
+	method(+Atom)                - send arbitrary HTTP command
 	...
 
 *Headers* is an optional list of extra headers to include with the request. Each such header

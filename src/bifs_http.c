@@ -664,7 +664,7 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 		keep = 0;
 	}
 
-	const char *ptr = strstr(opts, "cmd(");
+	const char *ptr = strstr(opts, "method(");
 	char tmpbuf[256];
 	tmpbuf[0] = '\0';
 
