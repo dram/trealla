@@ -97,20 +97,7 @@ static char *opts_to_string(tpl_query *q, node *args, node *l)
 	size_t dstlen = 1024 * 8;
 	char *dstbuf = (char*)malloc(dstlen);
 	char *dst = dstbuf;
-
-	while (is_list(l)) {
-		node *head = term_firstarg(l);
-		unsigned this_context = q->latest_context;
-		node *n = get_arg(q, head, this_context);
-		dst += term_sprint(dst, dst-dstbuf, q->pl, q, n, 1);
-		node *tail = term_next(head);
-		l = get_arg(q, tail, this_context);
-
-		if (is_list(l))
-			*dst++ = ',';
-	}
-
-	*dst = '\0';
+	dst += term_sprint(dst, dst-dstbuf, q->pl, q, l, 1);
 	return dstbuf;
 }
 
