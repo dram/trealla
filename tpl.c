@@ -29,8 +29,8 @@
 #endif
 
 #ifndef ISO_ONLY
-extern int http_get10(session *s, const char *path, int keep, int *status);
-extern int http_get11(session *s, const char *path, int keep, int *status);
+extern int http_get10(session *s, const char *path, int keep, int *status, int head);
+extern int http_get11(session *s, const char *path, int keep, int *status, int head);
 #endif
 
 static void sigfn(int s)
@@ -64,9 +64,9 @@ static void manifest_file(session *s, const char *branch, const char *appname, c
 	int status = 0, keep_alive = 1;
 
 	if (http11)
-		http_get11(s, tmpbuf, keep_alive, &status);
+		http_get11(s, tmpbuf, keep_alive, &status, 0);
 	else
-		http_get10(s, tmpbuf, keep_alive, &status);
+		http_get10(s, tmpbuf, keep_alive, &status, 0);
 
 	if (status != 200) {
 		printf("ERROR: http:get %s = %d\n", tmpbuf, status);
@@ -292,9 +292,9 @@ int main(int ac, char *av[])
 		int status = 0, keep_alive = 1;
 
 		if (http11)
-			http_get11(s, tmpbuf, keep_alive, &status);
+			http_get11(s, tmpbuf, keep_alive, &status, 0);
 		else
-			http_get10(s, tmpbuf, keep_alive, &status);
+			http_get10(s, tmpbuf, keep_alive, &status, 0);
 
 		if (status != 200) {
 			printf("ERROR: http_get %s = %d\n", tmpbuf, status);
