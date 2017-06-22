@@ -628,7 +628,7 @@ With *readmsg/2* the stream is read until a trailing new-line. In other words: a
 With *bread/3* an ungrounded length specification causes a non-blocking read that returns whatever
 is currently available, otherwise it blocks until it can return the specified length.
 
-Note: regular streams I/O can be used over sockets.
+Note: regular streams I/O (except character-based) can be used over sockets.
 
 Note: writes to sockets are normally blocking but *sys:write_file/2* can yield internally when an
 operation would cause blocking. Use *tmo/1* to set a timeout. Most (?) read operations with sockets
