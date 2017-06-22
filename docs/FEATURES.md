@@ -678,7 +678,7 @@ in play, so use *put_chunk/2* to write.
 
 To parse the response from a request:
 
-	parse(+S,-Status)
+	parse(+S,-Status,-Options)
 
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 

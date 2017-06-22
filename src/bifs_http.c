@@ -92,7 +92,29 @@ static char *http_cleanup(const char *path, char *path2)
 	return path2;
 }
 
-static char *list_to_string(tpl_query *q, node *args, node *l)
+static char *opts_to_string(tpl_query *q, node *args, node *l)
+{
+	size_t dstlen = 1024 * 8;
+	char *dstbuf = (char*)malloc(dstlen);
+	char *dst = dstbuf;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		node *n = get_arg(q, head, this_context);
+		dst += term_sprint(dst, dst-dstbuf, q->pl, q, n, 1);
+		node *tail = term_next(head);
+		l = get_arg(q, tail, this_context);
+
+		if (is_list(l))
+			*dst++ = ',';
+	}
+
+	*dst = '\0';
+	return dstbuf;
+}
+
+static char *hdrs_to_string(tpl_query *q, node *args, node *l)
 {
 	size_t dstlen = 1024 * 8;
 	char *dstbuf = (char*)malloc(dstlen);
@@ -128,11 +150,11 @@ static char *list_to_string(tpl_query *q, node *args, node *l)
 
 		*dst++ = '\r';
 		*dst++ = '\n';
-		*dst = '\0';
 		node *tail = term_next(head);
 		l = get_arg(q, tail, this_context);
 	}
 
+	*dst = '\0';
 	return dstbuf;
 }
 
@@ -582,14 +604,82 @@ static int bif_http_parse_4(tpl_query *q)
 	return 0;
 }
 
-int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs, int head)
+static int bif_http_parse_3(tpl_query *q)
 {
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	node *term2 = get_var(term2);
+	node *term3 = get_next_arg(q, &args);
+	stream *sp = term1->val_str;
+	session *s = sp->sptr;
+
+	if (!is_socket(term1)) {
+		q->halt_code = 1;
+		q->halt = ABORT_HALT;
+		return 0;
+	}
+
+	if (session_on_disconnect(s)) {
+		q->is_yielded = 1;
+		return 0;
+	}
+
+	if (term3 != NULL) {
+	}
+
+	char *bufptr = NULL;
+	int len;
+
+	while ((len = session_readmsg(s, &bufptr)) > 0) {
+		if (!session_get_udata_flag(s, CMD)) {
+			session_set_udata_flag(s, CMD);
+			int status = 0;
+			char ver[20];
+			ver[0] = '\0';
+			sscanf(bufptr, "HTTP/%19s %d", ver, &status);
+			free(bufptr);
+			ver[sizeof(ver) - 1] = '\0';
+			put_int(q, q->c.curr_frame + term2->slot, status);
+			char tmpbuf[20];
+			snprintf(tmpbuf, sizeof(tmpbuf), "%d", status);
+			session_set_stash(s, "X_STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
+			continue;
+		}
+
+		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
+			free(bufptr);
+			session_clr_udata_flag(s, CMD);
+
+			if (strlen(session_get_stash(s, "Content-Length")))
+				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+
+			if (strlen(session_get_stash(s, "Content-Type")))
+				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+			return 1;
+		}
+
+		parse_header(s, bufptr, len);
+	}
+
+	return 1;
+}
+
+int http_request(const char *cmd, session *s, const char *path, const char *opts, const char *hdrs)
+{
+	double ver = 1.1, keep = 1;
+
+	if (strstr(opts, "version(1.0)") || strstr(opts, "version(0.9)")) {
+		ver = 1.0;
+		keep = 0;
+	}
+
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
 	char dstbuf[1024 * 8 * 2];
 	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/1.0\r\n", head ? "HEAD" : "GET", path);
+	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/%g\r\n", cmd, path, ver);
 	dst += snprintf(dst, 256, "Host: %s\r\n", host);
 
 	if (user[0]) {
@@ -599,25 +689,79 @@ int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs,
 		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
 		dst += sprintf(dst, "\r\n");
 	}
+
+	if (strstr(opts, "persist(true)") || strstr(opts, "persist(1)"))
+		keep = 1;
+	else if (strstr(opts, "persist(false)") || strstr(opts, "persist(0)"))
+		keep = 0;
+
+	const char *ptr = strstr(opts, "length(");
+	long length = 0;
+
+	if (ptr != NULL)
+		sscanf(ptr, "%*[^(](%ld)", &length);
+
+	if (length >= 0)
+		dst += sprintf(dst, "Content-Length: %ld\r\n", (long)length);
+	else
+		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
 
 	if (keep)
 		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
 
-	if (xhdrs) {
-		if (strlen(xhdrs) < (1024*8))
-			dst += sprintf(dst, "%s", xhdrs);
+	if (ver > 1.0)
+		dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
 
-		free(xhdrs);
+	ptr = strstr(opts, "type(");
+	char tmpbuf[256];
+	tmpbuf[0] = '\0';
+
+	if (ptr != NULL) {
+		sscanf(ptr, "%*[^(](%255[^)]", tmpbuf);
+		tmpbuf[sizeof(tmpbuf)-1] = '\0';
+	}
+
+	if (tmpbuf[0])
+		dst += snprintf(dst, 256, "Content-Type: %s\r\n", tmpbuf);
+
+	ptr = strstr(opts, "agent(");
+	tmpbuf[0] = '\0';
+
+	if (ptr != NULL) {
+		sscanf(ptr, "%*[^(](%255[^)]", tmpbuf);
+		tmpbuf[sizeof(tmpbuf)-1] = '\0';
+	}
+
+	if (tmpbuf[0])
+		dst += snprintf(dst, 256, "User-Agent: %s\r\n", tmpbuf);
+
+	if (opts) {
+		free((char*)opts);
+	}
+
+	if (hdrs) {
+		if (strlen(hdrs) < (1024*8))
+			dst += sprintf(dst, "%s", hdrs);
+
+		free((char*)hdrs);
 	}
 
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
+	return 1;
+}
+
+int http_get10(session *s, const char *path, int keep, int *status, int head)
+{
+	http_request(head ? "HEAD" : "GET", s, path, "version(1.0),length(0)", "");
+
 	char *bufptr = NULL;
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
+			*status = 0;
 			char ver[20];
 			ver[0] = '\0';
 			sscanf(bufptr, "HTTP/%19s %d", ver, status);
@@ -639,114 +783,26 @@ int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs,
 
 			if (strlen(session_get_stash(s, "Content-Type")))
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-
 			return 1;
 		}
 
 		parse_header(s, bufptr, len);
 	}
 
-	return 0;
+	return 1;
 }
 
-static int bif_http_get10_4(tpl_query *q)
+int http_get11(session *s, const char *path, int keep, int *status, int head)
 {
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_int(term3);
-	node *term4 = get_var(term4);
-	node *term5 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
+	http_request(head ? "HEAD" : "GET", s, path, "version(1.1),length(0)", "");
 
-	if (term5 && is_atom(term5) && strcmp(VAL_S(term5), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term5 && !is_atom(term5) && !is_list(term5)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term5 && is_list(term5))
-		xhdrs = list_to_string(q, args, term5);
-
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_get10((session *)sp->sptr, VAL_S(term2), term3->val_i, &status, xhdrs, 0);
-	put_int(q, q->c.curr_frame + term4->slot, status);
-	return ok;
-}
-
-static int bif_http_head10_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_int(term3);
-	node *term4 = get_var(term4);
-	node *term5 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
-
-	if (term5 && is_atom(term5) && strcmp(VAL_S(term5), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term5 && !is_atom(term5) && !is_list(term5)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term5 && is_list(term5))
-		xhdrs = list_to_string(q, args, term5);
-
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_get10((session *)sp->sptr, VAL_S(term2), term3->val_i, &status, xhdrs, 1);
-	put_int(q, q->c.curr_frame + term4->slot, status);
-	return ok;
-}
-
-int http_get11(session *s, const char *path, int keep, int *status, char *xhdrs, int head)
-{
-	const char *host = session_get_stash(s, "HOST");
-	const char *user = session_get_stash(s, "USER");
-	const char *pass = session_get_stash(s, "PASS");
-	char dstbuf[1024 * 8 * 2];
-	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/1.1\r\n", head ? "HEAD" : "GET", path);
-	dst += snprintf(dst, 256, "Host: %s\r\n", host);
-
-	if (user[0]) {
-		dst += snprintf(dst, 256, "Authorization: Basic ");
-		char tmpbuf[1024];
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
-		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
-		dst += sprintf(dst, "\r\n");
-	}
-
-	dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
-
-	if (!keep)
-		dst += sprintf(dst, "Connection: %s\r\n", "close");
-
-	if (xhdrs) {
-		if (strlen(xhdrs) < (1024 * 8))
-			dst += sprintf(dst, "%s", xhdrs);
-
-		free(xhdrs);
-	}
-
-	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
-	session_writemsg(s, dstbuf);
 	char *bufptr = NULL;
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
+			*status = 0;
 			char ver[20];
 			ver[0] = '\0';
 			sscanf(bufptr, "HTTP/%19s %d", ver, status);
@@ -768,77 +824,221 @@ int http_get11(session *s, const char *path, int keep, int *status, char *xhdrs,
 
 			if (strlen(session_get_stash(s, "Content-Type")))
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-
 			return 1;
 		}
 
 		parse_header(s, bufptr, len);
 	}
 
-	return 0;
+	return 1;
 }
 
-static int bif_http_get11_4(tpl_query *q)
+static int bif_http_head_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
 	node *term2 = get_atom(term2);
-	node *term3 = get_int(term3);
-	node *term4 = get_var(term4);
-	node *term5 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	char *opts = NULL, *hdrs = NULL;
 
-	if (term5 && is_atom(term5) && strcmp(VAL_S(term5), "[]")) {
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term5 && !is_atom(term5) && !is_list(term5)) {
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term5 && is_list(term5))
-		xhdrs = list_to_string(q, args, term5);
+	if (term3)
+		term4 = get_next_arg(q, &args);
 
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_get11((session *)sp->sptr, VAL_S(term2), term3->val_i, &status, xhdrs, 0);
-	put_int(q, q->c.curr_frame + term4->slot, status);
-	return ok;
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && is_list(term3))
+		opts = opts_to_string(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = hdrs_to_string(q, args, term4);
+
+	return http_request("HEAD", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
 }
 
-static int bif_http_head11_4(tpl_query *q)
+static int bif_http_get_4(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
 	node *term2 = get_atom(term2);
-	node *term3 = get_int(term3);
-	node *term4 = get_var(term4);
-	node *term5 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	char *opts = NULL, *hdrs = NULL;
 
-	if (term5 && is_atom(term5) && strcmp(VAL_S(term5), "[]")) {
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term5 && !is_atom(term5) && !is_list(term5)) {
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
 		QABORT(ABORT_INVALIDARGNOTLIST);
 		return 0;
 	}
 
-	if (term5 && is_list(term5))
-		xhdrs = list_to_string(q, args, term5);
+	if (term3)
+		term4 = get_next_arg(q, &args);
 
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_get11((session *)sp->sptr, VAL_S(term2), term3->val_i, &status, xhdrs, 1);
-	put_int(q, q->c.curr_frame + term4->slot, status);
-	return ok;
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && is_list(term3))
+		opts = opts_to_string(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = hdrs_to_string(q, args, term4);
+
+	return http_request("GET", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
 }
 
-static int bif_http_get11_chunk_3(tpl_query *q)
+static int bif_http_post_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	char *opts = NULL, *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && is_list(term3))
+		opts = opts_to_string(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = hdrs_to_string(q, args, term4);
+
+	return http_request("POST", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
+}
+
+static int bif_http_put_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	char *opts = NULL, *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && is_list(term3))
+		opts = opts_to_string(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = hdrs_to_string(q, args, term4);
+
+	return http_request("PUT", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
+}
+
+static int bif_http_delete_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	char *opts = NULL, *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && is_list(term3))
+		opts = opts_to_string(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = hdrs_to_string(q, args, term4);
+
+	return http_request("DELETE", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
+}
+
+static int bif_http_get_chunk_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -906,7 +1106,7 @@ static int bif_http_get11_chunk_3(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_put11_chunk_2(tpl_query *q)
+static int bif_http_put_chunk_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1033,367 +1233,6 @@ static int bif_http_put_file_2(tpl_query *q)
 	return 1;
 }
 #endif
-
-static int http_post10(session *s, const char *path, const char *cttype, int64_t ctlen, int keep, char *xhdrs)
-{
-	const char *host = session_get_stash(s, "HOST");
-	const char *user = session_get_stash(s, "USER");
-	const char *pass = session_get_stash(s, "PASS");
-	char dstbuf[1024 * 8 * 2];
-	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "POST %s HTTP/1.0\r\n", path);
-	dst += snprintf(dst, 256, "Host: %s\r\n", host);
-
-	if (user[0]) {
-		dst += snprintf(dst, 256, "Authorization: Basic ");
-		char tmpbuf[1024];
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
-		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
-		dst += sprintf(dst, "\r\n");
-	}
-
-	if (cttype[0])
-		dst += snprintf(dst, 256, "Content-Type: %s\r\n", cttype);
-
-	if (ctlen >= 0)
-		dst += sprintf(dst, "Content-Length: %lu\r\n", (long unsigned)ctlen);
-
-	if (keep)
-		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
-
-	if (xhdrs) {
-		if (strlen(xhdrs) < (1024 * 8))
-			dst += sprintf(dst, "%s", xhdrs);
-
-		free(xhdrs);
-	}
-
-	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
-	session_writemsg(s, dstbuf);
-	return 1;
-}
-
-static int bif_http_post10_6(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_atom(term3);
-	node *term4 = get_int(term4);
-	node *term5 = get_int(term5);
-	node *term6 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
-
-	if (term6 && is_atom(term6) && strcmp(VAL_S(term6), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term6 && !is_atom(term6) && !is_list(term6)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term6 && is_list(term6))
-		xhdrs = list_to_string(q, args, term6);
-
-	stream *sp = term1->val_str;
-	return http_post10((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, xhdrs);
-}
-
-static int bif_http_parse_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	node *term2 = get_var(term2);
-	node *term3 = get_var(term3);
-	stream *sp = term1->val_str;
-	session *s = sp->sptr;
-
-	if (!is_socket(term1)) {
-		q->halt_code = 1;
-		q->halt = ABORT_HALT;
-		return 0;
-	}
-
-	if (session_on_disconnect(s)) {
-		q->is_yielded = 1;
-		return 0;
-	}
-
-	char *bufptr = NULL;
-	int len;
-
-	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		if (!session_get_udata_flag(s, CMD)) {
-			session_set_udata_flag(s, CMD);
-			int status = 0;
-			char ver[20];
-			ver[0] = '\0';
-			sscanf(bufptr, "HTTP/%19s %d", ver, &status);
-			free(bufptr);
-			ver[sizeof(ver) - 1] = '\0';
-			put_atom(q, q->c.curr_frame + term2->slot, strdup(ver));
-			put_int(q, q->c.curr_frame + term3->slot, status);
-			char tmpbuf[20];
-			snprintf(tmpbuf, sizeof(tmpbuf), "%d", status);
-			session_set_stash(s, "X_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP", ver);
-			continue;
-		}
-
-		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
-			free(bufptr);
-			session_clr_udata_flag(s, CMD);
-
-			if (strlen(session_get_stash(s, "Content-Length")))
-				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-
-			if (strlen(session_get_stash(s, "Content-Type")))
-				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-			return 1;
-		}
-
-		parse_header(s, bufptr, len);
-	}
-
-	return 1;
-}
-
-static int http_post11(session *s, const char *path, const char *cttype, int ctlen, int keep, char *xhdrs)
-{
-	const char *host = session_get_stash(s, "HOST");
-	const char *user = session_get_stash(s, "USER");
-	const char *pass = session_get_stash(s, "PASS");
-	char dstbuf[1024 * 8 * 2];
-	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "POST %s HTTP/1.1\r\n", path);
-	dst += snprintf(dst, 256, "Host: %s\r\n", host);
-
-	if (user[0]) {
-		dst += snprintf(dst, 256, "Authorization: Basic ");
-		char tmpbuf[1024];
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
-		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
-		dst += sprintf(dst, "\r\n");
-	}
-
-	if (cttype[0])
-		dst += snprintf(dst, 256, "Content-Type: %s\r\n", cttype);
-
-	if (ctlen >= 0)
-		dst += sprintf(dst, "Content-Length: %lu\r\n", (long unsigned)ctlen);
-	else
-		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
-
-	if (!keep)
-		dst += sprintf(dst, "Connection: %s\r\n", "close");
-
-	if (xhdrs) {
-		if (strlen(xhdrs) < (1024 * 8))
-			dst += sprintf(dst, "%s", xhdrs);
-
-		free(xhdrs);
-	}
-
-	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
-	session_writemsg(s, dstbuf);
-	return 1;
-}
-
-static int bif_http_post11_6(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_atom(term3);
-	node *term4 = get_int(term4);
-	node *term5 = get_int(term5);
-	node *term6 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
-
-	if (term6 && is_atom(term6) && strcmp(VAL_S(term6), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term6 && !is_atom(term6) && !is_list(term6)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term6 && is_list(term6))
-		xhdrs = list_to_string(q, args, term6);
-
-	stream *sp = term1->val_str;
-	return http_post11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, xhdrs);
-}
-
-static int http_put11(session *s, const char *path, const char *cttype, int ctlen, int keep, char *xhdrs)
-{
-	const char *host = session_get_stash(s, "HOST");
-	const char *user = session_get_stash(s, "USER");
-	const char *pass = session_get_stash(s, "PASS");
-	char dstbuf[1024 * 8 * 2];
-	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "PUT %s HTTP/1.1\r\n", path);
-	dst += snprintf(dst, 256, "Host: %s\r\n", host);
-
-	if (user[0]) {
-		dst += snprintf(dst, 256, "Authorization: Basic ");
-		char tmpbuf[1024];
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
-		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
-		dst += sprintf(dst, "\r\n");
-	}
-
-	if (cttype[0])
-		dst += snprintf(dst, 256, "Content-Type: %s\r\n", cttype);
-
-	if (ctlen >= 0)
-		dst += sprintf(dst, "Content-Length: %lu\r\n", (long unsigned)ctlen);
-	else
-		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
-
-	if (!keep)
-		dst += sprintf(dst, "Connection: %s\r\n", "close");
-
-	if (xhdrs) {
-		if (strlen(xhdrs) < (1024 * 8))
-			dst += sprintf(dst, "%s", xhdrs);
-
-		free(xhdrs);
-	}
-
-	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
-	session_writemsg(s, dstbuf);
-	return 1;
-}
-
-static int bif_http_put11_6(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_atom(term3);
-	node *term4 = get_int(term4);
-	node *term5 = get_int(term5);
-	node *term6 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
-
-	if (term6 && is_atom(term6) && strcmp(VAL_S(term6), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term6 && !is_atom(term6) && !is_list(term6)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term6 && is_list(term6))
-		xhdrs = list_to_string(q, args, term6);
-
-	stream *sp = term1->val_str;
-	return http_put11((session *)sp->sptr, VAL_S(term2), VAL_S(term3), term4->val_i, term5->val_i, xhdrs);
-}
-
-static int http_delete11(session *s, const char *path, int keep, int *status, char *xhdrs)
-{
-	const char *host = session_get_stash(s, "HOST");
-	const char *user = session_get_stash(s, "USER");
-	const char *pass = session_get_stash(s, "PASS");
-	char dstbuf[1024 * 8 * 2];
-	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "DELETE %s HTTP/1.1\r\n", path);
-	dst += snprintf(dst, 256, "Host: %s\r\n", host);
-
-	if (user[0]) {
-		dst += snprintf(dst, 256, "Authorization: Basic ");
-		char tmpbuf[1024];
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
-		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
-		dst += sprintf(dst, "\r\n");
-	}
-
-	if (!keep)
-		dst += sprintf(dst, "Connection: %s\r\n", "close");
-
-	if (xhdrs) {
-		if (strlen(xhdrs) < (1024 * 8))
-			dst += sprintf(dst, "%s", xhdrs);
-
-		free(xhdrs);
-	}
-
-	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
-	session_writemsg(s, dstbuf);
-	char *bufptr = NULL;
-	int len;
-
-	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		if (!session_get_udata_flag(s, CMD)) {
-			session_set_udata_flag(s, CMD);
-			char ver[20];
-			ver[0] = '\0';
-			sscanf(bufptr, "HTTP/%19s %d", ver, status);
-			free(bufptr);
-			ver[sizeof(ver) - 1] = '\0';
-			char tmpbuf[20];
-			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
-			session_set_stash(s, "X_STATUS", tmpbuf);
-			session_set_stash(s, "HTTP", ver);
-			continue;
-		}
-
-		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
-			free(bufptr);
-			session_clr_udata_flag(s, CMD);
-
-			if (strlen(session_get_stash(s, "Content-Length")))
-				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
-
-			if (strlen(session_get_stash(s, "Content-Type")))
-				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
-
-			return 1;
-		}
-
-		parse_header(s, bufptr, len);
-	}
-
-	return 0;
-}
-
-static int bif_http_delete11_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_int(term3);
-	node *term4 = get_var(term4);
-	node *term5 = get_next_arg(q, &args);
-	char *xhdrs = NULL;
-
-	if (term5 && is_atom(term5) && strcmp(VAL_S(term5), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term5 && !is_atom(term5) && !is_list(term5)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term5 && is_list(term5))
-		xhdrs = list_to_string(q, args, term5);
-
-	stream *sp = term1->val_str;
-	int status = 0;
-	int ok = http_delete11((session *)sp->sptr, VAL_S(term2), term3->val_i, &status, xhdrs);
-	put_int(q, q->c.curr_frame + term4->slot, status);
-	return ok;
-}
 
 static int bif_ws_msg_3(tpl_query *q)
 {
@@ -2082,31 +1921,30 @@ void bifs_load_http(void)
 {
 	DEFINE_BIF("http:parse", 4, bif_http_parse_4);
 	DEFINE_BIF("http:parse", 3, bif_http_parse_3);
+	DEFINE_BIF("http:parse", 2, bif_http_parse_3);
 	DEFINE_BIF("http:www_form", 1, bif_http_www_form_1);
 	DEFINE_BIF("http:query", 3, bif_http_query_3);
 	DEFINE_BIF("http:form", 3, bif_http_form_3);
 	DEFINE_BIF("http:cookie", 3, bif_http_cookie_3);
 
-	DEFINE_BIF("http:head10", 4, bif_http_head10_4);
-	DEFINE_BIF("http:head10", 5, bif_http_head10_4);
-	DEFINE_BIF("http:get10", 4, bif_http_get10_4);
-	DEFINE_BIF("http:get10", 5, bif_http_get10_4);
-	DEFINE_BIF("http:post10", 6, bif_http_post10_6);
-	DEFINE_BIF("http:post10", 7, bif_http_post10_6);
+	DEFINE_BIF("http:head", 2, bif_http_head_4);
+	DEFINE_BIF("http:head", 3, bif_http_head_4);
+	DEFINE_BIF("http:head", 4, bif_http_head_4);
+	DEFINE_BIF("http:get", 2, bif_http_get_4);
+	DEFINE_BIF("http:get", 3, bif_http_get_4);
+	DEFINE_BIF("http:get", 4, bif_http_get_4);
+	DEFINE_BIF("http:post", 2, bif_http_post_4);
+	DEFINE_BIF("http:post", 3, bif_http_post_4);
+	DEFINE_BIF("http:post", 4, bif_http_post_4);
+	DEFINE_BIF("http:put", 2, bif_http_put_4);
+	DEFINE_BIF("http:put", 3, bif_http_put_4);
+	DEFINE_BIF("http:put", 4, bif_http_put_4);
+	DEFINE_BIF("http:delete", 2, bif_http_delete_4);
+	DEFINE_BIF("http:delete", 3, bif_http_delete_4);
+	DEFINE_BIF("http:delete", 4, bif_http_delete_4);
 
-	DEFINE_BIF("http:head11", 4, bif_http_head11_4);
-	DEFINE_BIF("http:head11", 5, bif_http_head11_4);
-	DEFINE_BIF("http:get11", 4, bif_http_get11_4);
-	DEFINE_BIF("http:get11", 5, bif_http_get11_4);
-	DEFINE_BIF("http:delete11", 4, bif_http_delete11_4);
-	DEFINE_BIF("http:delete11", 5, bif_http_delete11_4);
-	DEFINE_BIF("http:post11", 6, bif_http_post11_6);
-	DEFINE_BIF("http:post11", 7, bif_http_post11_6);
-	DEFINE_BIF("http:put11", 6, bif_http_put11_6);
-	DEFINE_BIF("http:put11", 7, bif_http_put11_6);
-
-	DEFINE_BIF("http:get11_chunk", 3, bif_http_get11_chunk_3);
-	DEFINE_BIF("http:put11_chunk", 2, bif_http_put11_chunk_2);
+	DEFINE_BIF("http:get_chunk", 3, bif_http_get_chunk_3);
+	DEFINE_BIF("http:put_chunk", 2, bif_http_put_chunk_2);
 
 	DEFINE_BIF("h2:is_h2", 2, bif_h2_is_h2_2);
 	DEFINE_BIF("h2:request", 3, bif_h2_request_3);
