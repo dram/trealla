@@ -655,8 +655,6 @@ Client-side:
 	delete(+S,+Path,+Options,+Headers)
 	post(+S,+Path,+Options,+Headers)
 	put(+S,+Path,+Options,+Headers)
-	put_chunk(+S,+Atom)
-	get_chunk(+S,-Blob,-Len)
 
 *Options* is an optional list of possible request modifiers:
 
@@ -676,9 +674,14 @@ you).
 If *post/4* or *put/4* and version is 1.1 and *length* is not specified then chunked transfer is
 in play, so use *put_chunk/2* to write.
 
+	put_chunk(+S,+Atom)
+	get_chunk(+S,-Blob,-Len)
+
 To parse the response from a request:
 
 	parse(+S,-Status,-Options)
+
+NOTE: the options list isn't returned yet.
 
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
