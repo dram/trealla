@@ -664,17 +664,17 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 		keep = 0;
 	}
 
-	const char *ptr = strstr(opts, "method(");
+	const char *ptr = strstr(opts, "method('");
 	char tmpbuf[256];
 	tmpbuf[0] = '\0';
 
 	if (ptr != NULL) {
-		sscanf(ptr, "%*[^(](%255[^)]", tmpbuf);
+		sscanf(ptr, "%*[^(]('%255[^')]", tmpbuf);
 		tmpbuf[sizeof(tmpbuf)-1] = '\0';
 		cmd = tmpbuf;
 	}
 
-	char dstbuf[1024 * 4];
+	char dstbuf[1024 * 8];
 	char *dst = dstbuf;
 	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/%g\r\n", cmd, path, ver);
 	dst += snprintf(dst, 256, "Host: %s\r\n", host);
@@ -709,22 +709,22 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 	if (ver > 1.0)
 		dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
 
-	ptr = strstr(opts, "type(");
+	ptr = strstr(opts, "type('");
 	tmpbuf[0] = '\0';
 
 	if (ptr != NULL) {
-		sscanf(ptr, "%*[^(](%255[^)]", tmpbuf);
+		sscanf(ptr, "%*[^(]('%255[^')]", tmpbuf);
 		tmpbuf[sizeof(tmpbuf)-1] = '\0';
 	}
 
 	if (tmpbuf[0])
 		dst += snprintf(dst, 256, "Content-Type: %s\r\n", tmpbuf);
 
-	ptr = strstr(opts, "agent(");
+	ptr = strstr(opts, "agent('");
 	tmpbuf[0] = '\0';
 
 	if (ptr != NULL) {
-		sscanf(ptr, "%*[^(](%255[^)]", tmpbuf);
+		sscanf(ptr, "%*[^(]('%255[^')]", tmpbuf);
 		tmpbuf[sizeof(tmpbuf)-1] = '\0';
 	}
 
