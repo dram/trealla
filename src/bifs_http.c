@@ -700,7 +700,7 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 
 	if (length >= 0)
 		dst += sprintf(dst, "Content-Length: %ld\r\n", (long)length);
-	else if ((ver > 1.0) && (length > 0))
+	else if (ver > 1.0)
 		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
 
 	if (keep)
