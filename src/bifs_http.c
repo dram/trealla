@@ -706,14 +706,14 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 		keep = 0;
 
 	ptr = strstr(opts, "length(");
-	long length = 0;
+	long length = -1;
 
 	if (ptr != NULL)
 		sscanf(ptr, "%*[^(](%ld)", &length);
 
 	if (length >= 0)
 		dst += sprintf(dst, "Content-Length: %ld\r\n", (long)length);
-	else if (ver > 1.0)
+	else if ((ver > 1.0) && (length > 0))
 		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
 
 	if (keep)
