@@ -660,9 +660,9 @@ Client-side:
 
 	version(+Float)              - 1.0 or 1.1 (the default)
 	persist(+Boolean)            - true/false/1/0 (default as per version)
-	length(+Integer)             - nbr of octets
-	type(+Atom)                  - 'text/html', etc
-	agent(+String)
+	length(+Integer)             - content-length in bytes
+	type(+Atom)                  - content-type (eg: 'text/html')
+	agent(+String)               - user-agent string
 	cmd(+Atom)                   - send arbitrary command
 	...
 
