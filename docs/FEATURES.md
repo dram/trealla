@@ -664,6 +664,7 @@ Client-side:
 	type(+Atom)                  - content-type (eg: 'text/html')
 	agent(+String)               - user-agent string
 	method(+Atom)                - send arbitrary HTTP command
+	debug(+Boolean)              - dump request headers
 	...
 
 *Headers* is an optional list of extra headers to include with the request. Each such header
@@ -682,7 +683,7 @@ To parse the response from a request:
 
 	parse(+S,-Status,-Options)
 
-NOTE: the options list isn't returned yet.
+NOTE: the options list just returns [] so far.
 
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 

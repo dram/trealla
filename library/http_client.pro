@@ -85,7 +85,7 @@ put11_file(Host,Path,Filename) :-
 	mime:mime_type(Filename,MimeType),
 	http:put(S,Path,[type(MimeType),length(Len),persist(false)]),
 	write_file(S,Filename),
-	http:parse(S,Ver,Status),
+	http:parse(S,Status),
 	close(S),
 	Status = 200.
 
@@ -93,7 +93,7 @@ put11_file(Host,Path,Filename) :-
 
 get10_internal(S,Path,Data) :-
 	http:get(S,Path,[version(1.0),length(0),persist(false)]),
-	http:parse(S,Ver,Status),
+	http:parse(S,Status),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
 	atom_number(LenStr,Len),
@@ -108,7 +108,7 @@ get10_block(S,Data,Data).
 
 get11_internal(S,Path,Data) :-
 	http:get(S,Path,[version(1.1),length(0),persist(false)]),
-	http:parse(S,Ver,Status),
+	http:parse(S,Status),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'-1'),
 	atom_number(LenStr,Len),

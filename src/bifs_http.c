@@ -558,9 +558,6 @@ static int bif_http_parse_3(tpl_query *q)
 		return 0;
 	}
 
-	if (term3 != NULL) {
-	}
-
 	char *bufptr = NULL;
 	int len;
 
@@ -590,13 +587,18 @@ static int bif_http_parse_3(tpl_query *q)
 
 			if (strlen(session_get_stash(s, "Content-Type")))
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+
+			if (term3 && is_var(term3)) {
+				put_const_atom(q, q->c.curr_frame + term3->slot, "[]");
+			}
+
 			return 1;
 		}
 
 		parse_header(s, bufptr, len);
 	}
 
-	return 1;
+	return 0;
 }
 
 #define OPTION_NAME_LEN 1024
@@ -605,7 +607,7 @@ typedef struct {
 	char type[OPTION_NAME_LEN], agent[OPTION_NAME_LEN], method[OPTION_NAME_LEN];
 	double version;
 	long length;
-	int persist;
+	int persist, debug;
 }
  options;
 
@@ -646,6 +648,12 @@ static void parse_option(options *opt, node *n)
 			opt->persist = 1;
 		else if (is_integer(v) && (get_word(v) == 0))
 			opt->persist = 0;
+	}
+	else if (!strcmp(f, "debug")) {
+		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
+			opt->debug = 1;
+		else if (is_integer(v) && (get_word(v) == 1))
+			opt->debug = 1;
 	}
 	else if (!strcmp(f, "type")) {
 		if (is_atom(v)) {
@@ -778,6 +786,10 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 
 	free(opt);
 	sprintf(dst, "\r\n");
+
+	if (opt->debug)
+		printf("*** %s\n", dstbuf);
+
 	session_writemsg(s, dstbuf);
 	return 1;
 }
