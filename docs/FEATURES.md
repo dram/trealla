@@ -639,7 +639,7 @@ repeat/read/write loops and not worry about thread starvation with many connecti
 HTTP processing: namespace 'http'
 ---------------------------------
 
-Hyper-Text Transfer Protocol:
+Server-side:
 
 	parse(+S,-Ver,-Cmd,-Path)    - parse headers (except content)
 	www_form(+S)                 - decode form data on POST (urlencoded)
@@ -648,47 +648,37 @@ Hyper-Text Transfer Protocol:
 	cookie(+S,+Name,-Atom)       - get named cookie value (or '' if non-exist)
 	basic_auth(+S,-User,-Pass)   - decode Basic auth token (if present)
 
-The following send a request and parse the response. They do not send any content...
+Client-side:
 
-	head10(+S,+Path,+Keep,-Status,+XHdrs)
-	head11(+S,+Path,+Keep,-Status,+XHdrs)
-	get10(+S,+Path,+Keep,-Status,+XHdrs)
-	get11(+S,+Path,+Keep,-Status,+XHdrs)
-	del11(+S,+Path,+Keep,-Status,+XHdrs)
+	head(+S,+Path,+Options,+Headers)
+	get(+S,+Path,+Options,+Headers)
+	delete(+S,+Path,+Options,+Headers)
+	post(+S,+Path,+Options,+Headers)
+	put(+S,+Path,+Options,+Headers)
+	put_chunk(+S,+Atom)
+	get_chunk(+S,-Blob,-Len)
 
-The following send a request only...
+*Options* is an optional list of possible request modifiers:
 
-	post10(+S,+Path,+Type,+Len,+Keep,+XHdrs)
-	post11(+S,+Path,+Type,+Len,+Keep,+XHdrs)
-	put11(+S,+Path,+Type,+Len,+Keep,+XHdrs)
+	version(+Float)              - 1.0 or 1.1 (the default)
+	persist(+Boolean)            - true/false/1/0 (default as per version)
+	length(+Integer)             - nbr of octets
+	type(+Atom)                  - 'text/html', etc
+	agent(+String)
+	...
 
-Content can be sent afterwards and the response parsed...
+*Headers* is an optional list of extra headers to include with the request. Each such header
+can be specified by parts as a pair. It must *not* include a trailing CRLF (this will be added for
+you).
 
-	parse(+S,-Ver,-Status)
+	http:get(S,'/index.html',[],['X-Hdr1':'o-n-e', 'X-Hdr2':2])
 
-Note: *XHdrs* is an optional list of extra headers to include with the request. Each such header
-can be specified complete as an atom or by parts as a pair. It must *not* include a trailing CRLF
-(this will be added for you). When the arg is omitted it is assumed the same as *[]*. Examples:
+If *post/4* or *put/4* and version is 1.1 and *length* is not specified then chunked transfer is
+in play, so use *put_chunk/2* to write.
 
-	http:get11(S,'/index.html',1,Status)           (DEPRECATED FOR NEW USE)
-	http:get11(S,'/index.html',1,Status,[])
-	http:get11(S,'/index.html',1,Status,['X-Hdr1: o-n-e', 'X-Hdr2: 2'])
-	http:get11(S,'/index.html',1,Status,['X-Hdr1':'o-n-e', 'X-Hdr2':2])
+To parse the response from a request:
 
-If *put11/4* arg *Len* is -1 then use *put11_chunk/2* to write:
-
-	put11_chunk(+S,+Atom)
-	get11_chunk(+S,-Blob,-Len)
-
-and should *not* contain a trailing *\r\n* sequence. That will be added for you per header.
-
-The *Keep* arg indicates whether to keep alive (persist) the connection. If 0 the connection should
-be closed after the operation is completed. If 1 then the connection may be used mutiple times.
-
-With *parse/4* and *getXX/4* header values are saved to the stash and can be accessed by name. Ditto
-with cookie crumbs. With *parse/4* query args can also be accessed by name. These functions succeed
-only when all headers have been consumed and content (if any) is ready for reading. Stash keys are
-case-insensitive. The path and query values are URL-decoded.
+	parse(+S,-Status)
 
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
