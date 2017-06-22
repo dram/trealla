@@ -605,9 +605,19 @@ typedef struct {
 	char type[OPTION_NAME_LEN], agent[OPTION_NAME_LEN], method[OPTION_NAME_LEN];
 	double version;
 	long length;
-	int keep;
+	int persist;
 }
  options;
+
+static options *init_options(void)
+{
+	options *opt = (options *)calloc(1, sizeof(options));
+	opt->version = 1.1;
+	opt->persist = 1;
+	opt->length = -1;
+	strcpy(opt->agent, "Trealla");
+	return opt;
+}
 
 static void parse_option(options *opt, node *n)
 {
@@ -620,7 +630,7 @@ static void parse_option(options *opt, node *n)
 	if (!strcmp(f, "version")) {
 		if (is_float(v) && (v->val_f != 1.1)) {
 			opt->version = 1.0;
-			opt->keep = 0;
+			opt->persist = 0;
 		}
 	}
 	else if (!strcmp(f, "length")) {
@@ -629,13 +639,13 @@ static void parse_option(options *opt, node *n)
 	}
 	else if (!strcmp(f, "persist")) {
 		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
-			opt->keep = 1;
+			opt->persist = 1;
 		else if (is_atom(v) && !strcmp(VAL_S(v), "false"))
-			opt->keep = 0;
+			opt->persist = 0;
 		else if (is_integer(v) && (get_word(v) == 1))
-			opt->keep = 1;
+			opt->persist = 1;
 		else if (is_integer(v) && (get_word(v) == 0))
-			opt->keep = 0;
+			opt->persist = 0;
 	}
 	else if (!strcmp(f, "type")) {
 		if (is_atom(v)) {
@@ -655,16 +665,6 @@ static void parse_option(options *opt, node *n)
 			opt->method[OPTION_NAME_LEN-1] = '\0';
 		}
 	}
-}
-
-static options *init_options(void)
-{
-	options *opt = (options *)calloc(1, sizeof(options));
-	opt->version = 1.1;
-	opt->keep = 1;
-	opt->length = -1;
-	strcpy(opt->agent, "Trealla");
-	return opt;
 }
 
 static options *parse_options_list(tpl_query *q, node *args, node *l)
@@ -758,8 +758,10 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 	else if (opt->version > 1.0)
 		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
 
-	if (opt->keep)
+	if (opt->persist)
 		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
+	else
+		dst += sprintf(dst, "Connection: %s\r\n", "close");
 
 	if (opt->version > 1.0)
 		dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
