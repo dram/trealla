@@ -599,8 +599,10 @@ static int bif_http_parse_3(tpl_query *q)
 	return 1;
 }
 
+#define OPTION_NAME_LEN 1024
+
 typedef struct {
-	char type[256], agent[256], method[256];
+	char type[OPTION_NAME_LEN], agent[OPTION_NAME_LEN], method[OPTION_NAME_LEN];
 	double version;
 	long length;
 	int keep;
@@ -616,20 +618,42 @@ static void parse_option(options *opt, node *n)
 	node *v = term_firstarg(n);
 
 	if (!strcmp(f, "version")) {
-		if (is_float(v) && (v->val_f != 1.1))
+		if (is_float(v) && (v->val_f != 1.1)) {
 			opt->version = 1.0;
+			opt->keep = 0;
+		}
 	}
 	else if (!strcmp(f, "length")) {
 		if (is_integer(v))
 			opt->length = get_word(v);
 	}
 	else if (!strcmp(f, "persist")) {
+		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
+			opt->keep = 1;
+		else if (is_atom(v) && !strcmp(VAL_S(v), "false"))
+			opt->keep = 0;
+		else if (is_integer(v) && (get_word(v) == 1))
+			opt->keep = 1;
+		else if (is_integer(v) && (get_word(v) == 0))
+			opt->keep = 0;
 	}
 	else if (!strcmp(f, "type")) {
+		if (is_atom(v)) {
+			strncpy(opt->type, VAL_S(v), OPTION_NAME_LEN);
+			opt->type[OPTION_NAME_LEN-1] = '\0';
+		}
 	}
 	else if (!strcmp(f, "agent")) {
+		if (is_atom(v)) {
+			strncpy(opt->agent, VAL_S(v), OPTION_NAME_LEN);
+			opt->agent[OPTION_NAME_LEN-1] = '\0';
+		}
 	}
 	else if (!strcmp(f, "method")) {
+		if (is_atom(v)) {
+			strncpy(opt->method, VAL_S(v), OPTION_NAME_LEN);
+			opt->method[OPTION_NAME_LEN-1] = '\0';
+		}
 	}
 }
 
