@@ -681,6 +681,7 @@ in play, so use *put_chunk/2* to write.
 
 To parse the response from a request:
 
+	parse(+S,-Status)
 	parse(+S,-Status,-Options)
 
 NOTE: the options list just returns [] so far.
