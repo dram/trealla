@@ -92,59 +92,6 @@ static char *http_cleanup(const char *path, char *path2)
 	return path2;
 }
 
-static char *opts_to_string(tpl_query *q, node *args, node *l)
-{
-	size_t dstlen = 1024 * 8;
-	char *dstbuf = (char*)malloc(dstlen);
-	char *dst = dstbuf;
-	dst += term_sprint(dst, dstlen, q->pl, q, l, 1);
-	return dstbuf;
-}
-
-static char *hdrs_to_string(tpl_query *q, node *args, node *l)
-{
-	size_t dstlen = 1024 * 8;
-	char *dstbuf = (char*)malloc(dstlen);
-	char *dst = dstbuf;
-
-	while (is_list(l)) {
-		node *head = term_firstarg(l);
-		unsigned this_context = q->latest_context;
-		node *n = get_arg(q, head, this_context);
-
-		if (is_compound(n) && !strcmp(term_functor(n), "{}")) {
-			node *n2 = term_firstarg(n);
-
-			if (is_compound(n2) && !strcmp(term_functor(n2), ":")) {
-				node *n = term_firstarg(n2);
-				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
-				*dst++ = ':';
-				*dst++ = ' ';
-				n = term_next(n);
-				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
-			}
-		}
-		else if (is_compound(n) && !strcmp(term_functor(n), ":")) {
-			node *n2 = term_firstarg(n);
-			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
-			*dst++ = ':';
-			*dst++ = ' ';
-			n2 = term_next(n2);
-			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
-		}
-		else
-			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
-
-		*dst++ = '\r';
-		*dst++ = '\n';
-		node *tail = term_next(head);
-		l = get_arg(q, tail, this_context);
-	}
-
-	*dst = '\0';
-	return dstbuf;
-}
-
 static int bif_http_query_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -652,32 +599,127 @@ static int bif_http_parse_3(tpl_query *q)
 	return 1;
 }
 
-int http_request(const char *cmd, session *s, const char *path, const char *opts, const char *hdrs)
+typedef struct {
+	char type[256], agent[256], method[256];
+	double version;
+	long length;
+	int keep;
+}
+ options;
+
+static void parse_option(options *opt, node *n)
+{
+	if (!is_compound(n))
+		return;
+
+	const char *f = term_functor(n);
+	node *v = term_firstarg(n);
+
+	if (!strcmp(f, "version")) {
+		if (is_float(v) && (v->val_f != 1.1))
+			opt->version = 1.0;
+	}
+	else if (!strcmp(f, "length")) {
+		if (is_integer(v))
+			opt->length = get_word(v);
+	}
+	else if (!strcmp(f, "persist")) {
+	}
+	else if (!strcmp(f, "type")) {
+	}
+	else if (!strcmp(f, "agent")) {
+	}
+	else if (!strcmp(f, "method")) {
+	}
+}
+
+static options *init_options(void)
+{
+	options *opt = (options *)calloc(1, sizeof(options));
+	opt->version = 1.1;
+	opt->keep = 1;
+	opt->length = -1;
+	strcpy(opt->agent, "Trealla");
+	return opt;
+}
+
+static options *parse_options_list(tpl_query *q, node *args, node *l)
+{
+	options *opt = init_options();
+
+	if (!l)
+		return opt;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		node *n = get_arg(q, head, this_context);
+		parse_option(opt, n);
+		node *tail = term_next(head);
+		l = get_arg(q, tail, this_context);
+	}
+
+	return opt;
+}
+
+static char *parse_hdrs_list(tpl_query *q, node *args, node *l)
+{
+	size_t dstlen = 1024 * 8;
+	char *dstbuf = (char*)malloc(dstlen);
+	char *dst = dstbuf;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		node *n = get_arg(q, head, this_context);
+
+		if (is_compound(n) && !strcmp(term_functor(n), "{}")) {
+			node *n2 = term_firstarg(n);
+
+			if (is_compound(n2) && !strcmp(term_functor(n2), ":")) {
+				node *n = term_firstarg(n2);
+				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
+				*dst++ = ':';
+				*dst++ = ' ';
+				n = term_next(n);
+				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
+			}
+		}
+		else if (is_compound(n) && !strcmp(term_functor(n), ":")) {
+			node *n2 = term_firstarg(n);
+			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
+			*dst++ = ':';
+			*dst++ = ' ';
+			n2 = term_next(n2);
+			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
+		}
+		else
+			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
+
+		*dst++ = '\r';
+		*dst++ = '\n';
+		node *tail = term_next(head);
+		l = get_arg(q, tail, this_context);
+	}
+
+	*dst = '\0';
+	return dstbuf;
+}
+
+static int http_request(const char *cmd, session *s, const char *path, options *opt, char *hdrs)
 {
 	const char *host = session_get_stash(s, "HOST");
 	const char *user = session_get_stash(s, "USER");
 	const char *pass = session_get_stash(s, "PASS");
-	double ver = 1.1, keep = 1;
 
-	if (strstr(opts, "version(1.0)") || strstr(opts, "version(0.9)")) {
-		ver = 1.0;
-		keep = 0;
-	}
-
-	const char *ptr = strstr(opts, "method('");
-	char tmpbuf[256];
-	tmpbuf[0] = '\0';
-
-	if (ptr != NULL) {
-		sscanf(ptr, "%*[^(]('%255[^')]", tmpbuf);
-		tmpbuf[sizeof(tmpbuf)-1] = '\0';
-		cmd = tmpbuf;
-	}
+	if (opt->method[0])
+		cmd = opt->method;
 
 	char dstbuf[1024 * 8];
 	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/%g\r\n", cmd, path, ver);
+	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/%g\r\n", cmd, path, opt->version);
 	dst += snprintf(dst, 256, "Host: %s\r\n", host);
+	dst += snprintf(dst, 256, "User-Agent: %s\r\n", opt->agent);
 
 	if (user[0]) {
 		dst += snprintf(dst, 256, "Authorization: Basic ");
@@ -687,72 +729,244 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 		dst += sprintf(dst, "\r\n");
 	}
 
-	if (strstr(opts, "persist(true)") || strstr(opts, "persist(1)"))
-		keep = 1;
-	else if (strstr(opts, "persist(false)") || strstr(opts, "persist(0)"))
-		keep = 0;
-
-	ptr = strstr(opts, "length(");
-	long length = -1;
-
-	if (ptr != NULL)
-		sscanf(ptr, "%*[^(](%ld)", &length);
-
-	if (length >= 0)
-		dst += sprintf(dst, "Content-Length: %ld\r\n", (long)length);
-	else if (ver > 1.0)
+	if (opt->length >= 0)
+		dst += sprintf(dst, "Content-Length: %ld\r\n", opt->length);
+	else if (opt->version > 1.0)
 		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
 
-	if (keep)
+	if (opt->keep)
 		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
 
-	if (ver > 1.0)
+	if (opt->version > 1.0)
 		dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
 
-	ptr = strstr(opts, "type('");
-	tmpbuf[0] = '\0';
-
-	if (ptr != NULL) {
-		sscanf(ptr, "%*[^(]('%255[^')]", tmpbuf);
-		tmpbuf[sizeof(tmpbuf)-1] = '\0';
-	}
-
-	if (tmpbuf[0])
-		dst += snprintf(dst, 256, "Content-Type: %s\r\n", tmpbuf);
-
-	ptr = strstr(opts, "agent('");
-	tmpbuf[0] = '\0';
-
-	if (ptr != NULL) {
-		sscanf(ptr, "%*[^(]('%255[^')]", tmpbuf);
-		tmpbuf[sizeof(tmpbuf)-1] = '\0';
-	}
-
-	if (tmpbuf[0])
-		dst += snprintf(dst, 256, "User-Agent: %s\r\n", tmpbuf);
-	else
-		dst += sprintf(dst, "User-Agent: Trealla\r\n");
-
-	if (opts) {
-		free((char*)opts);
-	}
+	if (opt->type[0])
+		dst += snprintf(dst, 256, "Content-Type: %s\r\n", opt->type);
 
 	if (hdrs) {
 		if (strlen(hdrs) < (1024*8))
 			dst += sprintf(dst, "%s", hdrs);
 
-		free((char*)hdrs);
+		free(hdrs);
 	}
 
+	free(opt);
 	sprintf(dst, "\r\n");
 	session_writemsg(s, dstbuf);
 	return 1;
 }
 
+static int bif_http_head_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	options *opt = NULL;
+	char *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	opt = parse_options_list(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = parse_hdrs_list(q, args, term4);
+
+	return http_request("HEAD", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
+}
+
+static int bif_http_get_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	options *opt = NULL;
+	char *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	opt = parse_options_list(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = parse_hdrs_list(q, args, term4);
+
+	return http_request("GET", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
+}
+
+static int bif_http_post_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	options *opt = NULL;
+	char *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	opt = parse_options_list(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = parse_hdrs_list(q, args, term4);
+
+	return http_request("POST", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
+}
+
+static int bif_http_put_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	options *opt = NULL;
+	char *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	opt = parse_options_list(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = parse_hdrs_list(q, args, term4);
+
+	return http_request("PUT", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
+}
+
+static int bif_http_delete_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_next_arg(q, &args);
+	node *term4 = NULL;
+	options *opt = NULL;
+	char *hdrs = NULL;
+
+	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3 && !is_atom(term3) && !is_list(term3)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term3)
+		term4 = get_next_arg(q, &args);
+
+	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	if (term4 && !is_atom(term4) && !is_list(term4)) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
+
+	opt = parse_options_list(q, args, term3);
+
+	if (term4 && is_list(term4))
+		hdrs = parse_hdrs_list(q, args, term4);
+
+	return http_request("DELETE", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
+}
+
 int http_get10(session *s, const char *path, int keep, int *status, int head)
 {
-	http_request(head ? "HEAD" : "GET", s, path, "version(1.0),length(0)", "");
-
+	options *opt = init_options();
+	opt->version = 1.0;
+	opt->length = 0;
+	http_request(head ? "HEAD" : "GET", s, path, opt, "");
 	char *bufptr = NULL;
 	int len;
 
@@ -792,8 +1006,10 @@ int http_get10(session *s, const char *path, int keep, int *status, int head)
 
 int http_get11(session *s, const char *path, int keep, int *status, int head)
 {
-	http_request(head ? "HEAD" : "GET", s, path, "version(1.1),length(0)", "");
-
+	options *opt = init_options();
+	opt->version = 1.1;
+	opt->length = 0;
+	http_request(head ? "HEAD" : "GET", s, path, opt, "");
 	char *bufptr = NULL;
 	int len;
 
@@ -829,211 +1045,6 @@ int http_get11(session *s, const char *path, int keep, int *status, int head)
 	}
 
 	return 1;
-}
-
-static int bif_http_head_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_next_arg(q, &args);
-	node *term4 = NULL;
-	char *opts = NULL, *hdrs = NULL;
-
-	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && !is_atom(term3) && !is_list(term3)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3)
-		term4 = get_next_arg(q, &args);
-
-	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term4 && !is_atom(term4) && !is_list(term4)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && is_list(term3))
-		opts = opts_to_string(q, args, term3);
-
-	if (term4 && is_list(term4))
-		hdrs = hdrs_to_string(q, args, term4);
-
-	return http_request("HEAD", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
-}
-
-static int bif_http_get_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_next_arg(q, &args);
-	node *term4 = NULL;
-	char *opts = NULL, *hdrs = NULL;
-
-	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && !is_atom(term3) && !is_list(term3)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3)
-		term4 = get_next_arg(q, &args);
-
-	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term4 && !is_atom(term4) && !is_list(term4)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && is_list(term3))
-		opts = opts_to_string(q, args, term3);
-
-	if (term4 && is_list(term4))
-		hdrs = hdrs_to_string(q, args, term4);
-
-	return http_request("GET", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
-}
-
-static int bif_http_post_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_next_arg(q, &args);
-	node *term4 = NULL;
-	char *opts = NULL, *hdrs = NULL;
-
-	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && !is_atom(term3) && !is_list(term3)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3)
-		term4 = get_next_arg(q, &args);
-
-	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term4 && !is_atom(term4) && !is_list(term4)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && is_list(term3))
-		opts = opts_to_string(q, args, term3);
-
-	if (term4 && is_list(term4))
-		hdrs = hdrs_to_string(q, args, term4);
-
-	return http_request("POST", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
-}
-
-static int bif_http_put_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_next_arg(q, &args);
-	node *term4 = NULL;
-	char *opts = NULL, *hdrs = NULL;
-
-	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && !is_atom(term3) && !is_list(term3)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3)
-		term4 = get_next_arg(q, &args);
-
-	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term4 && !is_atom(term4) && !is_list(term4)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && is_list(term3))
-		opts = opts_to_string(q, args, term3);
-
-	if (term4 && is_list(term4))
-		hdrs = hdrs_to_string(q, args, term4);
-
-	return http_request("PUT", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
-}
-
-static int bif_http_delete_4(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_next_arg(q, &args);
-	node *term4 = NULL;
-	char *opts = NULL, *hdrs = NULL;
-
-	if (term3 && is_atom(term3) && strcmp(VAL_S(term3), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && !is_atom(term3) && !is_list(term3)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3)
-		term4 = get_next_arg(q, &args);
-
-	if (term4 && is_atom(term4) && strcmp(VAL_S(term4), "[]")) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term4 && !is_atom(term4) && !is_list(term4)) {
-		QABORT(ABORT_INVALIDARGNOTLIST);
-		return 0;
-	}
-
-	if (term3 && is_list(term3))
-		opts = opts_to_string(q, args, term3);
-
-	if (term4 && is_list(term4))
-		hdrs = hdrs_to_string(q, args, term4);
-
-	return http_request("DELETE", term1->val_str->sptr, VAL_S(term2), opts, hdrs);
 }
 
 static int bif_http_get_chunk_3(tpl_query *q)
