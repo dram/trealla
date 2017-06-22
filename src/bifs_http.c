@@ -97,7 +97,7 @@ static char *opts_to_string(tpl_query *q, node *args, node *l)
 	size_t dstlen = 1024 * 8;
 	char *dstbuf = (char*)malloc(dstlen);
 	char *dst = dstbuf;
-	dst += term_sprint(dst, dst-dstbuf, q->pl, q, l, 1);
+	dst += term_sprint(dst, dstlen, q->pl, q, l, 1);
 	return dstbuf;
 }
 
