@@ -13,7 +13,7 @@
 #include <direct.h>
 #include <io.h>
 #define snprintf _snprintf
-#define mkdir(a, b) _mkdir(a)
+#define mkdir(a,b) _mkdir(a)
 #define isatty _isatty
 #else
 #include <unistd.h>
