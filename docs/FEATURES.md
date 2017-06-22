@@ -687,7 +687,7 @@ NOTE: the options list isn't returned yet.
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
 HTTP2 processing: namespace 'h2'
----------------------------------
+--------------------------------
 
 Under consideration.
 

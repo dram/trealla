@@ -118,8 +118,8 @@ static char *hdrs_to_string(tpl_query *q, node *args, node *l)
 			if (is_compound(n2) && !strcmp(term_functor(n2), ":")) {
 				node *n = term_firstarg(n2);
 				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
-				*dst++ += ':';
-				*dst++ += ' ';
+				*dst++ = ':';
+				*dst++ = ' ';
 				n = term_next(n);
 				dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n, 0);
 			}
@@ -127,8 +127,8 @@ static char *hdrs_to_string(tpl_query *q, node *args, node *l)
 		else if (is_compound(n) && !strcmp(term_functor(n), ":")) {
 			node *n2 = term_firstarg(n);
 			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
-			*dst++ += ':';
-			*dst++ += ' ';
+			*dst++ = ':';
+			*dst++ = ' ';
 			n2 = term_next(n2);
 			dst += term_sprint2(&dstbuf, &dstlen, &dst, q->pl, q, n2, 0);
 		}
@@ -730,6 +730,8 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 
 	if (tmpbuf[0])
 		dst += snprintf(dst, 256, "User-Agent: %s\r\n", tmpbuf);
+	else
+		dst += sprintf(dst, "User-Agent: Trealla\r\n");
 
 	if (opts) {
 		free((char*)opts);
@@ -742,7 +744,7 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 		free((char*)hdrs);
 	}
 
-	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
+	sprintf(dst, "\r\n");
 	session_writemsg(s, dstbuf);
 	return 1;
 }
