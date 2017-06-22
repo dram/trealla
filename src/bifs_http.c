@@ -612,13 +612,10 @@ int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs,
 
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
 	char *bufptr = NULL;
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
 			char ver[20];
@@ -636,10 +633,13 @@ int http_get10(session *s, const char *path, int keep, int *status, char *xhdrs,
 		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
+
 			if (strlen(session_get_stash(s, "Content-Length")))
 				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+
 			if (strlen(session_get_stash(s, "Content-Type")))
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+
 			return 1;
 		}
 
@@ -741,13 +741,10 @@ int http_get11(session *s, const char *path, int keep, int *status, char *xhdrs,
 
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
 	char *bufptr = NULL;
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
 			char ver[20];
@@ -755,16 +752,23 @@ int http_get11(session *s, const char *path, int keep, int *status, char *xhdrs,
 			sscanf(bufptr, "HTTP/%19s %d", ver, status);
 			free(bufptr);
 			ver[sizeof(ver) - 1] = '\0';
+			char tmpbuf[20];
+			snprintf(tmpbuf, sizeof(tmpbuf), "%d", *status);
+			session_set_stash(s, "X_STATUS", tmpbuf);
+			session_set_stash(s, "HTTP", ver);
 			continue;
 		}
 
 		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
+
 			if (strlen(session_get_stash(s, "Content-Length")))
 				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+
 			if (strlen(session_get_stash(s, "Content-Type")))
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+
 			return 1;
 		}
 
@@ -1066,7 +1070,6 @@ static int http_post10(session *s, const char *path, const char *cttype, int64_t
 
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
 	return 1;
 }
 
@@ -1122,8 +1125,6 @@ static int bif_http_parse_3(tpl_query *q)
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
 			int status = 0;
@@ -1197,7 +1198,6 @@ static int http_post11(session *s, const char *path, const char *cttype, int ctl
 
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
 	return 1;
 }
 
@@ -1267,7 +1267,6 @@ static int http_put11(session *s, const char *path, const char *cttype, int ctle
 
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
 	return 1;
 }
 
@@ -1329,13 +1328,10 @@ static int http_delete11(session *s, const char *path, int keep, int *status, ch
 
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
 	char *bufptr = NULL;
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
 			char ver[20];
@@ -1353,10 +1349,13 @@ static int http_delete11(session *s, const char *path, int keep, int *status, ch
 		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
+
 			if (strlen(session_get_stash(s, "Content-Length")))
 				session_set_stash(s, "CONTENT_LENGTH", session_get_stash(s, "Content-Length"));
+
 			if (strlen(session_get_stash(s, "Content-Type")))
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
+
 			return 1;
 		}
 
@@ -1458,14 +1457,15 @@ static int ws_request(session *s, const char *path, const char *prots, int *stat
 
 	// dst += snprintf(dst, 256, "Origin: http://%s\r\n", host);
 	dst += sprintf(dst, "Sec-WebSocket-Key: %s\r\n", key);
+
 	if (prots)
 		dst += snprintf(dst, 256, "Sec-WebSocket-Protocol: %s\r\n", prots);
+
 	dst += sprintf(dst, "Sec-WebSocket-Version: %d\r\n", 13);
 	dst += sprintf(dst, "Upgrade: websocket\r\n");
 	dst += sprintf(dst, "Connection: Upgrade\r\n");
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
-	// printf("%s", dstbuf);
 
 	strcpy(dstbuf, key);
 	strcat(dstbuf, WS_GUID);
@@ -1478,8 +1478,6 @@ static int ws_request(session *s, const char *path, const char *prots, int *stat
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
 			char ver[20];
@@ -1493,8 +1491,10 @@ static int ws_request(session *s, const char *path, const char *prots, int *stat
 		if ((bufptr[0] == '\r') || (bufptr[0] == '\n')) {
 			free(bufptr);
 			session_clr_udata_flag(s, CMD);
+
 			if (*status != 101)
 				return 1;
+
 			const char *tmpkey = session_get_stash(s, "Sec-WebSocket-Accept");
 
 			if (strcmp(key, tmpkey)) {
@@ -1533,7 +1533,6 @@ static int ws_upgrade(session *s, const char *prot)
 	            "Trealla\r\n\r\n");
 	session_writemsg(s, dstbuf);
 	session_set_websocket(s);
-	// printf("%s", dstbuf);
 	return 1;
 }
 
@@ -1705,15 +1704,12 @@ static int bif_h2_request_3(tpl_query *q)
 	dst += sprintf(dst, "Connection: Upgrade,HTTP2-Settings\r\n");
 	sprintf(dst, "User-Agent: Trealla\r\n\r\n");
 	session_writemsg((session *)sp->sptr, dstbuf);
-	// printf("%s", dstbuf);
 
 	char *bufptr = NULL;
 	int status = 0;
 	int len;
 
 	while ((len = session_readmsg((session *)sp->sptr, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
 		if (!session_get_udata_flag((session *)sp->sptr, CMD)) {
 			session_set_udata_flag((session *)sp->sptr, CMD);
 			char ver[20];
@@ -1755,7 +1751,6 @@ static int bif_h2_upgrade_2(tpl_query *q)
 	strcat(dst, "Upgrade: h2c\r\nConnection: Upgrade\r\nServer: Trealla\r\n\r\n");
 	session_writemsg((session *)sp->sptr, dstbuf);
 	session_set_udata_flag((session *)sp->sptr, HTTP2);
-	// printf("%s", dstbuf);
 	return 1;
 }
 
@@ -1891,8 +1886,6 @@ static int bif_stomp_parse_3(tpl_query *q)
 	int len;
 
 	while ((len = session_readmsg((session *)sp->sptr, &bufptr)) > 0) {
-		// printf("> %s", bufptr);
-
 		if (!session_get_udata_flag((session *)sp->sptr, CMD)) {
 			session_clr_stash((session *)sp->sptr);
 			session_set_udata_flag((session *)sp->sptr, CMD);
@@ -2004,12 +1997,14 @@ static int bif_stomp_parse_3(tpl_query *q)
 			else if (strlen(session_get_stash((session *)sp->sptr, "Accept-Version"))) {
 				const char *verstr = session_get_stash((session *)sp->sptr, "Accept-Version");
 				double ver;
+
 				if (strstr(verstr, "1.2"))
 					put_float(q, q->c.curr_frame + term2->slot, ver = 1.2);
 				else if (strstr(verstr, "1.1"))
 					put_float(q, q->c.curr_frame + term2->slot, ver = 1.1);
 				else
 					put_float(q, q->c.curr_frame + term2->slot, ver = 1.0);
+
 				char tmpbuf[256];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%.1f", ver);
 				session_set_stash((session *)sp->sptr, "STOMP", tmpbuf);
