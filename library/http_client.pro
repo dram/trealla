@@ -92,7 +92,7 @@ put11_file(Host,Path,Filename) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 get10_internal(S,Path,Data) :-
-	http:get(S,Path,[version(1.0)]),
+	http:get(S,Path,[version(1.0),length(0)]),
 	http:parse(S,Ver,Status),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
@@ -107,7 +107,7 @@ get10_block(S,Running,Data) :-
 get10_block(S,Data,Data).
 
 get11_internal(S,Path,Data) :-
-	http:get(S,Path,[version(1.0),persist(false)]),
+	http:get(S,Path,[version(1.0),length(0),persist(false)]),
 	http:parse(S,Ver,Status),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'-1'),
