@@ -667,6 +667,9 @@ static int bif_http_parse_3(tpl_query *q)
 
 int http_request(const char *cmd, session *s, const char *path, const char *opts, const char *hdrs)
 {
+	const char *host = session_get_stash(s, "HOST");
+	const char *user = session_get_stash(s, "USER");
+	const char *pass = session_get_stash(s, "PASS");
 	double ver = 1.1, keep = 1;
 
 	if (strstr(opts, "version(1.0)") || strstr(opts, "version(0.9)")) {
@@ -674,10 +677,17 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 		keep = 0;
 	}
 
-	const char *host = session_get_stash(s, "HOST");
-	const char *user = session_get_stash(s, "USER");
-	const char *pass = session_get_stash(s, "PASS");
-	char dstbuf[1024 * 8 * 2];
+	const char *ptr = strstr(opts, "cmd(");
+	char tmpbuf[256];
+	tmpbuf[0] = '\0';
+
+	if (ptr != NULL) {
+		sscanf(ptr, "%*[^(](%255[^)]", tmpbuf);
+		tmpbuf[sizeof(tmpbuf)-1] = '\0';
+		cmd = tmpbuf;
+	}
+
+	char dstbuf[1024 * 4];
 	char *dst = dstbuf;
 	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/%g\r\n", cmd, path, ver);
 	dst += snprintf(dst, 256, "Host: %s\r\n", host);
@@ -695,7 +705,7 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 	else if (strstr(opts, "persist(false)") || strstr(opts, "persist(0)"))
 		keep = 0;
 
-	const char *ptr = strstr(opts, "length(");
+	ptr = strstr(opts, "length(");
 	long length = 0;
 
 	if (ptr != NULL)
@@ -713,7 +723,6 @@ int http_request(const char *cmd, session *s, const char *path, const char *opts
 		dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
 
 	ptr = strstr(opts, "type(");
-	char tmpbuf[256];
 	tmpbuf[0] = '\0';
 
 	if (ptr != NULL) {
