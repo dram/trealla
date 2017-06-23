@@ -662,7 +662,7 @@ Client-side:
 	persist(+Boolean)            - true/false/1/0 (default as per version)
 	length(+Integer)             - content-length in bytes
 	type(+Atom)                  - content-type (eg: 'text/html')
-	agent(+String)               - user-agent string
+	agent(+String)               - user-agent or server string
 	method(+Atom)                - send arbitrary HTTP command
 	debug(+Boolean)              - dump request headers
 	...

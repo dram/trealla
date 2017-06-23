@@ -87,6 +87,8 @@ extern int session_set_stash(session *s, const char *key, const char *value);
 extern const char *session_get_stash(session *s, const char *key);
 extern int session_set_stash_int(session *s, const char *key, int64_t value);
 extern int64_t session_get_stash_int(session *s, const char *key);
+extern int session_set_stash_float(session *s, const char *key, double value);
+extern double session_get_stash_float(session *s, const char *key);
 // Note: must free returned value after use...
 extern const char *session_del_stash(session *s, const char *key);
 extern void session_clr_stash(session *s);

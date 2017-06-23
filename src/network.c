@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -185,16 +186,6 @@ static int g_ssl_init = 0;
 #endif
 
 unsigned int *get_seed(session *s) { return &s->seed; }
-
-///////////////////////////////////////////////////////////////////////////////
-
-static const char *integer_to_ascii(long long n, char *tmpbuf)
-{
-	sprintf(tmpbuf, "%lld", n);
-	return tmpbuf;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 const char *hostname(void)
 {
@@ -660,7 +651,14 @@ int session_set_stash(session *s, const char *key, const char *value)
 int session_set_stash_int(session *s, const char *key, int64_t n)
 {
 	char value[40];
-	integer_to_ascii(n, value);
+	sprintf(value, "%lld", (long long)n);
+	return session_set_stash(s, key, value);
+}
+
+int session_set_stash_float(session *s, const char *key, double n)
+{
+	char value[40];
+	sprintf(value, "%g", n);
 	return session_set_stash(s, key, value);
 }
 
@@ -691,7 +689,21 @@ int64_t session_get_stash_int(session *s, const char *key)
 
 	void *value = (char *)"";
 	sl_get(s->stash, key, &value);
-	return atoll((char *)value);
+	long long v = 0;
+	sscanf((char*)value, "%lld", &v);
+	return v;
+}
+
+double session_get_stash_float(session *s, const char *key)
+{
+	if (!s->stash)
+		return 0;
+
+	void *value = (char *)"";
+	sl_get(s->stash, key, &value);
+	double v = 0;
+	sscanf((char*)value, "%lg", &v);
+	return v;
 }
 
 int session_enable_broadcast(session *s)

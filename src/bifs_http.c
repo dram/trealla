@@ -538,6 +538,65 @@ static int bif_http_parse_4(tpl_query *q)
 	return 0;
 }
 
+static node *make_options_list(session *s)
+{
+	node *l = make_list();
+	node *save_l = l, *tmp, *n;
+	const char *src;
+
+	n = make_compound();
+	term_append(n, make_const_atom("length"));
+	term_append(n, make_int(session_get_stash_int(s, "Content-Length")));
+	term_append(l, n);
+
+	tmp = make_list();
+	n = make_compound();
+	term_append(n, make_const_atom("version"));
+	term_append(n, make_float(session_get_stash_float(s, "HTTP")));
+	term_append(tmp, n);
+	term_append(l, tmp);
+	l = tmp;
+
+	tmp = make_list();
+	n = make_compound();
+	term_append(n, make_const_atom("persist"));
+	src = session_get_stash(s, "Connection");
+	term_append(n, make_const_atom(!strcmp(src, "close") ? "false" : "true"));
+	term_append(tmp, n);
+	term_append(l, tmp);
+	l = tmp;
+
+	tmp = make_list();
+	n = make_compound();
+	term_append(n, make_const_atom("method"));
+	src = session_get_stash(s, "REQUEST_METHOD");
+	term_append(n, make_atom(strdup(src)));
+	term_append(tmp, n);
+	term_append(l, tmp);
+	l = tmp;
+
+	tmp = make_list();
+	n = make_compound();
+	term_append(n, make_const_atom("type"));
+	src = session_get_stash(s, "Content-Type");
+	term_append(n, make_atom(strdup(src)));
+	term_append(tmp, n);
+	term_append(l, tmp);
+	l = tmp;
+
+	tmp = make_list();
+	n = make_compound();
+	term_append(n, make_const_atom("agent"));
+	src = session_get_stash(s, "Server");
+	term_append(n, make_atom(strdup(src)));
+	term_append(tmp, n);
+	term_append(l, tmp);
+	l = tmp;
+
+	term_append(l, make_const_atom("[]"));
+	return save_l;
+}
+
 static int bif_http_parse_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -589,7 +648,9 @@ static int bif_http_parse_3(tpl_query *q)
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 
 			if (term3 && is_var(term3)) {
-				put_const_atom(q, q->c.curr_frame + term3->slot, "[]");
+				node *l = make_options_list(s);
+				put_env(q, q->c.curr_frame + term3->slot, l, -1);
+				term_heapcheck(l);
 			}
 
 			return 1;
@@ -790,6 +851,8 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 	if (opt->debug)
 		printf("*** %s\n", dstbuf);
 
+	session_set_stash(s, "REQUEST_METHOD", cmd);
+	session_set_stash(s, "User-Agent", opt->agent);
 	session_writemsg(s, dstbuf);
 	return 1;
 }
