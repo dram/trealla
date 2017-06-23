@@ -616,6 +616,18 @@ static node *make_options_list(session *s)
 		l = tmp;
 	}
 
+	src = session_get_stash(s, "Referer");
+
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("referer"));
+		term_append(n, make_atom(strdup(src)));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
 	src = session_get_stash(s, "Cookie");
 
 	if (src != NULL) {
@@ -737,11 +749,11 @@ static int bif_http_parse_3(tpl_query *q)
 	return 0;
 }
 
-#define OPTION_NAME_LEN 1024
+#define OPTION_NAME_LEN (1024 * 4)
 
 typedef struct {
 	char type[OPTION_NAME_LEN], agent[OPTION_NAME_LEN], method[OPTION_NAME_LEN];
-	char modified[OPTION_NAME_LEN], cookie[OPTION_NAME_LEN];
+	char modified[OPTION_NAME_LEN], cookie[OPTION_NAME_LEN], referer[OPTION_NAME_LEN];
 	double version;
 	long length;
 	int persist, debug, chunked;
@@ -811,6 +823,12 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 		if (is_atom(v)) {
 			strncpy(opt->modified, VAL_S(v), OPTION_NAME_LEN);
 			opt->modified[OPTION_NAME_LEN-1] = '\0';
+		}
+	}
+	else if (!strcmp(f, "referer")) {
+		if (is_atom(v)) {
+			strncpy(opt->referer, VAL_S(v), OPTION_NAME_LEN);
+			opt->referer[OPTION_NAME_LEN-1] = '\0';
 		}
 	}
 	else if (!strcmp(f, "cookie")) {
@@ -937,6 +955,9 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 
 	if (opt->type[0])
 		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Content-Type: %s\r\n", opt->type);
+
+	if (opt->referer[0])
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Referer: %s\r\n", opt->referer);
 
 	if (opt->modified[0])
 		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "If-Modified-Since: %s\r\n", opt->modified);

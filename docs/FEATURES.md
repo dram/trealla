@@ -666,6 +666,7 @@ Client-side:
 	agent(+String)               - User-Agent / Server string
 	modified(+Atom)              - If-Modified-Since / Last-Modified RFC datetime
 	cookie(+Atom)                - Cookie / Set-Cookie
+	referer(+Atom)               - Referer
 	chunked(+Boolean)            - HTTP/1.1 chunked transfer
 	debug(+Boolean)              - dump headers
 	...
