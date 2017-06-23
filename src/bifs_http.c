@@ -559,15 +559,6 @@ static node *make_options_list(session *s)
 
 	tmp = make_list();
 	n = make_compound();
-	term_append(n, make_const_atom("persist"));
-	src = session_get_stash(s, "Connection");
-	term_append(n, make_const_atom(!strcmp(src, "close") ? "false" : "true"));
-	term_append(tmp, n);
-	term_append(l, tmp);
-	l = tmp;
-
-	tmp = make_list();
-	n = make_compound();
 	term_append(n, make_const_atom("method"));
 	src = session_get_stash(s, "REQUEST_METHOD");
 	term_append(n, make_atom(strdup(src)));
@@ -575,23 +566,41 @@ static node *make_options_list(session *s)
 	term_append(l, tmp);
 	l = tmp;
 
-	tmp = make_list();
-	n = make_compound();
-	term_append(n, make_const_atom("type"));
-	src = session_get_stash(s, "Content-Type");
-	term_append(n, make_atom(strdup(src)));
-	term_append(tmp, n);
-	term_append(l, tmp);
-	l = tmp;
+	src = session_get_stash(s, "Connection");
 
-	tmp = make_list();
-	n = make_compound();
-	term_append(n, make_const_atom("agent"));
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("persist"));
+		term_append(n, make_const_atom(!strcmp(src, "close") ? "false" : "true"));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
+	src = session_get_stash(s, "Content-Type");
+
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("type"));
+		term_append(n, make_atom(strdup(src)));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
 	src = session_get_stash(s, "Server");
-	term_append(n, make_atom(strdup(src)));
-	term_append(tmp, n);
-	term_append(l, tmp);
-	l = tmp;
+
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("agent"));
+		term_append(n, make_atom(strdup(src)));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
 
 	term_append(l, make_const_atom("[]"));
 	return save_l;
