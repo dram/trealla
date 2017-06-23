@@ -590,6 +590,18 @@ static node *make_options_list(session *s)
 		l = tmp;
 	}
 
+	src = session_get_stash(s, "Transfer-Encoding");
+
+	if ((src != NULL) && strstr(src, "chunked")) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("chunked"));
+		term_append(n, make_const_atom("true"));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
 	src = session_get_stash(s, "Server");
 
 	if (src != NULL) {
@@ -681,7 +693,7 @@ typedef struct {
 	char type[OPTION_NAME_LEN], agent[OPTION_NAME_LEN], method[OPTION_NAME_LEN];
 	double version;
 	long length;
-	int persist, debug;
+	int persist, debug, chunked;
 }
  options;
 
@@ -725,6 +737,12 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 			opt->persist = 1;
 		else if (is_integer(v) && (get_word(v) == 0))
 			opt->persist = 0;
+	}
+	else if (!strcmp(f, "chunked")) {
+		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
+			opt->chunked = 1;
+		else if (is_integer(v) && (get_word(v) == 1))
+			opt->chunked = 1;
 	}
 	else if (!strcmp(f, "debug")) {
 		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
@@ -838,6 +856,9 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 		dst += sprintf(dst, "\r\n");
 	}
 
+	if (!strcmp(cmd, "GET"))
+		opt->length = 0;
+
 	if (opt->length >= 0)
 		dst += sprintf(dst, "Content-Length: %ld\r\n", opt->length);
 	else if (opt->version > 1.0)
@@ -848,7 +869,7 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 	else
 		dst += sprintf(dst, "Connection: %s\r\n", "close");
 
-	if (opt->version > 1.0)
+	if ((opt->version > 1.0) && opt->chunked)
 		dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
 
 	if (opt->type[0])

@@ -660,11 +660,12 @@ Client-side:
 
 	version(+Float)              - 1.0 or 1.1 (the default)
 	persist(+Boolean)            - true/false/1/0 (default as per version)
-	length(+Integer)             - content-length in bytes
+	length(+Integer)             - content-length in bytes (assumed zero for GET)
 	type(+Atom)                  - content-type (eg: 'text/html')
 	agent(+String)               - user-agent or server string
 	method(+Atom)                - send arbitrary HTTP command
 	debug(+Boolean)              - dump headers
+	chunked(+Bolean)            - HTTP/1.1 chunked transfer
 	...
 
 *Headers* is an optional list of extra headers to include with the request. Each such header
