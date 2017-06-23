@@ -695,13 +695,16 @@ static options *init_options(void)
 	return opt;
 }
 
-static void parse_option(options *opt, node *n)
+static void parse_option(tpl_query *q, options *opt, node *n)
 {
 	if (!is_compound(n))
 		return;
 
-	const char *f = term_functor(n);
-	node *v = term_firstarg(n);
+	n = term_first(n);
+	node *v = term_next(n);
+	n = get_arg(q, n, q->latest_context);
+	v = get_arg(q, v, q->latest_context);
+	const char *f = VAL_S(n);
 
 	if (!strcmp(f, "version")) {
 		if (is_float(v) && (v->val_f != 1.1)) {
@@ -760,7 +763,7 @@ static options *parse_options_list(tpl_query *q, node *args, node *l)
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
 		node *n = get_arg(q, head, this_context);
-		parse_option(opt, n);
+		parse_option(q, opt, n);
 		node *tail = term_next(head);
 		l = get_arg(q, tail, this_context);
 	}
