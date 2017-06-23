@@ -1039,8 +1039,8 @@ static int bif_iso_write_term_3(tpl_query *q)
 	node *term3 = get_atom_or_list(term3);
 	int quoted = 0, nl = 0, fs = 0;
 
-	if (is_atom(term2)) {
-		if (strcmp(VAL_S(term2), "[]"))
+	if (is_atom(term3)) {
+		if (strcmp(VAL_S(term3), "[]"))
 			return 0;
 	}
 	else {
