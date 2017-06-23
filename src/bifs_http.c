@@ -605,6 +605,7 @@ static int bif_http_parse_3(tpl_query *q)
 	node *term3 = get_next_arg(q, &args);
 	stream *sp = term1->val_str;
 	session *s = sp->sptr;
+	int debug = session_get_stash_int((session *)sp->sptr, "DEBUG");
 
 	if (!is_socket(term1)) {
 		q->halt_code = 1;
@@ -621,6 +622,9 @@ static int bif_http_parse_3(tpl_query *q)
 	int len;
 
 	while ((len = session_readmsg(s, &bufptr)) > 0) {
+		if (debug)
+			printf("%s", bufptr);
+
 		if (!session_get_udata_flag(s, CMD)) {
 			session_set_udata_flag(s, CMD);
 			int status = 0;
@@ -845,15 +849,16 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 		free(hdrs);
 	}
 
-	free(opt);
 	sprintf(dst, "\r\n");
+	session_writemsg(s, dstbuf);
 
 	if (opt->debug)
-		printf("*** %s\n", dstbuf);
+		printf("%s", dstbuf);
 
+	session_set_stash_int(s, "DEBUG", opt->debug);
 	session_set_stash(s, "REQUEST_METHOD", cmd);
 	session_set_stash(s, "User-Agent", opt->agent);
-	session_writemsg(s, dstbuf);
+	free(opt);
 	return 1;
 }
 

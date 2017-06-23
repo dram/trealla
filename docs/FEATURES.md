@@ -664,7 +664,7 @@ Client-side:
 	type(+Atom)                  - content-type (eg: 'text/html')
 	agent(+String)               - user-agent or server string
 	method(+Atom)                - send arbitrary HTTP command
-	debug(+Boolean)              - dump request headers
+	debug(+Boolean)              - dump headers
 	...
 
 *Headers* is an optional list of extra headers to include with the request. Each such header
