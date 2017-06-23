@@ -658,16 +658,16 @@ Client-side:
 
 *Options* is an optional list of possible request/response modifiers:
 
-	version(+Float)              - 1.0 or 1.1 (the default)
-	persist(+Boolean)            - true/false/1/0 (default as per version)
-	length(+Integer)             - content-length in bytes (assumed zero for GET)
-	type(+Atom)                  - content-type (eg: 'text/html')
-	agent(+String)               - user-agent or server string
-	method(+Atom)                - send arbitrary HTTP command
-	debug(+Boolean)              - dump headers
-	chunked(+Boolean)            - HTTP/1.1 chunked transfer
-	modified(+Date)              - If-Modified-Since / Last-Modified RFC datetime
+	version(+Float)              - HTTP version 1.0 or 1.1 (the default)
+	method(+Atom)                - HTTP method (send arbitrary HTTP)
+	persist(+Boolean)            - Connection true/false/1/0 (default as per version)
+	length(+Integer)             - Content-Length in bytes (assumed zero for GET)
+	type(+Atom)                  - Content-Type (eg: 'text/html')
+	agent(+String)               - User-Agent / Server string
+	modified(+Atom)              - If-Modified-Since / Last-Modified RFC datetime
 	cookie(+Atom)                - Cookie / Set-Cookie
+	chunked(+Boolean)            - HTTP/1.1 chunked transfer
+	debug(+Boolean)              - dump headers
 	...
 
 The *chunked* option indicates willingness to receive a chunked response. However, the server may
