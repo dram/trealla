@@ -668,6 +668,9 @@ Client-side:
 	chunked(+Boolean)            - HTTP/1.1 chunked transfer
 	...
 
+The *chunked* option indicates willingness to receive a chunked response. However, the server may
+choose not to send such a response format.
+
 *Headers* is an optional list of extra headers to include with the request. Each such header
 can be specified by parts as a pair. It must *not* include a trailing CRLF (this will be added for
 you).
