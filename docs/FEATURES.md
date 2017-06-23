@@ -665,7 +665,7 @@ Client-side:
 	agent(+String)               - user-agent or server string
 	method(+Atom)                - send arbitrary HTTP command
 	debug(+Boolean)              - dump headers
-	chunked(+Bolean)            - HTTP/1.1 chunked transfer
+	chunked(+Boolean)            - HTTP/1.1 chunked transfer
 	...
 
 *Headers* is an optional list of extra headers to include with the request. Each such header
