@@ -856,7 +856,7 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 		dst += sprintf(dst, "\r\n");
 	}
 
-	if (!strcmp(cmd, "GET"))
+	if (!strcmp(cmd, "GET") || !strcmp(cmd, "DELETE"))
 		opt->length = 0;
 
 	if (opt->length >= 0)
