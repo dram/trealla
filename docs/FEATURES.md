@@ -688,8 +688,6 @@ To parse the response from a request:
 	parse(+S,-Status)
 	parse(+S,-Status,-Options)
 
-NOTE: the options list just returns [] so far.
-
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
 HTTP2 processing: namespace 'h2'
