@@ -667,6 +667,7 @@ Client-side:
 	debug(+Boolean)              - dump headers
 	chunked(+Boolean)            - HTTP/1.1 chunked transfer
 	modified(+Date)              - If-Modified-Since / Last-Modified RFC datetime
+	cookie(+Atom)                - Cookie / Set-Cookie
 	...
 
 The *chunked* option indicates willingness to receive a chunked response. However, the server may

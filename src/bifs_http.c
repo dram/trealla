@@ -616,6 +616,30 @@ static node *make_options_list(session *s)
 		l = tmp;
 	}
 
+	src = session_get_stash(s, "Cookie");
+
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("cookie"));
+		term_append(n, make_atom(strdup(src)));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
+	src = session_get_stash(s, "Set-Cookie");
+
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("cookie"));
+		term_append(n, make_atom(strdup(src)));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
 	src = session_get_stash(s, "Transfer-Encoding");
 
 	if ((src != NULL) && strstr(src, "chunked")) {
@@ -717,7 +741,7 @@ static int bif_http_parse_3(tpl_query *q)
 
 typedef struct {
 	char type[OPTION_NAME_LEN], agent[OPTION_NAME_LEN], method[OPTION_NAME_LEN];
-	char modified[OPTION_NAME_LEN];
+	char modified[OPTION_NAME_LEN], cookie[OPTION_NAME_LEN];
 	double version;
 	long length;
 	int persist, debug, chunked;
@@ -787,6 +811,12 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 		if (is_atom(v)) {
 			strncpy(opt->modified, VAL_S(v), OPTION_NAME_LEN);
 			opt->modified[OPTION_NAME_LEN-1] = '\0';
+		}
+	}
+	else if (!strcmp(f, "cookie")) {
+		if (is_atom(v)) {
+			strncpy(opt->cookie, VAL_S(v), OPTION_NAME_LEN);
+			opt->cookie[OPTION_NAME_LEN-1] = '\0';
 		}
 	}
 	else if (!strcmp(f, "agent")) {
@@ -877,48 +907,51 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 
 	char dstbuf[1024 * 8];
 	char *dst = dstbuf;
-	dst += snprintf(dst, 1024 * 4, "%s %s HTTP/%g\r\n", cmd, path, opt->version);
-	dst += snprintf(dst, 256, "Host: %s\r\n", host);
-	dst += snprintf(dst, 256, "User-Agent: %s\r\n", opt->agent);
+	dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "%s %s HTTP/%g\r\n", cmd, path, opt->version);
+	dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Host: %s\r\n", host);
+	dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "User-Agent: %s\r\n", opt->agent);
 
 	if (user[0]) {
-		dst += snprintf(dst, 256, "Authorization: Basic ");
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Authorization: Basic ");
 		char tmpbuf[1024];
 		snprintf(tmpbuf, sizeof(tmpbuf), "%s:%s", user, pass);
 		dst += b64_encode(tmpbuf, strlen(tmpbuf), &dst, 0, 0);
-		dst += sprintf(dst, "\r\n");
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "\r\n");
 	}
 
 	if (!strcmp(cmd, "GET") || !strcmp(cmd, "DELETE"))
 		opt->length = 0;
 
 	if (opt->length >= 0)
-		dst += sprintf(dst, "Content-Length: %ld\r\n", opt->length);
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Content-Length: %ld\r\n", opt->length);
 	else if (opt->version > 1.0)
-		dst += sprintf(dst, "Transfer-Encoding: chunked\r\n");
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Transfer-Encoding: chunked\r\n");
 
 	if (opt->persist)
-		dst += sprintf(dst, "Connection: %s\r\n", "keep-alive");
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Connection: %s\r\n", "keep-alive");
 	else
-		dst += sprintf(dst, "Connection: %s\r\n", "close");
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Connection: %s\r\n", "close");
 
 	if ((opt->version > 1.0) && opt->chunked)
-		dst += sprintf(dst, "Accept-Encoding: chunked\r\n");
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Accept-Encoding: chunked\r\n");
 
 	if (opt->type[0])
-		dst += snprintf(dst, 256, "Content-Type: %s\r\n", opt->type);
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Content-Type: %s\r\n", opt->type);
 
 	if (opt->modified[0])
-		dst += snprintf(dst, 256, "If-Modified-Since: %s\r\n", opt->modified);
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "If-Modified-Since: %s\r\n", opt->modified);
+
+	if (opt->cookie[0])
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Cookie: %s\r\n", opt->cookie);
 
 	if (hdrs) {
 		if (strlen(hdrs) < (1024*8))
-			dst += sprintf(dst, "%s", hdrs);
+			dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "%s", hdrs);
 
 		free(hdrs);
 	}
 
-	sprintf(dst, "\r\n");
+	snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "\r\n");
 	session_writemsg(s, dstbuf);
 
 	if (opt->debug)
