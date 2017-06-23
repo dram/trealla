@@ -662,11 +662,11 @@ Client-side:
 	method(+Atom)                - HTTP method (send arbitrary HTTP)
 	persist(+Boolean)            - Connection true/false/1/0 (default as per version)
 	length(+Integer)             - Content-Length in bytes (assumed zero for GET)
-	type(+Atom)                  - Content-Type (eg: 'text/html')
+	type(+Atom)                  - Content-Type string (eg: 'text/html')
 	agent(+String)               - User-Agent / Server string
 	modified(+Atom)              - If-Modified-Since / Last-Modified RFC datetime
-	cookie(+Atom)                - Cookie / Set-Cookie
-	referer(+Atom)               - Referer
+	cookie(+Atom)                - Cookie / Set-Cookie string
+	referer(+Atom)               - Referer string
 	chunked(+Boolean)            - HTTP/1.1 chunked transfer
 	debug(+Boolean)              - dump headers
 	...
