@@ -6374,16 +6374,14 @@ static int bif_xtra_see_1(tpl_query *q)
 		if (!strcmp(q->curr_stdin_name, filename))
 			return 1;
 
-		free(q->curr_stdin_name);
 		FILE *fp = fopen(filename, "r");
 
 		if (!fp) {
 			QABORT(ABORT_NOTEXISTFILE);
-			q->curr_stdout_name = strdup("user");
-			q->curr_stdout = stdin;
 			return 0;
 		}
 
+		free(q->curr_stdin_name);
 		stream *sp = (stream*)calloc(1, sizeof(stream));
 		sp->filename = strdup(filename);
 		sp->fptr = fp;
