@@ -264,10 +264,12 @@ static void parse_cookies(session *s, const char *src)
 static void parse_header(session *s, char *bufptr, int len)
 {
 	const char *src = strchr(bufptr, ':');
+
 	if (!src) {
 		free(bufptr);
 		return;
 	}
+
 	src = bufptr;
 	char *name = (char *)malloc(len + 1);
 	char *dst = name;
@@ -590,6 +592,30 @@ static node *make_options_list(session *s)
 		l = tmp;
 	}
 
+	src = session_get_stash(s, "If-Modified-Since");
+
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("modified"));
+		term_append(n, make_atom(strdup(src)));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
+	src = session_get_stash(s, "Last-Modified");
+
+	if (src != NULL) {
+		tmp = make_list();
+		n = make_compound();
+		term_append(n, make_const_atom("modified"));
+		term_append(n, make_atom(strdup(src)));
+		term_append(tmp, n);
+		term_append(l, tmp);
+		l = tmp;
+	}
+
 	src = session_get_stash(s, "Transfer-Encoding");
 
 	if ((src != NULL) && strstr(src, "chunked")) {
@@ -691,6 +717,7 @@ static int bif_http_parse_3(tpl_query *q)
 
 typedef struct {
 	char type[OPTION_NAME_LEN], agent[OPTION_NAME_LEN], method[OPTION_NAME_LEN];
+	char modified[OPTION_NAME_LEN];
 	double version;
 	long length;
 	int persist, debug, chunked;
@@ -754,6 +781,12 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 		if (is_atom(v)) {
 			strncpy(opt->type, VAL_S(v), OPTION_NAME_LEN);
 			opt->type[OPTION_NAME_LEN-1] = '\0';
+		}
+	}
+	else if (!strcmp(f, "modified")) {
+		if (is_atom(v)) {
+			strncpy(opt->modified, VAL_S(v), OPTION_NAME_LEN);
+			opt->modified[OPTION_NAME_LEN-1] = '\0';
 		}
 	}
 	else if (!strcmp(f, "agent")) {
@@ -874,6 +907,9 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 
 	if (opt->type[0])
 		dst += snprintf(dst, 256, "Content-Type: %s\r\n", opt->type);
+
+	if (opt->modified[0])
+		dst += snprintf(dst, 256, "If-Modified-Since: %s\r\n", opt->modified);
 
 	if (hdrs) {
 		if (strlen(hdrs) < (1024*8))

@@ -656,7 +656,7 @@ Client-side:
 	post(+S,+Path,+Options,+Headers)
 	put(+S,+Path,+Options,+Headers)
 
-*Options* is an optional list of possible request modifiers:
+*Options* is an optional list of possible request/response modifiers:
 
 	version(+Float)              - 1.0 or 1.1 (the default)
 	persist(+Boolean)            - true/false/1/0 (default as per version)
@@ -666,6 +666,7 @@ Client-side:
 	method(+Atom)                - send arbitrary HTTP command
 	debug(+Boolean)              - dump headers
 	chunked(+Boolean)            - HTTP/1.1 chunked transfer
+	modified(+Date)              - If-Modified-Since / Last-Modified RFC datetime
 	...
 
 The *chunked* option indicates willingness to receive a chunked response. However, the server may
