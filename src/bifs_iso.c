@@ -3769,7 +3769,7 @@ static int bif_iso_findall(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_callable(term2);
-	node *term3 = get_var(term3);
+	node *term3 = get_term(term3);
 	tpl_query *subq = query_create_subquery(q);
 
 	if (!subq) {
@@ -3816,11 +3816,11 @@ static int bif_iso_findall(tpl_query *q)
 	else
 		acc = make_const_atom("[]");
 
-	put_env(q, q->c.curr_frame+term3->slot, acc, -1);
+	ok = unify_term(q, term3, acc, q->c.curr_frame);
 	term_heapcheck(acc);
 	term_heapcheck(from);
 	query_destroy(subq);
-	return 1;
+	return ok;
 }
 
 static int bif_iso_bagof(tpl_query *q)
