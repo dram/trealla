@@ -222,12 +222,6 @@ These are an assortment of utilities:
 	system(+Atom,?Int)          - execute shell command
 	stream(-S)                  - create a dummy stream
 
-The following are designed for quickly getting top-level config values:
-
-	jsonq(+Atom,+Name,-Atom)       - quick get named value from JSON source
-	jsonq(+Atom,+Name,-Atom,+Def)  - quick get named value from JSON source (or default)
-	jsonqi(+Atom,+Idx,-Name,-Atom) - quick get indexed name+value from JSON source
-
 Each stream has access to it's own private in-memory dictionary:
 
 	lput(+S,+Key,?Old,+New)     - set value under Key
@@ -240,9 +234,15 @@ Each stream has access to it's own private in-memory dictionary:
 	erase(+S,+Key)              - erase value under Key
 	erase(+S)                   - erase all
 
-The *stream/1* predicate creates a dummy stream for use as a dictionary. The allowed operations
-are the same as the per-process dictionary. Like all streams, it should be disposed of by a call to
-close/1. Dictionary operations are not undone on bactracking nor are they backed to the database.
+The *stream/1* predicate creates a dummy stream for use as a dictionary. Like all streams, it
+should be disposed of by a call to close/1. Dictionary operations are not undone on bactracking
+nor are they backed to the database.
+
+The following are designed for quickly getting top-level config values:
+
+	jsonq(+Atom,+Name,-Atom)       - quick get named value from JSON source
+	jsonq(+Atom,+Name,-Atom,+Def)  - quick get named value from JSON source (or default)
+	jsonqi(+Atom,+Idx,-Name,-Atom) - quick get indexed name+value from JSON source
 
 The parse_XXX/2 predicates accept double-quoted column items, and removes any spurious whitespace
 before and after items.
