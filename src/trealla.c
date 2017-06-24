@@ -1565,9 +1565,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,position(P)) :- stream_property_position(S,P).");
 	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
-#define RANDOM_STR __DATE__
-
 #ifndef ISO_ONLY
+#define RANDOM_STR __DATE__
 	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta('$" RANDOM_STR "'(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
