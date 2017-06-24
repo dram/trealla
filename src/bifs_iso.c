@@ -6916,48 +6916,93 @@ static int bif_xtra_name_2(tpl_query *q)
 	return ok;
 }
 
-static int bif_xtra_sys_concat(tpl_query *q)
+static int bif_xtra_atomic_concat_3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_next_arg(q, &args);
-	node *save_args = args;
-	node *term = term1;
-	int any_blobs = 0;
+	node *term1 = get_atomic(term1);
+	node *term2 = get_atomic(term2);
+	node *term3 = get_var(term3);
+	size_t dstlen = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(dstlen + 1);
+	char *dst = tmpbuf;
+	dst += term_sprint2(&tmpbuf, &dstlen, &dst, q->pl, q, term1, 0);
+	dst += term_sprint2(&tmpbuf, &dstlen, &dst, q->pl, q, term2, 0);
+	node *n;
 
-	while (term) {
-		any_blobs += is_blob(term);
-		term = get_next_arg(q, &args);
-	}
+	if (is_blob(term1) || is_blob(term2))
+		n = make_blob(tmpbuf, dst-tmpbuf);
+	else
+		n = make_atom(tmpbuf);
 
-	args = save_args;
-	term = term1;
+	put_env(q, q->c.curr_frame + term3->slot, n, -1);
+	term_heapcheck(n);
+	return 1;
+}
+
+static int bif_xtra_atomic_list_concat_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_list(term1);
+	node *term2 = get_var(term2);
+	node *l = term1;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
-	node *var = NULL;
+	int any_blobs = 0;
 
-	while (term) {
-		if (is_var(term))
-			var = term;
-		else if (is_atomic(term))
-			dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term, 0);
-
-		term = get_next_arg(q, &args);
-	}
-
-	if (!var) {
-		free(tmpbuf);
-		return 0;
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		node *n = get_arg(q, head, this_context);
+		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, n, 0);
+		node *tail = term_next(head);
+		l = get_arg(q, tail, this_context);
 	}
 
 	node *n;
 
 	if (any_blobs)
-		n = make_blob(tmpbuf, dst - tmpbuf);
+		n = make_blob(tmpbuf, dst-tmpbuf);
 	else
 		n = make_atom(tmpbuf);
 
-	put_env(q, q->c.curr_frame + var->slot, n, -1);
+	put_env(q, q->c.curr_frame + term2->slot, n, -1);
+	term_heapcheck(n);
+	return 1;
+}
+
+static int bif_xtra_atomic_list_concat_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_list(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_var(term3);
+	node *l = term1;
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
+	int any_blobs = 0;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		node *n = get_arg(q, head, this_context);
+		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, n, 0);
+		node *tail = term_next(head);
+		l = get_arg(q, tail, this_context);
+
+		if (is_list(l))
+			dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 0);
+	}
+
+	node *n;
+
+	if (any_blobs)
+		n = make_blob(tmpbuf, dst-tmpbuf);
+	else
+		n = make_atom(tmpbuf);
+
+	put_env(q, q->c.curr_frame + term3->slot, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -7190,6 +7235,9 @@ void bifs_load_iso(void)
 	DEFINE_BIF("make_directory", 1, bif_xtra_make_directory_1);
 	DEFINE_BIF("memberchk", 2, bif_xtra_memberchk_2);
 	DEFINE_BIF("name", 2, bif_xtra_name_2);
+	DEFINE_BIF("atomic_concat", 3, bif_xtra_atomic_concat_3);
+	DEFINE_BIF("atomic_list_concat", 2, bif_xtra_atomic_list_concat_2);
+	DEFINE_BIF("atomic_list_concat", 3, bif_xtra_atomic_list_concat_3);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
@@ -7202,7 +7250,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
-	DEFINE_BIF("$concat", -1, bif_xtra_sys_concat);
 #endif
 
 // These are for Edinburgh-style file handling...

@@ -12,8 +12,6 @@
 :-export([recorded/2,recorded/3]).
 :-export([current_key/1]).
 :-export([instance/2]).
-:-export([atomic_concat/3]).
-:-export([atomic_list_concat/2,atomic_list_concat/3]).
 :-export([display/1,display/2]).
 :-export([put/1,put/2]).
 
@@ -79,21 +77,6 @@ instance(R,V) :-
 	clause(?RECORD(_,V),_,R).
 
 % These should be somewhere else, but for now...
-
-atomic_concat(L,R,S) :-
-	atomic_list_concat([L,R],S).
-
-atomic_list_concat([],'').
-atomic_list_concat([H|T],S) :-
-	atomic_list_concat(T,S2), !,
-	'$concat'(H,S2,S).
-atomic_list_concat([],_,'').
-
-atomic_list_concat([H|T],Sep,S) :-
-	atomic_list_concat(T,Sep,S2), !,
-	(S2 \= '' ->
-		'$concat'(H,Sep,S2,S) ;
-		'$concat'(H,S2,S)), !.
 
 display(T) :-
 	write_term(T,[ignore_ops(true)]).
