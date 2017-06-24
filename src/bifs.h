@@ -346,6 +346,9 @@ inline static node *get_arg(tpl_query *q, node *term, unsigned frame)
 		return term;
 	}
 
+	if ((signed)frame == -1)
+		return term;
+
 	const env *e = get_env(q, frame + term->slot);
 
 	if (e->term != NULL) {

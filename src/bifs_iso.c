@@ -3815,7 +3815,7 @@ static int bif_iso_findall(tpl_query *q)
 	else
 		save_l = make_const_atom("[]");
 
-	ok = unify(q, term3, q->c.curr_frame, save_l, -1);
+	ok = unify_term(q, term3, save_l, -1);
 	term_heapcheck(save_l);
 	term_heapcheck(from);
 	query_destroy(subq);
