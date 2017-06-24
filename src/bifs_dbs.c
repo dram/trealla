@@ -341,8 +341,11 @@ static int dbs_end(tpl_query *q, int do_sync)
 	node *tmp;
 
 	while ((tmp = NLIST_POP_FRONT(&q->c.curr_db->tran_queue)) != NULL) {
-		if (tmp->n1->flags & FLAG_DBS_RETRACT)
-			any += bif_retract(q, tmp->n1, tmp->n2);
+		if (tmp->n1->flags & FLAG_DBS_RETRACT) {
+			int persist = 0;
+			bif_retract(q, tmp->n1, tmp->n2, &persist);
+			any += persist;
+		}
 		else if (tmp->n1->flags & FLAG_DBS_ASSERTZ)
 			any += bif_assertz(q, tmp->n1);
 		else if (tmp->n1->flags & FLAG_DBS_ASSERTA)

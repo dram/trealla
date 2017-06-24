@@ -500,7 +500,7 @@ extern tpl_query *query_create_subquery(tpl_query *self);
 
 extern int bif_asserta(tpl_query *q, node *n);
 extern int bif_assertz(tpl_query *q, node *n);
-extern int bif_retract(tpl_query *q, node *n, node *n2);
+extern int bif_retract(tpl_query *q, node *n, node *n2, int *persist);
 
 #ifndef ISO_ONLY
 extern void bifs_load_sys(void);

@@ -2473,15 +2473,12 @@ int bif_iso_assertz(tpl_query *q)
 	return 1;
 }
 
-int bif_retract(tpl_query *q, node *n, node *n2)
+int bif_retract(tpl_query *q, node *n, node *n2, int *persist)
 {
-	int persist;
-	retract_index(q->c.curr_db, n, n2, &persist, q->in_tran);
+	return retract_index(q->c.curr_db, n, n2, persist, q->in_tran);
 
 	// if (!(n2->flags & FLAG_DBS_RETRACTALL))
 	//	term_heapcheck(n2);
-
-	return persist;
 }
 
 static int bif_retract2(tpl_query *q, int wait)
@@ -2658,7 +2655,7 @@ static int bif_retract2(tpl_query *q, int wait)
 		else
 #endif
 		{
-			bif_retract(q, save_match, save_n);
+			bif_retract(q, save_match, save_n, NULL);
 			NLIST_REMOVE(&r->val_l, save_match);
 			term_heapcheck(save_match);
 		}
@@ -2863,7 +2860,7 @@ static int bif_iso_retractall(tpl_query *q)
 			else
 #endif
 			{
-				bif_retract(q, save_match, save_n);
+				bif_retract(q, save_match, save_n, NULL);
 				NLIST_REMOVE(&r->val_l, save_match);
 				term_heapcheck(save_match);
 			}
@@ -3055,12 +3052,12 @@ static int bif_xtra_erase_1(tpl_query *q)
 		DBLOCK(q->c.curr_db);
 	}
 
-	bif_retract(q, n, n);
+	int ok = bif_retract(q, n, n, NULL);
 
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	return 1;
+	return ok;
 }
 #endif
 

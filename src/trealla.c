@@ -273,10 +273,12 @@ int assertz_index(lexer *l, node *n, int manual, int *persist, int in_tran)
 
 int retract_index(module *db, node *n, node *n2, int *persist, int in_tran)
 {
-	node *tmp = term_first(n);
-	node *head = tmp = term_next(tmp), *idx = NULL;
+	node *tmp = term_firstarg(n);
+	node *head = tmp, *idx = NULL;
 	int arity = 0;
-	*persist = 0;
+
+	if (persist)
+		*persist = 0;
 
 	if (is_compound(head)) {
 		arity = term_arity(head);
@@ -320,7 +322,9 @@ int retract_index(module *db, node *n, node *n2, int *persist, int in_tran)
 
 #ifndef ISO_ONLY
 	if (r->persist) {
-		*persist = 1;
+
+		if (persist)
+			*persist = 1;
 
 		if (!db->loading) {
 			size_t buflen = 1024 * 64; // expandable
@@ -1562,6 +1566,15 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
 #ifndef ISO_ONLY
+	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
+	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta('$123456'(K,V),R).");
+	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
+	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), assertz('$123456'(K,V),R).");
+	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
+	trealla_make_rule(pl, "recorded(K,V,R) :- clause('$123456'(K,V),_,R).");
+	trealla_make_rule(pl, "current_key(K) :- '$123456'(K,_).");
+	trealla_make_rule(pl, "instance(R,V) :- nonvar(R), clause('$123456'(_,V),_,R).");
+
 	const char *mod_name = "lists";
 	library *lib = g_libs;
 

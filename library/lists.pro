@@ -7,11 +7,6 @@
 :-export([reverse/2]).
 :-export([append/3]).
 :-export([find/3]).
-:-export([recorda/2,recorda/3]).
-:-export([recordz/2,recordz/3]).
-:-export([recorded/2,recorded/3]).
-:-export([current_key/1]).
-:-export([instance/2]).
 :-export([display/1,display/2]).
 :-export([put/1,put/2]).
 
@@ -44,37 +39,6 @@ append([H|T],L2,[H|L3]) :- append(T,L2,L3).
 find(N,[],L) :- !.
 find(1,[H|_],H) :- !.
 find(N,[_|T],L) :- N1 is N-1, find(N1,T,L).
-
-% Use a random string as the predicate name to make the record database opaque.
-
-:-define(RECORD,?SYSRANDOMSTR).
-
-recorda(K,V) :-
-	recorda(K,V,_).
-
-recorda(K,V,R) :-
-	nonvar(K), nonvar(V),
-	asserta(?RECORD(K,V),R).
-
-recordz(K,V) :-
-	recordz(K,V,_).
-
-recordz(K,V,R) :-
-	nonvar(K), nonvar(V),
-	assertz(?RECORD(K,V),R).
-
-recorded(K,V) :-
-	recorded(K,V,_).
-
-recorded(K,V,R) :-
-	clause(?RECORD(K,V),_,R).
-
-current_key(K) :-
-	?RECORD(K,_).
-
-instance(R,V) :-
-	nonvar(R),
-	clause(?RECORD(_,V),_,R).
 
 % These should be somewhere else, but for now...
 
