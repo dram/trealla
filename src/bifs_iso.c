@@ -3787,22 +3787,21 @@ static int bif_iso_findall(tpl_query *q)
 	node *from = clone_term(q, term2);
 	begin_query(subq, from);
 	int ok = query_run(subq);
-	node *acc = NULL, *end = NULL;
+	node *save_l = NULL, *l = NULL;
 
 	while (ok && !g_abort) {
 		node *from = get_arg(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
-		if (!end) {
-			acc = make_list();
-			term_append(acc, res);
-			end = acc;
+		if (!l) {
+			save_l = l = make_list();
+			term_append(l, res);
 		}
 		else {
 			node *tmp = make_list();
 			term_append(tmp, res);
-			term_append(end, tmp);
-			end = tmp;
+			term_append(l, tmp);
+			l = tmp;
 		}
 
 		ok = query_continue(subq);
@@ -3811,13 +3810,13 @@ static int bif_iso_findall(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	if (end)
-		term_append(end, make_const_atom("[]"));
+	if (l)
+		term_append(l, make_const_atom("[]"));
 	else
-		acc = make_const_atom("[]");
+		save_l = make_const_atom("[]");
 
-	ok = unify_term(q, term3, acc, -1);
-	term_heapcheck(acc);
+	ok = unify(q, term3, q->c.curr_frame, save_l, -1);
+	term_heapcheck(save_l);
 	term_heapcheck(from);
 	query_destroy(subq);
 	return ok;
@@ -3902,7 +3901,7 @@ static int bif_iso_bagof(tpl_query *q)
 		return 0;
 	}
 
-	node *acc = NULL, *end = NULL;
+	node *save_l = NULL, *l = NULL;
 
 	while (ok && !g_abort) {
 		if (sl_get(sp->kvs, (void *)subq->c.curr_match, NULL)) {
@@ -3914,16 +3913,15 @@ static int bif_iso_bagof(tpl_query *q)
 		node *from = get_arg(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
-		if (!end) {
-			acc = make_list();
-			term_append(acc, res);
-			end = acc;
+		if (!l) {
+			save_l = l = make_list();
+			term_append(l, res);
 		}
 		else {
 			node *tmp = make_list();
-			term_append(end, tmp);
+			term_append(l, tmp);
 			term_append(tmp, res);
-			end = tmp;
+			l = tmp;
 		}
 
 		for (unsigned i = 0; i < q->c.frame_size; i++) {
@@ -3937,19 +3935,19 @@ static int bif_iso_bagof(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	if (end) {
-		term_append(end, make_const_atom("[]"));
-		ok = unify_term(q, term3, acc, -1);
+	if (l) {
+		term_append(l, make_const_atom("[]"));
+		ok = unify(q, term3, q->c.curr_frame, save_l, -1);
 	}
 	else {
-		acc = make_const_atom("[]");
+		save_l = make_const_atom("[]");
 		ok = 0;
 	}
 
 	if (ok)
 		try_me(q);
 
-	term_heapcheck(acc);
+	term_heapcheck(save_l);
 	query_destroy(subq);
 	return ok;
 }
@@ -4033,7 +4031,7 @@ static int bif_iso_setof(tpl_query *q)
 		return 0;
 	}
 
-	node *acc = NULL, *end = NULL;
+	node *save_l = NULL, *l = NULL;
 
 	while (ok && !g_abort) {
 		if (sl_get(sp->kvs, (void *)subq->c.curr_match, NULL)) {
@@ -4045,16 +4043,15 @@ static int bif_iso_setof(tpl_query *q)
 		node *from = get_arg(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
-		if (!end) {
-			acc = make_list();
-			term_append(acc, res);
-			end = acc;
+		if (!l) {
+			save_l = l = make_list();
+			term_append(l, res);
 		}
 		else {
 			node *tmp = make_list();
-			term_append(end, tmp);
+			term_append(l, tmp);
 			term_append(tmp, res);
-			end = tmp;
+			l = tmp;
 		}
 
 		for (unsigned i = 0; i < q->c.frame_size; i++) {
@@ -4068,13 +4065,13 @@ static int bif_iso_setof(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	if (end)
-		term_append(end, make_const_atom("[]"));
+	if (l)
+		term_append(l, make_const_atom("[]"));
 	else
-		acc = make_const_atom("[]");
+		save_l = make_const_atom("[]");
 
-	if (!is_atom(acc)) {
-		node *l = acc;
+	if (!is_atom(save_l)) {
+		node *l = save_l;
 		size_t cnt = 0;
 
 		while (is_list(l)) {
@@ -4085,7 +4082,7 @@ static int bif_iso_setof(tpl_query *q)
 		}
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
-		l = acc;
+		l = save_l;
 		// q->latest_context = save_context;
 		size_t idx = 0;
 
@@ -4118,7 +4115,7 @@ static int bif_iso_setof(tpl_query *q)
 
 		term_append(tmp, make_const_atom("[]"));
 		free(base);
-		ok = unify_term(q, term3, l, -1);
+		ok = unify(q, term3, q->c.curr_frame, l, -1);
 		term_heapcheck(l);
 	}
 	else
@@ -4127,7 +4124,7 @@ static int bif_iso_setof(tpl_query *q)
 	if (ok)
 		try_me(q);
 
-	term_heapcheck(acc);
+	term_heapcheck(save_l);
 	query_destroy(subq);
 	return ok;
 }
