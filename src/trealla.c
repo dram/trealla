@@ -1565,15 +1565,17 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,position(P)) :- stream_property_position(S,P).");
 	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
+#define RANDOM_STR "123456"
+
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "recorda(K,V) :- recorda(K,V,_).");
-	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta('$123456'(K,V),R).");
+	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta('$" RANDOM_STR "'(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- recordz(K,V,_).");
-	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), assertz('$123456'(K,V),R).");
+	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), assertz('$" RANDOM_STR "'(K,V),R).");
 	trealla_make_rule(pl, "recorded(K,V) :- recorded(K,V,_).");
-	trealla_make_rule(pl, "recorded(K,V,R) :- clause('$123456'(K,V),_,R).");
-	trealla_make_rule(pl, "current_key(K) :- '$123456'(K,_).");
-	trealla_make_rule(pl, "instance(R,V) :- nonvar(R), clause('$123456'(_,V),_,R).");
+	trealla_make_rule(pl, "recorded(K,V,R) :- clause('$" RANDOM_STR "'(K,V),_,R).");
+	trealla_make_rule(pl, "current_key(K) :- '$" RANDOM_STR "'(K,_).");
+	trealla_make_rule(pl, "instance(R,V) :- nonvar(R), clause('$" RANDOM_STR "'(_,V),_,R).");
 
 	const char *mod_name = "lists";
 	library *lib = g_libs;
