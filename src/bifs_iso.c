@@ -3816,7 +3816,7 @@ static int bif_iso_findall(tpl_query *q)
 	else
 		acc = make_const_atom("[]");
 
-	ok = unify_term(q, term3, acc, q->c.curr_frame);
+	ok = unify_term(q, term3, acc, -1);
 	term_heapcheck(acc);
 	term_heapcheck(from);
 	query_destroy(subq);
@@ -3937,15 +3937,14 @@ static int bif_iso_bagof(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	if (end)
+	if (end) {
 		term_append(end, make_const_atom("[]"));
-	else
-		acc = make_const_atom("[]");
-
-	if (!is_atom(acc))
 		ok = unify_term(q, term3, acc, -1);
-	else
+	}
+	else {
+		acc = make_const_atom("[]");
 		ok = 0;
+	}
 
 	if (ok)
 		try_me(q);
