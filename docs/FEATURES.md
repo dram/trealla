@@ -197,6 +197,7 @@ These are an assortment of utilities:
 	xmlq(+Atom,+N,+Idx,-Atom)   - quick get I'th named value from XML source
 	upper(+Atom,-Atom)          - convert to upper-case
 	lower(+Atom,-Atom)          - convert to lower-case
+	title(+Atom,-Atom)          - convert to upper-case start of each word
 	sha1(+Atom,-Atom)           - SHA1 (128-bit) hash
 	sha256(+Atom,-Atom)         - SHA2 (256-bit) hash
 	sha512(+Atom,-Atom)         - SHA2 (512-bit) hash
@@ -630,10 +631,10 @@ is currently available, otherwise it blocks until it can return the specified le
 
 Note: regular streams I/O (except character-based) can be used over sockets.
 
-Note: writes to sockets are normally blocking but *sys:write_file/2* can yield internally when an
-operation would cause blocking. Use *tmo/1* to set a timeout. Most (?) read operations with sockets
-will yield when waiting for data that would cause blocking. This way it is possible to write simple
-repeat/read/write loops and not worry about thread starvation with many connections.
+Note: writes to sockets are normally blocking but *sys:write_file/2* can yield when an operation
+would cause blocking. Use *tmo/1* to set a timeout. Most (?) read operations with sockets will
+yield when waiting for data that would cause blocking. Yielding surrenders the thread until more
+data is available.
 
 
 HTTP processing: namespace 'http'

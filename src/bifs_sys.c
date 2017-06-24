@@ -719,6 +719,36 @@ static int bif_sys_xmlq_3(tpl_query *q)
 	return 1;
 }
 
+static int bif_sys_title_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_var(term2);
+	const size_t len = LEN(term1) + 1;
+	char *dstbuf = (char *)malloc(len + 1);
+	char *dst = dstbuf;
+	const char *src = VAL_S(term1);
+	int start = 1;
+
+	while (*src) {
+		char ch = *src++;
+
+		if (start)
+			*dst++ = toupper(ch);
+		else
+			*dst++ = tolower(ch);
+
+		if (isblank(ch) || ispunct(ch))
+			start = 1;
+		else
+			start = 0;
+	}
+
+	*dst = '\0';
+	put_atom(q, q->c.curr_frame + term2->slot, dstbuf);
+	return 1;
+}
+
 static int bif_sys_upper_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1907,6 +1937,7 @@ void bifs_load_sys(void)
 	DEFINE_BIF("sys:munge", 2, bif_sys_munge_2);
 	DEFINE_BIF("sys:upper", 2, bif_sys_upper_2);
 	DEFINE_BIF("sys:lower", 2, bif_sys_lower_2);
+	DEFINE_BIF("sys:title", 2, bif_sys_title_2);
 	DEFINE_BIF("sys:split_last", 4, bif_sys_split_last_4);
 	DEFINE_BIF("sys:split", 4, bif_sys_split_4);
 	DEFINE_BIF("sys:split_all", 3, bif_sys_split_all_3);
