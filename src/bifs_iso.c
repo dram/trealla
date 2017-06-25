@@ -104,9 +104,17 @@ static int expand_frame(tpl_query *q, unsigned cnt)
 {
 	extern int grow_environment(tpl_query * q);
 
+	if (q->c.env_point != (q->c.curr_frame + q->c.frame_size)) {
+		printf("*** DO SOMETHING HERE\n");
+		QABORT(ABORT_OUTOFMEMORY);
+		return 0;
+	}
+
 	while ((q->c.env_point + cnt) >= q->envs_possible) {
-		if (!grow_environment(q))
+		if (!grow_environment(q)) {
+			QABORT(ABORT_OUTOFMEMORY);
 			return 0;
+		}
 	}
 
 	prepare_frame(q, cnt);
@@ -1406,6 +1414,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 
 	if (cnt) {
 		expand_frame(q, cnt);
+		q->c.frame_size++;
 		//node *tmp = copy_term(q, term);
 		//term_heapcheck(term);
 		//save_term = term = tmp;
@@ -1422,7 +1431,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 			while ((sl_next(&vars, (void **)&n)) != NULL) {
 				//q->latest_context = q->c.curr_frame;
 				term_append(l, n=clone_term(q, n));
-				q->c.frame_size++;
+				//q->c.frame_size++;
 
 				if (!vars.iter)
 					break;
