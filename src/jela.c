@@ -248,14 +248,13 @@ static int follow(tpl_query *q)
 	return 1;
 }
 
-void try_me2(tpl_query *q, int nofollow, int nochoice, int noretry)
+void try_me2(tpl_query *q, int nofollow, int nochoice)
 {
 	TRACE("try_me");
 	choice *c = &q->choices[q->choice_point];
 	*c = q->c;
 	c->nofollow = nofollow;
 	c->cut = nochoice;
-	c->noretry = noretry;
 	q->c.prev_choice = q->choice_point++;
 
 #ifdef DEBUG
@@ -302,10 +301,6 @@ int retry_me(tpl_query *q)
 
 	if (c->cut)
 		return retry_me(q);
-
-	if (c->noretry) {
-		return 0;
-	}
 
 	return q->retry = 1;
 }

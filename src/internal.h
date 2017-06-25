@@ -253,7 +253,7 @@ typedef struct {
 	mask_t mask1, mask2;
 	uint32_t env_point, trail_point, prev_choice, curr_frame;
 	uint8_t frame_size, trail_size;
-	uint8_t cut, nofollow, noretry;
+	uint8_t cut, nofollow;
 } choice;
 
 typedef uint32_t trail;
