@@ -607,11 +607,11 @@ certificate(s). Default ones for testing are provided.
 	local_host(+S,-Atom)            - local host (resolved)
 	remote_addr(+S,-Atom)           - remote address
 	remote_host(+S,-Atom)           - remote host (resolved)
-	tls(+S,?V)                      - unifies with 'true/false'
-	tcp(+S,?V)                      - unifies with 'true/false'
-	udp(+S,?V)                      - unifies with 'true/false'
-	ipv4(+S,?V)                     - unifies with 'true/false'
-	ipv6(+S,?V)                     - unifies with 'true/false'
+	tls(+S,?Boolean)                - unifies with 'true/false'
+	tcp(+S,?Boolean)                - unifies with 'true/false'
+	udp(+S,?Boolean)                - unifies with 'true/false'
+	ipv4(+S,?Boolean)               - unifies with 'true/false'
+	ipv6(+S,?Boolean)               - unifies with 'true/false'
 	is_socket(+Term)                - is the arg a socket?
 
 With *server/2* a listener is started which waits for incoming connections. A new light-weight
@@ -663,7 +663,7 @@ Client-side:
 
 	version(+Float)              - HTTP version 1.0 or 1.1 (the default)
 	method(+Atom)                - HTTP method (send arbitrary HTTP)
-	persist(+Boolean)            - Connection true/false/1/0 (default as per version)
+	persist(+Boolean)            - Connection true/false (default as per version)
 	length(+Integer)             - Content-Length in bytes (assumed zero for GET)
 	type(+Atom)                  - Content-Type string (eg: 'text/html')
 	agent(+String)               - User-Agent / Server string
@@ -708,10 +708,10 @@ WebSocket: namespace 'ws'
 	request(+S,+Path,-Status)              - request HTTP upgrade to WS
 	upgrade(+S,+Prot)                      - do HTTP upgrade to WS
 
-	parse(+S,-Op,-Atom)    - parse and read message
-	msg(+S,+Op,+Atom)      - write message
+	parse(+S,-Op,-Atom)                    - parse and read message
+	msg(+S,+Op,+Atom)                      - write message
 
-	is_ws(+S,?V)               - WebSocket? unifies with 'true/false'
+	is_ws(+S,?Boolean)                     - WebSocket? unifies with 'true/false'
 
 With *msg/3* *Op* can be the atom *more*, *data*, *ping* or *close*. Note *parse/3* will
 return a *more*, *data* or *close*, anything else should be discarded.
@@ -722,8 +722,7 @@ The *request/5* client call takes an atom or list of atoms of wanted protocols a
 selected by the server on success. A *Status* of 101 indicates success.
 
 Also, *parse/3* and *msg/3* can be used with raw WebSockets, ie. both client and server end-points
-were created with the '+ws' attribute (and so no upgrade was needed). This can be used to exchange
-BLOBs.
+were created with 'ws:' or '+ws' attribute (and so no upgrade was needed).
 
 For example:
 
