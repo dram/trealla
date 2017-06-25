@@ -6684,11 +6684,12 @@ static int bif_xtra_forall_2(tpl_query *q)
 
 	while (ok && !g_abort) {
 		subq->c.curr_frame = FUDGE_FACTOR;
-		begin_query(subq, term2);
-		run_me(subq);
-		subok = subq->ok;
+		tpl_query *subq2 = query_create_subquery(subq);
+		begin_query(subq2, term2);
+		subok = query_run(subq2);
+		query_destroy(subq2);
 
-		if (!subq->ok)
+		if (!subq2->ok)
 			break;
 
 		ok = query_continue(subq);
