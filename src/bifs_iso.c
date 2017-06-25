@@ -6689,7 +6689,7 @@ static int bif_xtra_forall_2(tpl_query *q)
 		subok = query_run(subq2);
 		query_destroy(subq2);
 
-		if (!subq2->ok)
+		if (!subok)
 			break;
 
 		ok = query_continue(subq);
