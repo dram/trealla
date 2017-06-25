@@ -423,6 +423,8 @@ For example, spawn 100K child processes and rendezvous with them:
 		recv(N),
 		send(ok).
 
+Note: fork/0 here is not the sames as SWI-Prolog fork/1 (which is a true Unix fork).
+
 After a spawn or fork, both the parent and child can assume the value of the current Pid is set
 (for the parent the Pid of the child, and for the child the Pid of the parent). If the parent spawns
 many processes then the Pid for each child may retrieved and saved. Two child processes may
