@@ -379,10 +379,11 @@ static int bif_sys_getline_1(tpl_query *q)
 static int bif_sys_bwrite_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
 	size_t len = LEN(term2);
+	extern FILE *get_output_stream(node *n);
 
 	if (is_socket(term1)) {
 		if (!session_write((session *)sp->sptr, VAL_S(term2), len)) {
@@ -391,7 +392,7 @@ static int bif_sys_bwrite_2(tpl_query *q)
 		}
 	}
 	else {
-		if (fwrite(VAL_S(term2), 1, len, sp->fptr) == 0) {
+		if (fwrite(VAL_S(term2), 1, len, get_output_stream(term1)) == 0) {
 			// QABORT(ABORT_STREAMCLOSED);
 			return 0;
 		}

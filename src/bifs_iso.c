@@ -1014,7 +1014,7 @@ static int bif_iso_close(tpl_query *q)
 	return 1;
 }
 
-static FILE *get_output_stream(node *n)
+FILE *get_output_stream(node *n)
 {
 	if (is_stream(n))
 		return n->val_str->fptr;
@@ -6268,7 +6268,7 @@ static int bif_xtra_writeln_1(tpl_query *q)
 static int bif_xtra_writeln_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	stream *sp = term1->val_str;
 	size_t max_len = PRINTBUF_SIZE;
@@ -6282,7 +6282,7 @@ static int bif_xtra_writeln_2(tpl_query *q)
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, dst - tmpbuf);
 	else
-		ok = fwrite(tmpbuf, 1, dst - tmpbuf, sp->fptr);
+		ok = fwrite(tmpbuf, 1, dst - tmpbuf, get_output_stream(term1));
 
 	free(tmpbuf);
 	return ok >= 0;
@@ -6584,10 +6584,10 @@ LOOP:
 static int bif_xtra_tab_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_stream(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
-	int n = get_word(term1);
+	int n = get_word(term2);
 	int ok = 1;
 
 	for (int i = 0; ok && (i < n); i++) {
@@ -6596,10 +6596,10 @@ static int bif_xtra_tab_2(tpl_query *q)
 			ok = session_write((session *)sp->sptr, "\n", 1);
 		else
 #endif
-			ok = fwrite(" ", 1, 1, sp->fptr);
+			ok = fwrite(" ", 1, 1, get_output_stream(term1));
 	}
 
-	return ok > 0;
+	return ok;
 }
 
 static int bif_xtra_tab_1(tpl_query *q)
