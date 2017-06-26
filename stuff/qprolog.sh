@@ -40,17 +40,6 @@ append([List |RestLists], Concatenated) :-
         append(RestLists, RestConcatenated),
         append(List, RestConcatenated, Concatenated).
 
-union([], List, List).
-union([X| Rest], List, Unioned) :-
-        (
-                memberchk(X, List)
-        ->
-                union(Rest, List, Unioned)
-        ;
-                union(Rest, List, RestUnioned),
-                Unioned = [X| RestUnioned]
-        ).
-
 :- include('settings.pl').
 :- include('lib/rdtok.pl').
 :- include('lib/read.pl').
