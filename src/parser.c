@@ -1966,6 +1966,19 @@ LOOP: // FIXME someday
 			get_token(l, tmpbuf, line);
 			return s;
 		}
+		else if (!strcmp(key, "SYSTEMSTR")) {
+			free(l->tok);
+			static int first_time = 1;
+			static char tmpbuf[80];
+
+			if (first_time) {
+				sprintf(tmpbuf, "'$%d'", (int)rand());
+				first_time = 0;
+			}
+
+			get_token(l, tmpbuf, line);
+			return s;
+		}
 		else if (!strcmp(key, "TIME")) {
 			free(l->tok);
 			char tmpbuf[80];

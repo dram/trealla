@@ -14,7 +14,7 @@ echo(Msg) :-
 	atomic_list_concat([Msg,'\n'],Msg2),
 	write(S,Msg2),
 	readmsg(S,Line),
-	write(Line),
+	write('GOT: '),write(Line),
 	close(S).
 
 % A quick-brown-fox server
