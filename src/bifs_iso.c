@@ -6696,6 +6696,13 @@ static int bif_xtra_forall_2(tpl_query *q)
 		subq->c.curr_frame = FUDGE_FACTOR;
 		subq->c.frame_size = save_frame_size;
 		tpl_query *subq2 = query_create_subquery(subq);
+
+		if (!subq2) {
+			QABORT(ABORT_OUTOFMEMORY);
+			subok = 0;
+			break;
+		}
+
 		begin_query(subq2, term2);
 		subok = query_run(subq2);
 		query_destroy(subq2);
