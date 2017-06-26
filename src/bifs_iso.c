@@ -3515,7 +3515,7 @@ static int bif_iso_univ(tpl_query *q)
 		return 0;
 	}
 
-	if (is_compound(term1)) {
+	if (is_structure(term1)) {
 		node *l = make_list();
 		node *n = term_first(term1);
 		node *save_l = l;
