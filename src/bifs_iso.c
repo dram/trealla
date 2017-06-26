@@ -6687,12 +6687,14 @@ static int bif_xtra_forall_2(tpl_query *q)
 		DBLOCK(q->c.curr_db);
 	}
 
+	unsigned save_frame_size = subq->c.frame_size;
 	node *t1 = clone_term(q, term1);
 	begin_query(subq, t1);
 	int ok = query_run(subq), subok = 1;
 
 	while (ok && !g_abort) {
 		subq->c.curr_frame = FUDGE_FACTOR;
+		subq->c.frame_size = save_frame_size;
 		tpl_query *subq2 = query_create_subquery(subq);
 		begin_query(subq2, term2);
 		subok = query_run(subq2);
@@ -6707,8 +6709,8 @@ static int bif_xtra_forall_2(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	query_destroy(subq);
 	term_heapcheck(t1);
+	query_destroy(subq);
 	return subok;
 }
 

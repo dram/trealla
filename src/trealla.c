@@ -1567,9 +1567,9 @@ trealla *trealla_create(const char *name)
 
 #ifndef ISO_ONLY
 #define RANDOM_STR __DATE__
-	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), nonvar(V), asserta('$" RANDOM_STR "'(K,V),R).");
+	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), nonvar(V), asserta('$" RANDOM_STR "'(K,V),_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta('$" RANDOM_STR "'(K,V),R).");
-	trealla_make_rule(pl, "recordz(K,V) :- nonvar(K), nonvar(V), assertz('$" RANDOM_STR "'(K,V),R).");
+	trealla_make_rule(pl, "recordz(K,V) :- nonvar(K), nonvar(V), assertz('$" RANDOM_STR "'(K,V),_).");
 	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), assertz('$" RANDOM_STR "'(K,V),R).");
 	trealla_make_rule(pl, "recorded(K,V) :- clause('$" RANDOM_STR "'(K,V),_,_).");
 	trealla_make_rule(pl, "recorded(K,V,R) :- clause('$" RANDOM_STR "'(K,V),_,R).");
