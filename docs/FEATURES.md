@@ -46,11 +46,11 @@ module name. This is a lexical pasting of the value. Other pre-defined names are
 To load a module and make its exported predicates available for use:
 
 	:-import(+Name).
-	:-import(library(+Name)).
-	:-import(+Name,+ImportList).
+	:-import(library(+Atom)).
+	:-import(+Name,+List).
 
-The *ImportList* arg is currently ignored. The directive *use_module* is a common Prolog synonym
-for *import*.
+The *List* arg is currently ignored. This directive is a synonym for the slightly more
+portable *use_module* directive.
 
 The *include/1* directive loads a file that is lexically pasted into the source. Use the
 *unload_file/1* directive to remove a module from the system.
