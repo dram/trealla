@@ -6955,7 +6955,9 @@ static int bif_xtra_atomic_list_concat_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
+	unsigned save_context = q->latest_context;
 	node *term2 = get_var(term2);
+	q->latest_context = save_context;
 	node *l = term1;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
@@ -6993,8 +6995,10 @@ static int bif_xtra_atomic_list_concat_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
+	unsigned save_context = q->latest_context;
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
+	q->latest_context = save_context;
 	node *l = term1;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
@@ -7010,12 +7014,12 @@ static int bif_xtra_atomic_list_concat_3(tpl_query *q)
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
 		node *n = get_arg(q, head, this_context);
-		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, n, 0);
+		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, NULL, n, 0);
 		node *tail = term_next(head);
 		l = get_arg(q, tail, this_context);
 
 		if (is_list(l))
-			dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 0);
+			dst += sprintf(dst, "%s", VAL_S(term2));
 	}
 
 	*dst = '\0';
