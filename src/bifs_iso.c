@@ -6954,13 +6954,18 @@ static int bif_xtra_atomic_concat_3(tpl_query *q)
 static int bif_xtra_atomic_list_concat_2(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_list(term1);
+	node *term1 = get_atom_or_list(term1);
 	node *term2 = get_var(term2);
 	node *l = term1;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
 	int any_blobs = 0;
+
+	if (is_atom(term1) && strcmp(VAL_S(term1), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
 
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
@@ -6971,6 +6976,7 @@ static int bif_xtra_atomic_list_concat_2(tpl_query *q)
 		l = get_arg(q, tail, this_context);
 	}
 
+	*dst = '\0';
 	node *n;
 
 	if (any_blobs)
@@ -6986,7 +6992,7 @@ static int bif_xtra_atomic_list_concat_2(tpl_query *q)
 static int bif_xtra_atomic_list_concat_3(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_list(term1);
+	node *term1 = get_atom_or_list(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
 	node *l = term1;
@@ -6994,6 +7000,11 @@ static int bif_xtra_atomic_list_concat_3(tpl_query *q)
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
 	int any_blobs = 0;
+
+	if (is_atom(term1) && strcmp(VAL_S(term1), "[]")) {
+		QABORT(ABORT_INVALIDARGNOTLIST);
+		return 0;
+	}
 
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
@@ -7007,6 +7018,7 @@ static int bif_xtra_atomic_list_concat_3(tpl_query *q)
 			dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 0);
 	}
 
+	*dst = '\0';
 	node *n;
 
 	if (any_blobs)
