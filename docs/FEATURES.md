@@ -644,22 +644,23 @@ HTTP processing: namespace 'http'
 
 Server-side:
 
-	parse(+S,-Ver,-Cmd,-Path)    - parse headers (except content)
-	www_form(+S)                 - decode form data on POST (urlencoded)
-	form(+S,+Name,-Atom)         - get named form value (or '' if non-exist)
-	query(+S,+Name,-Atom)        - get named query value (or '' if non-exist)
-	cookie(+S,+Name,-Atom)       - get named cookie value (or '' if non-exist)
-	basic_auth(+S,-User,-Pass)   - decode Basic auth token (if present)
+	parse(+S,-Ver,-Method,-Path)  - parse headers (except content)
+	www_form(+S)                  - decode form data on POST (urlencoded)
+	form(+S,+Name,-Atom)          - get named form value (or '' if non-exist)
+	query(+S,+Name,-Atom)         - get named query value (or '' if non-exist)
+	cookie(+S,+Name,-Atom)        - get named cookie value (or '' if non-exist)
+	basic_auth(+S,-User,-Pass)    - decode Basic auth token (if present)
 
 Client-side:
 
-	head(+S,+Path,+Options,+Headers)
-	get(+S,+Path,+Options,+Headers)
-	delete(+S,+Path,+Options,+Headers)
-	post(+S,+Path,+Options,+Headers)
-	put(+S,+Path,+Options,+Headers)
+	head(+S,+Path,+Options)
+	get(+S,+Path,+Options,)
+	delete(+S,+Path,+Options)
+	post(+S,+Path,+Options)
+	put(+S,+Path,+Options)
 
-*Options* is an optional list of possible request/response modifiers:
+The above HTTP method calls are available as arity 2 or 3. If the latter then *Options* is an
+list of possible modifiers:
 
 	version(+Float)              - HTTP version 1.0 or 1.1 (the default)
 	method(+Atom)                - HTTP method (send arbitrary HTTP)
@@ -671,17 +672,16 @@ Client-side:
 	cookie(+Atom)                - Cookie / Set-Cookie string
 	referer(+Atom)               - Referer string
 	chunked(+Boolean)            - HTTP/1.1 chunked transfer
+	header(+Pair)                - a header pair of Name:Value
 	debug(+Boolean)              - dump headers
 	...
 
+To include an extra HTTP header:
+
+	http:get(S,'/index.html',[header('X-Hdr1':'o n e'), header('X-Hdr2':2)])
+
 The *chunked* option indicates willingness to receive a chunked response. However, the server may
 choose not to send such a response format.
-
-*Headers* is an optional list of extra headers to include with the request. Each such header
-can be specified by parts as a pair. It must *not* include a trailing CRLF (this will be added for
-you).
-
-	http:get(S,'/index.html',[],['X-Hdr1':'o-n-e', 'X-Hdr2':2])
 
 If *post/4* or *put/4* and version is 1.1 and *length* is not specified then chunked transfer is
 in play, so use *put_chunk/2* to write.
@@ -692,7 +692,7 @@ in play, so use *put_chunk/2* to write.
 To parse the response from a request:
 
 	parse(+S,-Status)
-	parse(+S,-Status,-Options)
+	parse(+S,-Status,-Options)			Worth it?????
 
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
@@ -866,10 +866,8 @@ This is a compiled-in module that must be imported:
 
 	:-import(library(stomp_client)).
 
-The Simple(/Streaming) Text Oriented Messaging Protocol:
-
-	parse(+S,-Cmd,-Len)       - parse headers (except content)
-	msg(+S,+Cmd,+Hdrs,+Atom)  - send ANY request ('Data' can be BLOB or atom)
+	parse(+S,-Method,-Len)       - parse headers (except content)
+	msg(+S,+Method,+Hdrs,+Atom)  - send ANY request ('Data' can be BLOB or atom)
 
 While superficially similar to HTTP, STOMP is actually bidirectional, so *parse/3* and *msg/4*
 are used on both the server & client sides.

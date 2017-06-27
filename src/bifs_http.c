@@ -756,7 +756,8 @@ typedef struct {
 	char modified[OPTION_NAME_LEN], cookie[OPTION_NAME_LEN], referer[OPTION_NAME_LEN];
 	double version;
 	long length;
-	int persist, debug, chunked;
+	int persist, debug, chunked, hdrlen;
+	char hdrs[1024 * 8];
 }
  options;
 
@@ -786,12 +787,18 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 			opt->version = 1.0;
 			opt->persist = 0;
 		}
+
+		return;
 	}
-	else if (!strcmp(f, "length")) {
+
+	if (!strcmp(f, "length")) {
 		if (is_integer(v))
 			opt->length = get_word(v);
+
+		return;
 	}
-	else if (!strcmp(f, "persist")) {
+
+	if (!strcmp(f, "persist")) {
 		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
 			opt->persist = 1;
 		else if (is_atom(v) && !strcmp(VAL_S(v), "false"))
@@ -800,54 +807,105 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 			opt->persist = 1;
 		else if (is_integer(v) && (get_word(v) == 0))
 			opt->persist = 0;
+
+		return;
 	}
-	else if (!strcmp(f, "chunked")) {
+
+	if (!strcmp(f, "chunked")) {
 		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
 			opt->chunked = 1;
 		else if (is_integer(v) && (get_word(v) == 1))
 			opt->chunked = 1;
+
+		return;
 	}
-	else if (!strcmp(f, "debug")) {
+
+	if (!strcmp(f, "debug")) {
 		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
 			opt->debug = 1;
 		else if (is_integer(v) && (get_word(v) == 1))
 			opt->debug = 1;
+
+		return;
 	}
-	else if (!strcmp(f, "type")) {
+
+	if (!strcmp(f, "type")) {
 		if (is_atom(v)) {
 			strncpy(opt->type, VAL_S(v), OPTION_NAME_LEN);
 			opt->type[OPTION_NAME_LEN-1] = '\0';
 		}
+
+		return;
 	}
-	else if (!strcmp(f, "modified")) {
+
+	if (!strcmp(f, "modified")) {
 		if (is_atom(v)) {
 			strncpy(opt->modified, VAL_S(v), OPTION_NAME_LEN);
 			opt->modified[OPTION_NAME_LEN-1] = '\0';
 		}
+
+		return;
 	}
-	else if (!strcmp(f, "referer")) {
+
+	if (!strcmp(f, "referer")) {
 		if (is_atom(v)) {
 			strncpy(opt->referer, VAL_S(v), OPTION_NAME_LEN);
 			opt->referer[OPTION_NAME_LEN-1] = '\0';
 		}
+
+		return;
 	}
-	else if (!strcmp(f, "cookie")) {
+
+	if (!strcmp(f, "cookie")) {
 		if (is_atom(v)) {
 			strncpy(opt->cookie, VAL_S(v), OPTION_NAME_LEN);
 			opt->cookie[OPTION_NAME_LEN-1] = '\0';
 		}
+
+		return;
 	}
-	else if (!strcmp(f, "agent")) {
+
+	if (!strcmp(f, "agent")) {
 		if (is_atom(v)) {
 			strncpy(opt->agent, VAL_S(v), OPTION_NAME_LEN);
 			opt->agent[OPTION_NAME_LEN-1] = '\0';
 		}
+
+		return;
 	}
-	else if (!strcmp(f, "method")) {
+
+	if (!strcmp(f, "method")) {
 		if (is_atom(v)) {
 			strncpy(opt->method, VAL_S(v), OPTION_NAME_LEN);
 			opt->method[OPTION_NAME_LEN-1] = '\0';
 		}
+
+		return;
+	}
+
+	if (!strcmp(f, "header")) {
+		if (is_structure(v) && !strcmp(term_functor(v), ":")) {
+			node *name = term_firstarg(v);
+			node *value = term_next(name);
+			opt->hdrlen += term_sprint(opt->hdrs+opt->hdrlen, sizeof(opt->hdrs)-opt->hdrlen, q->pl, q, name, 0);
+
+			if ((sizeof(opt->hdrs)-opt->hdrlen) > 10) {
+				opt->hdrs[opt->hdrlen++] = ':';
+				opt->hdrs[opt->hdrlen++] = ' ';
+			}
+
+			opt->hdrlen += term_sprint(opt->hdrs+opt->hdrlen, sizeof(opt->hdrs)-opt->hdrlen, q->pl, q, value, 0);
+
+			if ((sizeof(opt->hdrs)-opt->hdrlen) > 10) {
+				opt->hdrs[opt->hdrlen++] = '\r';
+				opt->hdrs[opt->hdrlen++] = '\n';
+				opt->hdrs[opt->hdrlen] = '\0';
+			}
+			else
+				opt->hdrlen = 0;
+		}
+
+		return;
 	}
 }
 
@@ -965,6 +1023,9 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 	if (opt->cookie[0])
 		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "Cookie: %s\r\n", opt->cookie);
 
+	if (opt->hdrlen)
+		dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "%s", opt->hdrs);
+
 	if (hdrs) {
 		if (strlen(hdrs) < (1024*8))
 			dst += snprintf(dst, sizeof(dstbuf)-(dst-dstbuf), "%s", hdrs);
@@ -985,7 +1046,7 @@ static int http_request(const char *cmd, session *s, const char *path, options *
 	return 1;
 }
 
-static int bif_http_head_4(tpl_query *q)
+static int bif_http_head_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1026,7 +1087,7 @@ static int bif_http_head_4(tpl_query *q)
 	return http_request("HEAD", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
 }
 
-static int bif_http_get_4(tpl_query *q)
+static int bif_http_get_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1067,7 +1128,7 @@ static int bif_http_get_4(tpl_query *q)
 	return http_request("GET", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
 }
 
-static int bif_http_post_4(tpl_query *q)
+static int bif_http_post_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1108,7 +1169,7 @@ static int bif_http_post_4(tpl_query *q)
 	return http_request("POST", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
 }
 
-static int bif_http_put_4(tpl_query *q)
+static int bif_http_put_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -1149,7 +1210,7 @@ static int bif_http_put_4(tpl_query *q)
 	return http_request("PUT", term1->val_str->sptr, VAL_S(term2), opt, hdrs);
 }
 
-static int bif_http_delete_4(tpl_query *q)
+static int bif_http_delete_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_socket(term1);
@@ -2165,21 +2226,21 @@ void bifs_load_http(void)
 	DEFINE_BIF("http:form", 3, bif_http_form_3);
 	DEFINE_BIF("http:cookie", 3, bif_http_cookie_3);
 
-	DEFINE_BIF("http:head", 2, bif_http_head_4);
-	DEFINE_BIF("http:head", 3, bif_http_head_4);
-	DEFINE_BIF("http:head", 4, bif_http_head_4);
-	DEFINE_BIF("http:get", 2, bif_http_get_4);
-	DEFINE_BIF("http:get", 3, bif_http_get_4);
-	DEFINE_BIF("http:get", 4, bif_http_get_4);
-	DEFINE_BIF("http:post", 2, bif_http_post_4);
-	DEFINE_BIF("http:post", 3, bif_http_post_4);
-	DEFINE_BIF("http:post", 4, bif_http_post_4);
-	DEFINE_BIF("http:put", 2, bif_http_put_4);
-	DEFINE_BIF("http:put", 3, bif_http_put_4);
-	DEFINE_BIF("http:put", 4, bif_http_put_4);
-	DEFINE_BIF("http:delete", 2, bif_http_delete_4);
-	DEFINE_BIF("http:delete", 3, bif_http_delete_4);
-	DEFINE_BIF("http:delete", 4, bif_http_delete_4);
+	DEFINE_BIF("http:head", 2, bif_http_head_3);
+	DEFINE_BIF("http:head", 3, bif_http_head_3);
+	DEFINE_BIF("http:head", 4, bif_http_head_3);
+	DEFINE_BIF("http:get", 2, bif_http_get_3);
+	DEFINE_BIF("http:get", 3, bif_http_get_3);
+	DEFINE_BIF("http:get", 4, bif_http_get_3);
+	DEFINE_BIF("http:post", 2, bif_http_post_3);
+	DEFINE_BIF("http:post", 3, bif_http_post_3);
+	DEFINE_BIF("http:post", 4, bif_http_post_3);
+	DEFINE_BIF("http:put", 2, bif_http_put_3);
+	DEFINE_BIF("http:put", 3, bif_http_put_3);
+	DEFINE_BIF("http:put", 4, bif_http_put_3);
+	DEFINE_BIF("http:delete", 2, bif_http_delete_3);
+	DEFINE_BIF("http:delete", 3, bif_http_delete_3);
+	DEFINE_BIF("http:delete", 4, bif_http_delete_3);
 
 	DEFINE_BIF("http:get_chunk", 3, bif_http_get_chunk_3);
 	DEFINE_BIF("http:put_chunk", 2, bif_http_put_chunk_2);
