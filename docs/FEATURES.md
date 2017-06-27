@@ -557,7 +557,7 @@ or to NOT use naming but instead use a specific port (9000):
 			fail.
 
 	echo(Host,Msg) :-
-		concat(Host,':',9000,',Server),
+		atomic_list_concat([Host,':',9000],Server),
 		pid(Server,Pid),
 		rsvp(Pid,Msg,Resp),
 		write(Resp), nl.
