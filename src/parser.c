@@ -32,7 +32,7 @@ static op g_ops[] = {
                      {":-", "fx", 1200},
                      {"-->", "xfx", 1200},
                      {"?-", "fx", 1200},
-                     //{"initialization", "fx", 1150},
+                     {"initialization", "fx", 1150},
                      {";", "xfy", 1100},
                      {"|", "xfy", 1100},
                      {"->", "xfy", 1050},
