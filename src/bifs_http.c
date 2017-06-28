@@ -1808,7 +1808,7 @@ static int bif_ws_is_ws(tpl_query *q)
 	int ok = session_is_websocket((session *)sp->sptr);
 	node *n = make_const_atom(ok ? "true" : "false");
 	n->refcnt++;
-	ok = unify_term(q, term2, n, q->c.curr_frame);
+	ok = unify(q, term2, term2_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -1932,7 +1932,7 @@ static int bif_h2_is_h2_2(tpl_query *q)
 	int ok = session_get_udata_flag((session *)sp->sptr, HTTP2);
 	node *n = make_const_atom(ok ? "true" : "false");
 	n->refcnt++;
-	ok = unify_term(q, term2, n, q->c.curr_frame);
+	ok = unify(q, term2, term2_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }

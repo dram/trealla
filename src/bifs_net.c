@@ -525,7 +525,7 @@ static int bif_net_ipv4_2(tpl_query *q)
 	stream *sp = term1->val_str;
 	int ok = session_is_ipv4((session *)sp->sptr);
 	node *n = make_const_atom(ok ? "true" : "false");
-	ok = unify_term(q, term2, n, q->c.curr_frame);
+	ok = unify(q, term2, term2_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -540,7 +540,7 @@ static int bif_net_udp_2(tpl_query *q)
 	stream *sp = term1->val_str;
 	int ok = session_is_udp((session *)sp->sptr);
 	node *n = make_const_atom(ok ? "true" : "false");
-	ok = unify_term(q, term2, n, q->c.curr_frame);
+	ok = unify(q, term2, term2_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -555,7 +555,7 @@ static int bif_net_tls_2(tpl_query *q)
 	stream *sp = term1->val_str;
 	int ok = session_is_tls((session *)sp->sptr);
 	node *n = make_const_atom(ok ? "true" : "false");
-	ok = unify_term(q, term2, n, q->c.curr_frame);
+	ok = unify(q, term2, term2_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -573,10 +573,10 @@ int bif_net_stash_get_4(tpl_query *q)
 	const char *s = session_get_stash((session *)sp->sptr, key);
 
 	if (!*s)
-		return unify_term(q, term3, term4, q->c.curr_frame);
+		return unify(q, term3, term3_ctx, term4, q->c.curr_frame);
 
 	node *n = make_atom(strdup(s));
-	int ok = unify_term(q, term3, n, q->c.curr_frame);
+	int ok = unify(q, term3, term3_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -592,7 +592,7 @@ int bif_net_stash_get_3(tpl_query *q)
 	const char *key = make_key(q->pl, tmpbuf, term2);
 	const char *s = session_get_stash((session *)sp->sptr, key);
 	node *n = make_atom(strdup(s));
-	int ok = unify_term(q, term3, n, q->c.curr_frame);
+	int ok = unify(q, term3, term3_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -614,7 +614,7 @@ int bif_net_stash_set_4(tpl_query *q)
 
 	const char *s = session_get_stash((session *)sp->sptr, key);
 	node *n = make_atom(strdup(s));
-	int ok = unify_term(q, term3, n, q->c.curr_frame);
+	int ok = unify(q, term3, term3_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 
 	if (ok)
@@ -651,7 +651,7 @@ int bif_net_stash_clr_3(tpl_query *q)
 	const char *key = VAL_S(term2);
 	const char *s = session_get_stash((session *)sp->sptr, key);
 	node *n = make_atom(strdup(s));
-	int ok = unify_term(q, term3, n, q->c.curr_frame);
+	int ok = unify(q, term3, term3_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 
 	if (ok) {

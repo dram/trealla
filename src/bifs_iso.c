@@ -1345,7 +1345,7 @@ static int bif_iso_nl(tpl_query *q)
 	return 1;
 }
 
-static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *fp)
+static int read_term(tpl_query *q, char *line, node *term1, unsigned context1, node *term2, FILE *fp)
 {
 	if (!*line)
 		return 0;
@@ -1460,7 +1460,7 @@ static int read_term(tpl_query *q, char *line, node *term1, node *term2, FILE *f
 	sl_done(&vars, NULL);
 	lexer_done(&l);
 	term = clause ? term : term_firstarg(term);
-	int ok = unify_term(q, term1, term, q->c.curr_frame);
+	int ok = unify(q, term1, context1, term, q->c.curr_frame);
 	term_heapcheck(save_term);
 	return ok;
 }
@@ -1486,7 +1486,7 @@ static int bif_iso_read_term_2(tpl_query *q)
 	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
 		return unify_const_atom(q, term1, term1_ctx, END_OF_FILE);
 
-	int ok = read_term(q, line, term1, term2, q->curr_stdin);
+	int ok = read_term(q, line, term1, term1_ctx, term2, q->curr_stdin);
 	free(line);
 	return ok;
 }
@@ -1528,7 +1528,7 @@ static int bif_iso_read_term_3(tpl_query *q)
 			return unify_const_atom(q, term2, term2_ctx, END_OF_FILE);
 	}
 
-	int ok = read_term(q, line, term2, term3, get_input_stream(term1));
+	int ok = read_term(q, line, term2, term2_ctx, term3, get_input_stream(term1));
 	free(line);
 	return ok;
 }
@@ -2017,7 +2017,7 @@ static int bif_iso_number_codes(tpl_query *q)
 	}
 
 	term_append(l, make_const_atom("[]"));
-	int ok = unify_term(q, term2, save_l, -1);
+	int ok = unify(q, term2, term2_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	return ok;
 }
@@ -2100,7 +2100,7 @@ static int bif_iso_number_chars(tpl_query *q)
 	}
 
 	term_append(l, make_const_atom("[]"));
-	int ok = unify_term(q, term2, save_l, -1);
+	int ok = unify(q, term2, term2_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	return ok;
 }
@@ -2175,7 +2175,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 	}
 
 	term_append(l, make_const_atom("[]"));
-	int ok = unify_term(q, term2, save_l, -1);
+	int ok = unify(q, term2, term2_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	return ok;
 }
@@ -2253,7 +2253,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 	}
 
 	term_append(l, make_const_atom("[]"));
-	int ok = unify_term(q, term2, save_l, -1);
+	int ok = unify(q, term2, term2_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	return ok;
 }
@@ -2858,7 +2858,7 @@ static int bif_iso_retractall(tpl_query *q)
 		}
 #endif
 
-		if (unify_term(q, n, match, q->c.curr_frame)) {
+		if (unify(q, n, q->latest_context, match, q->c.curr_frame)) {
 			match->flags |= FLAG_DBS_RETRACT;
 			save_match->flags |= FLAG_DBS_RETRACT | FLAG_DELETED;
 			save_n->flags |= FLAG_DBS_RETRACT | FLAG_DBS_RETRACTALL;
@@ -3078,8 +3078,8 @@ static int bif_clause(tpl_query *q, int wait)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	unsigned context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
+	unsigned term2_ctx = q->latest_context;
 	node *term3 = get_next_arg(q, &args);
 	node *save_match = q->c.curr_match;
 	node *head = NULL;
@@ -3174,7 +3174,7 @@ static int bif_clause(tpl_query *q, int wait)
 		// (%u)\n",
 		// q->c.curr_match->frame_size);
 
-		if (!unify(q, term1, context1, head, q->c.env_point)) {
+		if (!unify(q, term1, term1_ctx, head, q->c.env_point)) {
 			if (save_head)
 				term_heapcheck(save_head);
 
@@ -3243,7 +3243,7 @@ static int bif_clause(tpl_query *q, int wait)
 		return 1;
 
 	node *body = term_next(head);
-	return unify_term(q, term2, body, q->c.curr_frame);
+	return unify(q, term2, term2_ctx, body, q->c.curr_frame);
 }
 
 static int bif_iso_clause(tpl_query *q) { return bif_clause(q, 0); }
@@ -3376,12 +3376,12 @@ static int bif_iso_sort(tpl_query *q)
 
 		term_append(tmp, make_const_atom("[]"));
 		free(base);
-		int ok = unify_term(q, term2, l, q->c.curr_frame);
+		int ok = unify(q, term2, term2_ctx, l, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
 	}
 
-	return unify_term(q, term2, term1, q->c.curr_frame);
+	return unify(q, term2, term2_ctx, term1, q->c.curr_frame);
 }
 
 static int keycmp(const void *p1, const void *p2)
@@ -3449,12 +3449,12 @@ static int bif_iso_keysort(tpl_query *q)
 
 		term_append(tmp, make_const_atom("[]"));
 		free(base);
-		int ok = unify_term(q, term2, l, q->c.curr_frame);
+		int ok = unify(q, term2, term2_ctx, l, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
 	}
 
-	return unify_term(q, term2, term1, q->c.curr_frame);
+	return unify(q, term2, term2_ctx, term1, q->c.curr_frame);
 }
 
 static int bif_iso_arg(tpl_query *q)
@@ -3501,7 +3501,7 @@ static int bif_iso_arg(tpl_query *q)
 		try_me_nofollow(q);
 
 	node *term = get_arg(q, n, term2_ctx);
-	return unify_term(q, term, term3, term2_ctx);
+	return unify(q, term, term2_ctx, term3, term2_ctx);
 }
 
 static int bif_iso_univ(tpl_query *q)
@@ -3533,7 +3533,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]"));
-		int ok = unify_term(q, term2, save_l, term2_ctx);
+		int ok = unify(q, term2, term2_ctx, save_l, term2_ctx);
 		term_heapcheck(save_l);
 		return ok;
 	}
@@ -3542,7 +3542,7 @@ static int bif_iso_univ(tpl_query *q)
 		node *l = make_list();
 		term_append(l, clone_term(q, term1));
 		term_append(l, make_const_atom("[]"));
-		int ok = unify_term(q, term2, l, q->c.curr_frame);
+		int ok = unify(q, term2, term2_ctx, l, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
 	}
@@ -3613,7 +3613,7 @@ static int bif_iso_functor(tpl_query *q)
 			}
 		}
 		else if (v == 0)
-			return unify_term(q, term1, term2, -1);
+			return unify(q, term1, term1_ctx, term2, -1);
 
 		return 0;
 	}
@@ -3629,8 +3629,8 @@ static int bif_iso_functor(tpl_query *q)
 		return 0;
 
 	node *na = make_quick_int(arity);
-	int ok1 = unify_term(q, nf, term2, q->c.curr_frame);
-	int ok2 = unify_term(q, na, term3, q->c.curr_frame);
+	int ok1 = unify(q, term2, term2_ctx, nf, -1);
+	int ok2 = unify(q, term3, term3_ctx, na, -1);
 	term_heapcheck(na);
 	return ok1 && ok2;
 }
@@ -3654,7 +3654,7 @@ static int bif_iso_length(tpl_query *q)
 	}
 
 	if (is_atom(term1))
-		return unify_term(q, term2, make_quick_int(0), -1);
+		return unify(q, term2, term2_ctx, make_quick_int(0), -1);
 
 	if (is_list(term1) && !q->retry) {
 		int cnt = 0;
@@ -3767,7 +3767,7 @@ static int bif_iso_term_variables(tpl_query *q)
 
 	sl_done(&vars, NULL);
 	term_append(l, make_const_atom("[]"));
-	int ok = unify_term(q, term2, save_l, q->latest_context);
+	int ok = unify(q, term2, term2_ctx, save_l, q->latest_context);
 	term_heapcheck(save_l);
 	return ok;
 }
@@ -3823,7 +3823,7 @@ static int bif_iso_findall(tpl_query *q)
 	else
 		save_l = make_const_atom("[]");
 
-	ok = unify_term(q, term3, save_l, -1);
+	ok = unify(q, term3, term3_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	term_heapcheck(from);
 	query_destroy(subq);
@@ -5713,7 +5713,7 @@ static int bif_xtra_term_to_blob(tpl_query *q)
 
 	if (is_atom(term1)) {
 		node *n = make_blob(strdup(VAL_S(term1)), strlen(VAL_S(term1)));
-		ok = unify_term(q, term2, n, -1);
+		ok = unify(q, term2, term2_ctx, n, -1);
 		term_heapcheck(n);
 	}
 	else if (!is_blob(term1)) {
@@ -5722,12 +5722,12 @@ static int bif_xtra_term_to_blob(tpl_query *q)
 		char *dst = tmpbuf;
 		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
 		node *n = make_blob(strdup(tmpbuf), dst - tmpbuf);
-		ok = unify_term(q, term2, n, -1);
+		ok = unify(q, term2, term2_ctx, n, -1);
 		term_heapcheck(n);
 		free(tmpbuf);
 	}
 	else
-		ok = unify_term(q, term1, term2, q->c.curr_frame);
+		ok = unify(q, term1, term1_ctx, term2, term2_ctx);
 
 	return ok;
 }
@@ -6020,7 +6020,7 @@ static int bif_xtra_findnsols_4(tpl_query *q)
 		trust_me(q);
 
 	term_append(end, make_const_atom("[]"));
-	return unify_term(q, term4, acc, q->latest_context);
+	return unify(q, term4, q->latest_context, acc, -1);		// FIXME context?
 }
 
 static int bif_xtra_listing(tpl_query *q)
@@ -6219,7 +6219,7 @@ static int bif_xtra_atom_number_2(tpl_query *q)
 	else if (numeric == NUM_BINARY)
 		n->flags |= FLAG_BINARY;
 
-	int ok = unify_term(q, term2, n, q->c.curr_frame);
+	int ok = unify(q, term2, term2_ctx, n, q->c.curr_frame);
 	term_heapcheck(n);
 	return ok;
 }
@@ -6233,7 +6233,7 @@ static int bif_xtra_read_term_from_atom_3(tpl_query *q)
 	char *src = VAL_S(term1);
 	char *line = (char *)malloc(strlen(src) + 10);
 	sprintf(line, "%s.", src);
-	int ok = read_term(q, line, term2, term3, NULL);
+	int ok = read_term(q, line, term2, term2_ctx, term3, NULL);
 	free(line);
 	return ok;
 }
@@ -6409,7 +6409,7 @@ static int bif_xtra_seeing_1(tpl_query *q)
 	if (q->curr_stdin_stream) {
 		node *n = make_stream(q->curr_stdin_stream);
 		n->flags |= FLAG_FILE | FLAG_CONST;
-		int ok = unify_term(q, term1, n, -1);
+		int ok = unify(q, term1, term1_ctx, n, -1);
 		term_heapcheck(n);
 		return ok;
 	}
@@ -6510,7 +6510,7 @@ static int bif_xtra_telling_1(tpl_query *q)
 	if (q->curr_stdout_stream) {
 		node *n = make_stream(q->curr_stdout_stream);
 		n->flags |= FLAG_FILE | FLAG_CONST;
-		int ok = unify_term(q, term1, n, -1);
+		int ok = unify(q, term1, term1_ctx, n, -1);
 		term_heapcheck(n);
 		return ok;
 	}
@@ -6921,7 +6921,7 @@ static int bif_xtra_name_2(tpl_query *q)
 		return 0;
 	}
 
-	int ok = unify_term(q, term2, n, -1);
+	int ok = unify(q, term2, term2_ctx, n, -1);
 	term_heapcheck(n);
 	return ok;
 }

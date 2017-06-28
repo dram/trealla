@@ -1653,7 +1653,7 @@ static int bif_sys_lput_4(tpl_query *q)
 	else if (!sl_get(sp->kvs, VAL_S(term1), (void **)&value))
 		value = make_const_atom("[]");
 
-	int ok = unify_term(q, term2, value, q->c.curr_frame);
+	int ok = unify(q, term2, term2_ctx, value, q->c.curr_frame);
 	term_heapcheck(value);
 
 	if (!ok) {
@@ -1697,7 +1697,7 @@ static int bif_sys_put_4(tpl_query *q)
 	else if (!sl_get(sp->kvs, VAL_S(term1), (void **)&value))
 		value = make_quick_int(0);
 
-	int ok = unify_term(q, term2, value, q->c.curr_frame);
+	int ok = unify(q, term2, term2_ctx, value, q->c.curr_frame);
 	term_heapcheck(value);
 
 	if (!ok) {
@@ -1763,7 +1763,7 @@ static int bif_sys_get_3(tpl_query *q)
 		value = make_quick_int(0);
 
 	SYSUNLOCK(q->pl);
-	int ok = unify_term(q, term2, value, q->c.curr_frame);
+	int ok = unify(q, term2, term2_ctx, value, q->c.curr_frame);
 	term_heapcheck(value);
 	return ok;
 }
@@ -1784,7 +1784,7 @@ static int bif_sys_lget_3(tpl_query *q)
 		value = make_const_atom("[]");
 
 	SYSUNLOCK(q->pl);
-	int ok = unify_term(q, term2, value, q->c.curr_frame);
+	int ok = unify(q, term2, term2_ctx, value, q->c.curr_frame);
 	term_heapcheck(value);
 	return ok;
 }
@@ -1806,7 +1806,7 @@ static int bif_sys_get_keys_3(tpl_query *q)
 		const char *key;
 
 		while ((key = sl_next(sp->kvs, (void **)&value)) != NULL) {
-			if (!unify_term(q, value, term1, q->c.curr_frame)) {
+			if (!unify(q, term1, term1_ctx, value, -1)) {
 				reallocate_frame(q);
 				continue;
 			}
@@ -1828,10 +1828,10 @@ static int bif_sys_get_keys_3(tpl_query *q)
 
 	if (cnt) {
 		term_append(l, make_const_atom("[]"));
-		ok = unify_term(q, term2, save_l, q->c.curr_frame);
+		ok = unify(q, term2, term2_ctx, save_l, q->c.curr_frame);
 	}
 	else {
-		ok = unify_const_atom(q, term2, q->latest_context, "[]");
+		ok = unify_const_atom(q, term2, term2_ctx, "[]");
 	}
 
 	term_heapcheck(save_l);
@@ -1876,10 +1876,10 @@ static int bif_sys_get_2(tpl_query *q)
 
 	if (cnt) {
 		term_append(l, make_const_atom("[]"));
-		ok = unify_term(q, term1, save_l, q->c.curr_frame);
+		ok = unify(q, term1, term1_ctx, save_l, q->c.curr_frame);
 	}
 	else {
-		ok = unify_const_atom(q, term1, q->latest_context, "[]");
+		ok = unify_const_atom(q, term1, term1_ctx, "[]");
 	}
 
 	term_heapcheck(save_l);
