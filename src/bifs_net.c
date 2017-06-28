@@ -158,12 +158,16 @@ static int net_callback(session *s, void *data)
 	node *goal = term_next(q->c.curr_term);
 
 	if (session_get_udata_flag(s, BYE)) {
-		// printf("DEBUG: BYE\n");
+		if (g_debug)
+			printf("DEBUG: BYE\n");
+
 		return 0;
 	}
 
 	if (session_on_connect(s)) {
-		// printf("DEBUG: CONNECT\n");
+		if (g_debug)
+			printf("DEBUG: CONNECT\n");
+
 		session_set_udata_flag(s, HELLO);
 		tpl_query *who = query_create_subquery(q);
 
@@ -182,14 +186,18 @@ static int net_callback(session *s, void *data)
 		process_start_handler(who);
 	}
 	else if (session_on_disconnect(s)) {
-		// printf("DEBUG: DISCONNECT\n");
+		if (g_debug)
+			printf("DEBUG: DISCONNECT\n");
+
 		session_clr_udata_flag(s, HELLO);
 		session_set_udata_flag(s, BYE);
 		tpl_query *who = (tpl_query *)session_get_udata_ptr(s);
 		process_restart_handler(who);
 	}
 	else {
-		// printf("DEBUG: DATA\n");
+		if (g_debug)
+			printf("DEBUG: DATA\n");
+
 		session_clr_udata_flag(s, HELLO);
 		tpl_query *who = (tpl_query *)session_get_udata_ptr(s);
 		process_restart_handler(who);
