@@ -1182,7 +1182,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 			if (is_atom(term_prev(n))) {
 				const char *f = VAL_S(term_prev(n));
 
-				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ":-"))
+				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-"))
 					prev_op = 1;
 			}
 		}
@@ -1270,7 +1270,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 			if (is_atom(term_prev(n))) {
 				const char *f = VAL_S(term_prev(n));
 
-				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ":-"))
+				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-"))
 					prev_op = 1;
 			}
 		}
@@ -2433,7 +2433,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				if (is_atom(tmp) && self->was_atom) {
 					const char *functor = VAL_S(tmp);
 					const op *optr = get_op(&self->pl->db, functor, 0);
-					int doit = isalpha(functor[0]);
+					int doit = isalpha(functor[0]) && strcmp(functor, "is");
 
 					if (!strcmp(functor, g_list_cons)) {
 						n->flags |= FLAG_LIST;
