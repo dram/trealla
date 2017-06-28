@@ -1109,7 +1109,7 @@ int session_rawwrite(session *s, const void *buf, size_t len)
 int session_write(session *s, const void *_buf, size_t len)
 {
 	if (s->disconnected)
-		return 0;
+		return -1;
 
 	if (!len)
 		return 0;
