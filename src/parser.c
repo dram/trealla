@@ -1176,6 +1176,24 @@ static int attach_ops(lexer *l, node *term, int depth)
 			continue;
 		}
 
+		int prev_op = 0;
+
+		if (term_prev(n) && strcmp(functor, "-") && strcmp(functor, "]-[")) {
+			if (is_atom(term_prev(n))) {
+				const char *f = VAL_S(term_prev(n));
+
+				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ":-"))
+					prev_op = 1;
+			}
+		}
+
+		//printf("### attach_ops FUNCTOR = '%s' / '%s' prev=%d\n", functor, optr->spec, prev_op);
+
+		if (prev_op) {
+			was_operator = 0;
+			continue;
+		}
+
 		if (was_operator && !strcmp(functor, "-")) {
 			node *tmp = term_next(n);
 
@@ -1246,8 +1264,21 @@ static int attach_ops(lexer *l, node *term, int depth)
 		if (optr->priority != priority)
 			continue;
 
-		// printf("### attach_ops FUNCTOR = '%s' / '%s'\n", functor,
-		// optr->spec);
+		int prev_op = 0;
+
+		if (term_prev(n) && strcmp(functor, "]-[")) {
+			if (is_atom(term_prev(n))) {
+				const char *f = VAL_S(term_prev(n));
+
+				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ":-"))
+					prev_op = 1;
+			}
+		}
+
+		//printf("### attach_ops FUNCTOR = '%s' / '%s' prev=%d\n", functor, optr->spec, prev_op);
+
+		if (prev_op)
+			continue;
 
 		if (OP_PREFIX(optr->spec)) {
 			n = attach_op_prefix(l, term, n);
@@ -2402,7 +2433,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				if (is_atom(tmp) && self->was_atom) {
 					const char *functor = VAL_S(tmp);
 					const op *optr = get_op(&self->pl->db, functor, 0);
-					int doit = 0;
+					int doit = isalpha(functor[0]);
 
 					if (!strcmp(functor, g_list_cons)) {
 						n->flags |= FLAG_LIST;
