@@ -629,15 +629,15 @@ static int unify_compound(tpl_query *q, node *term1, unsigned context1, node *te
 
 	while (term1 != NULL) {
 		node *tmp1 = get_arg(q, term1, context1);
-		int this_context1 = q->latest_context;
+		int tmp1_ctx = q->latest_context;
 		node *tmp2 = get_arg(q, term2, context2);
-		int this_context2 = q->latest_context;
+		int tmp2_ctx = q->latest_context;
 		q->fail_arg++;
 
 		if (is_compound(tmp1) && is_compound(tmp2))
-			ok = unify_compound(q, tmp1, this_context1, tmp2, this_context2);
+			ok = unify_compound(q, tmp1, tmp1_ctx, tmp2, tmp2_ctx);
 		else
-			ok = unify_atomic(q, tmp1, this_context1, tmp2, this_context2);
+			ok = unify_atomic(q, tmp1, tmp1_ctx, tmp2, tmp2_ctx);
 
 		if (!ok)
 			break;
