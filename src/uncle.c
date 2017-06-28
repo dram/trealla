@@ -25,7 +25,7 @@
 	}
 #endif
 
-static const int g_debug = 1;
+static const int g_debug = 0;
 
 struct uncle_ {
 	handler *h;
