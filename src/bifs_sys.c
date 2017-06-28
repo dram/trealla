@@ -874,7 +874,6 @@ static int bif_sys_split_last_4(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_atom_or_var(term3);
-	unsigned save_context3 = q->latest_context;
 	node *term4 = get_atom_or_var(term4);
 	const char *src = VAL_S(term1);
 	char *dstbuf = (char *)malloc(LEN(term1) + 1);
@@ -899,7 +898,7 @@ static int bif_sys_split_last_4(tpl_query *q)
 		src++;
 
 	*dst = '\0';
-	int ok = unify_atom(q, term3, save_context3, strdup(dstbuf));
+	int ok = unify_atom(q, term3, term3_ctx, strdup(dstbuf));
 
 	if (!ok) {
 		free(dstbuf);
@@ -932,7 +931,6 @@ static int bif_sys_split_4(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_atom_or_var(term3);
-	unsigned save_context3 = q->latest_context;
 	node *term4 = get_atom_or_var(term4);
 	const char *src = VAL_S(term1);
 	char *dstbuf = (char *)malloc(LEN(term1) + 1);
@@ -948,7 +946,7 @@ static int bif_sys_split_4(tpl_query *q)
 		src++;
 
 	*dst = '\0';
-	int ok = unify_atom(q, term3, save_context3, strdup(dstbuf));
+	int ok = unify_atom(q, term3, term3_ctx, strdup(dstbuf));
 
 	if (!ok) {
 		free(dstbuf);

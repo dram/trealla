@@ -846,9 +846,7 @@ static int bif_iso_current_op(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
-	unsigned save_context1 = q->latest_context;
 	node *term2 = get_atom_or_var(term2);
-	unsigned save_context2 = q->latest_context;
 	node *term3 = get_atom(term3);
 
 	// FIXME to backtrack
@@ -866,10 +864,10 @@ static int bif_iso_current_op(tpl_query *q)
 	if (!cur_op->fun)
 		return 0;
 
-	if (!unify_const_atom(q, term2, save_context2, cur_op->spec))
+	if (!unify_const_atom(q, term2, term2_ctx, cur_op->spec))
 		return 0;
 
-	if (!unify_int(q, term1, save_context1, (int)cur_op->priority))
+	if (!unify_int(q, term1, term1_ctx, (int)cur_op->priority))
 		return 0;
 
 	return 1;
@@ -1471,7 +1469,6 @@ static int bif_iso_read_term_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	unsigned save_context1 = q->latest_context;
 	node *term2 = get_next_arg(q, &args);
 	char *line;
 
@@ -1487,7 +1484,7 @@ static int bif_iso_read_term_2(tpl_query *q)
 	}
 
 	if (!(line = trealla_readline(q->lex, q->curr_stdin, 1)))
-		return unify_const_atom(q, term1, save_context1, END_OF_FILE);
+		return unify_const_atom(q, term1, term1_ctx, END_OF_FILE);
 
 	int ok = read_term(q, line, term1, term2, q->curr_stdin);
 	free(line);
@@ -1499,7 +1496,6 @@ static int bif_iso_read_term_3(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
-	unsigned save_context2 = q->latest_context;
 	node *term3 = get_next_arg(q, &args);
 	stream *sp = term1->val_str;
 	char *line = NULL;
@@ -1523,13 +1519,13 @@ static int bif_iso_read_term_3(tpl_query *q)
 		}
 
 		if (session_on_disconnect((session *)sp->sptr))
-			return unify_const_atom(q, term2, save_context2, END_OF_FILE);
+			return unify_const_atom(q, term2, term2_ctx, END_OF_FILE);
 	}
 	else
 #endif
 	{
 		if (!(line = trealla_readline(q->lex, get_input_stream(term1), 1)))
-			return unify_const_atom(q, term2, save_context2, END_OF_FILE);
+			return unify_const_atom(q, term2, term2_ctx, END_OF_FILE);
 	}
 
 	int ok = read_term(q, line, term2, term3, get_input_stream(term1));
@@ -1944,7 +1940,6 @@ static int bif_iso_number_codes(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_nbr_or_var(term1);
-	int save_context = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -1992,13 +1987,13 @@ static int bif_iso_number_codes(tpl_query *q)
 		}
 
 		*dst = '\0';
-		q->curr_context = save_context;
+		q->curr_context = term1_ctx;
 		int ok;
 
 		if (is_real)
-			ok = unify_float(q, term1, save_context, atof(tmpbuf));
+			ok = unify_float(q, term1, term1_ctx, atof(tmpbuf));
 		else
-			ok = unify_int(q, term1, save_context, atoll(tmpbuf));
+			ok = unify_int(q, term1, term1_ctx, atoll(tmpbuf));
 
 		return ok;
 	}
@@ -2031,7 +2026,6 @@ static int bif_iso_number_chars(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_nbr_or_var(term1);
-	int save_context = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -2077,13 +2071,12 @@ static int bif_iso_number_chars(tpl_query *q)
 		}
 
 		*dst = '\0';
-		q->curr_context = save_context;
 		int ok;
 
 		if (is_real)
-			ok = unify_float(q, term1, save_context, atof(tmpbuf));
+			ok = unify_float(q, term1, term1_ctx, atof(tmpbuf));
 		else
-			ok = unify_int(q, term1, save_context, atoll(tmpbuf));
+			ok = unify_int(q, term1, term1_ctx, atoll(tmpbuf));
 
 		return ok;
 	}
@@ -2116,7 +2109,6 @@ static int bif_iso_atom_chars(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
-	unsigned save_context1 = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -2158,7 +2150,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 		}
 
 		*dst = '\0';
-		int ok = unify_atom(q, term1, save_context1, strdup(dstbuf));
+		int ok = unify_atom(q, term1, term1_ctx, strdup(dstbuf));
 		free(dstbuf);
 		return ok;
 	}
@@ -2192,7 +2184,6 @@ static int bif_iso_atom_codes(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
-	unsigned save_context1 = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -2239,7 +2230,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 		}
 
 		*dst = '\0';
-		int ok = unify_atom(q, term1, save_context1, strdup(dstbuf));
+		int ok = unify_atom(q, term1, term1_ctx, strdup(dstbuf));
 		free(dstbuf);
 		return ok;
 	}
@@ -2271,7 +2262,6 @@ static int bif_iso_char_code(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
-	unsigned save_context1 = q->latest_context;
 	node *term2 = get_int_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -2283,7 +2273,7 @@ static int bif_iso_char_code(tpl_query *q)
 		char tmpbuf[2];
 		tmpbuf[0] = (char)term2->val_i;
 		tmpbuf[1] = '\0';
-		int ok = unify_atom(q, term1, save_context1, strdup(tmpbuf));
+		int ok = unify_atom(q, term1, term1_ctx, strdup(tmpbuf));
 		return ok;
 	}
 
@@ -3333,9 +3323,8 @@ static int bif_iso_sort(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
-	int save_context = q->latest_context;
 	node *term2 = get_atom_or_list_or_var(term2);
-	q->latest_context = save_context;
+	q->latest_context = term1_ctx;
 
 	if (is_list(term1)) {
 		node *l = term1;
@@ -3355,7 +3344,7 @@ static int bif_iso_sort(tpl_query *q)
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
 		l = term1;
-		q->latest_context = save_context;
+		q->latest_context = term1_ctx;
 		size_t idx = 0;
 
 		while (is_list(l)) {
@@ -3408,9 +3397,8 @@ static int bif_iso_keysort(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
-	int save_context = q->latest_context;
 	node *term2 = get_atom_or_list_or_var(term2);
-	q->latest_context = save_context;
+	q->latest_context = term1_ctx;
 
 	if (is_list(term1)) {
 		node *l = term1;
@@ -3432,7 +3420,7 @@ static int bif_iso_keysort(tpl_query *q)
 		}
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
-		q->latest_context = save_context;
+		q->latest_context = term1_ctx;
 		l = term1;
 		size_t idx = 0;
 
@@ -3475,7 +3463,6 @@ static int bif_iso_arg(tpl_query *q)
 	node *orig_term1 = term_next(args);
 	node *term1 = get_int_or_var(term1);
 	node *term2 = get_compound(term2);
-	unsigned save_context2 = q->latest_context;
 	node *term3 = get_term(term3);
 
 #if USE_SSL
@@ -3513,15 +3500,14 @@ static int bif_iso_arg(tpl_query *q)
 	if (is_var(term1) || q->retry)
 		try_me_nofollow(q);
 
-	node *term = get_arg(q, n, save_context2);
-	return unify_term(q, term, term3, save_context2);
+	node *term = get_arg(q, n, term2_ctx);
+	return unify_term(q, term, term3, term2_ctx);
 }
 
 static int bif_iso_univ(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	unsigned save_context = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -3547,7 +3533,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]"));
-		int ok = unify_term(q, term2, save_l, save_context);
+		int ok = unify_term(q, term2, save_l, term2_ctx);
 		term_heapcheck(save_l);
 		return ok;
 	}
@@ -3654,7 +3640,6 @@ static int bif_iso_length(tpl_query *q)
 	node *args = get_args(q);
 	node *orig_term1 = term_next(args);
 	node *term1 = get_term(term1);
-	int save_context = q->latest_context;
 	node *orig_term2 = term_next(args);
 	node *term2 = get_int_or_var(term2);
 
@@ -3673,7 +3658,7 @@ static int bif_iso_length(tpl_query *q)
 
 	if (is_list(term1) && !q->retry) {
 		int cnt = 0;
-		q->latest_context = save_context;
+		q->latest_context = term1_ctx;
 		node *l = term1;
 
 		while (is_list(l)) {
@@ -5702,7 +5687,6 @@ static int bif_xtra_term_to_atom_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_nonvar(term1);
-	unsigned save_context1 = q->latest_context;
 	node *term2 = get_atom_or_var(term2);
 	int ok;
 
@@ -5711,11 +5695,11 @@ static int bif_xtra_term_to_atom_2(tpl_query *q)
 		char *tmpbuf = (char *)malloc(max_len + 1);
 		char *dst = tmpbuf;
 		term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
-		ok = unify_atom(q, term2, save_context1, strdup(tmpbuf));
+		ok = unify_atom(q, term2, term1_ctx, strdup(tmpbuf));
 		free(tmpbuf);
 	}
 	else
-		ok = unify(q, term1, save_context1, term2, q->c.curr_frame);
+		ok = unify(q, term1, term1_ctx, term2, q->c.curr_frame);
 
 	return ok;
 }
@@ -6634,7 +6618,6 @@ static int bif_xtra_memberchk_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	unsigned save_context = q->latest_context;
 	node *term2 = get_atom_or_list(term2);
 	node *l = term2;
 	allocate_frame(q);
@@ -6644,7 +6627,7 @@ static int bif_xtra_memberchk_2(tpl_query *q)
 		unsigned this_context = q->latest_context;
 		node *n = get_arg(q, head, q->latest_context);
 
-		if (unify(q, term1, save_context, n, q->latest_context)) {
+		if (unify(q, term1, term1_ctx, n, q->latest_context)) {
 			return 1;
 		}
 
@@ -6824,7 +6807,6 @@ static int bif_xtra_name_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	unsigned save_context1 = q->latest_context;
 	node *term2 = get_list_or_var(term2);
 
 	if (is_var(term1) && is_var(term2)) {
@@ -6880,16 +6862,16 @@ static int bif_xtra_name_2(tpl_query *q)
 		int ok;
 
 		if (isdigit(*dstbuf) && (numeric == NUM_INT))
-			ok = unify_int(q, term1, save_context1, v);
+			ok = unify_int(q, term1, term1_ctx, v);
 		else if (isdigit(*dstbuf) && (numeric == NUM_BIGNUM)) {
 			node *n = make_bignum(dstbuf);
-			ok = unify(q, term1, save_context1, n, q->c.curr_frame);
+			ok = unify(q, term1, term1_ctx, n, q->c.curr_frame);
 			term_heapcheck(n);
 		}
 		else if (numeric == NUM_REAL)
-			ok = unify_float(q, term1, save_context1, strtod(dstbuf, NULL));
+			ok = unify_float(q, term1, term1_ctx, strtod(dstbuf, NULL));
 		else
-			ok = unify_atom(q, term1, save_context1, strdup(dstbuf));
+			ok = unify_atom(q, term1, term1_ctx, strdup(dstbuf));
 
 		free(dstbuf);
 		return ok;
@@ -6971,9 +6953,8 @@ static int bif_xtra_atomic_list_concat_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
-	unsigned save_context = q->latest_context;
 	node *term2 = get_var(term2);
-	q->latest_context = save_context;
+	q->latest_context = term1_ctx;
 	node *l = term1;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
@@ -7011,10 +6992,9 @@ static int bif_xtra_atomic_list_concat_3(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_list(term1);
-	unsigned save_context = q->latest_context;
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
-	q->latest_context = save_context;
+	q->latest_context = term1_ctx;
 	node *l = term1;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
