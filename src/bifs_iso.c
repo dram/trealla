@@ -846,7 +846,9 @@ static int bif_iso_current_op(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
+	unsigned save_context1 = q->latest_context;
 	node *term2 = get_atom_or_var(term2);
+	unsigned save_context2 = q->latest_context;
 	node *term3 = get_atom(term3);
 
 	// FIXME to backtrack
@@ -864,10 +866,14 @@ static int bif_iso_current_op(tpl_query *q)
 	if (!cur_op->fun)
 		return 0;
 
-	if (!unify_const_atom(q, term2, cur_op->spec))
+	node *n2 = make_const_atom(cur_op->spec);
+
+	if (!unify(q, term2, save_context2, n2, -1))
 		return 0;
 
-	if (!unify_int(q, term1, (int)cur_op->priority))
+	node *n1 = make_quick_int(cur_op->priority);
+
+	if (!unify(q, term1, save_context1, n1, -1))
 		return 0;
 
 	return 1;
