@@ -1070,9 +1070,9 @@ void query_dump(tpl_query *self)
 	}
 	else {
 		while (sl_next(&vars, (void **)&n) != NULL) {
+			node *n2 = get_arg(self, n, FUDGE_FACTOR);
 			char tmpbuf[PRINTBUF_SIZE];
-			self->latest_context = FUDGE_FACTOR;
-			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, n, 1);
+			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, NULL, n2, 1);
 			printf(" %s: %s\n", VAL_S(n), tmpbuf);
 			any++;
 		}
