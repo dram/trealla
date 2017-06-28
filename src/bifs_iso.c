@@ -3533,7 +3533,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]"));
-		int ok = unify(q, term2, term2_ctx, save_l, term2_ctx);
+		int ok = unify(q, term2, term2_ctx, save_l, term1_ctx);
 		term_heapcheck(save_l);
 		return ok;
 	}
@@ -3542,7 +3542,7 @@ static int bif_iso_univ(tpl_query *q)
 		node *l = make_list();
 		term_append(l, clone_term(q, term1));
 		term_append(l, make_const_atom("[]"));
-		int ok = unify(q, term2, term2_ctx, l, q->c.curr_frame);
+		int ok = unify(q, term2, term2_ctx, l, term1_ctx);
 		term_heapcheck(l);
 		return ok;
 	}
@@ -3555,7 +3555,7 @@ static int bif_iso_univ(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-			node *n = get_arg(q, head, q->latest_context);
+			node *n = get_arg(q, head, this_context);
 
 			if (first && is_var(n)) {
 				QABORT(ABORT_INVALIDARGNOTGROUNDED);
