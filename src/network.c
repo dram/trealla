@@ -1215,7 +1215,7 @@ int session_read(session *s, void *buf, size_t len)
 int session_readmsg(session *s, char **buf)
 {
 	if (s->disconnected)
-		return -1;
+		return 0;
 
 	// Allocate internal destination message buffer
 	// if one doesn't already exist...

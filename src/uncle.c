@@ -25,7 +25,7 @@
 	}
 #endif
 
-static const int g_debug = 0;
+static const int g_debug = 1;
 
 struct uncle_ {
 	handler *h;
@@ -85,7 +85,6 @@ int uncle_query(uncle *u, const char *name, char *addr, unsigned *port, int *tcp
 	u->search.tcp = *tcp;
 	u->search.ssl = *ssl;
 	u->search.pri = *pri;
-
 	lock_lock(u->strand);
 
 	if (name[0])
@@ -125,18 +124,21 @@ int uncle_add(uncle *u, const char *name, const char *addr, unsigned port, int t
 
 	if (strlen(name) > 255)
 		return 0;
+
 	if (strlen(addr) > 255)
 		return 0;
-	uncle_db_add(u, name, 1, addr, port, tcp, ssl, pri);
 
+	uncle_db_add(u, name, 1, addr, port, tcp, ssl, pri);
 	char tmpbuf[1024];
 	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"+\",\"$"
 	                "name\":\"%s\",\"$port\":%u,\"$tcp\":%"
 	                "s,\"$ssl\":%s,\"$pri\":%s}\n",
 	        u->scope, (unsigned long long)u->unique, name, port, tcp ? "true" : "false", ssl ? "true" : "false",
 	        pri ? "true" : "false");
+
 	if (g_debug)
 		printf("DEBUG: ADD %s", tmpbuf);
+
 	session_writemsg(u->s, tmpbuf);
 	return 1;
 }
@@ -148,6 +150,7 @@ static int uncle_db_rem(uncle *u, const char *name, int local, const char *addr,
 	u->search.tcp = tcp;
 	u->search.ssl = -1;
 	u->search.addr[0] = 0;
+
 	if (g_debug)
 		printf("DEBUG: DBREM %s\n", u->search.key);
 
@@ -191,6 +194,7 @@ static int uncle_iter2(uncle *u, const char *k, const char *v)
 	sscanf(v, "%255[^/]/%255[^/]/%d/%u/%d/%d/%d", name, addr, &local, &port, &tcp, &ssl, &pri);
 	name[sizeof(name) - 1] = 0;
 	addr[sizeof(addr) - 1] = 0;
+
 	if (g_debug)
 		printf("DEBUG: ??? %s, search name=%s, tcp=%d, ssl=%d\n", v, u->search.name, u->search.tcp, u->search.ssl);
 
@@ -221,7 +225,7 @@ static int uncle_iter2(uncle *u, const char *k, const char *v)
 static int uncle_handler(session *s, void *data)
 {
 	uncle *u = (uncle *)data;
-	char *buf = 0;
+	char *buf = NULL;
 
 	if (g_debug)
 		printf("*** DEBUG: handler\n");
@@ -230,8 +234,10 @@ static int uncle_handler(session *s, void *data)
 		return 0;
 
 	const char *addr = session_get_remote_addr(s, 0);
+
 	if (g_debug)
-		printf("DEBUG: RCV %s: %s", addr, buf);
+		printf("DEBUG: RCV %s: %s\n", addr, buf);
+
 	char scope[256];
 	jsonq(buf, "$scope", scope, sizeof(scope));
 	time_t unique = jsonq_int(buf, "$unique");
@@ -293,10 +299,11 @@ uncle *uncle_create2(handler *h, const char *binding, unsigned port, const char 
 		return NULL;
 
 	session *s = session_open("255.255.255.255", port, 0, 0);
+
 	if (!s)
 		return NULL;
-	session_enable_broadcast(s);
 
+	session_enable_broadcast(s);
 	uncle *u = (uncle *)calloc(1, sizeof(struct uncle_));
 	u->db = sb_string_create2();
 	u->h = h;
@@ -308,8 +315,10 @@ uncle *uncle_create2(handler *h, const char *binding, unsigned port, const char 
 	handler_add_client(h, &uncle_handler, u, u->s);
 	char tmpbuf[1024];
 	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"?\"}\n", u->scope, (unsigned long long)u->unique);
+
 	if (g_debug)
 		printf("DEBUG: CREATE %s", tmpbuf);
+
 	session_bcastmsg(u->s, tmpbuf);
 	return u;
 }
@@ -323,14 +332,16 @@ static int uncle_wait(void *data)
 
 uncle *uncle_create(const char *binding, unsigned port, const char *scope, const char *maddr6, const char *maddr4)
 {
-	if (!port)
-		return NULL;
-
-	if (strlen(scope) > 255)
-		return NULL;
-
 	handler *h = handler_create(0);
+
+	if (!h)
+		return NULL;
+
 	uncle *u = uncle_create2(h, binding, port, scope, maddr6, maddr4);
+
+	if (!u)
+		return NULL;
+
 	thread_run(&uncle_wait, u);
 	msleep(1000);
 	return u;

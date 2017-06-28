@@ -370,13 +370,12 @@ static int bif_net_client_2(tpl_query *q)
 		sscanf(ptr, ";%*[^=]=%255[^;]", name);
 		name[sizeof(name) - 1] = '\0';
 
-		// printf("DEBUG: Add discovery: %s,port=%u,scope=%s\n", "*",
-		// uport,
-		// scope);
-
+		printf("INFO: Add discovery: %s,port=%u,scope=%s\n", "*", uport, scope);
 		uncle *u = uncle_create(NULL, uport, scope, NULL, NULL);
+
 		if (!u)
 			return 0;
+
 		int ms = 1, found = 0;
 		unsigned tmp_port = 0;
 
@@ -386,11 +385,7 @@ static int bif_net_client_2(tpl_query *q)
 			if (!uncle_query(u, name, host, &tmp_port, &tcp, &ssl, &pri))
 				continue;
 
-			// printf("DEBUG: Discovery:
-			// scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n",
-			// scope, name,
-			// tmp_port, tcp, ssl,
-			// pri);
+			printf("DEBUG: Discovery: scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", scope, name, tmp_port, tcp, ssl, pri);
 			found = 1;
 			break;
 		}
@@ -405,10 +400,7 @@ static int bif_net_client_2(tpl_query *q)
 		port = tmp_port;
 	}
 
-	// printf("DEBUG: Client:
-	// userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid,
-	// passwd, host, port, tcp, ssl,
-	// pri);
+	printf("DEBUG: Client: userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid, passwd, host, port, tcp, ssl, pri);
 
 	session *s = session_open(host, port, tcp, ssl);
 
