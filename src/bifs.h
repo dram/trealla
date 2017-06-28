@@ -55,6 +55,8 @@
 	}
 #define get_term(t)                                                                                                            \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (t == NULL) {                                                                                                           \
 		QABORT(ABORT_INVALIDARGMISSING);                                                                                       \
 		return 0;                                                                                                              \
@@ -62,144 +64,192 @@
 
 #define get_atomic(t)                                                                                                          \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atomic(t)) {                                                                                                       \
 		QABORT(ABORT_INVALIDARGNOTATOMIC);                                                                                     \
 		return 0;                                                                                                              \
 	}
 #define get_atom(t)                                                                                                            \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atom(t)) {                                                                                                         \
 		QABORT(ABORT_INVALIDARGNOTATOM);                                                                                       \
 		return 0;                                                                                                              \
 	}
 #define get_atom_or_int(t)                                                                                                     \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atom(t) && !is_integer(t) && !is_bignum(t)) {                                                                      \
 		QABORT(ABORT_INVALIDARGNOTATOMORINT);                                                                                  \
 		return 0;                                                                                                              \
 	}
 #define get_atom_or_list(t)                                                                                                    \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atom(t) && !is_list(t)) {                                                                                          \
 		QABORT(ABORT_INVALIDARGNOTATOMORLIST);                                                                                 \
 		return 0;                                                                                                              \
 	}
 #define get_atom_or_list_or_var(t)                                                                                             \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atom(t) && !is_list(t) && !is_var(t)) {                                                                            \
 		QABORT(ABORT_INVALIDARGNOTATOMORLIST);                                                                                 \
 		return 0;                                                                                                              \
 	}
 #define get_atom_or_var(t)                                                                                                     \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atom(t) && !is_var(t)) {                                                                                           \
 		QABORT(ABORT_INVALIDARGNOTATOMORVAR);                                                                                  \
 		return 0;                                                                                                              \
 	}
 #define get_nbr(t)                                                                                                             \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_number(t)) {                                                                                                       \
 		QABORT(ABORT_INVALIDARGNOTNBR);                                                                                        \
 		return 0;                                                                                                              \
 	}
 #define get_nbr_or_var(t)                                                                                                      \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_number(t) && !is_var(t)) {                                                                                         \
 		QABORT(ABORT_INVALIDARGNOTNBRORVAR);                                                                                   \
 		return 0;                                                                                                              \
 	}
 #define get_int(t)                                                                                                             \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_integer(t) && !is_bignum(t)) {                                                                                     \
 		QABORT(ABORT_INVALIDARGNOTINT);                                                                                        \
 		return 0;                                                                                                              \
 	}
 #define get_int_or_var(t)                                                                                                      \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_integer(t) && !is_bignum(t) && !is_var(t)) {                                                                       \
 		QABORT(ABORT_INVALIDARGNOTINTORVAR);                                                                                   \
 		return 0;                                                                                                              \
 	}
 #define get_ptr(t)                                                                                                             \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_ptr(t)) {                                                                                                          \
 		QABORT(ABORT_INVALIDARGNOTPTR);                                                                                        \
 		return 0;                                                                                                              \
 	}
 #define get_var(t)                                                                                                             \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_var(t)) {                                                                                                          \
 		QABORT(ABORT_INVALIDARGNOTVAR);                                                                                        \
 		return 0;                                                                                                              \
 	}
 #define get_nonvar(t)                                                                                                          \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (is_var(t)) {                                                                                                           \
 		QABORT(ABORT_INVALIDARGISVAR);                                                                                         \
 		return 0;                                                                                                              \
 	}
 #define get_compound(t)                                                                                                        \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_compound(t)) {                                                                                                     \
 		QABORT(ABORT_INVALIDARGNOTCOMPOUND);                                                                                   \
 		return 0;                                                                                                              \
 	}
 #define get_callable(t)                                                                                                        \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_callable(t)) {                                                                                                     \
 		QABORT(ABORT_INVALIDARGNOTCALLABLE);                                                                                   \
 		return 0;                                                                                                              \
 	}
 #define get_list_or_callable(t)                                                                                                \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_callable(t) && !is_list(t)) {                                                                                      \
 		QABORT(ABORT_INVALIDARGNOTCALLABLE);                                                                                   \
 		return 0;                                                                                                              \
 	}
 #define get_structure(t)                                                                                                       \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_structure(t)) {                                                                                                    \
 		QABORT(ABORT_INVALIDARGNOTSTRUCTURE);                                                                                  \
 		return 0;                                                                                                              \
 	}
 #define get_list(t)                                                                                                            \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_list(t)) {                                                                                                         \
 		QABORT(ABORT_INVALIDARGNOTLIST);                                                                                       \
 		return 0;                                                                                                              \
 	}
 #define get_tuple(t)                                                                                                           \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_tuple(t)) {                                                                                                        \
 		QABORT(ABORT_INVALIDARGNOTTUPLE);                                                                                      \
 		return 0;                                                                                                              \
 	}
 #define get_list_or_var(t)                                                                                                     \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_list(t) && !is_var(t)) {                                                                                           \
 		QABORT(ABORT_INVALIDARGNOTLISTORVAR);                                                                                  \
 		return 0;                                                                                                              \
 	}
 #define get_atom_or_file(t)                                                                                                    \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atom(t) && !is_file(t)) {                                                                                          \
 		QABORT(ABORT_INVALIDARGNOTFILE);                                                                                       \
 		return 0;                                                                                                              \
 	}
 #define get_atom_or_stream(t)                                                                                                  \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_atom(t) && !is_stream(t)) {                                                                                        \
 		QABORT(ABORT_INVALIDARGNOTSTREAM);                                                                                     \
 		return 0;                                                                                                              \
 	}
 #define get_stream(t)                                                                                                          \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_stream(t)) {                                                                                                       \
 		QABORT(ABORT_INVALIDARGNOTSTREAM);                                                                                     \
 		return 0;                                                                                                              \
 	}
 #define get_file(t)                                                                                                            \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_file(t)) {                                                                                                         \
 		QABORT(ABORT_INVALIDARGNOTFILE);                                                                                       \
 		return 0;                                                                                                              \
@@ -208,6 +258,8 @@
 #ifndef ISO_ONLY
 #define get_socket(t)                                                                                                          \
 	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context; \
+	q->latest_context = t ## _ctx; \
 	if (!is_socket(t)) {                                                                                                       \
 		QABORT(ABORT_INVALIDARGNOTSOCKET);                                                                                     \
 		return 0;                                                                                                              \

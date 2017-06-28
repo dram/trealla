@@ -648,7 +648,7 @@ static int bif_sys_jsonq_4(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
-	node *term4 = get_atom(term3);
+	node *term4 = get_atom(term4);
 	const size_t len = LEN(term1);
 	char *tmpbuf = (char *)malloc(len + 1);
 
