@@ -41,6 +41,7 @@
 #include "uncle.h"
 
 extern int g_tpool_size;
+static const int g_debug = 0;
 
 int configure_server(tpl_query *q, handler *h, node *term, int (*f)(session *, void *data), int *has_uncle)
 {
@@ -385,7 +386,9 @@ static int bif_net_client_2(tpl_query *q)
 			if (!uncle_query(u, name, host, &tmp_port, &tcp, &ssl, &pri))
 				continue;
 
-			printf("DEBUG: Discovery: scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", scope, name, tmp_port, tcp, ssl, pri);
+			if (g_debug)
+				printf("DEBUG: Discovery: scope=%s,name=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", scope, name, tmp_port, tcp, ssl, pri);
+
 			found = 1;
 			break;
 		}
@@ -400,7 +403,8 @@ static int bif_net_client_2(tpl_query *q)
 		port = tmp_port;
 	}
 
-	printf("DEBUG: Client: userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid, passwd, host, port, tcp, ssl, pri);
+	if (g_debug)
+		printf("DEBUG: Client: userid=%s,passwd=%s,host=%s,port=%u,tcp=%d,tls=%d,pri=%d\n", userid, passwd, host, port, tcp, ssl, pri);
 
 	session *s = session_open(host, port, tcp, ssl);
 

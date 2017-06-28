@@ -1101,7 +1101,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, len, get_output_stream(term1));
 
 	free(tmpbuf);
-	return ok >= 0;
+	return ok > 0;
 }
 
 static int bif_iso_write_term(tpl_query *q)
@@ -1185,7 +1185,7 @@ static int bif_iso_write_canonical_2(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, len, get_output_stream(term1));
 
 	free(tmpbuf);
-	return ok >= 0;
+	return ok > 0;
 }
 
 static int bif_iso_write_canonical(tpl_query *q)
@@ -1227,7 +1227,7 @@ static int bif_iso_writeq_2(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, len, get_output_stream(term1));
 
 	free(tmpbuf);
-	return ok >= 0;
+	return ok > 0;
 }
 
 static int bif_iso_writeq(tpl_query *q)
@@ -1280,7 +1280,7 @@ static int bif_iso_write_2(tpl_query *q)
 	if (!is_atom(term2))
 		free(tmpbuf);
 
-	return ok >= 0;
+	return ok > 0;
 }
 
 static int bif_iso_write(tpl_query *q)
@@ -6285,7 +6285,7 @@ static int bif_xtra_writeln_2(tpl_query *q)
 		ok = fwrite(tmpbuf, 1, dst - tmpbuf, get_output_stream(term1));
 
 	free(tmpbuf);
-	return ok >= 0;
+	return ok > 0;
 }
 
 static int bif_xtra_unload_file(tpl_query *q)
@@ -6599,7 +6599,7 @@ static int bif_xtra_tab_2(tpl_query *q)
 			ok = fwrite(" ", 1, 1, get_output_stream(term1));
 	}
 
-	return ok;
+	return ok > 0;
 }
 
 static int bif_xtra_tab_1(tpl_query *q)
@@ -6612,7 +6612,7 @@ static int bif_xtra_tab_1(tpl_query *q)
 	for (int i = 0; ok && (i < n); i++)
 		ok = fwrite(" ", 1, 1, q->curr_stdout);
 
-	return ok;
+	return ok > 0;
 }
 
 static int bif_xtra_memberchk_2(tpl_query *q)
