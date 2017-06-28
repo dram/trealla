@@ -77,9 +77,6 @@ static int uncle_iter(uncle *u, const char *key, const char *value)
 
 int uncle_query(uncle *u, const char *name, char *addr, unsigned *port, int *tcp, int *ssl, int *pri)
 {
-	if (!u)
-		return 0;
-
 	u->search.name = name;
 	u->search.addr[0] = 0;
 	u->search.tcp = *tcp;
@@ -119,9 +116,6 @@ static int uncle_db_add(uncle *u, const char *name, int local, const char *addr,
 
 int uncle_add(uncle *u, const char *name, const char *addr, unsigned port, int tcp, int ssl, int pri)
 {
-	if (!u)
-		return 0;
-
 	if (strlen(name) > 255)
 		return 0;
 
@@ -169,9 +163,6 @@ static int uncle_db_rem(uncle *u, const char *name, int local, const char *addr,
 
 int uncle_rem(uncle *u, const char *name, const char *addr, int tcp)
 {
-	if (!u)
-		return 0;
-
 	while (uncle_db_rem(u, name, 1, addr, tcp))
 		;
 
@@ -179,8 +170,10 @@ int uncle_rem(uncle *u, const char *name, const char *addr, int tcp)
 	sprintf(tmpbuf, "{\"$scope\":\"%s\",\"$unique\":%llu,\"$cmd\":\"-\",\"$"
 	                "name\":\"%s\",\"$tcp\":%s}\n",
 	        u->scope, (unsigned long long)u->unique, name, tcp ? "true" : "false");
+
 	if (g_debug)
 		printf("DEBUG: REM %s", tmpbuf);
+
 	session_writemsg(u->s, tmpbuf);
 	return 1;
 }
@@ -216,8 +209,10 @@ static int uncle_iter2(uncle *u, const char *k, const char *v)
 	                "s,\"$ssl\":%s,\"$pri\":%s}\n",
 	        u->scope, (unsigned long long)u->unique, name, port, tcp ? "true" : "false", ssl ? "true" : "false",
 	        pri ? "true" : "false");
+
 	if (g_debug)
 		printf("DEBUG: SND %s", tmpbuf);
+
 	session_writemsg(u->search.s, tmpbuf);
 	return 1;
 }
@@ -292,7 +287,7 @@ static int uncle_handler(session *s, void *data)
 
 uncle *uncle_create2(handler *h, const char *binding, unsigned port, const char *scope, const char *maddr6, const char *maddr4)
 {
-	if (!h || !port)
+	if (!port)
 		return NULL;
 
 	if (strlen(scope) > 255)
@@ -349,17 +344,11 @@ uncle *uncle_create(const char *binding, unsigned port, const char *scope, const
 
 const char *uncle_get_scope(uncle *u)
 {
-	if (!u)
-		return "";
-
 	return u->scope;
 }
 
 void uncle_destroy(uncle *u)
 {
-	if (!u)
-		return;
-
 	handler_destroy(u->h);
 	sb_destroy(u->db);
 	lock_destroy(u->strand);

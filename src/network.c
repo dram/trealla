@@ -1109,7 +1109,7 @@ int session_rawwrite(session *s, const void *buf, size_t len)
 int session_write(session *s, const void *_buf, size_t len)
 {
 	if (s->disconnected)
-		return -1;
+		return 0;
 
 	if (!len)
 		return 0;
@@ -1162,7 +1162,7 @@ int session_bcastmsg(session *s, const char *buf) { return session_bcast(s, buf,
 int session_read(session *s, void *buf, size_t len)
 {
 	if (s->disconnected)
-		return -1;
+		return 0;
 
 	int rlen = 0;
 
@@ -2501,9 +2501,6 @@ int handler_shutdown(handler *h)
 
 void handler_destroy(handler *h)
 {
-	if (!h)
-		return;
-
 	h->halt = 1;
 	msleep(10);
 
