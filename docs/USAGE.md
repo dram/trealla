@@ -28,9 +28,6 @@ Current ISO predicates that are (known) not yet implemented:
 	sub_atom
 	*exceptions*
 
-Defined operators can ONLY be used as operators. To use them as regular functors they
-must be quoted, e.g: *X is '+'(1,2)* and  not *X is +(1,2)*.
-
 Unbounded ints (aka. bigints or bignums) are considered experimental at this stage. To introduce
 a bignum use the 'B' suffix e.g: *X is 1B*, or *unbounded/1* function e.g: *X is unbounded(1)*.
 Thereafter X will propagate as such in calculations. Integer literals will automatically set to

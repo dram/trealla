@@ -32,24 +32,25 @@ static op g_ops[] = {
                      {":-", "fx", 1200},
                      {"-->", "xfx", 1200},
                      {"?-", "fx", 1200},
-                     {"initialization", "fx", 1150},
                      {";", "xfy", 1100},
                      {"|", "xfy", 1100},
                      {"->", "xfy", 1050},
                      {"*->", "xfy", 1050},
                      {",", "xfy", 1000},
 
+                     {"initialization", "fx", 1150},
+                     {"dynamic", "fy", 1050},
+
 #ifndef ISO_ONLY
-                     {"receive", "fy", 900},
-                     {"undo", "fy", 900},
                      {"public", "fy", 1050},
                      {"export", "fy", 1050},
                      {"import", "fy", 1050},
                      {"use_module", "fy", 1050},
                      {"module", "fy", 1050},
+                     {"module", "fy", 1050},
+                     {"receive", "fy", 900},
+                     {"undo", "fy", 900},
 #endif
-
-                     {"dynamic", "fy", 1050},
 
                      {"\\+", "fy", 900},
                      {"is", "xfx", 700},
@@ -1670,6 +1671,8 @@ LOOP: // FIXME someday
 	token_init(&t);
 	l->numeric = NUM_NONE;
 	l->quoted = 0;
+	l->was_spaced = l->is_spaced;
+	l->is_spaced = 0;
 
 	if (line)
 		l->cpos = (s - *line) - 3;
@@ -1715,10 +1718,7 @@ LOOP: // FIXME someday
 						token_put(&t, g_escapes[ptr - g_anti_escapes]);
 					else if (ch == '0') {
 						if (!l->error)
-							printf("ERROR: illegal "
-							       "character "
-							       "escape "
-							       "sequence\n");
+							printf("ERROR: illegal character escape sequence\n");
 
 						l->error = 1;
 					}
@@ -1728,12 +1728,7 @@ LOOP: // FIXME someday
 
 						if ((ch < '0') || (ch > '7')) {
 							if (!l->error)
-								printf("ERROR: "
-								       "illegal"
-								       " octal "
-								       "escape "
-								       "sequenc"
-								       "e\n");
+								printf("ERROR: illegal octal escape sequence\n");
 
 							l->error = 1;
 						}
@@ -1803,13 +1798,7 @@ LOOP: // FIXME someday
 							token_put(&t, g_escapes[ptr - g_anti_escapes]);
 						else if (ch == '0') {
 							if (!l->error)
-								printf("ERROR: "
-								       "illegal"
-								       " charac"
-								       "ter "
-								       "escape "
-								       "sequenc"
-								       "e\n");
+								printf("ERROR: illegal character escape sequence\n");
 
 							l->error = 1;
 						}
@@ -1819,25 +1808,7 @@ LOOP: // FIXME someday
 
 							if ((ch < '0') || (ch > '7')) {
 								if (!l->error)
-									printf("ER"
-									       "RO"
-									       "R:"
-									       " i"
-									       "ll"
-									       "eg"
-									       "al"
-									       " o"
-									       "ct"
-									       "al"
-									       " e"
-									       "sc"
-									       "ap"
-									       "e "
-									       "se"
-									       "qu"
-									       "en"
-									       "ce"
-									       "\n");
+									printf("ERROR: illegal octal escape sequence\n");
 
 								l->error = 1;
 							}
@@ -1904,6 +1875,9 @@ LOOP: // FIXME someday
 
 				token_put(&t, ch);
 			}
+
+			if (isspace(*s))
+				l->is_spaced = 1;
 
 			break;
 		}
@@ -1977,8 +1951,8 @@ LOOP: // FIXME someday
 	else
 		l->is_op = 0;
 
-// printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\", is=%d, was=%d\n",
-// l->tok, l->numeric, l->quoted, s, l->is_paren, l->was_paren);
+	//printf("### TOKEN \"%s\" numeric=%d, quoted=%d --> \"%s\", is=%d, was=%d, is_spaced=%d, was_spaced=%d\n",
+	//	l->tok, l->numeric, l->quoted, s, l->is_paren, l->was_paren, l->is_spaced, l->was_spaced);
 
 #ifndef ISO_ONLY
 	if (l->tok && is_def) {
@@ -2433,8 +2407,8 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				if (is_atom(tmp) && self->was_atom) {
 					const char *functor = VAL_S(tmp);
 					const op *optr = get_op(&self->pl->db, functor, 0);
-					int doit =
-						(islower(functor[0]) || self->quoted) && strcmp(functor, "is");
+					int doit = !self->was_spaced && (self->quoted ||
+						(islower(functor[0]) && strcmp(functor, "is")));
 
 					if (!strcmp(functor, g_list_cons)) {
 						n->flags |= FLAG_LIST;
@@ -2733,8 +2707,7 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 			self->finalized = 0;
 
 		if (self->error && (line != NULL)) {
-			printf("ERROR: consult '%s', "
-			       "line=%d, '%s'\n",
+			printf("ERROR: consult '%s', line=%d, '%s'\n",
 			       (self->name ? self->name : "console"), self->line_nbr, (line ? line : "end_of_file reached unexpectedly"));
 
 			free(line);
