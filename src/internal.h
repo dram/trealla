@@ -352,7 +352,7 @@ extern void xref_clauses(lexer *l);
 enum { DQ_CODES=0, DQ_ATOM=1, DQ_CHARS=2 };
 
 #ifndef ISO_ONLY
-extern tpl_query *query_create_proc(tpl_query *self);
+extern tpl_query *query_create_proc(tpl_query *q);
 #endif
 
 enum {

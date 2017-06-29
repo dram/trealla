@@ -522,7 +522,7 @@ extern const op *get_op_2(module *db, const char *functor, const char *spec);
 extern const op *get_op(module *db, const char *functor, int hint_prefix);
 extern char *deescape(char *dst, const char *src, char quote);
 extern char *dict(module *db, const char *key);
-extern void db_init(module *self, trealla *pl, const char *name, const char *filename);
+extern void db_init(module *db, trealla *pl, const char *name, const char *filename);
 extern int needs_quoting(const char *s);
 
 #ifndef ISO_ONLY
@@ -551,7 +551,7 @@ extern int process_enqueue(trealla *pl, tpl_query *q, tpl_query *who, node *term
 extern int asserta_index(lexer *l, node *n, int manual, int *persist, int in_tran);
 extern int assertz_index(lexer *l, node *n, int manual, int *persist, int in_tran);
 extern int retract_index(module *db, node *n, node *n2, int *persist, int in_tran);
-extern tpl_query *query_create_subquery(tpl_query *self);
+extern tpl_query *query_create_subquery(tpl_query *q);
 
 extern int bif_asserta(tpl_query *q, node *n);
 extern int bif_assertz(tpl_query *q, node *n);
