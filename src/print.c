@@ -451,9 +451,16 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 8);
 	else if (is_integer(n) && (n->flags & FLAG_HEX) && listing)
 		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 16);
-	else if (is_integer(n))
+	else if (is_integer(n)) {
+		if (n->val_i < 0)
+			*dst++ = ' ';
+
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i);
+	}
 	else if (is_float(n)) {
+		if (n->val_f < 0)
+			*dst++ = ' ';
+
 		const char *save_dst = dst;
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%.*g", DBL_DIG, (double)n->val_f);
 
