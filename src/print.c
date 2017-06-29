@@ -227,9 +227,14 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "}");
 	}
 	else if ((listing < 2) && pl && is_infix(&pl->db, functor) && (arity > 1) && !ignore_ops) {
-		if (!strcmp(functor, ",") || !strcmp(functor, ";"))
+		int parens = 0;
+
+		if ((strcmp(functor, ":-") && strcmp(functor, "-->") && strcmp(functor, "is")) && (q->print_depth > 2)) {
 			if (listing == 1)
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "(");
+
+			parens = 1;
+		}
 
 		node *head = term_next(nf);
 
@@ -273,7 +278,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 			}
 		}
 
-		if (!strcmp(functor, ",") || !strcmp(functor, ";"))
+		if (parens)
 			if (listing == 1)
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), ")");
 	}
@@ -452,7 +457,8 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	else if (is_integer(n) && (n->flags & FLAG_HEX) && listing)
 		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 16);
 	else if (is_integer(n)) {
-		if (n->val_i < 0)
+		static const char *s_chars = "*/+-=.";
+		if ((n->val_i < 0) && (dst != *dstbuf) && strchr(s_chars, *(dst-1)))
 			*dst++ = ' ';
 
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_i);
