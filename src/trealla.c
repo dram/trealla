@@ -444,28 +444,28 @@ static void rule_done(void *p)
 	free(r);
 }
 
-void db_init(module *self, trealla *pl, const char *name, const char *filename)
+void db_init(module *db, trealla *pl, const char *name, const char *filename)
 {
-	self->pl = pl;
-	self->name = strdup(name);
-	self->filename = strdup(filename ? filename : name);
-	sl_init(&self->dict, 0, &strcmp, &free);
-	sl_init(&self->rules, 0, &strcmp, &free);
-	sl_init(&self->exports, 0, &strcmp, &free);
+	db->pl = pl;
+	db->name = strdup(name);
+	db->filename = strdup(filename ? filename : name);
+	sl_init(&db->dict, 0, &strcmp, &free);
+	sl_init(&db->rules, 0, &strcmp, &free);
+	sl_init(&db->exports, 0, &strcmp, &free);
 #ifndef ISO_ONLY
-	self->guard = lock_create();
+	db->guard = lock_create();
 #endif
 }
 
-static void db_done(module *self)
+static void db_done(module *db)
 {
-	sl_done(&self->dict, NULL);
-	sl_done(&self->exports, NULL);
+	sl_done(&db->dict, NULL);
+	sl_done(&db->exports, NULL);
 
 #ifndef ISO_ONLY
 	node *tmp;
 
-	while ((tmp = NLIST_POP_FRONT(&self->tran_queue)) != NULL) {
+	while ((tmp = NLIST_POP_FRONT(&db->tran_queue)) != NULL) {
 		tmp->n1->flags &= ~(FLAG_DBS_ASSERTA | FLAG_DBS_ASSERTZ | FLAG_DBS_RETRACT);
 		tmp->n1->flags &= ~FLAG_DELETED;
 
@@ -475,13 +475,13 @@ static void db_done(module *self)
 		free(tmp);
 	}
 
-	dbs_done(self);
-	lock_destroy(self->guard);
+	dbs_done(db);
+	lock_destroy(db->guard);
 #endif
 
-	sl_done(&self->rules, &rule_done);
-	free(self->filename);
-	free(self->name);
+	sl_done(&db->rules, &rule_done);
+	free(db->filename);
+	free(db->name);
 }
 
 static void db_free(void *p)
@@ -807,10 +807,10 @@ void xref_clauses(lexer *l)
 	DBUNLOCK(l->db);
 }
 
-static int trealla_make_rule(trealla *self, const char *src)
+static int trealla_make_rule(trealla *pl, const char *src)
 {
 	lexer l;
-	lexer_init(&l, self);
+	lexer_init(&l, pl);
 	l.internal = 1;
 	l.consult = 1;
 	lexer_parse(&l, l.r, src, NULL);
@@ -829,45 +829,45 @@ static int trealla_make_rule(trealla *self, const char *src)
 	return ok;
 }
 
-int query_parse(tpl_query *self, const char *src) { return query_parse_file(self, src, NULL); }
+int query_parse(tpl_query *q, const char *src) { return query_parse_file(q, src, NULL); }
 
-int query_parse_file(tpl_query *self, const char *src, FILE *fp)
+int query_parse_file(tpl_query *q, const char *src, FILE *fp)
 {
-	self->lex->fp = fp;
+	q->lex->fp = fp;
 
-	if (self->lex->val_l.cnt) {
-		node *r = NLIST_POP_FRONT(&self->lex->val_l);
+	if (q->lex->val_l.cnt) {
+		node *r = NLIST_POP_FRONT(&q->lex->val_l);
 		term_heapcheck(r);
-		NLIST_INIT(&self->lex->val_l);
+		NLIST_INIT(&q->lex->val_l);
 	}
 
 	char *line = (char *)malloc(strlen(src) + 10);
 	sprintf(line, "?- %s", src);
 	src = line;
 
-	while ((src = lexer_parse(self->lex, self->lex->r, src, &line)) != NULL)
-		if (self->lex->finalized || self->lex->error)
+	while ((src = lexer_parse(q->lex, q->lex->r, src, &line)) != NULL)
+		if (q->lex->finalized || q->lex->error)
 			break;
 
 	free(line);
 
-	if (!self->lex->finalized || self->lex->error) {
-		if (!self->lex->finalized && !self->lex->error)
+	if (!q->lex->finalized || q->lex->error) {
+		if (!q->lex->finalized && !q->lex->error)
 			printf("ERROR: parse -> %s\n", (src ? src : "end_of_file"));
 
-		node *n = NLIST_FRONT(&self->lex->val_l);
+		node *n = NLIST_FRONT(&q->lex->val_l);
 		term_heapcheck(n);
-		term_heapcheck(self->lex->r);
+		term_heapcheck(q->lex->r);
 		return 0;
 	}
 
-	if (!xref_clause(self->lex, NLIST_FRONT(&self->lex->val_l)) || self->lex->error) {
-		self->halt = 0;
+	if (!xref_clause(q->lex, NLIST_FRONT(&q->lex->val_l)) || q->lex->error) {
+		q->halt = 0;
 		return 0;
 	}
 
-	self->c.frame_size = self->lex->vars;
-	begin_query(self, NLIST_FRONT(&self->lex->val_l));
+	q->c.frame_size = q->lex->vars;
+	begin_query(q, NLIST_FRONT(&q->lex->val_l));
 	return 1;
 }
 
@@ -902,93 +902,93 @@ void trace(tpl_query *q, int fail, int leave)
 	free(dstbuf);
 }
 
-int query_run(tpl_query *self)
+int query_run(tpl_query *q)
 {
-	self->ok = 1;
-	self->started = gettimeofday_usec();
-	self->c.env_point = self->c.curr_frame + self->c.frame_size;
-	self->envs_used = self->c.env_point;
-	prepare_frame(self, self->c.frame_size);
-	run_me(self);
-	self->elapsed = gettimeofday_usec() - self->started;
+	q->ok = 1;
+	q->started = gettimeofday_usec();
+	q->c.env_point = q->c.curr_frame + q->c.frame_size;
+	q->envs_used = q->c.env_point;
+	prepare_frame(q, q->c.frame_size);
+	run_me(q);
+	q->elapsed = gettimeofday_usec() - q->started;
 
-	if (!self->is_yielded && (self->halt >= ABORT_HALT)) {
-		if (self->halt > ABORT_HALT)
-			printf("ERROR: ERROR %s\n", self->halt_s ? self->halt_s : "ABORT");
-		else if (self->did_halt && !self->pl->quiet)
+	if (!q->is_yielded && (q->halt >= ABORT_HALT)) {
+		if (q->halt > ABORT_HALT)
+			printf("ERROR: ERROR %s\n", q->halt_s ? q->halt_s : "ABORT");
+		else if (q->did_halt && !q->pl->quiet)
 			printf("Halted\n");
 
-		self->pl->halt_code = self->halt_code;
-		self->pl->halt = self->halt;
-		self->ok = self->halt < ABORT_HALT;
+		q->pl->halt_code = q->halt_code;
+		q->pl->halt = q->halt;
+		q->ok = q->halt < ABORT_HALT;
 	}
 
-	return self->ok;
+	return q->ok;
 }
 
-void query_reset(tpl_query *self)
+void query_reset(tpl_query *q)
 {
-	env *e = &self->envs[0];
+	env *e = &q->envs[0];
 
-	for (size_t i = 0; i < self->envs_used; i++, e++) {
+	for (size_t i = 0; i < q->envs_used; i++, e++) {
 		term_heapcheck(e->term);
 		e->term = NULL;
 		e->context = 0;
 	}
 
-	node *r = NLIST_POP_FRONT(&self->lex->val_l);
+	node *r = NLIST_POP_FRONT(&q->lex->val_l);
 	term_heapcheck(r);
-	lexer_done(self->lex);
-	lexer_init(self->lex, self->pl);
-	self->lex->db = self->c.curr_db;
+	lexer_done(q->lex);
+	lexer_init(q->lex, q->pl);
+	q->lex->db = q->c.curr_db;
 }
 
-int query_continue(tpl_query *self)
+int query_continue(tpl_query *q)
 {
-	if (self->halt)
+	if (q->halt)
 		return 0;
 
-	if (!retry_me(self))
+	if (!retry_me(q))
 		return 0;
 
-	self->ok = 1;
-	self->started = gettimeofday_usec();
-	run_me(self);
-	self->elapsed = gettimeofday_usec() - self->started;
+	q->ok = 1;
+	q->started = gettimeofday_usec();
+	run_me(q);
+	q->elapsed = gettimeofday_usec() - q->started;
 
-	if (!self->is_yielded && self->halt) {
-		if (self->halt > ABORT_NONE)
-			printf("ERROR: %s\n", self->halt_s ? self->halt_s : "ABORT");
+	if (!q->is_yielded && q->halt) {
+		if (q->halt > ABORT_NONE)
+			printf("ERROR: %s\n", q->halt_s ? q->halt_s : "ABORT");
 
-		self->ok = 0;
+		q->ok = 0;
 	}
 
-	return self->ok;
+	return q->ok;
 }
 
-int query_inline(tpl_query *self)
+int query_inline(tpl_query *q)
 {
-	self->ok = 1;
-	run_me(self);
-	return self->ok;
+	q->ok = 1;
+	run_me(q);
+	return q->ok;
 }
 
-double query_elapsed(tpl_query *self)
+double query_elapsed(tpl_query *q)
 {
-	if (self)
-		return (double)self->elapsed / 1000.0 / 1000.0;
+	if (q)
+		return (double)q->elapsed / 1000.0 / 1000.0;
 	else
 		return 0.0;
 }
-void query_abort(tpl_query *self)
+void query_abort(tpl_query *q)
 {
-	self->halt_s = (char *)strdup("ABORT_INTERRUPTED");
-	self->halt = 1;
+	q->halt_s = (char *)strdup("ABORT_INTERRUPTED");
+	q->halt = 1;
 }
 
-double query_get_float(tpl_query *self, unsigned idx)
+double query_get_float(tpl_query *q, unsigned idx)
 {
-	env *e = get_env(self, idx);
+	env *e = get_env(q, idx);
 
 	if (!e->term)
 		return 0.0;
@@ -996,9 +996,9 @@ double query_get_float(tpl_query *self, unsigned idx)
 	return e->term->val_f;
 }
 
-long long query_get_integer(tpl_query *self, unsigned idx)
+long long query_get_integer(tpl_query *q, unsigned idx)
 {
-	env *e = get_env(self, idx);
+	env *e = get_env(q, idx);
 
 	if (!e->term)
 		return 0;
@@ -1006,28 +1006,28 @@ long long query_get_integer(tpl_query *self, unsigned idx)
 	return e->term->val_i;
 }
 
-char *query_get_text(tpl_query *self, unsigned idx)
+char *query_get_text(tpl_query *q, unsigned idx)
 {
-	if (idx >= self->c.frame_size)
+	if (idx >= q->c.frame_size)
 		return strdup("ERROR");
 
-	env *e = get_env(self, idx);
+	env *e = get_env(q, idx);
 
 	if (!e->term)
 		return strdup("_");
 
 	char tmpbuf[PRINTBUF_SIZE];
-	term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, self, e->term, 0);
+	term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, q, e->term, 0);
 	return strdup(tmpbuf);
 }
 
-void query_trace(tpl_query *self) { self->trace = !self->trace; }
+void query_trace(tpl_query *q) { q->trace = !q->trace; }
 
-int query_choices(tpl_query *self) { return self->choice_point > 1; }
+int query_choices(tpl_query *q) { return q->choice_point > 1; }
 
-int query_get_haltcode(tpl_query *self) { return self->halt_code; }
+int query_get_haltcode(tpl_query *q) { return q->halt_code; }
 
-int query_is_halt(tpl_query *self) { return self->did_halt; }
+int query_is_halt(tpl_query *q) { return q->did_halt; }
 
 static void collect_vars(tpl_query *q, node *n)
 {
@@ -1047,32 +1047,32 @@ static void collect_vars(tpl_query *q, node *n)
 	sl_set(q->d, (char *)VAL_S(n), n);
 }
 
-void query_dump(tpl_query *self)
+void query_dump(tpl_query *q)
 {
 	skiplist vars;
 	sl_init(&vars, 0, &strcmp, NULL);
-	self->d = &vars;
-	collect_vars(self, NLIST_FRONT(&self->lex->val_l));
-	self->d = NULL;
+	q->d = &vars;
+	collect_vars(q, NLIST_FRONT(&q->lex->val_l));
+	q->d = NULL;
 	sl_start(&vars);
 	int any = 0;
 	node *n;
 
 	if (!sl_count(&vars)) {
-		if (self->nv.flags == TYPE_INTEGER)
-			printf(" %lld\n", (long long)self->nv.val_i);
-		else if (self->nv.flags == TYPE_FLOAT)
-			printf(" %.*g\n", DBL_DIG, (double)self->nv.val_f);
+		if (q->nv.flags == TYPE_INTEGER)
+			printf(" %lld\n", (long long)q->nv.val_i);
+		else if (q->nv.flags == TYPE_FLOAT)
+			printf(" %.*g\n", DBL_DIG, (double)q->nv.val_f);
 #if USE_SSL
-		else if (self->nv.flags == TYPE_BIGNUM)
-			printf(" %s\n", BN_bn2dec(self->nv.val_bn));
+		else if (q->nv.flags == TYPE_BIGNUM)
+			printf(" %s\n", BN_bn2dec(q->nv.val_bn));
 #endif
 	}
 	else {
 		while (sl_next(&vars, (void **)&n) != NULL) {
-			node *n2 = get_arg(self, n, FUDGE_FACTOR);
+			node *n2 = get_arg(q, n, FUDGE_FACTOR);
 			char tmpbuf[PRINTBUF_SIZE];
-			term_sprint(tmpbuf, sizeof(tmpbuf), self->pl, NULL, n2, 1);
+			term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, NULL, n2, 1);
 			printf(" %s: %s\n", VAL_S(n), tmpbuf);
 			any++;
 		}
@@ -1083,17 +1083,17 @@ void query_dump(tpl_query *self)
 
 static tpl_query *trealla_create_query2(trealla *pl, tpl_query *q);
 
-tpl_query *query_create_subquery(tpl_query *self)
+tpl_query *query_create_subquery(tpl_query *parent)
 {
-	tpl_query *q = trealla_create_query2(self->pl, self);
+	tpl_query *q = trealla_create_query2(parent->pl, parent);
 
 	if (!q)
 		return NULL;
 
 	env *e_to = q->envs + q->c.curr_frame;
 
-	for (size_t i = 0; i < self->c.frame_size; i++, e_to++) {
-		const env *e_from = get_env(self, self->c.curr_frame + i);
+	for (size_t i = 0; i < parent->c.frame_size; i++, e_to++) {
+		const env *e_from = get_env(parent, parent->c.curr_frame + i);
 		*e_to = *e_from;
 
 		if (!e_from->term)
@@ -1111,31 +1111,31 @@ tpl_query *query_create_subquery(tpl_query *self)
 			e_from->term->refcnt++;
 	}
 
-	q->c.frame_size = self->c.frame_size;
+	q->c.frame_size = parent->c.frame_size;
 	return q;
 }
 
 #ifndef ISO_ONLY
-tpl_query *query_create_proc(tpl_query *self)
+tpl_query *query_create_proc(tpl_query *parent)
 {
-	tpl_query *q = query_create_subquery(self);
+	tpl_query *q = query_create_subquery(parent);
 
 	if (!q)
 		return NULL;
 
 	q->refcnt++;
 
-	if (self->curr_pid) {
-		if (!--self->curr_pid->refcnt)
-			query_destroy(self->curr_pid);
+	if (parent->curr_pid) {
+		if (!--parent->curr_pid->refcnt)
+			query_destroy(parent->curr_pid);
 	}
 
-	self->curr_pid = q;
+	parent->curr_pid = q;
 	return q;
 }
 #endif
 
-void query_stats(tpl_query *self)
+void query_stats(tpl_query *q)
 {
 #ifdef DEBUG
 	if (!g_enqueues) {
@@ -1147,8 +1147,8 @@ void query_stats(tpl_query *self)
 		printf("Cuts: %llu, Choicepoints: %llu\n", (long long unsigned)g_cuts, (long long unsigned)g_choicepoints);
 		printf("Max Env depth: %llu, Choice depth: %llu, Trail depth: "
 		       "%llu\n",
-		       (long long unsigned)self->envs_used, (long long unsigned)self->choices_used,
-		       (long long unsigned)self->trails_used);
+		       (long long unsigned)q->envs_used, (long long unsigned)q->choices_used,
+		       (long long unsigned)q->trails_used);
 		printf("System calls: %llu, User: %llu\n", (long long unsigned)g_s_resolves, (long long unsigned)g_u_resolves);
 	}
 #ifndef ISO_ONLY
@@ -1164,111 +1164,111 @@ void query_stats(tpl_query *self)
 #endif
 }
 
-void query_destroy(tpl_query *self)
+void query_destroy(tpl_query *q)
 {
 #ifndef ISO_ONLY
-	if (self->is_running) {
+	if (q->is_running) {
 		printf("*** abort: running\n");
 		// abort();
 		return;
 	}
 
-	if (self->is_dead) {
-		free(self);
+	if (q->is_dead) {
+		free(q);
 		return;
 	}
 
-	if (self->kvs) {
-		kvs_done(self->kvs);
-		free(self->kvs);
+	if (q->kvs) {
+		kvs_done(q->kvs);
+		free(q->kvs);
 	}
 
-	node *tmp = NLIST_FRONT(&self->queue);
+	node *tmp = NLIST_FRONT(&q->queue);
 	term_heapcheck(tmp);
 
-	if (self->name) {
-		PIDLOCK(self->pl);
-		sl_del(&self->pl->names, (char *)self->name, NULL);
-		PIDUNLOCK(self->pl);
+	if (q->name) {
+		PIDLOCK(q->pl);
+		sl_del(&q->pl->names, (char *)q->name, NULL);
+		PIDUNLOCK(q->pl);
 	}
 
-	if (self->linked && self->halt)
-		process_error(self);
+	if (q->linked && q->halt)
+		process_error(q);
 
-	if (self->curr_pid) {
-		if (!--self->curr_pid->refcnt)
-			query_destroy(self->curr_pid);
+	if (q->curr_pid) {
+		if (!--q->curr_pid->refcnt)
+			query_destroy(q->curr_pid);
 	}
 
-	if (self->name)
-		free(self->name);
+	if (q->name)
+		free(q->name);
 #endif
 
-	if (self->subq)
-		query_destroy(self->subq);
+	if (q->subq)
+		query_destroy(q->subq);
 
-	if (self->did_getc && (self->curr_stdin == stdin)) {
+	if (q->did_getc && (q->curr_stdin == stdin)) {
 		while ((getc(stdin) != '\n') && !feof(stdin))
 			;
 	}
 
-	env *e = self->envs;
+	env *e = q->envs;
 
-	for (size_t i = 0; i < self->envs_possible; i++, e++)
+	for (size_t i = 0; i < q->envs_possible; i++, e++)
 		term_heapcheck(e->term);
 
-	if (!self->parent) {
-		node *r = NLIST_FRONT(&self->lex->val_l);
+	if (!q->parent) {
+		node *r = NLIST_FRONT(&q->lex->val_l);
 		term_heapcheck(r);
 	}
 
-	if (self->halt_s)
-		free(self->halt_s);
+	if (q->halt_s)
+		free(q->halt_s);
 
-	if (!self->def_choice)
-		free(self->choices);
+	if (!q->def_choice)
+		free(q->choices);
 
-	if (!self->def_env)
-		free(self->envs);
+	if (!q->def_env)
+		free(q->envs);
 
-	if (!self->def_trail)
-		free(self->trails);
+	if (!q->def_trail)
+		free(q->trails);
 
-	if (self->curr_stdin_name)
-		free(self->curr_stdin_name);
+	if (q->curr_stdin_name)
+		free(q->curr_stdin_name);
 
-	if (self->curr_stdout_name)
-		free(self->curr_stdout_name);
+	if (q->curr_stdout_name)
+		free(q->curr_stdout_name);
 
 #if USE_SSL
-	if (self->ctx)
-		BN_CTX_free(self->ctx);
+	if (q->ctx)
+		BN_CTX_free(q->ctx);
 #endif
 
 #ifndef ISO_ONLY
-	if (--self->refcnt > 0) {
-		self->is_dead = 1;
+	if (--q->refcnt > 0) {
+		q->is_dead = 1;
 		return;
 	}
 #endif
 
-	if (!self->parent)
-		lexer_destroy(self->lex);
+	if (!q->parent)
+		lexer_destroy(q->lex);
 
-	free(self);
+	free(q);
 }
 
-int trealla_consult_fp(trealla *self, FILE *fp)
+int trealla_consult_fp(trealla *pl, FILE *fp)
 {
 	lexer l;
-	lexer_init(&l, self);
+	lexer_init(&l, pl);
 	l.consult = 1;
 
 	if (lexer_consult_fp(&l, fp)) {
 		xref_clauses(&l);
 
 		if (l.init && !l.error) {
-			l.error = !trealla_run_query(self, l.init);
+			l.error = !trealla_run_query(pl, l.init);
 		}
 	}
 
@@ -1277,17 +1277,17 @@ int trealla_consult_fp(trealla *self, FILE *fp)
 	return ok;
 }
 
-int trealla_consult_file(trealla *self, const char *filename)
+int trealla_consult_file(trealla *pl, const char *filename)
 {
 	lexer l;
-	lexer_init(&l, self);
+	lexer_init(&l, pl);
 	l.consult = 1;
 
 	if (lexer_consult_file(&l, filename)) {
 		xref_clauses(&l);
 
 		if (l.init && !l.error) {
-			l.error = !trealla_run_query(self, l.init);
+			l.error = !trealla_run_query(pl, l.init);
 		}
 	}
 
@@ -1296,7 +1296,7 @@ int trealla_consult_file(trealla *self, const char *filename)
 	return ok;
 }
 
-int trealla_consult_text(trealla *self, const char *src, const char *filename)
+int trealla_consult_text(trealla *pl, const char *src, const char *filename)
 {
 	if (!*src || !*filename)
 		return 0;
@@ -1308,7 +1308,7 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 	char *line = dst;
 
 	lexer l;
-	lexer_init(&l, self);
+	lexer_init(&l, pl);
 	l.name = strdup(filename);
 	l.consult = 1;
 
@@ -1347,7 +1347,7 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 	xref_clauses(&l);
 
 	if (l.init && !l.error) {
-		if (!trealla_run_query(self, l.init))
+		if (!trealla_run_query(pl, l.init))
 			l.error = 1;
 	}
 
@@ -1355,28 +1355,28 @@ int trealla_consult_text(trealla *self, const char *src, const char *filename)
 	return 1;
 }
 
-int trealla_deconsult(trealla *self, const char *filename)
+int trealla_deconsult(trealla *pl, const char *filename)
 {
-	SYSLOCK(self);
-	sl_start(&self->mods);
+	SYSLOCK(pl);
+	sl_start(&pl->mods);
 	const char *key;
 	module *db = NULL;
 
-	while ((key = sl_next(&self->mods, (void **)&db)) != NULL) {
+	while ((key = sl_next(&pl->mods, (void **)&db)) != NULL) {
 		if (!strcmp(db->filename, filename)) {
-			sl_del(&self->mods, key, NULL);
+			sl_del(&pl->mods, key, NULL);
 			db_free(db);
 			break;
 		}
 	}
 
-	SYSUNLOCK(self);
+	SYSUNLOCK(pl);
 	return 1;
 }
 
-int trealla_run_query(trealla *self, const char *src)
+int trealla_run_query(trealla *pl, const char *src)
 {
-	tpl_query *q = trealla_create_query(self);
+	tpl_query *q = trealla_create_query(pl);
 
 	if (!q)
 		return 0;
@@ -1387,7 +1387,7 @@ int trealla_run_query(trealla *self, const char *src)
 		ok = query_run(q);
 
 	if (q->did_halt)
-		self->did_halt = 1;
+		pl->did_halt = 1;
 
 	node *r = NLIST_POP_FRONT(&q->lex->val_l);
 	term_heapcheck(r);
@@ -1395,7 +1395,7 @@ int trealla_run_query(trealla *self, const char *src)
 	return ok;
 }
 
-static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
+static tpl_query *trealla_create_query2(trealla *pl, tpl_query *parent)
 {
 	tpl_query *q = calloc(1, sizeof(tpl_query));
 
@@ -1403,9 +1403,9 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 		return NULL;
 
 	q->parent = parent;
-	q->pl = self;
-	q->optimize = self->optimize;
-	q->trace = self->trace;
+	q->pl = pl;
+	q->optimize = pl->optimize;
+	q->trace = pl->trace;
 	q->seed = (unsigned int)(size_t)(q + clock());
 
 	if (parent) {
@@ -1421,10 +1421,10 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 	}
 	else {
 		q->lex = calloc(1, sizeof(lexer));
-		lexer_init(q->lex, self);
+		lexer_init(q->lex, pl);
 		q->curr_stdin = stdin;
 		q->curr_stdout = stdout;
-		q->c.curr_db = &self->db;
+		q->c.curr_db = &pl->db;
 		q->curr_stdin_name = strdup("user");
 		q->curr_stdout_name = strdup("user");
 	}
@@ -1451,17 +1451,17 @@ static tpl_query *trealla_create_query2(trealla *self, tpl_query *parent)
 	return q;
 }
 
-tpl_query *trealla_create_query(trealla *self) { return trealla_create_query2(self, NULL); }
+tpl_query *trealla_create_query(trealla *pl) { return trealla_create_query2(pl, NULL); }
 
-void trealla_quiet(trealla *self, int mode) { self->quiet = mode; }
+void trealla_quiet(trealla *pl, int mode) { pl->quiet = mode; }
 
-void trealla_trace(trealla *self, int mode) { self->trace = mode; }
+void trealla_trace(trealla *pl, int mode) { pl->trace = mode; }
 
-void trealla_optimize(trealla *self, int mode) { self->optimize = mode; }
+void trealla_optimize(trealla *pl, int mode) { pl->optimize = mode; }
 
-int trealla_is_halt(trealla *self) { return self->halt == ABORT_HALT; }
+int trealla_is_halt(trealla *pl) { return pl->halt == ABORT_HALT; }
 
-int trealla_get_haltcode(trealla *self) { return self->halt_code; }
+int trealla_get_haltcode(trealla *pl) { return pl->halt_code; }
 
 char *trealla_find_library(const char *name)
 {
@@ -1593,33 +1593,33 @@ trealla *trealla_create(const char *name)
 	return pl;
 }
 
-void trealla_destroy(trealla *self)
+void trealla_destroy(trealla *pl)
 {
-	if (!self)
+	if (!pl)
 		return;
 
-	sl_done(&self->mods, &db_free);
+	sl_done(&pl->mods, &db_free);
 
 #ifndef ISO_ONLY
-	sl_done(&self->idle, NULL);
-	sl_done(&self->names, NULL);
-	lock_destroy(self->pid_guard);
-	lock_destroy(self->dbs_guard);
+	sl_done(&pl->idle, NULL);
+	sl_done(&pl->names, NULL);
+	lock_destroy(pl->pid_guard);
+	lock_destroy(pl->dbs_guard);
 
-	if (self->tp)
-		tpool_destroy(self->tp);
+	if (pl->tp)
+		tpool_destroy(pl->tp);
 
-	if (self->h) {
-		handler_shutdown(self->h);
-		handler_destroy(self->h);
+	if (pl->h) {
+		handler_shutdown(pl->h);
+		handler_destroy(pl->h);
 	}
 #endif
 
-	db_done(&self->db);
+	db_done(&pl->db);
 	g_instances--;
 
 	if (g_allocs != 0)
 		printf("DEBUG: orphaned=%lld\n", (long long)g_allocs);
 
-	free(self);
+	free(pl);
 }

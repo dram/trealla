@@ -2032,17 +2032,17 @@ LOOP: // FIXME someday
 	return s;
 }
 
-void attach_vars(lexer *self, node *var)
+void attach_vars(lexer *l, node *var)
 {
 	void *v;
 
-	if (sl_get(&self->symtab, VAL_S(var), &v)) {
+	if (sl_get(&l->symtab, VAL_S(var), &v)) {
 		var->slot = (uint16_t)(size_t)v;
 		return;
 	}
 
-	var->slot = self->vars++;
-	sl_set(&self->symtab, strdup(VAL_S(var)), (void *)(size_t)var->slot);
+	var->slot = l->vars++;
+	sl_set(&l->symtab, strdup(VAL_S(var)), (void *)(size_t)var->slot);
 }
 
 lexer *lexer_create(trealla *pl)
@@ -2052,173 +2052,173 @@ lexer *lexer_create(trealla *pl)
 	return l;
 }
 
-void lexer_destroy(lexer *self)
+void lexer_destroy(lexer *l)
 {
-	lexer_done(self);
-	free(self);
+	lexer_done(l);
+	free(l);
 }
 
-void lexer_init(lexer *self, trealla *pl)
+void lexer_init(lexer *l, trealla *pl)
 {
-	memset(self, 0, sizeof(lexer));
-	sl_init(&self->symtab, 0, &strcmp, &free);
-	sl_init(&self->ns, 0, &strcmp, &free);
+	memset(l, 0, sizeof(lexer));
+	sl_init(&l->symtab, 0, &strcmp, &free);
+	sl_init(&l->ns, 0, &strcmp, &free);
 
 #ifndef ISO_ONLY
-	sl_init(&self->defines, 0, &strcmp, &free);
-	sl_init(&self->funs, 0, &strcmp, &free);
-	sl_set(&self->ns, strdup("lists"), NULL);
+	sl_init(&l->defines, 0, &strcmp, &free);
+	sl_init(&l->funs, 0, &strcmp, &free);
+	sl_set(&l->ns, strdup("lists"), NULL);
 #endif
 
-	self->pl = pl;
-	self->db = &pl->db;
+	l->pl = pl;
+	l->db = &pl->db;
 
-	self->flag_unknown = pl->flag_unknown;
-	self->flag_character_escapes = pl->flag_character_escapes;
-	self->flag_char_conversion = pl->flag_char_conversion;
-	self->flag_double_quotes = pl->flag_double_quotes;
-	self->flag_debug = pl->flag_debug;
+	l->flag_unknown = pl->flag_unknown;
+	l->flag_character_escapes = pl->flag_character_escapes;
+	l->flag_char_conversion = pl->flag_char_conversion;
+	l->flag_double_quotes = pl->flag_double_quotes;
+	l->flag_debug = pl->flag_debug;
 }
 
-void lexer_done(lexer *self)
+void lexer_done(lexer *l)
 {
 #ifndef ISO_ONLY
-	sl_done(&self->funs, NULL);
-	sl_done(&self->defines, &free);
+	sl_done(&l->funs, NULL);
+	sl_done(&l->defines, &free);
 #endif
 
-	sl_done(&self->ns, NULL);
-	sl_done(&self->symtab, NULL);
+	sl_done(&l->ns, NULL);
+	sl_done(&l->symtab, NULL);
 
-	if (self->name != NULL)
-		free(self->name);
+	if (l->name != NULL)
+		free(l->name);
 
-	if (self->init != NULL)
-		free(self->init);
+	if (l->init != NULL)
+		free(l->init);
 
-	memset(self, 0, sizeof(lexer));
+	memset(l, 0, sizeof(lexer));
 }
 
-static void lexer_finalize(lexer *self)
+static void lexer_finalize(lexer *l)
 {
-	if (self->fact) {
+	if (l->fact) {
 		node *tmp = make_const_atom(":-");
 		tmp->flags |= FLAG_BUILTIN;
-		term_append(self->r, tmp);
+		term_append(l->r, tmp);
 		tmp = make_const_atom("true");
 		tmp->flags |= FLAG_BUILTIN | FLAG_HIDDEN;
 		tmp->bifptr = bif_iso_true;
-		term_append(self->r, tmp);
+		term_append(l->r, tmp);
 	}
 
-	if ((self->r == NULL) || self->error) {
-		self->vars = 0;
+	if ((l->r == NULL) || l->error) {
+		l->vars = 0;
 		return;
 	}
 
-	while (attach_ops(self, self->r, 0))
+	while (attach_ops(l, l->r, 0))
 		;
 
-	if (!strcmp(term_functor(self->r), "?-")) {
-		NLIST_PUSH_BACK(&self->val_l, self->r);
+	if (!strcmp(term_functor(l->r), "?-")) {
+		NLIST_PUSH_BACK(&l->val_l, l->r);
 	}
-	else if (!strcmp(term_functor(self->r), ":-")) {
-		if (self->consult) {
-			node *n = term_firstarg(self->r);
+	else if (!strcmp(term_functor(l->r), ":-")) {
+		if (l->consult) {
+			node *n = term_firstarg(l->r);
 
-			if (!directive(self, n)) {
-				xref_clauses(self);
-				tpl_query *q = trealla_create_query(self->pl);
+			if (!directive(l, n)) {
+				xref_clauses(l);
+				tpl_query *q = trealla_create_query(l->pl);
 				q->c.curr_term = n;
-				q->c.curr_db = self->db;
-				self->error = !query_run(q);
+				q->c.curr_db = l->db;
+				l->error = !query_run(q);
 				query_destroy(q);
 			}
 
-			term_heapcheck(self->r);
+			term_heapcheck(l->r);
 		}
 		else {
-			self->r->flags |= FLAG_CLAUSE;
-			NLIST_PUSH_BACK(&self->val_l, self->r);
+			l->r->flags |= FLAG_CLAUSE;
+			NLIST_PUSH_BACK(&l->val_l, l->r);
 		}
 	}
 	else {
-		node *n = term_first(self->r);
+		node *n = term_first(l->r);
 
-		if (term_count(self->r) > 1) {
+		if (term_count(l->r) > 1) {
 			printf("ERROR: syntax error, excess terms\n");
-			term_heapcheck(self->r);
-			self->error = 1;
-			self->vars = 0;
+			term_heapcheck(l->r);
+			l->error = 1;
+			l->vars = 0;
 			return;
 		}
 
-		dcg_clause(self, n);
-		n->frame_size = self->vars;
+		dcg_clause(l, n);
+		n->frame_size = l->vars;
 		n->flags |= FLAG_CLAUSE;
 
-		if (self->fact)
+		if (l->fact)
 			n->flags |= FLAG_FACT;
 
-		term_remove(self->r, n);
-		NLIST_PUSH_BACK(&self->val_l, n);
-		term_heapcheck(self->r);
+		term_remove(l->r, n);
+		NLIST_PUSH_BACK(&l->val_l, n);
+		term_heapcheck(l->r);
 
-		if (self->consult)
-			add_clauses(self);
+		if (l->consult)
+			add_clauses(l);
 
-		// xref_clauses(self);
+		// xref_clauses(l);
 	}
 
-	sl_clear(&self->symtab, NULL);
-	self->vars = 0;
-	self->r = NULL;
+	sl_clear(&l->symtab, NULL);
+	l->vars = 0;
+	l->r = NULL;
 }
 
-const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
+const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 {
 	if (src == NULL)
 		return NULL;
 
-	self->depth++;
+	l->depth++;
 	int first_neg = 1;
 
-	while ((src = get_token(self, src, line)) != NULL) {
-		if (!self->quoted && !*self->tok) {
-			free(self->tok);
-			self->was_atomic = 0;
+	while ((src = get_token(l, src, line)) != NULL) {
+		if (!l->quoted && !*l->tok) {
+			free(l->tok);
+			l->was_atomic = 0;
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, "->")) {
-			free(self->tok);
+		if (!l->quoted && !strcmp(l->tok, "->")) {
+			free(l->tok);
 			node *tmp = make_and();
 			term_append(term, tmp);
 			tmp = make_cut();
 			term_append(term, tmp);
 			tmp = make_and();
 			term_append(term, tmp);
-			self->was_atomic = 0;
+			l->was_atomic = 0;
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ".") && (*src != '(')) {
-			free(self->tok);
-			self->finalized = 1;
-			self->was_atomic = 0;
+		if (!l->quoted && !strcmp(l->tok, ".") && (*src != '(')) {
+			free(l->tok);
+			l->finalized = 1;
+			l->was_atomic = 0;
 			break;
 		}
 
-		if (!self->r) {
-			self->r = term = make_compound();
-			self->term = NULL;
-			self->fact = 1;
-			self->dcg = 0;
-			self->dcg_passthru = 0;
+		if (!l->r) {
+			l->r = term = make_compound();
+			l->term = NULL;
+			l->fact = 1;
+			l->dcg = 0;
+			l->dcg_passthru = 0;
 			term->flags |= FLAG_NOARGS;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ")") && is_atom(term_first(term))) {
+		if (!l->quoted && !strcmp(l->tok, ")") && is_atom(term_first(term))) {
 			if (!strcmp(term_functor(term), "once")) {
 				node *tmp = make_and();
 				tmp->flags |= FLAG_HIDDEN;
@@ -2229,7 +2229,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			}
 		}
 
-		if (!self->quoted && (!strcmp(self->tok, "]") || !strcmp(self->tok, ")"))) {
+		if (!l->quoted && (!strcmp(l->tok, "]") || !strcmp(l->tok, ")"))) {
 			if (term->flags & FLAG_CONSING) {
 				node *tmp = term_make();
 				tmp->flags |= TYPE_ATOM | FLAG_CONST;
@@ -2237,11 +2237,11 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				term_append(term, tmp);
 			}
 
-			free(self->tok);
+			free(l->tok);
 
-			if (!--self->depth) {
+			if (!--l->depth) {
 				printf("ERROR: syntax error, no depth\n");
-				self->error = 1;
+				l->error = 1;
 				return NULL;
 			}
 
@@ -2252,162 +2252,162 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				g_allocs--;
 			}
 
-			self->was_atomic = 0;
+			l->was_atomic = 0;
 			return src;
 		}
 
-		if (self->dcg && !self->quoted && !strcmp(self->tok, "|") && !self->dcg_passthru) {
-			free(self->tok);
-			self->tok = strdup(";");
+		if (l->dcg && !l->quoted && !strcmp(l->tok, "|") && !l->dcg_passthru) {
+			free(l->tok);
+			l->tok = strdup(";");
 		}
-		else if (self->dcg && !self->quoted && !strcmp(self->tok, "}") && !--self->dcg_passthru) {
-			free(self->tok);
+		else if (l->dcg && !l->quoted && !strcmp(l->tok, "}") && !--l->dcg_passthru) {
+			free(l->tok);
 			continue;
 		}
-		else if (self->dcg && !self->quoted && !strcmp(self->tok, "{") && !self->dcg_passthru++) {
-			free(self->tok);
+		else if (l->dcg && !l->quoted && !strcmp(l->tok, "{") && !l->dcg_passthru++) {
+			free(l->tok);
 			continue;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, "}")) {
-			free(self->tok);
+		if (!l->quoted && !strcmp(l->tok, "}")) {
+			free(l->tok);
 
-			if (!--self->depth) {
+			if (!--l->depth) {
 				printf("ERROR: syntax error, no depth\n");
-				self->error = 1;
+				l->error = 1;
 				return NULL;
 			}
 
-			self->was_atomic = 0;
+			l->was_atomic = 0;
 			return src;
 		}
 
-		if (!self->quoted && !strcmp(self->tok, ",") && !is_noargs(term)) {
-			self->was_atom = 0;
+		if (!l->quoted && !strcmp(l->tok, ",") && !is_noargs(term)) {
+			l->was_atom = 0;
 
 			if ((*src == ']') || (*src == ')') || (*src == '}')) {
 				printf("ERROR: syntax error, missing arg\n");
-				self->error = 1;
+				l->error = 1;
 				return NULL;
 			}
 
 			if (term->flags & FLAG_CONSING) {
-				free(self->tok);
+				free(l->tok);
 				node *tmp = make_list();
 				tmp->flags |= FLAG_CONSING;
 				term_append(term, tmp);
 				term = tmp;
-				self->was_atomic = 0;
+				l->was_atomic = 0;
 				continue;
 			}
 
-			free(self->tok);
-			self->was_atomic = 0;
+			free(l->tok);
+			l->was_atomic = 0;
 			continue;
 		}
 
-		if (self->was_paren && !is_noargs(term) && !strcmp(self->tok, "+")) {
+		if (l->was_paren && !is_noargs(term) && !strcmp(l->tok, "+")) {
 			if (isdigit(*src)) {
 				continue;
 			}
 		}
 
-		if (self->was_paren && !is_noargs(term) && !strcmp(self->tok, "-")) {
+		if (l->was_paren && !is_noargs(term) && !strcmp(l->tok, "-")) {
 			if (isdigit(*src)) {
-				self->negate = 1;
+				l->negate = 1;
 				continue;
 			}
 		}
 
-		if ((self->was_op2 || self->was_paren) && is_noargs(term) && !strcmp(self->tok, "-")) {
+		if ((l->was_op2 || l->was_paren) && is_noargs(term) && !strcmp(l->tok, "-")) {
 			if (isdigit(*src)) {
-				self->negate = 1;
+				l->negate = 1;
 				continue;
 			}
 		}
 
-		if (0 && !self->quoted && !strcmp(self->tok, "-") && !is_noargs(term) && first_neg) {
-			self->was_atom = 0;
-			free(self->tok);
-			self->was_atomic = 0;
+		if (0 && !l->quoted && !strcmp(l->tok, "-") && !is_noargs(term) && first_neg) {
+			l->was_atom = 0;
+			free(l->tok);
+			l->was_atomic = 0;
 			continue;
 		}
 
 		first_neg = 0;
 
-		if (!self->quoted && !strcmp(self->tok, "|") && !(term->flags & FLAG_CONSING)) {
-			printf("ERROR: extra bar: '%s'\n", self->tok);
-			self->error = 1;
-			free(self->tok);
+		if (!l->quoted && !strcmp(l->tok, "|") && !(term->flags & FLAG_CONSING)) {
+			printf("ERROR: extra bar: '%s'\n", l->tok);
+			l->error = 1;
+			free(l->tok);
 			return src;
 		}
-		else if (!self->quoted && !strcmp(self->tok, "|") && (term->flags & FLAG_CONSING)) {
-			free(self->tok);
+		else if (!l->quoted && !strcmp(l->tok, "|") && (term->flags & FLAG_CONSING)) {
+			free(l->tok);
 			term->flags &= ~FLAG_CONSING;
-			self->was_atomic = 0;
+			l->was_atomic = 0;
 			continue;
 		}
 
-		if ((self->depth == 1) && !self->quoted &&
-		    (!strcmp(self->tok, ":-") || !strcmp(self->tok, "-->") || !strcmp(self->tok, "?-"))) {
-			if (!strcmp(self->tok, "-->"))
-				self->dcg = 1;
+		if ((l->depth == 1) && !l->quoted &&
+		    (!strcmp(l->tok, ":-") || !strcmp(l->tok, "-->") || !strcmp(l->tok, "?-"))) {
+			if (!strcmp(l->tok, "-->"))
+				l->dcg = 1;
 
-			self->fact = 0;
+			l->fact = 0;
 		}
 
 		node *n = NULL;
 
-		// printf("*** tok='%s' is_paren=%d, was_paren=%d\n", self->tok,
-		// self->is_paren, self->was_paren);
+		// printf("*** tok='%s' is_paren=%d, was_paren=%d\n", l->tok,
+		// l->is_paren, l->was_paren);
 
-		if (!self->quoted && !strcmp(self->tok, "{}")) {
-			free(self->tok);
+		if (!l->quoted && !strcmp(l->tok, "{}")) {
+			free(l->tok);
 			n = make_const_atom("{}");
 		}
-		else if (!self->quoted && !strcmp(self->tok, "[]")) {
-			free(self->tok);
+		else if (!l->quoted && !strcmp(l->tok, "[]")) {
+			free(l->tok);
 			n = make_const_atom("[]");
 		}
-		else if (!self->quoted && !strcmp(self->tok, "[")) {
-			free(self->tok);
+		else if (!l->quoted && !strcmp(l->tok, "[")) {
+			free(l->tok);
 			n = make_list();
 			n->flags |= FLAG_CONSING;
-			self->was_atomic = 0;
-			src = lexer_parse(self, n, src, line);
+			l->was_atomic = 0;
+			src = lexer_parse(l, n, src, line);
 
-			if (self->error) {
+			if (l->error) {
 				term_heapcheck(n);
 				return src;
 			}
 		}
-		else if (!self->quoted && !strcmp(self->tok, "{")) {
-			free(self->tok);
+		else if (!l->quoted && !strcmp(l->tok, "{")) {
+			free(l->tok);
 			n = make_tuple();
 			n->flags |= FLAG_NOARGS;
-			self->was_atomic = 0;
-			src = lexer_parse(self, n, src, line);
+			l->was_atomic = 0;
+			src = lexer_parse(l, n, src, line);
 
-			if (self->error) {
+			if (l->error) {
 				term_heapcheck(n);
 				return src;
 			}
 		}
-		else if (!self->quoted && !strcmp(self->tok, "(")) {
-			free(self->tok);
+		else if (!l->quoted && !strcmp(l->tok, "(")) {
+			free(l->tok);
 			n = make_compound();
 			n->flags |= FLAG_NOARGS;
 
-			if (self->internal)
+			if (l->internal)
 				n->flags |= FLAG_HIDDEN;
 
-			if ((term_count(term) != 0) && !self->was_paren) {
+			if ((term_count(term) != 0) && !l->was_paren) {
 				node *tmp = term_last(term);
 
-				if (is_atom(tmp) && self->was_atom) {
+				if (is_atom(tmp) && l->was_atom) {
 					const char *functor = VAL_S(tmp);
-					const op *optr = get_op(&self->pl->db, functor, 0);
-					int doit = !self->was_spaced &&
+					const op *optr = get_op(&l->pl->db, functor, 0);
+					int doit = !l->was_spaced &&
 						(islower(functor[0]) && strcmp(functor, "is"));
 
 					if (!strcmp(functor, g_list_cons)) {
@@ -2428,9 +2428,9 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 							node *tmp = term_make();
 							tmp->flags |= TYPE_VAR | FLAG_ANON | FLAG_HIDDEN | FLAG_CONST;
 							char tmpbuf[40];
-							snprintf(tmpbuf, sizeof(tmpbuf), "_%d", self->vars);
-							tmp->val_s = dict(self->db, tmpbuf);
-							attach_vars(self, tmp);
+							snprintf(tmpbuf, sizeof(tmpbuf), "_%d", l->vars);
+							tmp->val_s = dict(l->db, tmpbuf);
+							attach_vars(l, tmp);
 							term_append(n, tmp);
 						}
 
@@ -2440,236 +2440,231 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 				}
 			}
 
-			self->was_atomic = 0;
-			src = lexer_parse(self, n, src, line);
+			l->was_atomic = 0;
+			src = lexer_parse(l, n, src, line);
 
 #ifndef ISO_ONLY
-			if (get_function(self, n)) {
+			if (get_function(l, n)) {
 				node *tmp = term_make();
 				tmp->flags |= TYPE_VAR | FLAG_ANON | FLAG_HIDDEN | FLAG_CONST;
 				char tmpbuf[40];
-				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", self->vars);
-				tmp->val_s = dict(self->db, tmpbuf);
-				attach_vars(self, tmp);
+				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", l->vars);
+				tmp->val_s = dict(l->db, tmpbuf);
+				attach_vars(l, tmp);
 				term_append(n, tmp);
 			}
 #endif
 
-			if (self->error) {
+			if (l->error) {
 				term_heapcheck(n);
 				return src;
 			}
 		}
 #if USE_SSL
-		else if (self->numeric == NUM_BIGNUM) {
-			n = make_bignum(self->tok);
-			free(self->tok);
+		else if (l->numeric == NUM_BIGNUM) {
+			n = make_bignum(l->tok);
+			free(l->tok);
 		}
 #endif
-		else if (self->numeric >= NUM_INT) {
-			if (self->numeric > NUM_INT)
-				n = make_uint(dec_to_uint(self->tok));
+		else if (l->numeric >= NUM_INT) {
+			if (l->numeric > NUM_INT)
+				n = make_uint(dec_to_uint(l->tok));
 			else
-				n = make_int(dec_to_int(self->tok));
+				n = make_int(dec_to_int(l->tok));
 
-			if (self->numeric == NUM_BINARY)
+			if (l->numeric == NUM_BINARY)
 				n->flags |= FLAG_BINARY;
-			else if (self->numeric == NUM_OCTAL)
+			else if (l->numeric == NUM_OCTAL)
 				n->flags |= FLAG_OCTAL;
-			else if (self->numeric == NUM_HEX)
+			else if (l->numeric == NUM_HEX)
 				n->flags |= FLAG_HEX;
 
-			free(self->tok);
+			free(l->tok);
 		}
-		else if (self->numeric == NUM_REAL) {
-			n = make_float(strtod(self->tok, NULL));
-			free(self->tok);
+		else if (l->numeric == NUM_REAL) {
+			n = make_float(strtod(l->tok, NULL));
+			free(l->tok);
 		}
-		else if (!self->quoted && !strcmp(self->tok, "pi")) {
+		else if (!l->quoted && !strcmp(l->tok, "pi")) {
 			n = make_float(PI);
 			n->flags |= FLAG_PI;
-			free(self->tok);
+			free(l->tok);
 		}
-		else if (!self->quoted && ((self->tok[0] == '_') || isupper(self->tok[0]))) {
+		else if (!l->quoted && ((l->tok[0] == '_') || isupper(l->tok[0]))) {
 			n = term_make();
 			n->flags |= TYPE_VAR | FLAG_CONST;
 
-			if (!strcmp(self->tok, "_")) {
+			if (!strcmp(l->tok, "_")) {
 				n->flags |= FLAG_ANON;
 				char tmpbuf[40];
-				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", self->vars);
-				n->val_s = dict(self->db, tmpbuf);
+				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", l->vars);
+				n->val_s = dict(l->db, tmpbuf);
 			}
 			else
-				n->val_s = dict(self->db, self->tok);
+				n->val_s = dict(l->db, l->tok);
 
-			free(self->tok);
-			attach_vars(self, n);
+			free(l->tok);
+			attach_vars(l, n);
 		}
-		else if (!self->error && !self->quoted && !is_op(self->db, self->tok) && !isalnum_utf8(self->tok[0]) &&
-		         strcmp(self->tok, "!") && strcmp(self->tok, ".") && needs_quoting(self->tok)) {
-			printf("ERROR: unknown operator: '%s'\n", self->tok);
-			self->error = 1;
+		else if (!l->error && !l->quoted && !is_op(l->db, l->tok) && !isalnum_utf8(l->tok[0]) &&
+		         strcmp(l->tok, "!") && strcmp(l->tok, ".") && needs_quoting(l->tok)) {
+			printf("ERROR: unknown operator: '%s'\n", l->tok);
+			l->error = 1;
 			return NULL;
 		}
-		else if ((self->quoted == 2) && (self->flag_double_quotes != DQ_ATOM) && !self->tok[0]) {
-			self->was_atom = 1;
+		else if ((l->quoted == 2) && (l->flag_double_quotes != DQ_ATOM) && !l->tok[0]) {
+			l->was_atom = 1;
 			n = make_const_atom("[]");
-			free(self->tok);
+			free(l->tok);
 		}
-		else if ((self->quoted == 2) && (self->flag_double_quotes == DQ_CODES)) {
-			self->was_atom = 1;
-			node *l = n = make_list();
+		else if ((l->quoted == 2) && (l->flag_double_quotes == DQ_CODES)) {
+			l->was_atom = 1;
+			node *tmp_l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;
-			const char *src = self->tok;
+			const char *src = l->tok;
 
 			for (;;) {
 				int ch = get_char_utf8(&src);
-				term_append(l, make_int(ch));
+				term_append(tmp_l, make_int(ch));
 
 				if (!*src)
 					break;
 
 				node *tmp = make_list();
-				term_append(l, tmp);
-				l = tmp;
+				term_append(tmp_l, tmp);
+				tmp_l = tmp;
 			}
 
-			term_append(l, make_const_atom("[]"));
-			free(self->tok);
+			term_append(tmp_l, make_const_atom("[]"));
+			free(l->tok);
 		}
-		else if ((self->quoted == 2) && (self->flag_double_quotes == DQ_CHARS)) {
-			self->was_atom = 1;
-			node *l = n = make_list();
+		else if ((l->quoted == 2) && (l->flag_double_quotes == DQ_CHARS)) {
+			l->was_atom = 1;
+			node *tmp_l = n = make_list();
 			n->flags |= FLAG_DOUBLE_QUOTE;
-			const char *src = self->tok;
+			const char *src = l->tok;
 
 			for (;;) {
 				int ch = get_char_utf8(&src);
 				char tmpbuf[20];
 				char *dst = tmpbuf;
 				put_char_utf8(dst, ch);
-				term_append(l, make_atom(strdup(tmpbuf)));
+				term_append(tmp_l, make_atom(strdup(tmpbuf)));
 
 				if (!*src)
 					break;
 
 				node *tmp = make_list();
-				term_append(l, tmp);
-				l = tmp;
+				term_append(tmp_l, tmp);
+				tmp_l = tmp;
 			}
 
-			term_append(l, make_const_atom("[]"));
-			free(self->tok);
+			term_append(tmp_l, make_const_atom("[]"));
+			free(l->tok);
 		}
 		else {
-			self->was_atom = 1;
+			l->was_atom = 1;
 			n = term_make();
 			n->flags |= TYPE_ATOM;
 
-			if ((self->was_paren || self->was_op) && !self->quoted && is_op(self->db, self->tok) &&
-			    strcmp(self->tok, "\\+")) { // HACK
+			if ((l->was_paren || l->was_op) && !l->quoted && is_op(l->db, l->tok) &&
+			    strcmp(l->tok, "\\+")) { // HACK
 				n->flags |= FLAG_NOOP;
-				self->quoted = 1;
+				l->quoted = 1;
 			}
 
-			if (self->quoted)
+			if (l->quoted)
 				n->flags |= FLAG_QUOTED;
 
-			if (self->quoted == 2)
+			if (l->quoted == 2)
 				n->flags |= FLAG_DOUBLE_QUOTE;
 
 #ifndef ISO_ONLY
-			if (self->quoted == 3) {
+			if (l->quoted == 3) {
 				n->flags |= FLAG_BLOB;
-				char *dstbuf = (char *)malloc(strlen(self->tok) + 1);
-				size_t len = b64_decode(self->tok, strlen(self->tok), &dstbuf);
+				char *dstbuf = (char *)malloc(strlen(l->tok) + 1);
+				size_t len = b64_decode(l->tok, strlen(l->tok), &dstbuf);
 				n->val_len = len;
-				free(self->tok);
-				self->tok = dstbuf;
+				free(l->tok);
+				l->tok = dstbuf;
 			}
 #endif
 
-			if (is_op(self->db, self->tok)) {
-				if ((n->bifptr = get_bif(self, self->tok)->bifptr) != NULL)
+			if (is_op(l->db, l->tok)) {
+				if ((n->bifptr = get_bif(l, l->tok)->bifptr) != NULL)
 					n->flags |= FLAG_BUILTIN;
 			}
 
-			if (self->quoted && !*self->tok) {
+			if (l->quoted && !*l->tok) {
 				n->flags |= FLAG_CONST;
-				free(self->tok);
-				self->tok = (char *)"";
+				free(l->tok);
+				l->tok = (char *)"";
 			}
 
-			if (!self->quoted) {
+			if (!l->quoted) {
 				n->flags |= FLAG_CONST;
-				n->val_s = dict(self->db, self->tok);
-				free(self->tok);
+				n->val_s = dict(l->db, l->tok);
+				free(l->tok);
 			}
-			else if (*self->tok && (strlen(self->tok) < sizeof(n->val_ch))) {
+			else if (*l->tok && (strlen(l->tok) < sizeof(n->val_ch))) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
-				strcpy(n->val_ch, self->tok);
-				free(self->tok);
+				strcpy(n->val_ch, l->tok);
+				free(l->tok);
 			}
 			else
-				n->val_s = self->tok;
+				n->val_s = l->tok;
 		}
 
-		int is_op = 1;
-		const op *optr = get_op(&self->pl->db, is_atom(n) ? VAL_S(n) : "| |", 0);
+		int is_op = get_op(&l->pl->db, is_atom(n) ? VAL_S(n) : "| |", 0)->fun ? 1 : 0;
+		l->is_op2 = is_op;
 
-		if (!optr->fun)
-			is_op = 0;
-
-		self->is_op2 = is_op;
-
-		if (!self->error && self->was_atomic && !is_op) {
+		if (!l->error && l->was_atomic && !is_op) {
 			printf("ERROR: operator expected: '%s'\n", VAL_S(n));
 			term_heapcheck(n);
-			self->error = 1;
+			l->error = 1;
 			return NULL;
 		}
 
-		self->was_atomic = !is_op;
+		l->was_atomic = !is_op;
 
 		if (line)
-			n->cpos = self->cpos;
+			n->cpos = l->cpos;
 
-		if (self->dcg_passthru)
+		if (l->dcg_passthru)
 			n->flags |= FLAG_PASSTHRU;
 
 		term_append(term, n);
 	}
 
-	self->depth--;
+	l->depth--;
 
-	if (self->finalized) {
-		if (!self->error && self->depth != 0) {
+	if (l->finalized) {
+		if (!l->error && l->depth != 0) {
 			printf("ERROR: check parentheses, brackets or braces\n");
-			self->error = 1;
+			l->error = 1;
 			return src;
 		}
 
-		lexer_finalize(self);
+		lexer_finalize(l);
 
-		if (self->error)
+		if (l->error)
 			return NULL;
 
 		return src;
 	}
 
-	if (self->fp && !feof(self->fp) && (line != NULL)) {
+	if (l->fp && !feof(l->fp) && (line != NULL)) {
 		free(*line);
-		*line = trealla_readline(self, self->fp, 1);
+		*line = trealla_readline(l, l->fp, 1);
 
 		if (*line == NULL)
 			return NULL;
 
-		src = lexer_parse(self, term, *line, line);
+		src = lexer_parse(l, term, *line, line);
 
-		if (!src && !self->error && self->r && !self->finalized && feof(self->fp)) {
+		if (!src && !l->error && l->r && !l->finalized && feof(l->fp)) {
 			printf("ERROR: premature end found\n");
-			self->error = 1;
+			l->error = 1;
 		}
 
 		if (!src) {
@@ -2679,7 +2674,7 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 			return NULL;
 		}
 
-		if (self->error)
+		if (l->error)
 			return NULL;
 	}
 
@@ -2688,27 +2683,27 @@ const char *lexer_parse(lexer *self, node *term, const char *src, char **line)
 
 static const char *exts[] = {".prolog", ".pro", ".pl", ".P", NULL};
 
-int lexer_consult_fp(lexer *self, FILE *fp)
+int lexer_consult_fp(lexer *l, FILE *fp)
 {
-	node *save_rule = self->r;
-	FILE *save_fp = self->fp;
-	self->r = NULL;
-	self->fp = fp;
-	self->line_nbr = 0;
+	node *save_rule = l->r;
+	FILE *save_fp = l->fp;
+	l->r = NULL;
+	l->fp = fp;
+	l->line_nbr = 0;
 	char *line;
 
-	while ((line = trealla_readline(self, fp, 0)) != NULL) {
-		if ((self->line_nbr == 1) && (line[0] == '#') && (line[1] == '!'))
+	while ((line = trealla_readline(l, fp, 0)) != NULL) {
+		if ((l->line_nbr == 1) && (line[0] == '#') && (line[1] == '!'))
 			continue;
 
 		const char *src = line;
 
-		while (((src = lexer_parse(self, self->r, src, &line)) != NULL) && !self->error)
-			self->finalized = 0;
+		while (((src = lexer_parse(l, l->r, src, &line)) != NULL) && !l->error)
+			l->finalized = 0;
 
-		if (self->error && (line != NULL)) {
+		if (l->error && (line != NULL)) {
 			printf("ERROR: consult '%s', line=%d, '%s'\n",
-			       (self->name ? self->name : "console"), self->line_nbr, (line ? line : "end_of_file reached unexpectedly"));
+			       (l->name ? l->name : "console"), l->line_nbr, (line ? line : "end_of_file reached unexpectedly"));
 
 			free(line);
 			break;
@@ -2718,19 +2713,19 @@ int lexer_consult_fp(lexer *self, FILE *fp)
 			free(line);
 	}
 
-	if (self->error) {
-		node *n = NLIST_FRONT(&self->val_l);
+	if (l->error) {
+		node *n = NLIST_FRONT(&l->val_l);
 		term_heapcheck(n);
-		term_heapcheck(self->r);
+		term_heapcheck(l->r);
 		return 0;
 	}
 
-	self->fp = save_fp;
-	self->r = save_rule;
-	return !self->error;
+	l->fp = save_fp;
+	l->r = save_rule;
+	return !l->error;
 }
 
-int lexer_consult_file(lexer *self, const char *orig_filename)
+int lexer_consult_file(lexer *l, const char *orig_filename)
 {
 	char tmpbuf[FUNCTOR_SIZE * 2 + 10];
 
@@ -2758,15 +2753,15 @@ int lexer_consult_file(lexer *self, const char *orig_filename)
 
 	if (fp == NULL) {
 		printf("ERROR: non-existent file '%s'\n", orig_filename);
-		self->error = 1;
+		l->error = 1;
 		return 0;
 	}
 
-	char *save_name = self->name;
-	self->name = strdup(filename);
-	lexer_consult_fp(self, fp);
-	free(self->name);
-	self->name = save_name;
+	char *save_name = l->name;
+	l->name = strdup(filename);
+	lexer_consult_fp(l, fp);
+	free(l->name);
+	l->name = save_name;
 	fclose(fp);
-	return self->error ? 0 : 1;
+	return l->error ? 0 : 1;
 }
