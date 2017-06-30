@@ -90,6 +90,7 @@ static op g_ops[] = {
                      {"+", "fy", 200},
                      {"-", "fy", 200},
                      {"]-[", "fy", 200}, // HACK
+                     {"]+[", "fy", 200}, // HACK
                      //{"$", "fx", 1},
 
                      {0}};
@@ -1149,97 +1150,76 @@ static int attach_ops(lexer *l, node *term, int depth)
 		return 0;
 
 	unsigned priority = UINT_MAX;
-	int was_operator = 0;
 	int xfy = 0;
 
 	for (node *n = term_first(term); n != NULL; n = term_next(n)) {
 		while (attach_ops(l, n, depth + 1))
 			;
 
-		if (!is_atom(n)) {
-			was_operator = 0;
+		if (!is_atom(n))
 			continue;
-		}
 
 		const char *functor = VAL_S(n);
 
 		// Bit of a hack to allow op '' & op ' '
 
-		if (is_quoted(n) && functor[0] && !isspace(functor[0])) {
-			was_operator = 0;
+		if (is_quoted(n) && functor[0] && !isspace(functor[0]))
 			continue;
-		}
 
 		const op *optr = get_op(&l->pl->db, functor, 0);
-
-		if (!optr->fun) {
-			was_operator = 0;
-			continue;
-		}
-
-		int prev_op = 0;
-
-		if (term_prev(n) && strcmp(functor, "-") && strcmp(functor, "]-[")) {
-			if (is_atom(term_prev(n))) {
-				const char *f = VAL_S(term_prev(n));
-
-				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-"))
-					prev_op = 1;
-			}
-		}
-
-		//printf("### attach_ops FUNCTOR = '%s' / '%s' prev=%d\n", functor, optr->spec, prev_op);
-
-		if (prev_op) {
-			was_operator = 0;
-			continue;
-		}
-
-		if (was_operator && !strcmp(functor, "-")) {
-			node *tmp = term_next(n);
-
-			if (!tmp)
-				continue;
-
-			if (is_number(tmp)) {
-				if (is_float(tmp))
-					tmp->val_f = -tmp->val_f;
-#if USE_SSL
-				else if (is_bignum(tmp))
-					BN_set_negative(tmp->val_bn, !BN_is_negative(tmp->val_bn));
-#endif
-				else
-					tmp->val_i = -tmp->val_i;
-
-				term_remove(term, n);
-				term_heapcheck(n);
-				n = tmp;
-				continue;
-			}
-
-			functor = n->val_s = (char *)"]-[";
-			n->flags |= FLAG_CONST;
-			n->bifptr = bif_iso_reverse;
-			optr = get_op(&l->pl->db, functor, 1);
-		}
-		else if (was_operator && !strcmp(functor, "+")) {
-			node *tmp = term_next(n);
-
-			if (!tmp)
-				continue;
-
-			term_remove(term, n);
-			term_heapcheck(n);
-			n = tmp;
-			continue;
-		}
-
-		was_operator = 0;
 
 		if (!optr->fun)
 			continue;
 
-		was_operator = 1;
+		int prev_op = 0;
+
+		if (term_prev(n) && is_atom(term_prev(n))) {
+			const char *f = VAL_S(term_prev(n));
+
+			if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-") && strcmp(f, "is"))
+				prev_op = 1;
+		}
+
+		int restart = prev_op || !term_prev(n) || is_atom(term_prev(n));
+
+		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, restart=%d\n", depth, functor, is_quoted(n), prev_op, restart);
+
+		if (restart && (!strcmp(functor, "-") || !strcmp(functor, "+")) &&
+				term_next(n) && is_number(term_next(n))) {
+			node *tmp = term_next(n);
+			term_remove(term, tmp);
+			int neg = !strcmp(functor, "-");
+
+			if (is_integer(tmp))
+				n->val_i = neg ? -tmp->val_i : tmp->val_i;
+			else if (is_float(tmp))
+				n->val_f = neg ? -tmp->val_f : tmp->val_f;
+			else if (is_bignum(tmp)) {
+				n->val_bn = tmp->val_bn;
+
+				if (neg)
+					BN_set_negative(n->val_bn, !BN_is_negative(n->val_bn));
+
+				tmp->val_bn = NULL;
+			}
+
+			n->flags = tmp->flags;
+			term_heapcheck(tmp);
+			continue;
+		}
+		else if (restart && !strcmp(functor, "-") && !is_noop(n)) {
+			functor = n->val_s = "]-[";
+			n->bifptr = bif_iso_negative;
+			optr = get_op(&l->pl->db, functor, 1);
+		}
+		else if (restart && !strcmp(functor, "+") && !is_noop(n)) {
+			functor = n->val_s = "]+[";
+			n->bifptr = bif_iso_positive;
+			optr = get_op(&l->pl->db, functor, 1);
+		}
+		else if (prev_op || is_noop(n)) {
+			continue;
+		}
 
 		if (optr->priority < priority) {
 			xfy = !strcmp(optr->spec, "xfy");
@@ -1253,7 +1233,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 		if (!is_atom(n) /*|| (n->flags & FLAG_QUOTED)*/)
 			continue;
 
-		if (!strcmp(VAL_S(n), ",") && (n->flags & FLAG_QUOTED)) // HACK
+		if (!strcmp(VAL_S(n), ",") && is_quoted(n)) // HACK
 			continue;
 
 		const char *functor = VAL_S(n);
@@ -1267,18 +1247,16 @@ static int attach_ops(lexer *l, node *term, int depth)
 
 		int prev_op = 0;
 
-		if (term_prev(n) && strcmp(functor, "]-[")) {
-			if (is_atom(term_prev(n))) {
-				const char *f = VAL_S(term_prev(n));
+		if (term_prev(n) && is_atom(term_prev(n))) {
+			const char *f = VAL_S(term_prev(n));
 
-				if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-"))
-					prev_op = 1;
-			}
+			if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-") && strcmp(f, "is"))
+				prev_op = 1;
 		}
 
 		//printf("### attach_ops FUNCTOR = '%s' / '%s' prev=%d\n", functor, optr->spec, prev_op);
 
-		if (prev_op)
+		if (prev_op || is_noop(n) /*|| !is_noargs(term)*/)
 			continue;
 
 		if (OP_PREFIX(optr->spec)) {
@@ -1886,7 +1864,6 @@ LOOP: // FIXME someday
 			const char *save_s = --s;
 			nbr_t v = 0;
 			s = parse_number(s, &v, &l->numeric);
-			l->neg = 0;
 
 			if (l->numeric >= NUM_INT) {
 				t.dst = t.buf = (char *)realloc(t.buf, (t.maxlen = 255) + 1);
@@ -1894,15 +1871,12 @@ LOOP: // FIXME someday
 				if (l->numeric > NUM_INT)
 					t.dst += sprint_uint(t.buf, t.maxlen, (unbr_t)v, 10);
 				else
-					t.dst += sprint_int(t.buf, t.maxlen, l->negate ? -v : v);
+					t.dst += sprint_int(t.buf, t.maxlen, v);
 
 				break;
 			}
 			else {
 				const char *src = save_s;
-
-				if (l->negate)
-					token_put(&t, '-');
 
 				while ((ch = *src++) && (src != (s+1)))
 					token_put(&t, ch);
@@ -1935,7 +1909,6 @@ LOOP: // FIXME someday
 			break;
 	}
 
-	l->negate = 0;
 	l->tok = token_take(&t);
 	l->was_paren = l->is_paren;
 	l->was_op = l->is_op;
@@ -2181,7 +2154,6 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 		return NULL;
 
 	l->depth++;
-	int first_neg = 1;
 
 	while ((src = get_token(l, src, line)) != NULL) {
 		if (!l->quoted && !*l->tok) {
@@ -2306,35 +2278,6 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (l->was_paren && !is_noargs(term) && !strcmp(l->tok, "+")) {
-			if (isdigit(*src)) {
-				continue;
-			}
-		}
-
-		if (l->was_paren && !is_noargs(term) && !strcmp(l->tok, "-")) {
-			if (isdigit(*src)) {
-				l->negate = 1;
-				continue;
-			}
-		}
-
-		if ((l->was_op2 || l->was_paren) && is_noargs(term) && !strcmp(l->tok, "-")) {
-			if (isdigit(*src)) {
-				l->negate = 1;
-				continue;
-			}
-		}
-
-		if (0 && !l->quoted && !strcmp(l->tok, "-") && !is_noargs(term) && first_neg) {
-			l->was_atom = 0;
-			free(l->tok);
-			l->was_atomic = 0;
-			continue;
-		}
-
-		first_neg = 0;
-
 		if (!l->quoted && !strcmp(l->tok, "|") && !(term->flags & FLAG_CONSING)) {
 			printf("ERROR: extra bar: '%s'\n", l->tok);
 			l->error = 1;
@@ -2418,6 +2361,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 					if (!optr->fun || doit) {
 						term_remove(term, tmp);
 						term_append(n, tmp);
+						tmp->flags |= FLAG_FUNCTOR;
 						n->flags &= ~FLAG_NOARGS;
 						n->cpos = tmp->cpos;
 
@@ -2570,7 +2514,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			if ((l->was_paren || l->was_op) && !l->quoted && is_op(l->db, l->tok) &&
 			    strcmp(l->tok, "\\+")) { // HACK
 				n->flags |= FLAG_NOOP;
-				l->quoted = 1;
+				//l->quoted = 1;
 			}
 
 			if (l->quoted)

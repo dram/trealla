@@ -49,8 +49,10 @@ typedef __uint128_t mask_t;
 #define TYPE_VAR (1ULL << 3)
 #define TYPE_COMPOUND (1ULL << 4)
 #define TYPE_BIGNUM (1ULL << 5)
+#define TYPE_RATIONAL (1ULL << 6)
 
-#define FLAG_HEAP (1ULL << 10)
+#define FLAG_HEAP (1ULL << 9)
+#define FLAG_FUNCTOR (1ULL << 10)
 #define FLAG_ATTACHED (1ULL << 11)
 #define FLAG_TAILRECURSIVE (1ULL << 12)
 #define FLAG_ISCUT (1ULL << 13)
@@ -225,8 +227,8 @@ struct lexer_ {
 	char *init, *tok, quote, last;
 	uint32_t cpos;
 	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized;
-	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, neg, vars;
-	int internal, comment, negate, was_op, is_op, was_op2, is_op2, is_spaced, was_spaced;
+	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, vars;
+	int internal, comment, was_op, is_op, was_op2, is_op2, is_spaced, was_spaced;
 	int flag_unknown, flag_character_escapes, flag_char_conversion;
 	int flag_debug, flag_double_quotes;
 };

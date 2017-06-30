@@ -13,13 +13,15 @@
 #define is_structure(n) (is_compound(n) && !is_list(n) ? 1 : 0)
 #define is_callable(n) (is_structure(n) || is_atom(n) ? 1 : 0)
 #define is_var(n) (((n)->flags & TYPE_VAR) ? 1 : 0)
+#define is_atom(n) (((n)->flags & TYPE_ATOM) ? 1 : 0)
+#define is_atomic(n) (is_atom(n) || is_number(n) ? 1 : 0)
 #define is_float(n) (((n)->flags & TYPE_FLOAT) ? 1 : 0)
 #define is_integer(n) (((n)->flags & TYPE_INTEGER) ? 1 : 0)
 #define is_bignum(n) (((n)->flags & TYPE_BIGNUM) ? 1 : 0)
-#define is_number(n) (is_integer(n) || is_float(n) || is_bignum(n) ? 1 : 0)
-#define is_atom(n) (((n)->flags & TYPE_ATOM) ? 1 : 0)
-#define is_atomic(n) (is_atom(n) || is_number(n) ? 1 : 0)
+#define is_rational(n) (((n)->flags & TYPE_RATIONAL) ? 1 : 0)
+#define is_number(n) (is_integer(n) || is_float(n) || is_bignum(n) || is_rational(n) ? 1 : 0)
 
+#define is_functor(n) (((n)->flags & FLAG_FUNCTOR) ? 1 : 0)
 #define is_quoted(n) (((n)->flags & FLAG_QUOTED) ? 1 : 0)
 #define is_anon(n) (((n)->flags & FLAG_ANON) ? 1 : 0)
 #define is_tuple(n) (((n)->flags & FLAG_TUPLE) ? 1 : 0)
@@ -38,6 +40,7 @@
 #define is_noargs(n) (((n)->flags & FLAG_NOARGS) ? 1 : 0)
 #define is_tailrecursive(n) (((n)->flags & FLAG_TAILRECURSIVE) ? 1 : 0)
 #define is_passthru(n) (((n)->flags & FLAG_PASSTHRU) ? 1 : 0)
+#define is_noop(n) (((n)->flags & FLAG_NOOP) ? 1 : 0)
 
 #ifndef ISO_ONLY
 #define is_blob(n) (((n)->flags & FLAG_BLOB) ? 1 : 0)
@@ -569,7 +572,8 @@ extern void bifs_load_stomp(void);
 #endif
 
 extern int bif_iso_true(tpl_query *q);
-extern int bif_iso_reverse(tpl_query *q);
+extern int bif_iso_negative(tpl_query *q);
+extern int bif_iso_positive(tpl_query *q);
 extern int bif_iso_and(tpl_query *q);
 extern int bif_iso_or(tpl_query *q);
 extern int bif_iso_cut(tpl_query *q);
