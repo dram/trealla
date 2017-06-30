@@ -450,7 +450,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 				return 0;
 			}
 
-			SSL_CTX_set_options(s_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
+			SSL_CTX_set_options(s_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 			SSL_CTX_set_cipher_list(s_ctx, DEFAULT_CIPHERS);
 
 			if (certfile) {
@@ -2114,7 +2114,7 @@ int handler_set_tls(handler *h, const char *keyfile, const char *certfile)
 		return 0;
 	}
 
-	SSL_CTX_set_options(h->ctx, SSL_OP_NO_SSLv3 | SSL_OP_NO_SSLv2 | SSL_OP_NO_COMPRESSION | SSL_OP_CIPHER_SERVER_PREFERENCE);
+	SSL_CTX_set_options(h->ctx, SSL_OP_NO_SSLv3 | SSL_OP_NO_SSLv2 | SSL_OP_CIPHER_SERVER_PREFERENCE);
 	SSL_CTX_set_cipher_list(h->ctx, DEFAULT_CIPHERS);
 
 	if (keyfile && certfile) {
