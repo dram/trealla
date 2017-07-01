@@ -214,35 +214,41 @@ static void parse_cookies(session *s, const char *src)
 	char *value = (char *)malloc(save_len + 1);
 	char *dst = name;
 	name[0] = value[0] = '\0';
-	int quoted = 0;
+	int quoted = 0, named = 0;
 
 	while (*src) {
 		char ch = *src++;
 
-		if (ch == '=') {
+		if ((ch == '=') && !named) {
 			*dst = '\0';
 			dst = value;
 			*dst = '\0';
+			named = 1;
 
 			if (*src == '"') {
 				quoted = 1;
 				src++;
+				continue;
 			}
-
-			continue;
 		}
 		else if (quoted && (ch == '"')) {
 			quoted = 0;
 			continue;
 		}
 		else if (ch == ';') {
+			named = 0;
 			*dst = '\0';
 			char tmpbuf[KEY_SIZE];
 			snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", name);
 			session_set_stash(s, tmpbuf, value);
+			//printf("*** '%s' = '%s'\n", name, value);
 			dst = name;
 			*dst = '\0';
 			value[0] = '\0';
+
+			while (isspace(*src))
+				src++;
+
 			continue;
 		}
 
@@ -254,6 +260,7 @@ static void parse_cookies(session *s, const char *src)
 	if (name[0]) {
 		char tmpbuf[KEY_SIZE];
 		snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", name);
+		//printf("*** '%s' = '%s'\n", name, value);
 		session_set_stash(s, tmpbuf, value);
 	}
 
@@ -305,7 +312,7 @@ static void parse_header(session *s, char *bufptr, int len)
 	free(bufptr);
 	session_set_stash(s, name, value);
 
-	if (!strcmp(name, "cookie"))
+	if (!strcmp(name, "set-cookie") ||!strcmp(name, "cookie"))
 		parse_cookies(s, value);
 
 	free(name);
@@ -570,7 +577,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Connection");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("persist"));
@@ -582,7 +589,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Content-Type");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("type"));
@@ -594,7 +601,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "If-Modified-Since");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("modified"));
@@ -606,7 +613,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Last-Modified");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("modified"));
@@ -618,7 +625,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Referer");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("referer"));
@@ -630,7 +637,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Cookie");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("cookie"));
@@ -642,7 +649,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Set-Cookie");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("cookie"));
@@ -654,7 +661,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Transfer-Encoding");
 
-	if ((src != NULL) && strstr(src, "chunked")) {
+	if ((src && *src) && strstr(src, "chunked")) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("chunked"));
@@ -666,7 +673,7 @@ static node *make_options_list(session *s)
 
 	src = session_get_stash(s, "Server");
 
-	if (src != NULL) {
+	if (src && *src) {
 		tmp = make_list();
 		n = make_compound();
 		term_append(n, make_const_atom("agent"));

@@ -3659,7 +3659,6 @@ static int bif_iso_length(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			// node *n = subst(q, head, q->latest_context);
 			cnt++;
 			node *tail = term_next(head);
 			l = subst(q, tail, q->latest_context);
