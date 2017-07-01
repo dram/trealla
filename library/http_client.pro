@@ -93,7 +93,8 @@ put11_file(Host,Path,Filename) :-
 
 get10_internal(S,Path,Data) :-
 	http:get(S,Path,[version(1.0),persist(false)]),
-	http:parse(S,Status),
+	http:parse(S,Status,Opts),
+	%writeln(Opts),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'0'),
 	atom_number(LenStr,Len),
@@ -108,7 +109,8 @@ get10_block(S,Data,Data).
 
 get11_internal(S,Path,Data) :-
 	http:get(S,Path,[version(1.1),persist(false)]),
-	http:parse(S,Status),
+	http:parse(S,Status,Opts),
+	%writeln(Opts),
 	Status = 200,
 	net:stash_get(S,'CONTENT_LENGTH',LenStr,'-1'),
 	atom_number(LenStr,Len),
