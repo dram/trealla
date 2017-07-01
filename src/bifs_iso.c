@@ -132,7 +132,7 @@ static int collect_vars2(tpl_query *q, node *term, int depth)
 		return 0;
 	}
 
-	node *n = get_arg(q, term, q->latest_context);
+	node *n = subst(q, term, q->latest_context);
 	int cnt = 0;
 
 	if (is_compound(n)) {
@@ -260,7 +260,7 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	int this_context = q->latest_context;
 
 	while (from) {
-		node *from2 = get_arg(q, from, this_context);
+		node *from2 = subst(q, from, this_context);
 		node *tmp = copy_term2(q, from2, clone, depth + 1);
 		term_append(n, tmp);
 		from = term_next(from);
@@ -547,7 +547,7 @@ static int check_vars_compound(tpl_query *q, node *n)
 
 static int check_vars(tpl_query *q, node *n)
 {
-	n = get_arg(q, n, q->latest_context);
+	n = subst(q, n, q->latest_context);
 
 	if (is_compound(n))
 		return check_vars_compound(q, n);
@@ -654,8 +654,8 @@ static int compare_compounds(tpl_query *q, node *term1, node *term2, int mode)
 
 static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 {
-	node *n1 = get_arg(q, term1, q->c.curr_frame);
-	node *n2 = get_arg(q, term2, q->c.curr_frame);
+	node *n1 = subst(q, term1, q->c.curr_frame);
+	node *n2 = subst(q, term2, q->c.curr_frame);
 
 	if ((is_integer(n1) || is_bignum(n1)) && (is_integer(n2) || is_bignum(n2))) {
 		if (get_word(n1) < get_word(n2))
@@ -1366,14 +1366,14 @@ static int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, 
 
 	while (term2 && is_list(term2)) {
 		node *head = term_firstarg(term2);
-		node *opt = get_arg(q, head, q->c.curr_frame);
+		node *opt = subst(q, head, q->c.curr_frame);
 
 		if (is_compound(opt)) {
 			const char *f = term_functor(opt);
 
 			if (!strcmp(f, "double_quotes")) {
 				node *n = term_firstarg(opt);
-				n = get_arg(q, n, q->c.curr_frame);
+				n = subst(q, n, q->c.curr_frame);
 
 				if (is_atom(n)) {
 					l.flag_double_quotes =
@@ -1384,14 +1384,14 @@ static int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, 
 			}
 			else if (!strcmp(f, "character_escapes")) {
 				node *n = term_firstarg(opt);
-				n = get_arg(q, n, q->c.curr_frame);
+				n = subst(q, n, q->c.curr_frame);
 
 				if (is_atom(n))
 					l.flag_character_escapes = !strcmp(VAL_S(n), "on") || !strcmp(VAL_S(n), "true") ? 1 : 0;
 			}
 			else if (!strcmp(f, "variables")) {
 				node *n = term_firstarg(opt);
-				n = get_arg(q, n, q->c.curr_frame);
+				n = subst(q, n, q->c.curr_frame);
 
 				if (is_var(n))
 					varlist = n;
@@ -1953,7 +1953,7 @@ static int bif_iso_number_codes(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-			node *n = get_arg(q, head, this_context);
+			node *n = subst(q, head, this_context);
 
 			if (!is_integer(n) && !is_bignum(n)) {
 				QABORT(ABORT_INVALIDARGNOTINT);
@@ -1980,7 +1980,7 @@ static int bif_iso_number_codes(tpl_query *q)
 
 			*dst++ = (char)(int)get_word(n);
 			node *tail = term_next(head);
-			l = get_arg(q, tail, this_context);
+			l = subst(q, tail, this_context);
 		}
 
 		*dst = '\0';
@@ -2039,7 +2039,7 @@ static int bif_iso_number_chars(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-			node *n = get_arg(q, head, this_context);
+			node *n = subst(q, head, this_context);
 
 			if (!is_atom(n)) {
 				QABORT(ABORT_INVALIDARGNOTATOM);
@@ -2064,7 +2064,7 @@ static int bif_iso_number_chars(tpl_query *q)
 
 			*dst++ = VAL_S(n)[0];
 			node *tail = term_next(head);
-			l = get_arg(q, tail, this_context);
+			l = subst(q, tail, this_context);
 		}
 
 		*dst = '\0';
@@ -2122,7 +2122,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-			node *n = get_arg(q, head, this_context);
+			node *n = subst(q, head, this_context);
 
 			if (!is_atom(n)) {
 				QABORT(ABORT_INVALIDARGNOTATOM);
@@ -2143,7 +2143,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 			int ch = get_char_utf8(&src);
 			dst += put_char_utf8(dst, ch);
 			node *tail = term_next(head);
-			l = get_arg(q, tail, this_context);
+			l = subst(q, tail, this_context);
 		}
 
 		*dst = '\0';
@@ -2197,7 +2197,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-			node *n = get_arg(q, head, this_context);
+			node *n = subst(q, head, this_context);
 
 			if (!is_integer(n) && !is_bignum(n)) {
 				QABORT(ABORT_INVALIDARGNOTINT);
@@ -2223,7 +2223,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 
 			dst += put_char_utf8(dst, v);
 			node *tail = term_next(head);
-			l = get_arg(q, tail, this_context);
+			l = subst(q, tail, this_context);
 		}
 
 		*dst = '\0';
@@ -2561,7 +2561,7 @@ static int bif_retract2(tpl_query *q, int wait)
 
 	if (r->idx) {
 		node *fa = term_firstarg(term1);
-		node *fval = get_arg(q, fa, q->curr_context);
+		node *fval = subst(q, fa, q->curr_context);
 
 		if (!is_var(fval)) {
 			use_iter = 1;
@@ -2791,7 +2791,7 @@ static int bif_iso_retractall(tpl_query *q)
 
 	if (r->idx) {
 		node *fa = term_firstarg(term1);
-		node *fval = get_arg(q, fa, q->curr_context);
+		node *fval = subst(q, fa, q->curr_context);
 
 		if (!is_var(fval)) {
 			use_iter = 1;
@@ -3328,14 +3328,14 @@ static int bif_iso_sort(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			node *n = subst(q, head, q->latest_context);
 
 			if (!is_atomic(n))
 				return 0;
 
 			cnt++;
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = subst(q, tail, q->latest_context);
 		}
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
@@ -3345,10 +3345,10 @@ static int bif_iso_sort(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			node *n = subst(q, head, q->latest_context);
 			base[idx++] = n;
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = subst(q, tail, q->latest_context);
 		}
 
 		qsort(base, cnt, sizeof(node *), nodecmp);
@@ -3402,7 +3402,7 @@ static int bif_iso_keysort(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			node *n = subst(q, head, q->latest_context);
 
 			if (!is_compound(n))
 				return 0;
@@ -3412,7 +3412,7 @@ static int bif_iso_keysort(tpl_query *q)
 
 			cnt++;
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = subst(q, tail, q->latest_context);
 		}
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
@@ -3422,10 +3422,10 @@ static int bif_iso_keysort(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			node *n = subst(q, head, q->latest_context);
 			base[idx++] = n;
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = subst(q, tail, q->latest_context);
 		}
 
 		qsort(base, cnt, sizeof(node *), keycmp);
@@ -3496,7 +3496,7 @@ static int bif_iso_arg(tpl_query *q)
 	if (is_var(term1) || q->retry)
 		try_me_nofollow(q);
 
-	node *term = get_arg(q, n, term2_ctx);
+	node *term = subst(q, n, term2_ctx);
 	return unify(q, term, term2_ctx, term3, term3_ctx);
 }
 
@@ -3517,7 +3517,8 @@ static int bif_iso_univ(tpl_query *q)
 		node *save_l = l;
 
 		while (n) {
-			term_append(l, clone_term(q, n));
+			node *from = subst(q, n, q->latest_context);
+			term_append(l, clone_term(q, from));
 
 			if (!term_next(n))
 				break;
@@ -3545,7 +3546,7 @@ static int bif_iso_univ(tpl_query *q)
 
 	if (is_var(term1) && is_list(term2)) {
 		if (is_var(term_firstarg(term2))) {
-			if (is_var(get_arg(q, term_firstarg(term2), term2_ctx))) {
+			if (is_var(subst(q, term_firstarg(term2), term2_ctx))) {
 				QABORT(ABORT_INVALIDARGNOTGROUNDED);
 				return 0;
 			}
@@ -3558,10 +3559,10 @@ static int bif_iso_univ(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-			node *from = get_arg(q, head, this_context);
+			node *from = subst(q, head, this_context);
 			term_append(s, clone_term(q, from));
 			node *tail = term_next(head);
-			l = get_arg(q, tail, this_context);
+			l = subst(q, tail, this_context);
 		}
 
 		if (term_arity(s) == 0)
@@ -3658,10 +3659,10 @@ static int bif_iso_length(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			// node *n = get_arg(q, head, q->latest_context);
+			// node *n = subst(q, head, q->latest_context);
 			cnt++;
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = subst(q, tail, q->latest_context);
 		}
 
 		if (is_var(term2))
@@ -3793,7 +3794,7 @@ static int bif_iso_findall(tpl_query *q)
 	node *save_l = NULL, *l = NULL;
 
 	while (ok && !g_abort) {
-		node *from = get_arg(subq, term1, FUDGE_FACTOR);
+		node *from = subst(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
 		if (!l) {
@@ -3913,7 +3914,7 @@ static int bif_iso_bagof(tpl_query *q)
 		}
 
 		sl_set(sp->kvs, (void *)subq->c.curr_match, NULL);
-		node *from = get_arg(subq, term1, FUDGE_FACTOR);
+		node *from = subst(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
 		if (!l) {
@@ -4043,7 +4044,7 @@ static int bif_iso_setof(tpl_query *q)
 		}
 
 		sl_set(sp->kvs, (void *)subq->c.curr_match, NULL);
-		node *from = get_arg(subq, term1, FUDGE_FACTOR);
+		node *from = subst(subq, term1, FUDGE_FACTOR);
 		node *res = clone_term(subq, from);
 
 		if (!l) {
@@ -4081,7 +4082,7 @@ static int bif_iso_setof(tpl_query *q)
 			node *head = term_firstarg(l);
 			cnt++;
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = subst(q, tail, q->latest_context);
 		}
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
@@ -4091,10 +4092,10 @@ static int bif_iso_setof(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = get_arg(q, head, q->latest_context);
+			node *n = subst(q, head, q->latest_context);
 			base[idx++] = n;
 			node *tail = term_next(head);
-			l = get_arg(q, tail, q->latest_context);
+			l = subst(q, tail, q->latest_context);
 		}
 
 		qsort(base, cnt, sizeof(node *), nodecmp);
@@ -5874,7 +5875,7 @@ static int bif_xtra_maplist_2(tpl_query *q)
 			term_append(s, clone_term(q, term1));
 		}
 
-		term_append(s, clone_term(q, get_arg(q, l2, this_context)));
+		term_append(s, clone_term(q, subst(q, l2, this_context)));
 		begin_query(subq, s);
 		int ok = query_run(subq);
 		query_destroy(subq);
@@ -5883,7 +5884,7 @@ static int bif_xtra_maplist_2(tpl_query *q)
 		if (!ok)
 			return 0;
 
-		l2 = get_arg(q, term_next(l2), this_context);
+		l2 = subst(q, term_next(l2), this_context);
 	}
 
 	return 1;
@@ -5930,8 +5931,8 @@ static int bif_xtra_maplist_3(tpl_query *q)
 			term_append(s, clone_term(q, term1));
 		}
 
-		term_append(s, clone_term(q, get_arg(q, l2, this_context)));
-		term_append(s, clone_term(q, get_arg(q, l3, this_context)));
+		term_append(s, clone_term(q, subst(q, l2, this_context)));
+		term_append(s, clone_term(q, subst(q, l3, this_context)));
 		begin_query(subq, s);
 		int ok = query_run(subq);
 		query_destroy(subq);
@@ -5940,8 +5941,8 @@ static int bif_xtra_maplist_3(tpl_query *q)
 		if (!ok)
 			return 0;
 
-		l2 = get_arg(q, term_next(l2), this_context);
-		l3 = get_arg(q, term_next(l3), this_context);
+		l2 = subst(q, term_next(l2), this_context);
+		l3 = subst(q, term_next(l3), this_context);
 	}
 
 	return 1;
@@ -6627,7 +6628,7 @@ static int bif_xtra_memberchk_2(tpl_query *q)
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
-		node *n = get_arg(q, head, q->latest_context);
+		node *n = subst(q, head, q->latest_context);
 
 		if (unify(q, term1, term1_ctx, n, term2_ctx)) {
 			return 1;
@@ -6635,7 +6636,7 @@ static int bif_xtra_memberchk_2(tpl_query *q)
 
 		reallocate_frame(q);
 		node *tail = term_next(head);
-		l = get_arg(q, tail, this_context);
+		l = subst(q, tail, this_context);
 	}
 
 	return 0;
@@ -6825,7 +6826,7 @@ static int bif_xtra_name_2(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-			node *n = get_arg(q, head, this_context);
+			node *n = subst(q, head, this_context);
 
 			if (!is_integer(n) && !is_bignum(n)) {
 				QABORT(ABORT_INVALIDARGNOTINT);
@@ -6851,7 +6852,7 @@ static int bif_xtra_name_2(tpl_query *q)
 
 			dst += put_char_utf8(dst, v);
 			node *tail = term_next(head);
-			l = get_arg(q, tail, this_context);
+			l = subst(q, tail, this_context);
 		}
 
 		*dst = '\0';
@@ -6971,10 +6972,10 @@ static int bif_xtra_atomic_list_concat_2(tpl_query *q)
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
-		node *n = get_arg(q, head, this_context);
+		node *n = subst(q, head, this_context);
 		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, n, 0);
 		node *tail = term_next(head);
-		l = get_arg(q, tail, this_context);
+		l = subst(q, tail, this_context);
 	}
 
 	*dst = '\0';
@@ -7011,10 +7012,10 @@ static int bif_xtra_atomic_list_concat_3(tpl_query *q)
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
-		node *n = get_arg(q, head, this_context);
+		node *n = subst(q, head, this_context);
 		dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, NULL, n, 0);
 		node *tail = term_next(head);
-		l = get_arg(q, tail, this_context);
+		l = subst(q, tail, this_context);
 
 		if (is_list(l))
 			dst += sprintf(dst, "%s", VAL_S(term2));

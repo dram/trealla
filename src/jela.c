@@ -243,7 +243,7 @@ static int follow(tpl_query *q)
 		return proceed(q);
 
 	if (is_var(q->c.curr_term))
-		q->c.curr_term = get_arg(q, q->c.curr_term, q->c.curr_frame);
+		q->c.curr_term = subst(q, q->c.curr_term, q->c.curr_frame);
 
 	return 1;
 }
@@ -628,9 +628,9 @@ static int unify_compound(tpl_query *q, node *term1, unsigned context1, node *te
 	int ok = 1;
 
 	while (term1 != NULL) {
-		node *tmp1 = get_arg(q, term1, context1);
+		node *tmp1 = subst(q, term1, context1);
 		int tmp1_ctx = q->latest_context;
-		node *tmp2 = get_arg(q, term2, context2);
+		node *tmp2 = subst(q, term2, context2);
 		int tmp2_ctx = q->latest_context;
 		q->fail_arg++;
 
@@ -679,7 +679,7 @@ int match(tpl_query *q)
 
 	if (r->idx) {
 		node *fa = term_firstarg(q->c.curr_term);
-		node *fval = get_arg(q, fa, q->curr_context);
+		node *fval = subst(q, fa, q->curr_context);
 
 		if (!is_var(fval)) {
 			use_iter = 1;

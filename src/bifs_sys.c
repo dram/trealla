@@ -1088,7 +1088,7 @@ static int bif_sys_begins_2(tpl_query *q)
 
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
-		node *n = get_arg(q, head, q->latest_context);
+		node *n = subst(q, head, q->latest_context);
 
 		if (is_atom(n)) {
 			if (!strncmp(VAL_S(term1), VAL_S(n), strlen(VAL_S(n))))
@@ -1096,7 +1096,7 @@ static int bif_sys_begins_2(tpl_query *q)
 		}
 
 		node *tail = term_next(head);
-		l = get_arg(q, tail, q->latest_context);
+		l = subst(q, tail, q->latest_context);
 	}
 
 	return 0;

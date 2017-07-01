@@ -236,10 +236,10 @@ static int bif_net_server_2(tpl_query *q)
 
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
-		node *n = get_arg(q, head, q->latest_context);
+		node *n = subst(q, head, q->latest_context);
 		configure_server(q, h, n, &net_callback, &has_uncle);
 		node *tail = term_next(head);
-		l = get_arg(q, tail, q->latest_context);
+		l = subst(q, tail, q->latest_context);
 	}
 
 	handler_wait(h);
@@ -279,7 +279,7 @@ static int bif_net_server_4(tpl_query *q)
 	while (is_list(term1)) {
 		term1 = term_first(term1);
 		term1 = term_next(term1);
-		node *n = get_arg(q, term1, q->c.curr_frame);
+		node *n = subst(q, term1, q->c.curr_frame);
 		configure_server(q, h, n, &net_callback, &has_uncle);
 		term1 = term_next(term1);
 	}

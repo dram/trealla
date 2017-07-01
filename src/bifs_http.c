@@ -778,8 +778,8 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 
 	n = term_first(n);
 	node *v = term_next(n);
-	n = get_arg(q, n, q->latest_context);
-	v = get_arg(q, v, q->latest_context);
+	n = subst(q, n, q->latest_context);
+	v = subst(q, v, q->latest_context);
 	const char *f = VAL_S(n);
 
 	if (!strcmp(f, "version")) {
@@ -919,10 +919,10 @@ static options *parse_options_list(tpl_query *q, node *args, node *l)
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
-		node *n = get_arg(q, head, this_context);
+		node *n = subst(q, head, this_context);
 		parse_option(q, opt, n);
 		node *tail = term_next(head);
-		l = get_arg(q, tail, this_context);
+		l = subst(q, tail, this_context);
 	}
 
 	return opt;
@@ -937,7 +937,7 @@ static char *parse_hdrs_list(tpl_query *q, node *args, node *l)
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
 		unsigned this_context = q->latest_context;
-		node *n = get_arg(q, head, this_context);
+		node *n = subst(q, head, this_context);
 
 		if (is_compound(n) && !strcmp(term_functor(n), "{}")) {
 			node *n2 = term_firstarg(n);
@@ -965,7 +965,7 @@ static char *parse_hdrs_list(tpl_query *q, node *args, node *l)
 		*dst++ = '\r';
 		*dst++ = '\n';
 		node *tail = term_next(head);
-		l = get_arg(q, tail, this_context);
+		l = subst(q, tail, this_context);
 	}
 
 	*dst = '\0';
@@ -1695,7 +1695,7 @@ static int bif_ws_request_5(tpl_query *q)
 
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
-		node *n = get_arg(q, head, q->c.curr_frame);
+		node *n = subst(q, head, q->c.curr_frame);
 
 		if (is_atom(n)) {
 			if (prots[0])
@@ -1705,7 +1705,7 @@ static int bif_ws_request_5(tpl_query *q)
 		}
 
 		node *tail = term_next(head);
-		l = get_arg(q, tail, q->latest_context);
+		l = subst(q, tail, q->latest_context);
 	}
 
 	int status;

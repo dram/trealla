@@ -394,7 +394,7 @@ inline static env *get_env(tpl_query *q, unsigned point)
 	return e->term ? e : e - e->binding;
 }
 
-inline static node *get_arg(tpl_query *q, node *term, unsigned frame)
+inline static node *subst(tpl_query *q, node *term, unsigned frame)
 {
 	if (!is_var(term)) {
 		q->latest_context = frame;
@@ -418,7 +418,7 @@ inline static node *get_arg(tpl_query *q, node *term, unsigned frame)
 inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 {
 	if ((*term_ptr = NLIST_NEXT(*term_ptr)) != NULL)
-		return get_arg(q, *term_ptr, q->c.curr_frame);
+		return subst(q, *term_ptr, q->c.curr_frame);
 
 	return NULL;
 }

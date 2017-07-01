@@ -164,9 +164,9 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		int this_context = q ? q->latest_context : -1;
 		node *head = term_firstarg(n);
 		node *tail = term_next(head);
-		node *term = q ? get_arg(q, head, this_context) : head;
+		node *term = q ? subst(q, head, this_context) : head;
 		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
-		term = q ? get_arg(q, tail, this_context) : tail;
+		term = q ? subst(q, tail, this_context) : tail;
 
 		if (is_list(term)) {
 			inner = 1;
@@ -222,7 +222,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	if (is_tuple(n)) {
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "{");
 		n = term_next(nf);
-		node *term = q ? get_arg(q, n, save_context) : n;
+		node *term = q ? subst(q, n, save_context) : n;
 		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, -listing ? listing : 1);
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "}");
 	}
@@ -269,7 +269,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 				if (is_hidden(n))
 					continue;
 
-				node *term = q ? get_arg(q, n, save_context) : n;
+				node *term = q ? subst(q, n, save_context) : n;
 				dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 
 				if (term_next(n))
@@ -336,7 +336,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 			if (is_hidden(n1))
 				continue;
 
-			node *term = q ? get_arg(q, n1, save_context) : n1;
+			node *term = q ? subst(q, n1, save_context) : n1;
 			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 			node *n2 = term_next(n1);
 
@@ -351,7 +351,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	}
 	else {
 		for (node *n = nf; n != NULL; n = term_next(n)) {
-			node *term = q ? get_arg(q, n, save_context) : n;
+			node *term = q ? subst(q, n, save_context) : n;
 			dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, term, listing ? listing : 1);
 
 			if (term_next(n))
@@ -379,7 +379,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 	char *dst = *_dst;
 	int save_context = q ? q->latest_context : -1;
-	node *n = q ? get_arg(q, _n, q->latest_context) : _n;
+	node *n = q ? subst(q, _n, q->latest_context) : _n;
 	size_t xlen = (is_atom(n) ? LEN(n) : 64) + 1024;
 	size_t rem = (*bufsize - (dst - *dstbuf));
 
