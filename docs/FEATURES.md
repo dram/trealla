@@ -890,7 +890,7 @@ This is a compiled-in module that must be imported:
 
 	:-import(library(yahoo)).
 
-	get_chart(+Symbol,-Data)
+	get_chart(+Symbol,-Data)                (DEPRECATED due to Yahoo changes)
 
 Where *Symbol must be an atom such as 'GOOG' or 'IBM'. The result in *Data* is multiple CSV lines,
 one per date entry.

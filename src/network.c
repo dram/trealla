@@ -147,6 +147,7 @@ struct handler_ {
 struct session_ {
 	handler *h;
 	skiplist *stash;
+	slnode *iter;
 	const char *name;
 	char *remote, *local, *host;
 	char srcbuf[READ_BUFLEN];
@@ -629,11 +630,49 @@ void session_clr_stash(session *s)
 		sl_clear(s->stash, &free);
 }
 
+const char *session_get_key(session *s, const char *key)
+{
+	if (!s->stash)
+		return NULL;
+
+	if (!s->iter)
+		s->iter = sl_findkey(s->stash, key);
+
+	void *tmp_value = NULL;
+	sl_nextkey(&s->iter, key, &tmp_value);
+	return (char *)tmp_value;
+}
+
+const char *session_get_keys(session *s)
+{
+	if (!s->stash)
+		return NULL;
+
+	if (!s->iter)
+		s->iter = sl_startx(s->stash);
+
+	return sl_nextx(&s->iter, NULL);
+}
+
+int session_app_stash(session *s, const char *key, const char *value)
+{
+	if (!s->stash) {
+		s->stash = (skiplist *)calloc(1, sizeof(skiplist));
+		sl_init(s->stash, 1, &strcasecmp, &free);
+	}
+
+	if (sl_count(s->stash) >= STASH_LIMIT)
+		return 0;
+
+	sl_set(s->stash, strdup(key), strdup(value));
+	return 1;
+}
+
 int session_set_stash(session *s, const char *key, const char *value)
 {
 	if (!s->stash) {
 		s->stash = (skiplist *)calloc(1, sizeof(skiplist));
-		sl_init(s->stash, 0, &strcasecmp, &free);
+		sl_init(s->stash, 1, &strcasecmp, &free);
 	}
 
 	if (sl_count(s->stash) > STASH_LIMIT)

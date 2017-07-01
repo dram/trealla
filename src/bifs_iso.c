@@ -3544,30 +3544,30 @@ static int bif_iso_univ(tpl_query *q)
 	}
 
 	if (is_var(term1) && is_list(term2)) {
+		if (is_var(term_firstarg(term2))) {
+			if (is_var(get_arg(q, term_firstarg(term2), term2_ctx))) {
+				QABORT(ABORT_INVALIDARGNOTGROUNDED);
+				return 0;
+			}
+		}
+
+		q->latest_context = term2_ctx;
 		node *s = make_compound();
 		node *l = term2;
-		int first = 1;
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
-
-			if (first && is_var(head)) {
-				QABORT(ABORT_INVALIDARGNOTGROUNDED);
-				term_heapcheck(s);
-				return 0;
-			}
-
-			term_append(s, clone_term(q, head));
+			node *from = get_arg(q, head, this_context);
+			term_append(s, clone_term(q, from));
 			node *tail = term_next(head);
 			l = get_arg(q, tail, this_context);
-			first = 0;
 		}
 
 		if (term_arity(s) == 0)
-			put_env(q, q->c.curr_frame + term1->slot, term_first(s), term2_ctx);
+			put_env(q, q->c.curr_frame + term1->slot, term_first(s), -1);
 		else
-			put_env(q, q->c.curr_frame + term1->slot, s, term2_ctx);
+			put_env(q, q->c.curr_frame + term1->slot, s, -1);
 
 		term_heapcheck(s);
 		return 1;

@@ -84,6 +84,7 @@ extern void *session_get_udata_ptr(session *s);
 // There is a limit of 1000 stash items per session
 // Note: the stash takes copies of key/value strings
 extern int session_set_stash(session *s, const char *key, const char *value);
+extern int session_app_stash(session *s, const char *key, const char *value);
 extern const char *session_get_stash(session *s, const char *key);
 extern int session_set_stash_int(session *s, const char *key, int64_t value);
 extern int64_t session_get_stash_int(session *s, const char *key);
@@ -91,6 +92,8 @@ extern int session_set_stash_float(session *s, const char *key, double value);
 extern double session_get_stash_float(session *s, const char *key);
 // Note: must free returned value after use...
 extern const char *session_del_stash(session *s, const char *key);
+extern const char *session_get_key(session *s, const char *key);
+extern const char *session_get_keys(session *s);
 extern void session_clr_stash(session *s);
 extern size_t session_count_stash(session *s);
 
