@@ -10,7 +10,7 @@ It supports much of ISO-PROLOG plus:
  - first-argument indexing
  - database persistency & transactions
  - unlimited length and number of UTF-8 atoms, strings & blobs
- - 64-bit floats & ints & optional ubounded integers
+ - 64-bit floats & ints & optional unbounded integers
  - Linda-style processes using tuple-space
  - Erlang-style processes with message-passing
  - advanced networking features with unblocked I/O
