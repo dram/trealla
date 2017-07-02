@@ -139,14 +139,12 @@ size_t sprint_uint(char *dst, size_t size, unbr_t n, int base)
 	return dst - save_dst;
 }
 
-static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n,
-                           int listing);
+static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n, int listing);
 
-static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n,
-                           int listing)
+static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n, int listing)
 {
 	if (q) {
-		if (++q->print_depth > MAX_UNIFY_DEPTH) {
+		if (depth > MAX_UNIFY_DEPTH) {
 			QABORT2(ABORT_MAXDEPTH, "CYCLIC TERM");
 			return 0;
 		}
@@ -184,19 +182,16 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 	dst += snprintf(dst, *bufsize - (dst - *dstbuf), "]");
 
-	if (q) {
+	if (q)
 		q->latest_context = save_context;
-		q->print_depth--;
-	}
 
 	return dst - *_dst;
 }
 
-static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n,
-                               int listing)
+static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *n, int listing)
 {
 	if (q) {
-		if (++q->print_depth > MAX_UNIFY_DEPTH) {
+		if (depth > MAX_UNIFY_DEPTH) {
 			QABORT2(ABORT_MAXDEPTH, "CYCLIC TERM");
 			return 0;
 		}
@@ -229,7 +224,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	else if ((listing < 2) && pl && is_infix(&pl->db, functor) && (arity > 1) && !ignore_ops) {
 		int parens = 0;
 
-		if ((strcmp(functor, ":-") && strcmp(functor, "-->") && strcmp(functor, "is")) && (q->print_depth > 2)) {
+		if ((strcmp(functor, ":-") && strcmp(functor, "-->") && strcmp(functor, "is")) && (depth > 2)) {
 			if (listing == 1)
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "(");
 
@@ -359,19 +354,16 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		}
 	}
 
-	if (q) {
+	if (q)
 		q->latest_context = save_context;
-		q->print_depth--;
-	}
 
 	return dst - *_dst;
 }
 
-static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n,
-                           int listing)
+static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_dst, trealla *pl, tpl_query *q, node *_n, int listing)
 {
 	if (q) {
-		if (++q->print_depth > MAX_UNIFY_DEPTH) {
+		if (depth > MAX_UNIFY_DEPTH) {
 			QABORT2(ABORT_MAXDEPTH, "CYCLIC TERM");
 			return 0;
 		}
@@ -547,9 +539,6 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
 	else if (is_atom(n))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", VAL_S(n));
-
-	if (q)
-		q->print_depth--;
 
 	if (q)
 		q->latest_context = save_context;

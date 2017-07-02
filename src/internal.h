@@ -292,7 +292,6 @@ struct tpl_query_ {
 	uint32_t envs_used, envs_possible;
 	uint32_t trails_used, trails_possible;
 	uint32_t curr_context, latest_context;
-	uint32_t print_depth;
 	FILE *curr_stdin, *curr_stdout;
 	unsigned int seed;
 	uint16_t unify_depth;
