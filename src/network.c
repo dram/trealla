@@ -443,7 +443,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 
 	if (s->is_client) {
 		if (!s_ctx) {
-			s_ctx = SSL_CTX_new(TLSv1_client_method());
+			s_ctx = SSL_CTX_new(TLS_client_method());
 
 			if (!s_ctx) {
 				printf("SSL new client context failed\n");
@@ -475,7 +475,7 @@ int session_enable_tls(session *s, const char *certfile, int level)
 		return 0;
 	}
 
-	SSL_set_ssl_method(s->ssl, !s->is_client ? SSLv23_server_method() : TLSv1_client_method());
+	SSL_set_ssl_method(s->ssl, !s->is_client ? SSLv23_server_method() : TLS_client_method());
 	SSL_set_mode(s->ssl, SSL_MODE_AUTO_RETRY);
 
 	if ((level > 0) && certfile)
@@ -2145,7 +2145,7 @@ int handler_set_tls(handler *h, const char *keyfile, const char *certfile)
 	if (h->ctx) // already done
 		return 1;
 
-	h->ctx = SSL_CTX_new(TLSv1_method());
+	h->ctx = SSL_CTX_new(TLS_method());
 
 	if (!h->ctx) {
 		printf("SSL new server context failed\n");
