@@ -89,8 +89,8 @@ static op g_ops[] = {
                      {"\\", "fy", 200},
                      {"+", "fy", 200},
                      {"-", "fy", 200},
-                     {"]-[", "fy", 200}, // HACK
-                     {"]+[", "fy", 200}, // HACK
+                     {"]-[", "fy", 1}, // HACK
+                     {"]+[", "fy", 1}, // HACK
                      //{"$", "fx", 1},
 
                      {0}};
@@ -1180,7 +1180,10 @@ static int attach_ops(lexer *l, node *term, int depth)
 				prev_op = 1;
 		}
 
-		int restart = prev_op || !term_prev(n) || is_functor(term_prev(n));
+		int restart = prev_op || !term_prev(n) || is_functor(term_prev(n)) || is_builtin(term_prev(n));
+
+		if (term_prev(n) && is_attached(term_prev(n)))
+			restart = 0;
 
 		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, restart=%d\n", depth, functor, is_quoted(n), prev_op, restart);
 
@@ -1214,7 +1217,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 		}
 		else if (restart && !strcmp(functor, "+") && !is_noop(n)) {
 			functor = n->val_s = "]+[";
-			n->bifptr = bif_iso_positive;
+			n->bifptr = bif_iso_negative;
 			optr = get_op(&l->pl->db, functor, 1);
 		}
 		else if (prev_op || is_noop(n)) {
@@ -1254,18 +1257,16 @@ static int attach_ops(lexer *l, node *term, int depth)
 				prev_op = 1;
 		}
 
-		//printf("### attach_ops FUNCTOR = '%s' / '%s' prev=%d\n", functor, optr->spec, prev_op);
-
 		if (prev_op || is_noop(n) /*|| !is_noargs(term)*/)
 			continue;
+
+		//printf("### attach [%d] FUNCTOR = '%s' / %d / '%s' prev=%d\n", depth, functor, priority, optr->spec, prev_op);
 
 		if (OP_PREFIX(optr->spec)) {
 			n = attach_op_prefix(l, term, n);
 
 			if ((n == NULL) && l->error) {
-				printf("ERROR: prefix op '%s' missing params, "
-				       "line %d\n",
-				       functor, l->line_nbr);
+				printf("ERROR: prefix op '%s' missing params, line %d\n", functor, l->line_nbr);
 				return 0;
 			}
 		}
@@ -1273,9 +1274,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 			n = attach_op_postfix(l, term, n);
 
 			if ((n == NULL) && l->error) {
-				printf("ERROR: postfix op '%s' missing params, "
-				       "line %d\n",
-				       functor, l->line_nbr);
+				printf("ERROR: postfix op '%s' missing params, line %d\n", functor, l->line_nbr);
 				return 0;
 			}
 		}
@@ -1283,9 +1282,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 			n = attach_op_infix(l, term, n, functor, depth);
 
 			if ((n == NULL) && l->error) {
-				printf("ERROR: infix op '%s' missing params, "
-				       "line %d\n",
-				       functor, l->line_nbr);
+				printf("ERROR: infix op '%s' missing params, line %d\n", functor, l->line_nbr);
 				l->error = 1;
 				return 0;
 			}
