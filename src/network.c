@@ -111,7 +111,7 @@
 #define POLLRDHUP 0
 #endif
 
-#ifndef TLS_client_method
+#ifdef OPENSSL_NO_TLS1_METHOD
 #define TLS_client_method TLSv1_client_method
 #define TLS_method TLSv1_method
 #endif
