@@ -1,4 +1,4 @@
-CFLAGS = -Isrc -O3 $(OPT) -Wall -D_DEFAULT_SOURCE -D_BSD_SOURCE
+CFLAGS = -Isrc -O3 $(OPT) -Wall -D_DEFAULT_SOURCE -D_BSD_SOURCE -Wno-deprecated-declarations
 CFLAGS += -I/usr/local/include
 LDFLAGS = -lm
 
