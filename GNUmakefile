@@ -1,4 +1,4 @@
-CFLAGS = -Isrc -O3 $(OPT) -Wall -D_DEFAULT_SOURCE -D_BSD_SOURCE -Wno-deprecated-declarations
+CFLAGS = -Isrc -O3 $(OPT) -Wall -D_DEFAULT_SOURCE -D_BSD_SOURCE
 LDFLAGS = -lm
 
 OBJECTS_ISO = src/trealla.o src/parser.o src/bifs_iso.o src/jela.o \
