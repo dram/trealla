@@ -137,7 +137,7 @@ implementations:
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
 	atom_number(+A,?V)          - convert atom to Int or Float
-	unbounded(+Int)             - function to convert int to unbounded
+	unbounded(+Int)             - function to convert integer to unbounded
 
 and for accessing the rule database:
 

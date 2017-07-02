@@ -28,7 +28,7 @@ Current ISO predicates that are (known) not yet implemented:
 	sub_atom
 	*exceptions*
 
-Unbounded ints (aka. bigints or bignums) are considered experimental at this stage. To introduce
+Unbounded integers (bigints or bignums) are considered experimental at this stage. To introduce
 a bignum use the 'B' suffix e.g: *X is 1B*, or *unbounded/1* function e.g: *X is unbounded(1)*.
 Thereafter X will propagate as such in calculations. Integer literals will automatically set to
 unbounded if needed (>INT_MAX) during parsing. Not all BIFs may handle unbounded ints as yet.
