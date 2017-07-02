@@ -111,6 +111,11 @@
 #define POLLRDHUP 0
 #endif
 
+#ifndef TLS_client_method
+#define TLS_client_method TLSv1_client_method
+#define TLS_method TLSv1_method
+#endif
+
 #define DEFAULT_CIPHERS "HIGH:!aNULL" // EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 
 static const int g_debug = 0;
