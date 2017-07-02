@@ -1180,7 +1180,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 				prev_op = 1;
 		}
 
-		int restart = prev_op || !term_prev(n) || is_atom(term_prev(n));
+		int restart = prev_op || !term_prev(n) || is_functor(term_prev(n));
 
 		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, restart=%d\n", depth, functor, is_quoted(n), prev_op, restart);
 
