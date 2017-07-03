@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <locale.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -6144,6 +6145,68 @@ static int bif_xtra_unbounded_1(tpl_query *q)
 	q->nv.flags = TYPE_BIGNUM;
 	return 1;
 }
+
+static int bif_xtra_fixed_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+	node *term2 = get_int(term2);
+	node *term3 = get_int(term3);
+	node *term4 = get_var(term4);
+	int digs = get_word(term2);
+	int prec = get_word(term3);
+
+	if ((digs < 0) || (digs > 512)) {
+		QABORT(ABORT_INVALIDARGOUTOFRANGE);
+		return 0;
+	}
+
+	if (digs > prec) {
+		QABORT(ABORT_INVALIDARGOUTOFRANGE);
+		return 0;
+	}
+
+	struct lconv *lc = localeconv();
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
+	dst += term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
+	size_t len = dst - tmpbuf;
+	char *dstbuf = (char *)malloc(len + digs + 10);
+	const char *src = tmpbuf;
+	dst = dstbuf;
+	int pad = 0, offset = prec - digs;
+
+	len -= offset;
+
+	if (len < digs) {
+		pad = 1;
+		*dst++ = *lc->decimal_point;
+
+		int i = len;
+
+		while (i++ < digs)
+			*dst++ = '0';
+	}
+
+	while (*src && (len-- > digs))
+		*dst++ = *src++;
+
+	len += offset;
+
+	if (!pad && *src) {
+		*dst++ = *lc->decimal_point;
+	}
+
+	while (*src && (len-- >= offset))
+		*dst++ = *src++;
+
+	*dst = '\0';
+	free(tmpbuf);
+	put_atom(q, q->c.curr_frame + term4->slot, dstbuf);
+	return 1;
+}
+
 #endif
 
 static int bif_xtra_random_1(tpl_query *q)
@@ -7268,6 +7331,7 @@ void bifs_load_iso(void)
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
+	DEFINE_BIF("fixed", 4, bif_xtra_fixed_4);
 #endif
 
 	DEFINE_BIF("forall", 2, bif_xtra_forall_2);

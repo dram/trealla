@@ -138,6 +138,7 @@ implementations:
 
 	atom_number(+A,?V)          - convert atom to Int or Float
 	unbounded(+Int)             - function to convert integer to unbounded
+	fixed(+Int,+Digs,+Prec,-V)  - format integer with fixed number of decimal digits
 
 and for accessing the rule database:
 
