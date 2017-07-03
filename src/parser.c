@@ -72,7 +72,7 @@ static op g_ops[] = {
                      {":", "xfy", 600},
                      {"+", "yfx", 500},
                      {"-", "yfx", 500},
-                     //{"?", "fx", 500},
+                     {"?", "fx", 500},
                      {"*", "yfx", 400},
                      {"/", "yfx", 400},
                      {"//", "yfx", 400},
@@ -87,10 +87,10 @@ static op g_ops[] = {
                      {"**", "xfx", 200},
                      {"^", "xfy", 200},
                      {"\\", "fy", 200},
-                     {"+", "fy", 200},
-                     {"-", "fy", 200},
-                     {"]-[", "fy", 1}, // HACK
-                     {"]+[", "fy", 1}, // HACK
+                     {"-", "fy", 200}, // HACK
+                     {"+", "fy", 200}, // HACK
+                     {"]-[", "fy", 200}, // HACK
+                     {"]+[", "fy", 200}, // HACK
                      //{"$", "fx", 1},
 
                      {0}};
@@ -1172,26 +1172,22 @@ static int attach_ops(lexer *l, node *term, int depth)
 			continue;
 
 		int prev_op = 0;
+		node *n_prev = term_prev(n), *n_next = term_next(n);
 
-		if (term_prev(n) && is_atom(term_prev(n))) {
-			const char *f = VAL_S(term_prev(n));
+		if (n_prev && is_atom(n_prev)) {
+			const char *f = VAL_S(n_prev);
 
 			if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-") && strcmp(f, "is"))
 				prev_op = 1;
 		}
 
-		int restart = prev_op || !term_prev(n) || is_functor(term_prev(n)) || is_builtin(term_prev(n));
+		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, noop=%d\n", depth, functor, is_quoted(n), prev_op, is_noop(n));
 
-		if (term_prev(n) && is_attached(term_prev(n)))
-			restart = 0;
-
-		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, restart=%d\n", depth, functor, is_quoted(n), prev_op, restart);
-
-		if (restart && (!strcmp(functor, "-") || !strcmp(functor, "+")) &&
-				term_next(n) && is_number(term_next(n))) {
-			node *tmp = term_next(n);
+		if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[")) &&
+				n_next && is_number(n_next)) {
+			node *tmp = n_next;
 			term_remove(term, tmp);
-			int neg = !strcmp(functor, "-");
+			int neg = !strcmp(functor, "]-[");
 
 			if (is_integer(tmp))
 				n->val_i = neg ? -tmp->val_i : tmp->val_i;
@@ -1210,17 +1206,15 @@ static int attach_ops(lexer *l, node *term, int depth)
 			term_heapcheck(tmp);
 			continue;
 		}
-		else if (restart && !strcmp(functor, "-") && !is_noop(n)) {
-			functor = n->val_s = "]-[";
-			n->bifptr = bif_iso_negative;
-			optr = get_op(&l->pl->db, functor, 1);
+		else if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[")) &&
+				(!n_next || is_builtin(n_next) || is_noop(n))) {
+			if (!strcmp(functor, "]-["))
+				n->val_s = (char*)"-";
+			else
+				n->val_s = (char*)"+";
 		}
-		else if (restart && !strcmp(functor, "+") && !is_noop(n)) {
-			functor = n->val_s = "]+[";
-			n->bifptr = bif_iso_negative;
-			optr = get_op(&l->pl->db, functor, 1);
-		}
-		else if (prev_op || is_noop(n)) {
+
+		if (prev_op || is_noop(n)) {
 			continue;
 		}
 
@@ -2508,6 +2502,17 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			n = term_make();
 			n->flags |= TYPE_ATOM;
 
+			if (!strcmp(l->tok, "-") && (l->was_paren || l->was_op2 || l->was_op)) {
+				free(l->tok);
+				n->flags |= FLAG_CONST;
+				l->tok =  (char*)"]-[";
+			}
+			else if (!strcmp(l->tok, "+") && (l->was_paren || l->was_op2 || l->was_op)) {
+				free(l->tok);
+				n->flags |= FLAG_CONST;
+				l->tok =  (char*)"]+[";
+			}
+
 			if ((l->was_paren || l->was_op) && !l->quoted && is_op(l->db, l->tok) &&
 			    strcmp(l->tok, "\\+")) { // HACK
 				n->flags |= FLAG_NOOP;
@@ -2542,14 +2547,14 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				l->tok = (char *)"";
 			}
 
-			if (!l->quoted) {
-				n->flags |= FLAG_CONST;
-				n->val_s = dict(l->db, l->tok);
-				free(l->tok);
-			}
-			else if (*l->tok && (strlen(l->tok) < sizeof(n->val_ch))) {
+			if (0 && *l->tok && !is_const(n) && (strlen(l->tok) < sizeof(n->val_ch))) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
 				strcpy(n->val_ch, l->tok);
+				free(l->tok);
+			}
+			else if (!l->quoted && !is_const(n)) {
+				n->flags |= FLAG_CONST;
+				n->val_s = dict(l->db, l->tok);
 				free(l->tok);
 			}
 			else

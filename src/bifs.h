@@ -36,12 +36,13 @@
 #define is_dynamic(n) (((n)->flags & FLAG_DYNAMIC) ? 1 : 0)
 #define is_promoted(n) (((n)->flags & FLAG_PROMOTED) ? 1 : 0)
 #define is_hidden(n) (((n)->flags & FLAG_HIDDEN) ? 1 : 0)
-#define is_rule(n) (((n)->flags & FLAG_RULE) ? 1 : 0)
 #define is_noargs(n) (((n)->flags & FLAG_NOARGS) ? 1 : 0)
 #define is_tailrecursive(n) (((n)->flags & FLAG_TAILRECURSIVE) ? 1 : 0)
 #define is_passthru(n) (((n)->flags & FLAG_PASSTHRU) ? 1 : 0)
 #define is_noop(n) (((n)->flags & FLAG_NOOP) ? 1 : 0)
 #define is_attached(n) (((n)->flags & FLAG_ATTACHED) ? 1 : 0)
+#define is_const(n) (((n)->flags & FLAG_CONST) ? 1 : 0)
+#define is_small(n) (((n)->flags & FLAG_SMALL) ? 1 : 0)
 
 #ifndef ISO_ONLY
 #define is_blob(n) (((n)->flags & FLAG_BLOB) ? 1 : 0)
