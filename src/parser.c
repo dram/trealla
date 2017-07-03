@@ -1475,6 +1475,15 @@ static char *token_take(token *t) { return t->buf; }
 
 const char *parse_number(const char *s, nbr_t *value, int *numeric)
 {
+	if ((*s == '0') && (s[1] == '\'')) {
+		s++;
+		s++;
+		int v = get_char_utf8(&s);
+		*numeric = NUM_INT;
+		*(unbr_t *)value = v;
+		return s;
+	}
+
 	if ((*s == '0') && (s[1] == 'b')) {
 		unbr_t v = 0;
 		s++;
