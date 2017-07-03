@@ -1476,8 +1476,7 @@ static char *token_take(token *t) { return t->buf; }
 const char *parse_number(const char *s, nbr_t *value, int *numeric)
 {
 	if ((*s == '0') && (s[1] == '\'')) {
-		s++;
-		s++;
+		s += 2;
 		int v = get_char_utf8(&s);
 		*numeric = NUM_INT;
 		*(unbr_t *)value = v;
@@ -1486,8 +1485,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 
 	if ((*s == '0') && (s[1] == 'b')) {
 		unbr_t v = 0;
-		s++;
-		s++;
+		s += 2;
 
 		while ((*s == '0') || (*s == '1')) {
 			v <<= 1;
@@ -1505,8 +1503,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 
 	if ((*s == '0') && (s[1] == 'o')) {
 		unbr_t v = 0;
-		s++;
-		s++;
+		s += 2;
 
 		while ((*s >= '0') && (*s <= '7')) {
 			v *= 8;
@@ -1521,8 +1518,7 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 
 	if ((*s == '0') && (s[1] == 'x')) {
 		unbr_t v = 0;
-		s++;
-		s++;
+		s += 2;
 
 		while (((*s >= '0') && (*s <= '9')) || ((toupper(*s) >= 'A') && (toupper(*s) <= 'F'))) {
 			v *= 16;

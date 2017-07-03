@@ -660,8 +660,8 @@ Client-side:
 	post(+S,+Path,+Options)
 	put(+S,+Path,+Options)
 
-The above HTTP method calls are available as arity 2 or 3. If the latter then *Options* is an
-list of possible modifiers:
+The above HTTP method calls are available as arity 2 or 3. If the latter then *Options* is a
+list of possible request modifiers:
 
 	version(+Float)              - HTTP version 1.0 or 1.1 (the default)
 	method(+Atom)                - HTTP method (send arbitrary HTTP)
@@ -693,7 +693,7 @@ in play, so use *put_chunk/2* to write.
 To parse the response from a request:
 
 	parse(+S,-Status)
-	parse(+S,-Status,-Options)			Worth it?????
+	parse(+S,-Status,-Options)
 
 See *samples/http_server.pro* & *library/http_client.pro* for guidance.
 
