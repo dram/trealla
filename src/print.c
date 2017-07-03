@@ -239,17 +239,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, head, listing ? listing : 1);
 
 		if (!is_fact(n)) {
-			if (isalpha(functor[0]) || !strcmp(functor, ":-") || !strcmp(functor, ";") || !strcmp(functor, "-->") ||
-			    !strcmp(functor, "->"))
-				if (listing == 1)
-					dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
-
-			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", tmpbuf);
-
-			if (isalpha(functor[0]) || !strcmp(functor, ":-") || !strcmp(functor, ";") || !strcmp(functor, "-->") ||
-			    !strcmp(functor, "->"))
-				if (listing == 1)
-					dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
+			dst += snprintf(dst, *bufsize - (dst - *dstbuf), " %s ", tmpbuf);
 
 			if (!strcmp(functor, ":-") && (depth <= 2) && (listing == 1))
 				dst += sprintf(dst, "\n\t");
@@ -288,14 +278,11 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 			n = term_next(n);
 
 		if (!strcmp(functor, "]-["))
-			functor = " -";
+			functor = "-";
 		else if (!strcmp(functor, "]+["))
-			functor = " +";
+			functor = "+";
 
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", functor);
-
-		if (strcmp(functor, "-") && strcmp(functor, "+"))
-			dst += snprintf(dst, *bufsize - (dst - *dstbuf), " ");
 
 		dst += sprint2_term(++depth, dstbuf, bufsize, &dst, pl, q, n, listing ? listing : 1);
 	}
