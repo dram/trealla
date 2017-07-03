@@ -1010,6 +1010,10 @@ static int directive(lexer *l, node *n)
 		dir_use_module(l, n3);
 	else if (!strcmp(functor, "unload_file"))
 		dir_unload_file(l, n3);
+	else if (!strcmp(functor, "multifile"))
+		;
+	else if (!strcmp(functor, "discontiguous"))
+		;
 #endif
 	else {
 		// if (!xref_term(l, n3, term_arity(n3)))
