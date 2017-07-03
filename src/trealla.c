@@ -518,9 +518,7 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 
 rule *xref_term(lexer *l, node *term, int arity)
 {
-	// printf("*** XREF_TERM "); term_print(l->pl, NULL, term, 1); printf("
-	// =>
-	// arity=%d\n", arity);
+	//printf("*** XREF_TERM "); term_print(l->pl, NULL, term, 1); printf(" => arity=%d\n", arity);
 
 	const char *functor = VAL_S(term);
 	const char *src = strchr(functor, ':');
@@ -564,7 +562,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 			char *save = NULL;
 
-			if (!(term->flags & FLAG_CONST))
+			if (!is_const(term))
 				save = term->val_s;
 
 			term->flags |= FLAG_CONST;
@@ -620,8 +618,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, int is_last)
 {
-	// printf("*** XREF_BODY "); term_print(l->pl, NULL, term, 1);
-	// printf("\n");
+	// printf("*** XREF_BODY "); term_print(l->pl, NULL, term, 1); printf("\n");
 
 	const char *functor = NULL;
 	int arity = -1;
@@ -635,9 +632,10 @@ int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, in
 		if (is_atom(tmp) /*&& !(tmp->flags & FLAG_QUOTED)*/ && !(tmp->flags & FLAG_BUILTIN)) {
 			rule *match = xref_term(l, tmp, term_arity(term));
 
-			if (!is_builtin(term)) {
-				if ((tmp->bifptr = get_bifarity(l, VAL_S(tmp), term_arity(term))->bifptr) != NULL)
+			if (!match && !is_builtin(term)) {
+				if ((tmp->bifptr = get_bifarity(l, VAL_S(tmp), term_arity(term))->bifptr) != NULL) {
 					tmp->flags |= FLAG_BUILTIN;
+				}
 			}
 
 			if (!is_builtin(tmp)) {
@@ -679,8 +677,7 @@ int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, in
 
 int xref_clause(lexer *l, node *term)
 {
-	// printf("*** XREF_RULE "); term_print(l->pl, NULL, term, 1);
-	// printf("\n");
+	// printf("*** XREF_RULE "); term_print(l->pl, NULL, term, 1); printf("\n");
 
 	// Cross-reference all body functors with the index, and
 	// point to the actual index rule to allow for assert etc.
