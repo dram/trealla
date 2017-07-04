@@ -412,7 +412,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_num);
 
 		if (n->val_den == 1) {
-			if (listing) {
+			if (listing > 0) {
 				*dst++ = 'R';
 				*dst = '\0';
 			}
