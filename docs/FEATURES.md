@@ -139,7 +139,7 @@ implementations:
 	atom_number(+A,?V)          - convert atom to Int or Float
 	unbounded(+Int)             - function to convert integer to unbounded
 	fixed(+Int,+Digs,+Prec,-V)  - format integer with fixed number of decimal digits
-	rational(+Int,+Int)         - create a rational with numerator and denominator
+	rational(+Int,+Int)         - function to create a rational with numerator and denominator
 
 and for accessing the rule database:
 
