@@ -1865,9 +1865,6 @@ LOOP: // FIXME someday
 				token_put(&t, ch);
 			}
 
-			if (isspace(*s))
-				l->is_spaced = 1;
-
 			break;
 		}
 
@@ -1916,13 +1913,12 @@ LOOP: // FIXME someday
 
 		static const char seps[] = "%.,;!()[]{}_\"'` \t\r\n";
 
-		if (strchr(seps, ch) || strchr(seps, *s) || isalnum_utf8(*s)) {
-			if (isspace(*s))
-				l->is_spaced = 1;
-
+		if (strchr(seps, ch) || strchr(seps, *s) || isalnum_utf8(*s))
 			break;
-		}
 	}
+
+	if (isspace(*s))
+		l->is_spaced = 1;
 
 	l->tok = token_take(&t);
 	l->was_paren = l->is_paren;
