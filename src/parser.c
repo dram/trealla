@@ -2556,7 +2556,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				l->tok = (char *)"";
 			}
 
-			if (0 && *l->tok && !l->quoted && !is_const(n) && (strlen(l->tok) < sizeof(n->val_ch))) {
+			if (*l->tok && !l->quoted && !is_const(n) && (strlen(l->tok) < sizeof(n->val_ch)) && !strchr(l->tok, ':')) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
 				strcpy(n->val_ch, l->tok);
 				free(l->tok);
