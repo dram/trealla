@@ -1441,8 +1441,7 @@ static int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, 
 				if (!vars.iter)
 					break;
 
-				term_append(l, n = make_list());
-				l = n;
+				l = term_append(l, make_list());
 			}
 
 			term_append(l, make_const_atom("[]"));
@@ -2009,9 +2008,7 @@ static int bif_iso_number_codes(tpl_query *q)
 		if (!*++src)
 			break;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 	}
 
 	term_append(l, make_const_atom("[]"));
@@ -2092,9 +2089,7 @@ static int bif_iso_number_chars(tpl_query *q)
 		if (!*++src)
 			break;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 	}
 
 	term_append(l, make_const_atom("[]"));
@@ -2167,9 +2162,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 		if (!*src)
 			break;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 	}
 
 	term_append(l, make_const_atom("[]"));
@@ -2245,9 +2238,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 		if (!*src)
 			break;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 	}
 
 	term_append(l, make_const_atom("[]"));
@@ -3523,10 +3514,8 @@ static int bif_iso_univ(tpl_query *q)
 			if (!term_next(n))
 				break;
 
-			node *tmp = make_list();
-			term_append(l, tmp);
-			l = tmp;
 			n = term_next(n);
+			l = term_append(l, make_list());
 		}
 
 		term_append(l, make_const_atom("[]"));
@@ -3712,9 +3701,7 @@ static int bif_iso_length(tpl_query *q)
 		if (i == (cnt - 1))
 			break;
 
-		node *tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 	}
 
 	term_append(l, make_const_atom("[]"));
@@ -3751,8 +3738,7 @@ static int bif_iso_term_variables(tpl_query *q)
 		if (!vars.iter)
 			break;
 
-		term_append(l, n = make_list());
-		l = n;
+		l = term_append(l, make_list());
 	}
 
 	sl_done(&vars, NULL);
@@ -3798,8 +3784,7 @@ static int bif_iso_findall(tpl_query *q)
 		else {
 			node *tmp = make_list();
 			term_append(tmp, res);
-			term_append(l, tmp);
-			l = tmp;
+			l = term_append(l, tmp);
 		}
 
 		ok = query_continue(subq);
@@ -6966,9 +6951,7 @@ static int bif_xtra_name_2(tpl_query *q)
 			if (!*src)
 				break;
 
-			tmp = make_list();
-			term_append(l, tmp);
-			l = tmp;
+			l = term_append(l, make_list());
 		}
 
 		term_append(l, make_const_atom("[]"));

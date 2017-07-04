@@ -1344,9 +1344,7 @@ static int bif_proc_get_keys_2(tpl_query *q)
 			if (!q->kvs->iter)
 				break;
 
-			tmp = make_list();
-			term_append(l, tmp);
-			l = tmp;
+			l = term_append(l, make_list());
 		}
 	}
 
@@ -1389,9 +1387,7 @@ static int bif_proc_get_1(tpl_query *q)
 			if (!q->kvs->iter)
 				break;
 
-			node *tmp;
-			term_append(l, tmp = make_list());
-			l = tmp;
+			l = term_append(l, make_list());
 		}
 	}
 

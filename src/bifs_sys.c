@@ -1015,9 +1015,7 @@ static int bif_sys_split_all_3(tpl_query *q)
 		if (!*src)
 			break;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 	}
 
 	free(dstbuf);
@@ -1467,9 +1465,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 		if (!*src)
 			break;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 		dst = dstbuf;
 		*dst = '\0';
 		quoted = was_quoted = 0;
@@ -1567,9 +1563,7 @@ static int bif_sys_parse_tab_2(tpl_query *q)
 		if (!*src)
 			break;
 
-		tmp = make_list();
-		term_append(l, tmp);
-		l = tmp;
+		l = term_append(l, make_list());
 		dst = dstbuf;
 		*dst = '\0';
 		quoted = was_quoted = 0;
@@ -1818,9 +1812,7 @@ static int bif_sys_get_keys_3(tpl_query *q)
 			if (!sp->kvs->iter)
 				break;
 
-			tmp = make_list();
-			term_append(l, tmp);
-			l = tmp;
+			l = term_append(l, make_list());
 		}
 	}
 
@@ -1866,9 +1858,7 @@ static int bif_sys_get_2(tpl_query *q)
 			if (!sp->kvs->iter)
 				break;
 
-			node *tmp;
-			term_append(l, tmp = make_list());
-			l = tmp;
+			l = term_append(l, make_list());
 		}
 	}
 

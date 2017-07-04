@@ -475,8 +475,8 @@ inline static node *term_next(node *n) { return NLIST_NEXT(n); }
 inline static node *term_remove(node *s, node *n) { return NLIST_REMOVE(&s->val_l, n); }
 inline static void term_insert_before(node *s, node *n1, node *n2) { NLIST_INSERT_BEFORE(&s->val_l, n1, n2); }
 inline static void term_insert_after(node *s, node *n1, node *n2) { NLIST_INSERT_AFTER(&s->val_l, n1, n2); }
-inline static void term_prepend(node *s, node *n) { NLIST_PUSH_FRONT(&s->val_l, n); }
-inline static void term_append(node *s, node *n) { NLIST_PUSH_BACK(&s->val_l, n); }
+inline static node *term_prepend(node *s, node *n) { NLIST_PUSH_FRONT(&s->val_l, n); return n; }
+inline static node *term_append(node *s, node *n) { NLIST_PUSH_BACK(&s->val_l, n); return n; }
 inline static void term_concat(node *s1, node *s2) { NLIST_CONCAT(&s1->val_l, &s2->val_l); }
 inline static int term_count(node *s) { return (int)NLIST_COUNT(&s->val_l); }
 inline static int term_arity(node *s) { return (int)(NLIST_COUNT(&s->val_l) > 0 ? (NLIST_COUNT(&s->val_l)) -1 : 0); }
