@@ -1916,8 +1916,12 @@ LOOP: // FIXME someday
 
 		static const char seps[] = "%.,;!()[]{}_\"'` \t\r\n";
 
-		if (strchr(seps, ch) || strchr(seps, *s) || isalnum_utf8(*s))
+		if (strchr(seps, ch) || strchr(seps, *s) || isalnum_utf8(*s)) {
+			if (isspace(*s))
+				l->is_spaced = 1;
+
 			break;
+		}
 	}
 
 	l->tok = token_take(&t);
@@ -2370,7 +2374,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 					}
 
 					if (optr->fun && OP_INFIX(optr->spec) && !l->was_spaced &&
-						strcmp(functor, ":-")&& strcmp(functor, ";") && strcmp(functor, ","))
+						strcmp(functor, ":-") && strcmp(functor, ";") && strcmp(functor, ","))
 						doit = 1;
 
 					if (!optr->fun || doit) {
