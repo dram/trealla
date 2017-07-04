@@ -28,7 +28,7 @@ Example
 
 	:-initialization(main).
 	:-using([linda]).
-	:-define(LOOPS,100).
+	:-define(LOOPS,10).
 
 	main :-
 		init,
