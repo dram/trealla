@@ -380,6 +380,8 @@ inline static void put_float(tpl_query *q, unsigned point, flt_t v)
 inline static void put_rational(tpl_query *q, unsigned point, nbr_t num, nbr_t den)
 {
 	node *n = make_int(0);
+	n->flags &= ~TYPE_INTEGER;
+	n->flags |= TYPE_RATIONAL;
 	n->val_num = num;
 	n->val_den = den;
 	put_env(q, point, n, -1);

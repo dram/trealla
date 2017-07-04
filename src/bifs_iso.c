@@ -4156,6 +4156,11 @@ static void eval_nbr(tpl_query *q, const node *n)
 		q->nv.val_f = n->val_f;
 		q->nv.flags = TYPE_FLOAT;
 	}
+	else if (is_rational(n)) {
+		q->nv.val_num = n->val_num;
+		q->nv.val_den = n->val_den;
+		q->nv.flags = TYPE_RATIONAL;
+	}
 #if USE_SSL
 	else if (is_bignum(n)) {
 		q->nv.val_bn = BN_dup(n->val_bn);
@@ -4240,10 +4245,10 @@ static int bif_iso_is(tpl_query *q)
 	}
 
 	if (is_integer(term1) && is_integer(&q->nv))
-		return term1->val_i == q->nv.val_i;
+		return get_word(term1) == get_word(&q->nv);
 	else if (is_integer(term1) && is_rational(&q->nv)) {
 		reduce(&q->nv);
-		return term1->val_i == q->nv.val_num / q->nv.val_den;
+		return get_word(term1) == get_word(&q->nv);
 	}
 	else if (is_float(term1) && is_float(&q->nv))
 		return term1->val_f == q->nv.val_f;
@@ -4252,17 +4257,23 @@ static int bif_iso_is(tpl_query *q)
 		reduce(&q->nv);
 		return (term1->val_num == q->nv.val_num) && (term1->val_den == q->nv.val_den);
 	}
+	else if (is_rational(term1) && is_integer(&q->nv)) {
+		reduce(term1);
+		return get_word(term1) == get_word(&q->nv);
+	}
 #if USE_SSL
+	else if (is_rational(term1) && is_bignum(&q->nv)) {
+		reduce(term1);
+		return get_word(term1) == get_word(&q->nv);
+	}
 	else if (is_bignum(term1) && is_bignum(&q->nv))
 		return !BN_cmp(term1->val_bn, q->nv.val_bn);
-	else if (is_bignum(term1) && is_integer(&q->nv)) {
-		node nv1;
-		nv1.val_bn = BN_new();
-		BN_set_word(nv1.val_bn, q->nv.val_i);
-		int ok = !BN_cmp(term1->val_bn, nv1.val_bn);
-		BN_free(nv1.val_bn);
-		return ok;
-	}
+	else if (is_bignum(term1) && is_integer(&q->nv))
+		return get_word(term1) == get_word(&q->nv);
+	else if (is_bignum(term1) && is_rational(&q->nv))
+		return get_word(term1) == get_word(&q->nv);
+	else if (is_integer(term1) && is_bignum(&q->nv))
+		return get_word(term1) == get_word(&q->nv);
 #endif
 
 	QABORT(ABORT_TYPEERROR);
