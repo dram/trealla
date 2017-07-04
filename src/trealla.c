@@ -1068,7 +1068,7 @@ void query_dump(tpl_query *q)
 		while (sl_next(&vars, (void **)&n) != NULL) {
 			node *n2 = subst(q, n, FUDGE_FACTOR);
 			char tmpbuf[PRINTBUF_SIZE];
-			term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, NULL, n2, 1);
+			term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, NULL, n2, 0);
 			printf(" %s: %s\n", VAL_S(n), tmpbuf);
 			any++;
 		}
