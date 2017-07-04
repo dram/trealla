@@ -3541,7 +3541,6 @@ static int bif_iso_univ(tpl_query *q)
 			}
 		}
 
-		q->latest_context = term2_ctx;
 		node *s = make_compound();
 		node *l = term2;
 		int first = 1;
@@ -3549,8 +3548,8 @@ static int bif_iso_univ(tpl_query *q)
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
 
-			if (first) {
-				node *from = subst(q, head, q->latest_context);
+			if (first) { // should have a functor
+				node *from = subst(q, head, term2_ctx);
 				term_append(s, clone_term(q, from));
 				first = 0;
 			}
