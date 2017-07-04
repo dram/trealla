@@ -4719,14 +4719,14 @@ static int bif_iso_nlt(tpl_query *q)
 	node nv2 = q->nv;
 	int ok = 0;
 
-	if ((is_integer(&nv1)) && (is_integer(&nv2)))
-		ok = nv1.val_i < nv2.val_i;
-	else if ((is_integer(&nv1)) && (is_float(&nv2)))
+	if ((is_integer(&nv1)) && (is_float(&nv2)))
 		ok = (flt_t)nv1.val_i < nv2.val_f;
+	else if (is_integer(&nv1))
+		ok = nv1.val_i < get_word(&nv2);
 	else if ((is_float(&nv1)) && (is_float(&nv2)))
 		ok = nv1.val_f < nv2.val_f;
-	else if ((is_float(&nv1)) && (is_integer(&nv2)))
-		ok = nv1.val_f < (flt_t)nv2.val_i;
+	else if (is_float(&nv1))
+		ok = nv1.val_f < (flt_t)get_word(&nv2);
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
 		if (is_bignum(&nv2)) {
@@ -4734,16 +4734,16 @@ static int bif_iso_nlt(tpl_query *q)
 			BN_free(nv1.val_bn);
 			BN_free(nv2.val_bn);
 		}
-		else if (is_integer(&nv2)) {
+		else {
 			nbr_t val = BN_get_word(nv1.val_bn);
-			ok = val < nv2.val_i;
+			ok = val < get_word(&nv2);
 			BN_free(nv1.val_bn);
 		}
 	}
-	else if (is_integer(&nv1)) {
+	else if (is_number(&nv1)) {
 		if (is_bignum(&nv2)) {
 			nbr_t val = BN_get_word(nv2.val_bn);
-			ok = nv1.val_i < val;
+			ok = get_word(&nv1) < val;
 			BN_free(nv2.val_bn);
 		}
 	}
@@ -4766,14 +4766,14 @@ static int bif_iso_nle(tpl_query *q)
 	node nv2 = q->nv;
 	int ok = 0;
 
-	if ((is_integer(&nv1)) && (is_integer(&nv2)))
-		ok = nv1.val_i <= nv2.val_i;
-	else if ((is_integer(&nv1)) && (is_float(&nv2)))
+	if ((is_integer(&nv1)) && (is_float(&nv2)))
 		ok = (flt_t)nv1.val_i <= nv2.val_f;
+	else if (is_integer(&nv1))
+		ok = nv1.val_i <= get_word(&nv2);
 	else if ((is_float(&nv1)) && (is_float(&nv2)))
 		ok = nv1.val_f <= nv2.val_f;
-	else if ((is_float(&nv1)) && (is_integer(&nv2)))
-		ok = nv1.val_f <= (flt_t)nv2.val_i;
+	else if (is_float(&nv1))
+		ok = nv1.val_f <= (flt_t)get_word(&nv2);
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
 		if (is_bignum(&nv2)) {
@@ -4781,16 +4781,16 @@ static int bif_iso_nle(tpl_query *q)
 			BN_free(nv1.val_bn);
 			BN_free(nv2.val_bn);
 		}
-		else if (is_integer(&nv2)) {
+		else {
 			nbr_t val = BN_get_word(nv1.val_bn);
-			ok = val <= nv2.val_i;
+			ok = val <= get_word(&nv2);
 			BN_free(nv1.val_bn);
 		}
 	}
-	else if (is_integer(&nv1)) {
+	else if (is_number(&nv1)) {
 		if (is_bignum(&nv2)) {
 			nbr_t val = BN_get_word(nv2.val_bn);
-			ok = nv1.val_i <= val;
+			ok = get_word(&nv1) <= val;
 			BN_free(nv2.val_bn);
 		}
 	}
@@ -4813,14 +4813,14 @@ static int bif_iso_neq(tpl_query *q)
 	node nv2 = q->nv;
 	int ok = 0;
 
-	if ((is_integer(&nv1)) && (is_integer(&nv2)))
-		ok = nv1.val_i == nv2.val_i;
-	else if ((is_integer(&nv1)) && (is_float(&nv2)))
+	if ((is_integer(&nv1)) && (is_float(&nv2)))
 		ok = (flt_t)nv1.val_i == nv2.val_f;
+	else if (is_integer(&nv1))
+		ok = nv1.val_i == get_word(&nv2);
 	else if ((is_float(&nv1)) && (is_float(&nv2)))
 		ok = nv1.val_f == nv2.val_f;
-	else if ((is_float(&nv1)) && (is_integer(&nv2)))
-		ok = nv1.val_f == (flt_t)nv2.val_i;
+	else if (is_float(&nv1))
+		ok = nv1.val_f == (flt_t)get_word(&nv2);
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
 		if (is_bignum(&nv2)) {
@@ -4828,16 +4828,16 @@ static int bif_iso_neq(tpl_query *q)
 			BN_free(nv1.val_bn);
 			BN_free(nv2.val_bn);
 		}
-		else if (is_integer(&nv2)) {
+		else {
 			nbr_t val = BN_get_word(nv1.val_bn);
-			ok = val == nv2.val_i;
+			ok = val == get_word(&nv2);
 			BN_free(nv1.val_bn);
 		}
 	}
-	else if (is_integer(&nv1)) {
+	else if (is_number(&nv1)) {
 		if (is_bignum(&nv2)) {
 			nbr_t val = BN_get_word(nv2.val_bn);
-			ok = nv1.val_i == val;
+			ok = get_word(&nv1) == val;
 			BN_free(nv2.val_bn);
 		}
 	}
