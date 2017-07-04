@@ -4247,23 +4247,18 @@ static int bif_iso_is(tpl_query *q)
 	if (is_integer(term1) && is_integer(&q->nv))
 		return get_word(term1) == get_word(&q->nv);
 	else if (is_integer(term1) && is_rational(&q->nv)) {
-		reduce(&q->nv);
 		return get_word(term1) == get_word(&q->nv);
 	}
 	else if (is_float(term1) && is_float(&q->nv))
 		return term1->val_f == q->nv.val_f;
 	else if (is_rational(term1) && is_rational(&q->nv)) {
-		reduce(term1);
-		reduce(&q->nv);
 		return (term1->val_num == q->nv.val_num) && (term1->val_den == q->nv.val_den);
 	}
 	else if (is_rational(term1) && is_integer(&q->nv)) {
-		reduce(term1);
 		return get_word(term1) == get_word(&q->nv);
 	}
 #if USE_SSL
 	else if (is_rational(term1) && is_bignum(&q->nv)) {
-		reduce(term1);
 		return get_word(term1) == get_word(&q->nv);
 	}
 	else if (is_bignum(term1) && is_bignum(&q->nv))
@@ -4405,10 +4400,12 @@ static int bif_iso_add(tpl_query *q)
 	else if (is_rational(&nv1) && is_rational(&nv2)) {
 		q->nv.val_num = (nv1.val_num * nv2.val_den) + (nv1.val_den + nv2.val_num);
 		q->nv.val_den = nv1.val_den * nv2.val_den;
+		reduce(&q->nv);
 	}
 	else if (is_rational(&nv1)) {
 		q->nv.val_num = (nv1.val_num * 1) + (nv1.val_den * get_word(&nv2));
 		q->nv.val_den = nv1.val_den;
+		reduce(&q->nv);
 	}
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -4448,10 +4445,12 @@ static int bif_iso_subtract(tpl_query *q)
 	else if (is_rational(&nv1) && is_rational(&nv2)) {
 		q->nv.val_num = (nv1.val_num * nv2.val_den) - (nv1.val_den + nv2.val_num);
 		q->nv.val_den = nv1.val_den * nv2.val_den;
+		reduce(&q->nv);
 	}
 	else if (is_rational(&nv1)) {
 		q->nv.val_num = (nv1.val_num * 1) - (nv1.val_den * get_word(&nv2));
 		q->nv.val_den = nv1.val_den;
+		reduce(&q->nv);
 	}
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -4502,10 +4501,12 @@ static int bif_iso_multiply(tpl_query *q)
 	else if (is_rational(&nv1) && is_rational(&nv2)) {
 		q->nv.val_num = nv1.val_num * nv2.val_num;
 		q->nv.val_den = nv1.val_den * nv2.val_den;
+		reduce(&q->nv);
 	}
 	else if (is_rational(&nv1)) {
 		q->nv.val_num = nv1.val_num * get_word(&nv2);
 		q->nv.val_den = nv1.val_den;
+		reduce(&q->nv);
 	}
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -4589,10 +4590,12 @@ static int bif_iso_divide(tpl_query *q)
 	else if (is_rational(&nv1) && is_rational(&nv2)) {
 		q->nv.val_num = nv1.val_num * nv2.val_num;
 		q->nv.val_den = nv1.val_den * nv2.val_den;
+		reduce(&q->nv);
 	}
 	else if (is_rational(&nv1)) {
 		q->nv.val_num = nv1.val_num;
 		q->nv.val_den = nv1.val_den / get_word(&nv2);
+		reduce(&q->nv);
 	}
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -4678,12 +4681,14 @@ static int bif_iso_divint(tpl_query *q)
 		q->nv.val_num = nv1.val_num / nv2.val_num;
 		q->nv.val_den = nv1.val_den / nv2.val_den;
 		q->nv.flags = TYPE_RATIONAL;
+		reduce(&q->nv);
 		return 1;
 	}
 	else if (is_rational(&nv1)) {
 		q->nv.val_num = nv1.val_num;
 		q->nv.val_den = nv1.val_den * get_word(&nv2);
 		q->nv.flags = TYPE_RATIONAL;
+		reduce(&q->nv);
 		return 1;
 	}
 	else {
@@ -6119,9 +6124,10 @@ static int bif_xtra_rational_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
 	node *term2 = get_int(term2);
+	q->nv.flags = TYPE_RATIONAL;
 	q->nv.val_num = get_word(term1);
 	q->nv.val_den = get_word(term2);
-	q->nv.flags = TYPE_RATIONAL;
+	reduce(&q->nv);
 	return 1;
 }
 
