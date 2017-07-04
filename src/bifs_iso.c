@@ -3518,8 +3518,7 @@ static int bif_iso_univ(tpl_query *q)
 		node *save_l = l;
 
 		while (n) {
-			node *from = subst(q, n, q->latest_context);
-			term_append(l, clone_term(q, from));
+			term_append(l, clone_term(q, n));
 
 			if (!term_next(n))
 				break;
@@ -3531,7 +3530,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]"));
-		int ok = unify(q, term2, term2_ctx, save_l, -1);
+		int ok = unify(q, term2, term2_ctx, save_l, term1_ctx);
 		term_heapcheck(save_l);
 		return ok;
 	}
@@ -3559,18 +3558,13 @@ static int bif_iso_univ(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			unsigned this_context = q->latest_context;
-			node *from = subst(q, head, this_context);
-			term_append(s, clone_term(q, from));
+			term_append(s, clone_term(q, head));
 			node *tail = term_next(head);
-			l = subst(q, tail, this_context);
+			l = tail;
 		}
 
-		if (term_arity(s) == 0)
-			put_env(q, q->c.curr_frame + term1->slot, term_first(s), -1);
-		else
-			put_env(q, q->c.curr_frame + term1->slot, s, -1);
-
+		node *tmp = !term_arity(s) ? term_first(s) : s;
+		put_env(q, q->c.curr_frame + term1->slot, tmp, term2_ctx);
 		term_heapcheck(s);
 		return 1;
 	}
