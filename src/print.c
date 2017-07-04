@@ -380,32 +380,6 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_i, 10);
 	}
 #if USE_SSL
-	else if (is_bignum(n) && listing) {
-		char *src = BN_bn2dec(n->val_bn);
-		xlen = strlen(src) + 1024;
-		rem = (*bufsize - (dst - *dstbuf));
-
-		if (rem < xlen) {
-			size_t offset = dst - *dstbuf;
-			*bufsize *= 2;
-
-			if (*bufsize < xlen)
-				*bufsize += xlen;
-
-			*dstbuf = (char *)realloc(*dstbuf, *bufsize);
-			*_dst = *dstbuf + offset;
-			dst = *_dst;
-		}
-
-		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
-		OPENSSL_free(src);
-
-		if ((BN_num_bits(n->val_bn) < 64) && !g_force_unbounded)
-		{
-			*dst++ = 'B';
-			*dst = '\0';
-		}
-	}
 	else if (is_bignum(n)) {
 		char *src = BN_bn2dec(n->val_bn);
 		xlen = strlen(src) + 1024;
@@ -425,8 +399,29 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
 		OPENSSL_free(src);
+
+		if (listing && (BN_num_bits(n->val_bn) < 64) && !g_force_unbounded)
+		{
+			*dst++ = 'B';
+			*dst = '\0';
+		}
 	}
 #endif
+	else if (is_rational(n)) {
+		reduce(n);
+		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_num);
+
+		if (n->val_den == 1) {
+			if (listing) {
+				*dst++ = 'R';
+				*dst = '\0';
+			}
+		}
+		else {
+			dst += sprintf(dst, "/");
+			dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_den);
+		}
+	}
 	else if (is_integer(n) && (n->flags & FLAG_BINARY) && listing)
 		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 2);
 	else if (is_integer(n) && (n->flags & FLAG_OCTAL) && listing)

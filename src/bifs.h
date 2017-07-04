@@ -336,6 +336,7 @@ extern node *make_list(void);
 extern node *make_var(tpl_query *q);
 extern node *make_tuple(void);
 extern node *make_quick_int(nbr_t v);
+extern node *make_rational(const char *s);
 
 #if USE_SSL
 extern node *make_bignum(const char *s);
@@ -529,6 +530,7 @@ extern char *deescape(char *dst, const char *src, char quote);
 extern char *dict(module *db, const char *key);
 extern void db_init(module *db, trealla *pl, const char *name, const char *filename);
 extern int needs_quoting(const char *s);
+extern void reduce(node *n);
 
 #ifndef ISO_ONLY
 extern void dbs_save_node(module *db, FILE *fp, char **dstbuf, size_t *buflen, node *n, int in_tran);
@@ -596,6 +598,8 @@ inline static nbr_t get_word(node *n)
 	else if (is_bignum(n))
 		return BN_get_word(n->val_bn);
 #endif
+	else if (is_rational(n))
+		return n->val_num / n->val_den;
 	else
 		return 0;
 }

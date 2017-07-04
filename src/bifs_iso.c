@@ -43,23 +43,6 @@ static char *strndup(const char *s, size_t n)
 }
 #endif
 
-#if USE_SSL && 0
-static node *make_bignum(const node *v)
-{
-	node *n = term_make();
-	n->flags |= TYPE_BIGNUM;
-
-	if (is_integer(v))
-		BN_set_word(n->val_bn, (nbr_t)v->val_i);
-	else if (is_float(v))
-		BN_set_word(n->val_bn, (nbr_t)v->val_f);
-	else
-		n->val_bn = BN_dup(v->val_bn);
-
-	return n;
-}
-#endif
-
 #if USE_SSL
 static void put_bignum(tpl_query *q, unsigned point, node *v)
 {
@@ -72,6 +55,34 @@ static void put_bignum(tpl_query *q, unsigned point, node *v)
 	n->refcnt--;
 }
 #endif
+
+static nbr_t gcd(const node *n, nbr_t num, nbr_t remainder)
+{
+	if (remainder == 0)
+		return num;
+
+	return gcd(n, remainder, num % remainder);
+}
+
+void reduce(node *n)
+{
+	nbr_t r = 0;
+
+	if (n->val_den > n->val_num)
+		r = gcd(n, n->val_den, n->val_num);
+	else if (n->val_den < n->val_num)
+		r = gcd(n, n->val_num, n->val_den);
+	else
+		r = gcd(n, n->val_num, n->val_den);
+
+	n->val_num /= r;
+	n->val_den /= r;
+
+	if (n->val_den < 0) {
+		n->val_num = -n->val_num;
+		n->val_den *= -n->val_den;
+	}
+}
 
 void reset_arg(tpl_query *q, const node *term, unsigned frame)
 {
@@ -167,12 +178,16 @@ node *copy_nbr(node *from)
 		n->val_ptr = from->val_ptr;
 		n->flags |= FLAG_CONST;
 	}
-	else if (is_float(from))
-		n->val_f = from->val_f;
+	else if (is_rational(from)) {
+		n->val_num = from->val_num;
+		n->val_den = from->val_den;
+	}
 #if USE_SSL
 	else if (is_bignum(from))
 		n->val_bn = BN_dup(from->val_bn);
 #endif
+	else if (is_float(from))
+		n->val_f = from->val_f;
 	else
 		n->val_i = from->val_i;
 

@@ -228,6 +228,14 @@ node *term_make(void)
 	return n;
 }
 
+node *make_float(flt_t v)
+{
+	node *n = term_make();
+	n->flags |= TYPE_FLOAT;
+	n->val_f = v;
+	return n;
+}
+
 static node *make_uint(unbr_t v)
 {
 	node *n = term_make();
@@ -243,13 +251,24 @@ node *make_int(nbr_t v)
 	return n;
 }
 
-node *make_float(flt_t v)
+node *make_rational(const char *s)
 {
 	node *n = term_make();
-	n->flags |= TYPE_FLOAT;
-	n->val_f = v;
+	n->flags |= TYPE_RATIONAL;
+	n->val_num = dec_to_int(s);		// TODO use bignums
+	n->val_den = 1;
 	return n;
 }
+
+#if USE_SSL
+node *make_bignum(const char *s)
+{
+	node *n = term_make();
+	n->flags |= TYPE_BIGNUM;
+	BN_dec2bn(&n->val_bn, s);
+	return n;
+}
+#endif
 
 node *make_ptr(void *v)
 {
@@ -294,16 +313,6 @@ node *make_atom(char *s)
 
 	return n;
 }
-
-#if USE_SSL
-node *make_bignum(const char *s)
-{
-	node *n = term_make();
-	n->flags |= TYPE_BIGNUM;
-	BN_dec2bn(&n->val_bn, s);
-	return n;
-}
-#endif
 
 node *make_compound(void)
 {
@@ -1557,6 +1566,8 @@ const char *parse_number(const char *s, nbr_t *value, int *numeric)
 		}
 		else if (exp && ((ch == '-') || (ch == '+')))
 			exp = 0;
+		else if (ch == 'R')
+			*numeric = NUM_RATIONAL;
 #if USE_SSL
 		else if (ch == 'B')
 			*numeric = NUM_BIGNUM;
@@ -2410,6 +2421,10 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			free(l->tok);
 		}
 #endif
+		else if (l->numeric == NUM_RATIONAL) {
+			n = make_rational(l->tok);
+			free(l->tok);
+		}
 		else if (l->numeric >= NUM_INT) {
 			if (l->numeric > NUM_INT)
 				n = make_uint(dec_to_uint(l->tok));

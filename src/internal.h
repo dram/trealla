@@ -141,6 +141,10 @@ struct node_ {
 #if USE_SSL
 		BIGNUM *val_bn;
 #endif
+
+		struct {
+			nbr_t val_num, val_den;
+		};
 	};
 
 	union {
