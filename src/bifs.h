@@ -377,6 +377,15 @@ inline static void put_float(tpl_query *q, unsigned point, flt_t v)
 	n->refcnt--;
 }
 
+inline static void put_rational(tpl_query *q, unsigned point, nbr_t num, nbr_t den)
+{
+	node *n = make_int(0);
+	n->val_num = num;
+	n->val_den = den;
+	put_env(q, point, n, -1);
+	n->refcnt--;
+}
+
 inline static void put_atom(tpl_query *q, unsigned point, char *s)
 {
 	node *n = make_atom(s);
