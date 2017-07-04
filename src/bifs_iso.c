@@ -3544,10 +3544,19 @@ static int bif_iso_univ(tpl_query *q)
 		q->latest_context = term2_ctx;
 		node *s = make_compound();
 		node *l = term2;
+		int first = 1;
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			term_append(s, clone_term(q, head));
+
+			if (first) {
+				node *from = subst(q, head, q->latest_context);
+				term_append(s, clone_term(q, from));
+				first = 0;
+			}
+			else
+				term_append(s, clone_term(q, head));
+
 			node *tail = term_next(head);
 			l = tail;
 		}
