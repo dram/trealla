@@ -605,6 +605,8 @@ inline static nbr_t get_word(node *n)
 {
 	if (is_integer(n))
 		return n->val_i;
+	else if (is_float(n))
+		return (nbr_t)n->val_f;
 #if USE_SSL
 	else if (is_bignum(n))
 		return BN_get_word(n->val_bn);
