@@ -409,21 +409,28 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 #endif
 	else if (is_rational(n)) {
 		reduce(n);
+
+		if (listing == 2)
+			dst += sprintf(dst, "rdiv(");
+
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_num);
 
-		if ((listing > 0) && (n->val_den == 1)) {
+		if ((listing > 0) && (listing < 2) && (n->val_den == 1)) {
 			*dst++ = 'R';
 			*dst = '\0';
 		}
 
 		if (n->val_den != 1) {
 			if (listing == 2)
-				dst += sprintf(dst, " rdiv ");
+				dst += sprintf(dst, ",");
 			else
-				dst += sprintf(dst, "/");
+				dst += sprintf(dst, " rdiv ");
 
 			dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_den);
 		}
+
+		if (listing == 2)
+			dst += sprintf(dst, ")");
 	}
 	else if (is_integer(n) && (n->flags & FLAG_BINARY) && listing)
 		dst += sprint_uint(dst, *bufsize - (dst - *dstbuf), n->val_u, 2);
