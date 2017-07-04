@@ -4402,6 +4402,14 @@ static int bif_iso_add(tpl_query *q)
 		}
 	}
 #endif
+	else if (is_rational(&nv1) && is_rational(&nv2)) {
+		q->nv.val_num = (nv1.val_num * nv2.val_den) + (nv1.val_den + nv2.val_num);
+		q->nv.val_den = nv1.val_den * nv2.val_den;
+	}
+	else if (is_rational(&nv1)) {
+		q->nv.val_num = (nv1.val_num * 1) + (nv1.val_den * get_word(&nv2));
+		q->nv.val_den = nv1.val_den;
+	}
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4437,6 +4445,14 @@ static int bif_iso_subtract(tpl_query *q)
 		}
 	}
 #endif
+	else if (is_rational(&nv1) && is_rational(&nv2)) {
+		q->nv.val_num = (nv1.val_num * nv2.val_den) - (nv1.val_den + nv2.val_num);
+		q->nv.val_den = nv1.val_den * nv2.val_den;
+	}
+	else if (is_rational(&nv1)) {
+		q->nv.val_num = (nv1.val_num * 1) - (nv1.val_den * get_word(&nv2));
+		q->nv.val_den = nv1.val_den;
+	}
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4483,6 +4499,14 @@ static int bif_iso_multiply(tpl_query *q)
 		}
 	}
 #endif
+	else if (is_rational(&nv1) && is_rational(&nv2)) {
+		q->nv.val_num = nv1.val_num * nv2.val_num;
+		q->nv.val_den = nv1.val_den * nv2.val_den;
+	}
+	else if (is_rational(&nv1)) {
+		q->nv.val_num = nv1.val_num * get_word(&nv2);
+		q->nv.val_den = nv1.val_den;
+	}
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4562,6 +4586,14 @@ static int bif_iso_divide(tpl_query *q)
 		}
 	}
 #endif
+	else if (is_rational(&nv1) && is_rational(&nv2)) {
+		q->nv.val_num = nv1.val_num * nv2.val_num;
+		q->nv.val_den = nv1.val_den * nv2.val_den;
+	}
+	else if (is_rational(&nv1)) {
+		q->nv.val_num = nv1.val_num;
+		q->nv.val_den = nv1.val_den / get_word(&nv2);
+	}
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -4642,6 +4674,18 @@ static int bif_iso_divint(tpl_query *q)
 		return 1;
 	}
 #endif
+	else if (is_rational(&nv1) && is_rational(&nv2)) {
+		q->nv.val_num = nv1.val_num / nv2.val_num;
+		q->nv.val_den = nv1.val_den / nv2.val_den;
+		q->nv.flags = TYPE_RATIONAL;
+		return 1;
+	}
+	else if (is_rational(&nv1)) {
+		q->nv.val_num = nv1.val_num;
+		q->nv.val_den = nv1.val_den * get_word(&nv2);
+		q->nv.flags = TYPE_RATIONAL;
+		return 1;
+	}
 	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
@@ -6070,6 +6114,17 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_rational_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+	node *term2 = get_int(term2);
+	q->nv.val_num = get_word(term1);
+	q->nv.val_den = get_word(term2);
+	q->nv.flags = TYPE_RATIONAL;
+	return 1;
+}
+
 #if USE_SSL
 static int bif_xtra_unbounded_1(tpl_query *q)
 {
@@ -6087,6 +6142,7 @@ static int bif_xtra_unbounded_1(tpl_query *q)
 	q->nv.flags = TYPE_BIGNUM;
 	return 1;
 }
+#endif
 
 static int bif_xtra_fixed_4(tpl_query *q)
 {
@@ -6148,8 +6204,6 @@ static int bif_xtra_fixed_4(tpl_query *q)
 	put_atom(q, q->c.curr_frame + term4->slot, dstbuf);
 	return 1;
 }
-
-#endif
 
 static int bif_xtra_random_1(tpl_query *q)
 {
@@ -7268,10 +7322,11 @@ void bifs_load_iso(void)
 	DEFINE_BIF("atomic_concat", 3, bif_xtra_atomic_concat_3);
 	DEFINE_BIF("atomic_list_concat", 2, bif_xtra_atomic_list_concat_2);
 	DEFINE_BIF("atomic_list_concat", 3, bif_xtra_atomic_list_concat_3);
+	DEFINE_BIF("fixed", 4, bif_xtra_fixed_4);
+	DEFINE_BIF("rational", 2, bif_xtra_rational_2);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
-	DEFINE_BIF("fixed", 4, bif_xtra_fixed_4);
 #endif
 
 	DEFINE_BIF("forall", 2, bif_xtra_forall_2);

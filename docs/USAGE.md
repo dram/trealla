@@ -38,6 +38,12 @@ overflow does *NOT* promote to unbounded (nor is it detected). For example:
 	tpl -l samples/factorial.pro -g 'fac(200B,F),writeln(F)'               # OR
 	tpl -l samples/factorial.pro -g 'fac(200,F),writeln(F)' --unbounded
 
+Rational numbers are considered experimental at this stage:
+
+	X is 2R.                # value is 2
+	X is rational(2, 1)		# value is 2
+	X is rational(3, 2)     # value is 3/2
+
 The rule database usage is currently immediate update view (the traditional way). ISO-PROLOG
 however specifies logical update view (ie. snapshot), so this may change in future (a flag?).
 
