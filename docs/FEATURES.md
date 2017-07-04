@@ -140,6 +140,7 @@ implementations:
 	unbounded(+Int)             - function to convert integer to unbounded
 	fixed(+Int,+Digs,+Prec,-V)  - format integer with fixed number of decimal digits
 	rational(+Int,+Int)         - function to create a rational with numerator and denominator
+	rdiv/2
 
 and for accessing the rule database:
 

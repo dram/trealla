@@ -411,14 +411,14 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		reduce(n);
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_num);
 
-		if (listing > 0) {
+		if ((listing > 0) && (n->val_den == 1)) {
 			*dst++ = 'R';
 			*dst = '\0';
 		}
 
 		if (n->val_den != 1) {
 			if (listing == 2)
-				dst += sprintf(dst, "//");
+				dst += sprintf(dst, " rdiv ");
 			else
 				dst += sprintf(dst, "/");
 

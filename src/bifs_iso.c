@@ -6121,6 +6121,36 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_rdiv(tpl_query *q)
+{
+	node *args = get_args(q);
+	eval(q, &args);
+	node nv1 = q->nv;
+	eval(q, &args);
+	node nv2 = q->nv;
+
+	if (is_rational(&nv1) || is_rational(&nv2)) {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
+	else if (is_number(&nv1) && is_number(&nv2)) {
+		if (get_word(&nv2) == 0) {
+			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
+			return 0;
+		}
+
+		q->nv.val_num = get_word(&nv1);
+		q->nv.val_den = get_word(&nv2);
+	}
+	else {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
+
+	q->nv.flags = TYPE_RATIONAL;
+	return 1;
+}
+
 static int bif_xtra_rational_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -7332,6 +7362,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("atomic_list_concat", 3, bif_xtra_atomic_list_concat_3);
 	DEFINE_BIF("fixed", 4, bif_xtra_fixed_4);
 	DEFINE_BIF("rational", 2, bif_xtra_rational_2);
+	DEFINE_BIF("rdiv", 2, bif_xtra_rdiv);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
