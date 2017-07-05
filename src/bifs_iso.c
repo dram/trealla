@@ -4552,7 +4552,13 @@ static int bif_iso_divide(tpl_query *q)
 			return 0;
 		}
 
-		q->nv.val_f = (flt_t)nv1.val_i / (flt_t)get_word(&nv2);
+		if (!(nv1.val_i % get_word(&nv2))) {
+			q->nv.val_i = nv1.val_i / get_word(&nv2);
+			q->nv.flags = TYPE_INTEGER;
+			return 1;
+		}
+		else
+			q->nv.val_f = (flt_t)nv1.val_i / (flt_t)get_word(&nv2);
 	}
 	else if ((is_float(&nv1)) && (is_float(&nv2))) {
 		if (nv2.val_f == (flt_t)0.0) {
