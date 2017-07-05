@@ -4539,6 +4539,13 @@ static int bif_iso_divide(tpl_query *q)
 
 		q->nv.val_f = (flt_t)nv1.val_i / nv2.val_f;
 	}
+	else if (is_integer(&nv1) && is_rational(&nv2)) {
+		q->nv.val_num = get_word(&nv1) * nv2.val_den;
+		q->nv.val_den = 1 * nv2.val_num;
+		q->nv.flags = TYPE_RATIONAL;
+		reduce(&q->nv);
+		return 1;
+	}
 	else if (is_integer(&nv1)) {
 		if (get_word(&nv2) == 0) {
 			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
