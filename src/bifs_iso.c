@@ -4382,6 +4382,9 @@ static int bif_iso_add(tpl_query *q)
 	if (is_integer(&nv1)) {
 		q->nv.val_i = nv1.val_i + get_word(&nv2);
 	}
+	else if (is_float(&nv1) && is_float(&nv2)) {
+		q->nv.val_f = nv1.val_f + nv2.val_f;
+	}
 	else if (is_float(&nv1)) {
 		q->nv.val_f = nv1.val_f + (flt_t)get_word(&nv2);
 	}
@@ -4426,6 +4429,9 @@ static int bif_iso_subtract(tpl_query *q)
 
 	if (is_integer(&nv1)) {
 		q->nv.val_i = nv1.val_i - get_word(&nv2);
+	}
+	else if (is_float(&nv1) && is_float(&nv2)) {
+		q->nv.val_f = nv1.val_f - nv2.val_f;
 	}
 	else if (is_float(&nv1)) {
 		q->nv.val_f = nv1.val_f - (flt_t)get_word(&nv2);
