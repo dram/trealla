@@ -4552,7 +4552,7 @@ static int bif_iso_divide(tpl_query *q)
 			return 0;
 		}
 
-		if (!(nv1.val_i % get_word(&nv2))) {
+		if (!(nv1.val_i % get_word(&nv2))) {			// SWIPL-ism
 			q->nv.val_i = nv1.val_i / get_word(&nv2);
 			q->nv.flags = TYPE_INTEGER;
 			return 1;
