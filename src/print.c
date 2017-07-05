@@ -256,8 +256,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		}
 
 		if (parens)
-			if (listing == 1)
-				dst += snprintf(dst, *bufsize - (dst - *dstbuf), ")");
+			dst += snprintf(dst, *bufsize - (dst - *dstbuf), ")");
 	}
 	else if ((listing < 2) && pl && is_postfix(&pl->db, functor) && !ignore_ops) {
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term_next(nf), listing);
