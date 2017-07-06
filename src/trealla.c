@@ -781,20 +781,21 @@ void xref_clauses(lexer *l)
 
 		node *head = term_firstarg(n);
 		node *body = term_next(head);
+		node *term = body;
 
-		while (is_compound(body) && (l->pl->optimize > 0)) {
-			if (strcmp(term_functor(body), ","))
+		while (is_compound(term) && (l->pl->optimize > 0)) {
+			if (strcmp(term_functor(term), ",") || is_quoted(term))
 				break;
 
-			term_remove(n, body);
-			node *fun = NLIST_POP_FRONT(&body->val_l);
-			node *lhs = NLIST_POP_FRONT(&body->val_l);
-			node *rhs = NLIST_POP_FRONT(&body->val_l);
+			term_remove(n, term);
+			node *fun = NLIST_POP_FRONT(&term->val_l);
+			node *lhs = NLIST_POP_FRONT(&term->val_l);
+			node *rhs = NLIST_POP_FRONT(&term->val_l);
 			term_heapcheck(fun);
-			term_heapcheck(body);
+			term_heapcheck(term);
 			term_append(n, lhs);
 			term_append(n, rhs);
-			body = rhs;
+			term = rhs;
 		}
 
 		term_heapcheck(tmp);

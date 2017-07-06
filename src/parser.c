@@ -1932,6 +1932,9 @@ LOOP: // FIXME someday
 	else
 		l->is_paren = 0;
 
+	if (!l->quoted && !strcmp(l->tok, ",") && (*s == ','))
+		l->quoted = 1;
+
 	if (!l->quoted && !strcmp(l->tok, ","))
 		l->is_op = 1;
 	else
