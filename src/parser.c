@@ -2532,19 +2532,21 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			n = term_make();
 			n->flags |= TYPE_ATOM;
 
-			if (!strcmp(l->tok, "-") && (l->was_paren || l->was_op2 || l->was_op)) {
+			if (!l->quoted && !strcmp(l->tok, "-") &&
+				(l->was_paren || l->was_op2 || l->was_op)) {
 				free(l->tok);
 				n->flags |= FLAG_CONST;
 				l->tok =  (char*)"]-[";
 			}
-			else if (!l->quoted && !strcmp(l->tok, "+") && (l->was_paren || l->was_op2 || l->was_op)) {
+			else if (!l->quoted && !strcmp(l->tok, "+") &&
+				(l->was_paren || l->was_op2 || l->was_op)) {
 				free(l->tok);
 				n->flags |= FLAG_CONST;
 				l->tok =  (char*)"]+[";
 			}
 
-			if (!l->quoted && (l->was_paren || l->was_op) && !l->quoted && is_op(l->db, l->tok) &&
-			    strcmp(l->tok, "\\+")) { // HACK
+			if (!l->quoted && strcmp(l->tok, "\\+") &&
+				(l->was_paren || l->was_op) && is_op(l->db, l->tok) ) { // HACK
 				n->flags |= FLAG_NOOP;
 				//l->quoted = 1;
 			}
