@@ -382,7 +382,7 @@ node *make_and(void)
 	return n;
 }
 
-static node *make_cut(void)
+node *make_cut(void)
 {
 	node *n = make_const_atom("!");
 	n->flags |= FLAG_BUILTIN;
@@ -390,7 +390,7 @@ static node *make_cut(void)
 	return n;
 }
 
-static node *make_cutfail(void)
+node *make_cutfail(void)
 {
 	node *n = make_const_atom("!fail");
 	n->flags |= FLAG_BUILTIN;
@@ -1081,13 +1081,6 @@ static node *attach_op_infix(lexer *l, node *term, node *n, const char *functor,
 	term_remove(term, n_prev);
 	term_append(tmp, n);
 	term_append(tmp, n_prev);
-
-	if (!strcmp(functor, ";")) {
-		node *n2 = make_true();
-		n2->flags |= FLAG_HIDDEN | FLAG_NOFOLLOW;
-		term_append(tmp, n2);
-	}
-
 	term_remove(term, n_next);
 	term_append(tmp, n_next);
 
@@ -2194,18 +2187,6 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			term->flags |= FLAG_NOARGS;
 		}
 
-		if (!l->quoted && !strcmp(l->tok, "->")) {
-			free(l->tok);
-			node *tmp = make_and();
-			term_append(term, tmp);
-			tmp = make_cut();
-			term_append(term, tmp);
-			tmp = make_and();
-			term_append(term, tmp);
-			l->was_atomic = 0;
-			continue;
-		}
-
 		if (!l->quoted && !strcmp(l->tok, ")") && is_atom(term_first(term))) {
 			if (!strcmp(term_functor(term), "once")) {
 				node *tmp = make_and();
@@ -2385,7 +2366,8 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 						n->flags &= ~FLAG_NOARGS;
 						n->cpos = tmp->cpos;
 
-						if (!strcmp(functor, "call") || !strcmp(functor, "phrase") || !strcmp(functor, "bagof") ||
+						if (!strcmp(functor, "call") || !strcmp(functor, "once") ||
+							!strcmp(functor, "phrase") || !strcmp(functor, "bagof") ||
 						    !strcmp(functor, "setof") || !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
 						    !strcmp(functor, "sys:write_file") || !strcmp(functor, "write_file") ||
 						    !strcmp(functor, "findnsols")) {

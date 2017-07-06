@@ -1562,6 +1562,14 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,position(P)) :- stream_property_position(S,P).");
 	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
+	trealla_make_rule(pl, "(A -> B ; _C) :- call(A), !, call(B).");
+	trealla_make_rule(pl, "(_A -> _B ; C) :- !, call(C).");
+
+	trealla_make_rule(pl, "(A -> B) :- call(A), !, call(B).");
+
+	trealla_make_rule(pl, "(A ; _B) :- call(A).");
+	trealla_make_rule(pl, "(_A ; B) :- call(B).");
+
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),R).");

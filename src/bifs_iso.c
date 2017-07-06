@@ -270,6 +270,8 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	node *n = make_compound();
 	n->cpos = from->cpos;
 	n->flags |= from->flags;
+
+	if (is_builtin(from))
 	n->bifptr = from->bifptr;
 	n->frame_size = from->frame_size;
 	from = term_first(from);
@@ -430,7 +432,7 @@ int bif_iso_and(tpl_query *q)
 		try_me_nochoice(q);
 	}
 
-	q->c.curr_term = term1;
+	begin_query(q, term1);
 	return call(q);
 }
 
@@ -443,7 +445,7 @@ static int bif_iso_not(tpl_query *q)
 	node *term1 = get_callable(term1);
 	allocate_frame(q);
 	try_me(q);
-	q->c.curr_term = term1;
+	begin_query(q, term1);
 	return call(q);
 }
 
@@ -452,63 +454,41 @@ static int bif_iso_do(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_list_or_callable(term1);
 	trust_me(q);
-	q->c.curr_term = term1;
-	return call(q);
-}
-
-int bif_iso_or(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_callable(term1);
-	node *term1x = get_callable(term1x); // make_true
-	node *term2 = get_callable(term2);
-
-	if (!q->retry) {
-		allocate_frame(q);
-		try_me(q);
-		q->c.curr_term = term1;
-	}
-	else {
-		q->retry = 0;
-		try_me_nochoice(q);
-		q->c.curr_term = term2;
-	}
-
+	begin_query(q, term1);
 	return call(q);
 }
 
 static int bif_iso_once(tpl_query *q)
 {
-	if (q->retry)
-		return 0;
-
 	node *args = get_args(q);
+	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
+	node *s = clone_term(q, term1);
 	allocate_frame(q);
-	try_me(q);
-	q->c.curr_term = term1;
+	term_append(s, make_cut());
+	put_env(q, q->c.curr_frame + var->slot, s, term1_ctx);
+	term_heapcheck(s);
+	try_me_nochoice(q);
+	begin_query(q, s);
 	return call(q);
 }
 
 static int bif_iso_call(tpl_query *q)
 {
-	if (q->retry)
-		return 0;
-
 	node *args = get_args(q);
 	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
-	allocate_frame(q);
-	try_me(q);
-	q->c.curr_term = term1;
+	node *s = clone_term(q, term1);
+	put_env(q, q->c.curr_frame + var->slot, s, term1_ctx);
+	term_heapcheck(s);
+	try_me_nochoice(q);
+	q->c.curr_frame = term1_ctx;
+	begin_query(q, s);
 	return call(q);
 }
 
 static int bif_iso_calln(tpl_query *q)
 {
-	if (q->retry)
-		return 0;
-
 	node *args = get_args(q);
 	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
@@ -540,8 +520,8 @@ static int bif_iso_calln(tpl_query *q)
 	put_env(q, q->c.curr_frame + var->slot, s, term1_ctx);
 	term_heapcheck(s);
 	allocate_frame(q);
-	try_me(q);
-	q->c.curr_term = s;
+	try_me_nochoice(q);
+	begin_query(q, s);
 	return call(q);
 }
 
@@ -2338,9 +2318,8 @@ static int bif_iso_copy_term(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	unsigned context1 = q->latest_context;
 	node *term2 = get_var(term2);
-	q->latest_context = context1;
+	q->latest_context = term1_ctx;
 	skiplist vars;
 	sl_init(&vars, 0, NULL, NULL);
 	q->d = &vars;
@@ -2355,7 +2334,7 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *tmp = copy_term(q, term1);
 	sl_done(&vars, NULL);
 	q->d = NULL;
-	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
+	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? term1_ctx : -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -7165,14 +7144,14 @@ void bifs_load_iso(void)
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
 	DEFINE_BIF("]-[", 1, bif_iso_negative);
 	DEFINE_BIF("]+[", 1, bif_iso_positive);
-	DEFINE_BIF("once", 1, bif_iso_once);
+	DEFINE_BIF("once", 1 + 1, bif_iso_once);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);
 	DEFINE_BIF("\\+", 1, bif_iso_not);
-	// DEFINE_BIF("->", 2, bif_iso_ifthen);
 	DEFINE_BIF(",", 2, bif_iso_and);
-	DEFINE_BIF(";", 2, bif_iso_or);
+	//DEFINE_BIF(";", 2, bif_iso_or);
+	//DEFINE_BIF("->", 2, bif_iso_ifthen);
 	DEFINE_BIF("+", 2, bif_iso_add);
 	DEFINE_BIF("-", 2, bif_iso_subtract);
 	DEFINE_BIF("*", 2, bif_iso_multiply);

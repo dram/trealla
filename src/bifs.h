@@ -532,6 +532,7 @@ extern node *term_make(void);
 extern node *make_const_atom(const char *s);
 extern node *make_and(void);
 extern node *make_true(void);
+extern node *make_cut(void);
 
 extern const char *parse_number(const char *s, nbr_t *v, int *numeric);
 extern size_t sprint_uint(char *dst, size_t size, unbr_t n, int base);
