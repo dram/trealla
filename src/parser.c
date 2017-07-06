@@ -2178,18 +2178,6 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!l->quoted && !strcmp(l->tok, "->")) {
-			free(l->tok);
-			node *tmp = make_and();
-			term_append(term, tmp);
-			tmp = make_cut();
-			term_append(term, tmp);
-			tmp = make_and();
-			term_append(term, tmp);
-			l->was_atomic = 0;
-			continue;
-		}
-
 		if (!l->quoted && !strcmp(l->tok, ".") && (*src != '(')) {
 			free(l->tok);
 			l->finalized = 1;
@@ -2204,6 +2192,18 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			l->dcg = 0;
 			l->dcg_passthru = 0;
 			term->flags |= FLAG_NOARGS;
+		}
+
+		if (!l->quoted && !strcmp(l->tok, "->")) {
+			free(l->tok);
+			node *tmp = make_and();
+			term_append(term, tmp);
+			tmp = make_cut();
+			term_append(term, tmp);
+			tmp = make_and();
+			term_append(term, tmp);
+			l->was_atomic = 0;
+			continue;
 		}
 
 		if (!l->quoted && !strcmp(l->tok, ")") && is_atom(term_first(term))) {

@@ -23,6 +23,7 @@
 
 #define is_functor(n) (((n)->flags & FLAG_FUNCTOR) ? 1 : 0)
 #define is_quoted(n) (((n)->flags & FLAG_QUOTED) ? 1 : 0)
+#define is_consing(n) (((n)->flags & FLAG_CONSING) ? 1 : 0)
 #define is_anon(n) (((n)->flags & FLAG_ANON) ? 1 : 0)
 #define is_tuple(n) (((n)->flags & FLAG_TUPLE) ? 1 : 0)
 #define is_builtin(n) (((n)->flags & FLAG_BUILTIN) ? 1 : 0)
