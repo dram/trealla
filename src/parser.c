@@ -28,73 +28,74 @@ const char *g_escapes = "\e\a\f\b\t\v\r\n";
 const char *g_anti_escapes = "eafbtvrn";
 
 static op g_ops[] = {
-                     {":-", "xfx", 1200},
-                     {":-", "fx", 1200},
-                     {"-->", "xfx", 1200},
-                     {"?-", "fx", 1200},
-                     {";", "xfy", 1100},
-                     {"|", "xfy", 1100},
-                     {"->", "xfy", 1050},
-                     {"*->", "xfy", 1050},
-                     {",", "xfy", 1000},
+	{":-", "xfx", 1200},
+	{":-", "fx", 1200},
+	{"-->", "xfx", 1200},
+	{"?-", "fx", 1200},
+	{";", "xfy", 1100},
+	{"|", "xfy", 1100},
+	{"->", "xfy", 1050},
+	{"*->", "xfy", 1050},
+	{",", "xfy", 1000},
 
-                     {"initialization", "fx", 1150},
-                     {"dynamic", "fy", 1050},
+	{"initialization", "fx", 1150},
+	{"dynamic", "fy", 1050},
 
 #ifndef ISO_ONLY
-                     {"public", "fy", 1050},
-                     {"export", "fy", 1050},
-                     {"import", "fy", 1050},
-                     {"use_module", "fy", 1050},
-                     {"module", "fy", 1050},
-                     {"module", "fy", 1050},
-                     {"receive", "fy", 900},
-                     {"undo", "fy", 900},
+	{"public", "fy", 1050},
+	{"export", "fy", 1050},
+	{"import", "fy", 1050},
+	{"use_module", "fy", 1050},
+	{"module", "fy", 1050},
+	{"module", "fy", 1050},
+	{"receive", "fy", 900},
+	{"undo", "fy", 900},
 #endif
 
-                     {"\\+", "fy", 900},
-                     {"is", "xfx", 700},
-                     {"=", "xfx", 700},
-                     {"\\=", "xfx", 700},
-                     {"==", "xfx", 700},
-                     {"\\==", "xfx", 700},
-                     {"=:=", "xfx", 700},
-                     {"=\\=", "xfx", 700},
-                     {"<", "xfx", 700},
-                     {"=<", "xfx", 700},
-                     {">", "xfx", 700},
-                     {">=", "xfx", 700},
-                     {"@<", "xfx", 700},
-                     {"@=<", "xfx", 700},
-                     {"@>", "xfx", 700},
-                     {"@>=", "xfx", 700},
-                     {"=..", "xfx", 700},
-                     {":", "xfy", 600},
-                     {"+", "yfx", 500},
-                     {"-", "yfx", 500},
-                     {"?", "fx", 500},
-                     {"*", "yfx", 400},
-                     {"/", "yfx", 400},
-                     {"//", "yfx", 400},
-                     {"div", "yfx", 400},
-                     {"rdiv", "yfx", 400},
-                     {"\\/", "yfx", 400},
-                     {"/\\", "yfx", 400},
-                     {"xor", "yfx", 400},
-                     {"rem", "yfx", 400},
-                     {"mod", "yfx", 400},
-                     {"<<", "yfx", 400},
-                     {">>", "yfx", 400},
-                     {"**", "xfx", 200},
-                     {"^", "xfy", 200},
-                     {"\\", "fy", 200},
-                     {"-", "fy", 200}, // HACK
-                     {"+", "fy", 200}, // HACK
-                     {"]-[", "fy", 200}, // HACK
-                     {"]+[", "fy", 200}, // HACK
-                     //{"$", "fx", 1},
+	 {"\\+", "fy", 900},
+	 {"is", "xfx", 700},
+	 {"=", "xfx", 700},
+	 {"\\=", "xfx", 700},
+	 {"==", "xfx", 700},
+	 {"\\==", "xfx", 700},
+	 {"=:=", "xfx", 700},
+	 {"=\\=", "xfx", 700},
+	 {"<", "xfx", 700},
+	 {"=<", "xfx", 700},
+	 {">", "xfx", 700},
+	 {">=", "xfx", 700},
+	 {"@<", "xfx", 700},
+	 {"@=<", "xfx", 700},
+	 {"@>", "xfx", 700},
+	 {"@>=", "xfx", 700},
+	 {"=..", "xfx", 700},
+	 {":", "xfy", 600},
+	 {"+", "yfx", 500},
+	 {"-", "yfx", 500},
+	 {"?", "fx", 500},
+	 {"*", "yfx", 400},
+	 {"/", "yfx", 400},
+	 {"//", "yfx", 400},
+	 {"div", "yfx", 400},
+	 {"rdiv", "yfx", 400},
+	 {"\\/", "yfx", 400},
+	 {"/\\", "yfx", 400},
+	 {"xor", "yfx", 400},
+	 {"rem", "yfx", 400},
+	 {"mod", "yfx", 400},
+	 {"<<", "yfx", 400},
+	 {">>", "yfx", 400},
+	 {"**", "xfx", 200},
+	 {"^", "xfy", 200},
+	 {"\\", "fy", 200},
+	 //{"-", "fy", 200}, // HACK
+	 //{"+", "fy", 200}, // HACK
+	 {"]-[", "fy", 200}, // HACK
+	 {"]+[", "fy", 200}, // HACK
+	 //{"$", "fx", 1},
 
-                     {0}};
+	 {0}
+};
 
 inline static node *term_last(node *s) { return NLIST_BACK(&s->val_l); }
 inline static node *term_prev(node *n) { return NLIST_PREV(n); }
@@ -2536,13 +2537,13 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				n->flags |= FLAG_CONST;
 				l->tok =  (char*)"]-[";
 			}
-			else if (!strcmp(l->tok, "+") && (l->was_paren || l->was_op2 || l->was_op)) {
+			else if (!l->quoted && !strcmp(l->tok, "+") && (l->was_paren || l->was_op2 || l->was_op)) {
 				free(l->tok);
 				n->flags |= FLAG_CONST;
 				l->tok =  (char*)"]+[";
 			}
 
-			if ((l->was_paren || l->was_op) && !l->quoted && is_op(l->db, l->tok) &&
+			if (!l->quoted && (l->was_paren || l->was_op) && !l->quoted && is_op(l->db, l->tok) &&
 			    strcmp(l->tok, "\\+")) { // HACK
 				n->flags |= FLAG_NOOP;
 				//l->quoted = 1;
