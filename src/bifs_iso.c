@@ -438,19 +438,6 @@ int bif_iso_and(tpl_query *q)
 	return call(q);
 }
 
-static int bif_iso_not(tpl_query *q)
-{
-	if (q->retry)
-		return 1;
-
-	node *args = get_args(q);
-	node *term1 = get_callable(term1);
-	allocate_frame(q);
-	try_me(q);
-	begin_query(q, term1);
-	return call(q);
-}
-
 static int bif_iso_do(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -467,7 +454,6 @@ static int bif_iso_call(tpl_query *q)
 	node *term1 = get_callable(term1);
 	term1->flags |= FLAG_NOFOLLOW;
 	put_env(q, q->c.curr_frame + var->slot, term1, term1_ctx);
-	allocate_frame(q);
 	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
@@ -7142,7 +7128,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);
-	DEFINE_BIF("\\+", 1, bif_iso_not);
 	DEFINE_BIF(",", 2, bif_iso_and);
 	//DEFINE_BIF(";", 2, bif_iso_or);
 	//DEFINE_BIF("->", 2, bif_iso_ifthen);
@@ -7313,7 +7298,6 @@ void bifs_load_iso(void)
 
 	// These are not ISO-Prolog but are common...
 
-	DEFINE_BIF("not", 1, bif_iso_not);
 	DEFINE_BIF("div", 2, bif_iso_divint);
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 

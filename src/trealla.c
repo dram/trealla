@@ -1572,6 +1572,12 @@ trealla *trealla_create(const char *name)
 
 	trealla_make_rule(pl, "once(G) :- call(G), !.");
 
+	trealla_make_rule(pl, "not(G) :- call(G), !, fail.");
+	trealla_make_rule(pl, "not(G) :- true.");
+
+	trealla_make_rule(pl, "\\+ G :- call(G), !, fail.");
+	trealla_make_rule(pl, "\\+ G :- true.");
+
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),R).");

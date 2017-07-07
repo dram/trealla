@@ -53,6 +53,7 @@ static op g_ops[] = {
 #endif
 
 	 {"\\+", "fy", 900},
+	 {"not", "fy", 900},
 	 {"is", "xfx", 700},
 	 {"=", "xfx", 700},
 	 {"\\=", "xfx", 700},
@@ -1113,14 +1114,6 @@ static node *attach_op_prefix(lexer *l, node *term, node *n)
 	term_remove(term, n_next);
 	term_append(tmp, n);
 	term_append(tmp, n_next);
-	const char *functor = VAL_S(n);
-
-	if (!strcmp(functor, "\\+")) {
-		node *n2 = make_cutfail();
-		n2->flags |= FLAG_HIDDEN;
-		term_append(tmp, n2);
-	}
-
 	tmp = promote(term, tmp);
 	return tmp;
 }
