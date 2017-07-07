@@ -648,11 +648,16 @@ HTTP processing: namespace 'http'
 Server-side:
 
 	parse(+S,-Ver,-Method,-Path)  - parse headers (except content)
+	basic_auth(+S,-User,-Pass)    - decode Basic auth token (if present)
 	www_form(+S)                  - decode form data on POST (urlencoded)
+
 	form(+S,+Name,-Atom)          - get named form value (or '' if non-exist)
 	query(+S,+Name,-Atom)         - get named query value (or '' if non-exist)
 	cookie(+S,+Name,-Atom)        - get named cookie value (or '' if non-exist)
-	basic_auth(+S,-User,-Pass)    - decode Basic auth token (if present)
+
+	form_list(+S,+Name,-Atom)     - get named form values (or [] if non-exist)
+	query_list(+S,+Name,-Atom)    - get named query values (or [] if non-exist)
+	cookie_list(+S,+Name,-Atom)   - get named cookie values (or [] if non-exist)
 
 Client-side:
 

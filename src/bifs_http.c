@@ -120,6 +120,125 @@ static int bif_http_form_3(tpl_query *q)
 	return 1;
 }
 
+static int bif_http_cookie_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_var(term3);
+	stream *sp = term1->val_str;
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", VAL_S(term2));
+	const char *s = session_get_stash((session *)sp->sptr, tmpbuf);
+	put_atom(q, q->c.curr_frame + term3->slot, strdup(s));
+	return 1;
+}
+
+static int bif_http_query_list_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_var(term3);
+	stream *sp = term1->val_str;
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, KEY_SIZE - 20, "QUERY:%s", VAL_S(term2));
+	node *save_l = NULL, *l = NULL;
+	const char *v = session_get_key((session *)sp->sptr, tmpbuf);
+
+	while (v) {
+		if (!save_l)
+			save_l = l = make_list();
+
+		term_append(l, make_atom(strdup(v)));
+		v = session_get_key((session *)sp->sptr, tmpbuf);
+
+		if (!v)
+			break;
+
+		l = term_append(l, make_list());
+	}
+
+	if (l)
+		term_append(l, make_const_atom("[]"));
+	else
+		save_l = make_const_atom("[]");
+
+	put_env(q, q->c.curr_frame + term3->slot, save_l, -1);
+	term_heapcheck(save_l);
+	return 1;
+}
+
+static int bif_http_form_list_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_var(term3);
+	stream *sp = term1->val_str;
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, KEY_SIZE - 20, "FORM:%s", VAL_S(term2));
+	node *save_l = NULL, *l = NULL;
+	const char *v = session_get_key((session *)sp->sptr, tmpbuf);
+
+	while (v) {
+		if (!save_l)
+			save_l = l = make_list();
+
+		term_append(l, make_atom(strdup(v)));
+		v = session_get_key((session *)sp->sptr, tmpbuf);
+
+		if (!v)
+			break;
+
+		l = term_append(l, make_list());
+	}
+
+	if (l)
+		term_append(l, make_const_atom("[]"));
+	else
+		save_l = make_const_atom("[]");
+
+	put_env(q, q->c.curr_frame + term3->slot, save_l, -1);
+	term_heapcheck(save_l);
+	return 1;
+}
+
+static int bif_http_cookie_list_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_socket(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_var(term3);
+	stream *sp = term1->val_str;
+	char tmpbuf[KEY_SIZE];
+	snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", VAL_S(term2));
+	node *save_l = NULL, *l = NULL;
+	const char *v = session_get_key((session *)sp->sptr, tmpbuf);
+
+	while (v) {
+		if (!save_l)
+			save_l = l = make_list();
+
+		term_append(l, make_atom(strdup(v)));
+		v = session_get_key((session *)sp->sptr, tmpbuf);
+
+		if (!v)
+			break;
+
+		l = term_append(l, make_list());
+	}
+
+	if (l)
+		term_append(l, make_const_atom("[]"));
+	else
+		save_l = make_const_atom("[]");
+
+	put_env(q, q->c.curr_frame + term3->slot, save_l, -1);
+	term_heapcheck(save_l);
+	return 1;
+}
+
 static int bif_http_www_form_1(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -193,20 +312,6 @@ static int bif_http_www_form_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_http_cookie_3(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_socket(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
-	stream *sp = term1->val_str;
-	char tmpbuf[KEY_SIZE];
-	snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", VAL_S(term2));
-	const char *s = session_get_stash((session *)sp->sptr, tmpbuf);
-	put_atom(q, q->c.curr_frame + term3->slot, strdup(s));
-	return 1;
-}
-
 static void parse_cookies(session *s, const char *src)
 {
 	size_t save_len = strlen(src);
@@ -240,7 +345,7 @@ static void parse_cookies(session *s, const char *src)
 			*dst = '\0';
 			char tmpbuf[KEY_SIZE];
 			snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", name);
-			session_set_stash(s, tmpbuf, value);
+			session_app_stash(s, tmpbuf, value);
 			//printf("*** '%s' = '%s'\n", name, value);
 			dst = name;
 			*dst = '\0';
@@ -261,7 +366,7 @@ static void parse_cookies(session *s, const char *src)
 		char tmpbuf[KEY_SIZE];
 		snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", name);
 		//printf("*** '%s' = '%s'\n", name, value);
-		session_set_stash(s, tmpbuf, value);
+		session_app_stash(s, tmpbuf, value);
 	}
 
 	free(name);
@@ -409,7 +514,7 @@ static int bif_http_parse_4(tpl_query *q)
 						*dst = '\0';
 						char tmpbuf[KEY_SIZE], tmpbuf1[KEY_SIZE], tmpbuf2[KEY_SIZE];
 						snprintf(tmpbuf, KEY_SIZE - 20, "QUERY:%s", url_decode(name, tmpbuf1));
-						session_set_stash((session *)sp->sptr, tmpbuf, url_decode(value, tmpbuf2));
+						session_app_stash((session *)sp->sptr, tmpbuf, url_decode(value, tmpbuf2));
 						dst = name;
 						src++;
 					}
@@ -422,7 +527,7 @@ static int bif_http_parse_4(tpl_query *q)
 				if (name[0]) {
 					char tmpbuf[KEY_SIZE], tmpbuf1[KEY_SIZE], tmpbuf2[KEY_SIZE];
 					snprintf(tmpbuf, KEY_SIZE - 20, "QUERY:%s", url_decode(name, tmpbuf1));
-					session_set_stash((session *)sp->sptr, tmpbuf, url_decode(value, tmpbuf2));
+					session_app_stash((session *)sp->sptr, tmpbuf, url_decode(value, tmpbuf2));
 				}
 
 				free(name);
@@ -2229,9 +2334,14 @@ void bifs_load_http(void)
 	DEFINE_BIF("http:parse", 3, bif_http_parse_3);
 	DEFINE_BIF("http:parse", 2, bif_http_parse_3);
 	DEFINE_BIF("http:www_form", 1, bif_http_www_form_1);
+
 	DEFINE_BIF("http:query", 3, bif_http_query_3);
 	DEFINE_BIF("http:form", 3, bif_http_form_3);
 	DEFINE_BIF("http:cookie", 3, bif_http_cookie_3);
+
+	DEFINE_BIF("http:query_list", 3, bif_http_query_list_3);
+	DEFINE_BIF("http:form_list", 3, bif_http_form_list_3);
+	DEFINE_BIF("http:cookie_list", 3, bif_http_cookie_list_3);
 
 	DEFINE_BIF("http:head", 2, bif_http_head_3);
 	DEFINE_BIF("http:head", 3, bif_http_head_3);
