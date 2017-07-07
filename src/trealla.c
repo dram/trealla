@@ -449,9 +449,9 @@ void db_init(module *db, trealla *pl, const char *name, const char *filename)
 	db->pl = pl;
 	db->name = strdup(name);
 	db->filename = strdup(filename ? filename : name);
-	sl_init(&db->dict, 0, &strcmp, &free);
-	sl_init(&db->rules, 0, &strcmp, &free);
-	sl_init(&db->exports, 0, &strcmp, &free);
+	sl_init(&db->dict, &strcmp, &free);
+	sl_init(&db->rules, &strcmp, &free);
+	sl_init(&db->exports, &strcmp, &free);
 #ifndef ISO_ONLY
 	db->guard = lock_create();
 #endif
@@ -1047,7 +1047,7 @@ static void collect_vars(tpl_query *q, node *n)
 void query_dump(tpl_query *q)
 {
 	skiplist vars;
-	sl_init(&vars, 0, &strcmp, NULL);
+	sl_init(&vars, &strcmp, NULL);
 	q->d = &vars;
 	collect_vars(q, NLIST_FRONT(&q->lex->val_l));
 	q->d = NULL;
@@ -1508,7 +1508,7 @@ trealla *trealla_create(const char *name)
 	pl->optimize = 0;
 	pl->tty = isatty(0);
 	db_init(&pl->db, pl, name, "default");
-	sl_init(&pl->mods, 0, &strcmp, &free);
+	sl_init(&pl->mods, &strcmp, &free);
 	static int first_time = 1;
 
 	if (first_time) {
@@ -1537,8 +1537,8 @@ trealla *trealla_create(const char *name)
 	history_keywords((const char **)pl->keywords);
 
 #ifndef ISO_ONLY
-	sl_init(&pl->idle, 0, &tmocmp, NULL);
-	sl_init(&pl->names, 0, &strcmp, &free);
+	sl_init(&pl->idle, &tmocmp, NULL);
+	sl_init(&pl->names, &strcmp, &free);
 	sl_set(&pl->mods, strdup("sys"), NULL);
 	sl_set(&pl->mods, strdup("proc"), NULL);
 	sl_set(&pl->mods, strdup("dbs"), NULL);

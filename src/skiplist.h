@@ -11,7 +11,7 @@ struct skiplist_ {
 	slnode *header, *iter;
 	int (*compare)(const char *, const char *);
 	void (*deleter)(void *);
-	int dups, level;
+	int level;
 	unsigned int seed;
 	size_t cnt;
 };
@@ -24,8 +24,9 @@ struct skiplist_ {
 // For integer keys use NULL as the key deleter function.
 // Otherwise supply your own
 
-extern void sl_init(skiplist *d, int dups, int (*compare)(const char *, const char *), void (*deleter)(void *));
+extern void sl_init(skiplist *d, int (*compare)(const char *, const char *), void (*deleter)(void *));
 extern int sl_set(skiplist *d, const char *key, void *value);
+extern int sl_app(skiplist *d, const char *key, void *value);
 extern int sl_get(skiplist *d, const char *key, void **value);
 extern int sl_del(skiplist *d, const char *key, void **value);
 extern int sl_count(skiplist *d);

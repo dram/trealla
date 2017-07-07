@@ -660,13 +660,13 @@ int session_app_stash(session *s, const char *key, const char *value)
 {
 	if (!s->stash) {
 		s->stash = (skiplist *)calloc(1, sizeof(skiplist));
-		sl_init(s->stash, 1, &strcasecmp, &free);
+		sl_init(s->stash, &strcasecmp, &free);
 	}
 
 	if (sl_count(s->stash) >= STASH_LIMIT)
 		return 0;
 
-	sl_set(s->stash, strdup(key), strdup(value));
+	sl_app(s->stash, strdup(key), strdup(value));
 	return 1;
 }
 
@@ -674,7 +674,7 @@ int session_set_stash(session *s, const char *key, const char *value)
 {
 	if (!s->stash) {
 		s->stash = (skiplist *)calloc(1, sizeof(skiplist));
-		sl_init(s->stash, 1, &strcasecmp, &free);
+		sl_init(s->stash, &strcasecmp, &free);
 	}
 
 	if (sl_count(s->stash) > STASH_LIMIT)

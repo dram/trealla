@@ -44,7 +44,7 @@ int sl_count(skiplist *d)
 	return d->cnt;
 }
 
-void sl_init(skiplist *d, int dups, int (*compare)(const char *, const char *), void (*deleter)(void *))
+void sl_init(skiplist *d, int (*compare)(const char *, const char *), void (*deleter)(void *))
 {
 #ifdef DEBUG
 	assert(d);
@@ -52,7 +52,6 @@ void sl_init(skiplist *d, int dups, int (*compare)(const char *, const char *), 
 
 	d->header = new_node_of_level(max_levels);
 	d->level = 1;
-	d->dups = dups;
 	d->compare = compare ? compare : defcmp;
 	d->deleter = deleter;
 	d->cnt = 0;
@@ -81,13 +80,42 @@ int sl_set(skiplist *d, const char *key, void *value)
 		update[k] = p;
 	}
 
-	if (!d->dups) {
-		if (q && (d->compare(q->key, key) == 0)) {
-			if (d->deleter)
-				d->deleter((char *)key);
+	k = random_level(&d->seed);
 
-			return 0;
-		}
+	if (k >= d->level) {
+		d->level++;
+		k = d->level - 1;
+		update[k] = d->header;
+	}
+
+	q = new_node_of_level(k + 1);
+	q->key = (char *)key;
+	q->value = value;
+
+	for (; k >= 0; k--) {
+		p = update[k];
+		q->forward[k] = p->forward[k];
+		p->forward[k] = q;
+	}
+
+	d->cnt++;
+	return 1;
+}
+
+int sl_app(skiplist *d, const char *key, void *value)
+{
+#ifdef DEBUG
+	assert(d);
+#endif
+
+	slnode *update[max_levels], *p = d->header, *q = NULL;
+	int k;
+
+	for (k = d->level; k >= 0; k--) {
+		while ((q = p->forward[k]) && (d->compare(q->key, key) <= 0))
+			p = q;
+
+		update[k] = p;
 	}
 
 	k = random_level(&d->seed);
@@ -329,5 +357,5 @@ void sl_clear(skiplist *d, void (*deleter)(void *))
 		return;
 
 	sl_done(d, deleter);
-	sl_init(d, d->dups, d->compare, d->deleter);
+	sl_init(d, d->compare, d->deleter);
 }

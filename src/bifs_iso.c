@@ -1383,7 +1383,7 @@ static int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, 
 	}
 
 	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
+	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	int cnt = collect_vars(q, term);
 
@@ -2303,7 +2303,7 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *term2 = get_var(term2);
 	q->latest_context = term1_ctx;
 	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
+	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	int cnt = collect_vars(q, term1);
 	sl_clear(&vars, NULL);
@@ -3706,7 +3706,7 @@ static int bif_iso_term_variables(tpl_query *q)
 	node *term2 = get_list_or_var(term2);
 
 	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
+	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	int cnt = collect_vars(q, term1);
 	q->d = NULL;
@@ -3805,7 +3805,7 @@ static int bif_iso_bagof(tpl_query *q)
 	stream *sp;
 
 	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
+	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	collect_vars(q, term1);
 	node *n;
@@ -3827,7 +3827,7 @@ static int bif_iso_bagof(tpl_query *q)
 
 		sp = calloc(1, sizeof(stream));
 		sp->kvs = malloc(sizeof(skiplist));
-		sl_init(sp->kvs, 0, NULL, NULL);
+		sl_init(sp->kvs, NULL, NULL);
 		node *n = make_stream(sp);
 		put_env(q, q->c.curr_frame + var->slot, n, -1);
 		term_heapcheck(n);
@@ -3940,7 +3940,7 @@ static int bif_iso_setof(tpl_query *q)
 	stream *sp;
 
 	skiplist vars;
-	sl_init(&vars, 0, NULL, NULL);
+	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	collect_vars(q, term1);
 	node *n;
@@ -3962,7 +3962,7 @@ static int bif_iso_setof(tpl_query *q)
 
 		sp = calloc(1, sizeof(stream));
 		sp->kvs = malloc(sizeof(skiplist));
-		sl_init(sp->kvs, 0, NULL, NULL);
+		sl_init(sp->kvs, NULL, NULL);
 		node *n = make_stream(sp);
 		put_env(q, q->c.curr_frame + var->slot, n, -1);
 		term_heapcheck(n);

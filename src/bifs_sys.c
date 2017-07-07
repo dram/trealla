@@ -1657,7 +1657,7 @@ static int bif_sys_lput_4(tpl_query *q)
 
 	if (!sp->kvs) {
 		sp->kvs = malloc(sizeof(skiplist));
-		sl_init(sp->kvs, 0, &strcmp, &free);
+		sl_init(sp->kvs, &strcmp, &free);
 	}
 	else if (sl_del(sp->kvs, VAL_S(term1), (void **)&n))
 		term_heapcheck(n);
@@ -1701,7 +1701,7 @@ static int bif_sys_put_4(tpl_query *q)
 
 	if (!sp->kvs) {
 		sp->kvs = malloc(sizeof(skiplist));
-		sl_init(sp->kvs, 0, &strcmp, &free);
+		sl_init(sp->kvs, &strcmp, &free);
 	}
 	else if (sl_del(sp->kvs, VAL_S(term1), (void **)&n))
 		term_heapcheck(n);
@@ -1730,7 +1730,7 @@ static int bif_sys_put_3(tpl_query *q)
 
 	if (!sp->kvs) {
 		sp->kvs = malloc(sizeof(skiplist));
-		sl_init(sp->kvs, 0, &strcmp, &free);
+		sl_init(sp->kvs, &strcmp, &free);
 	}
 	else if (sl_del(sp->kvs, VAL_S(term1), (void **)&n))
 		term_heapcheck(n);

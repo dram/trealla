@@ -524,7 +524,7 @@ int dir_dynamic(lexer *l, node *n)
 
 			if (is_atom(n2)) {
 				if (!strcmp(VAL_S(n2), "notify")) {
-					sl_init(&r->procs, 0, NULL, NULL);
+					sl_init(&r->procs, NULL, NULL);
 					r->notify = 1;
 				}
 				else if (!strcmp(VAL_S(n2), "numeric"))
@@ -2039,12 +2039,12 @@ void lexer_destroy(lexer *l)
 void lexer_init(lexer *l, trealla *pl)
 {
 	memset(l, 0, sizeof(lexer));
-	sl_init(&l->symtab, 0, &strcmp, &free);
-	sl_init(&l->ns, 0, &strcmp, &free);
+	sl_init(&l->symtab, &strcmp, &free);
+	sl_init(&l->ns, &strcmp, &free);
 
 #ifndef ISO_ONLY
-	sl_init(&l->defines, 0, &strcmp, &free);
-	sl_init(&l->funs, 0, &strcmp, &free);
+	sl_init(&l->defines, &strcmp, &free);
+	sl_init(&l->funs, &strcmp, &free);
 	sl_set(&l->ns, strdup("lists"), NULL);
 #endif
 

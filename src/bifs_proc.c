@@ -1214,7 +1214,7 @@ static int bif_proc_lput_3(tpl_query *q)
 
 	if (!q->kvs) {
 		q->kvs = malloc(sizeof(skiplist));
-		sl_init(q->kvs, 0, &strcmp, &free);
+		sl_init(q->kvs, &strcmp, &free);
 	}
 	else if (sl_del(q->kvs, VAL_S(term1), (void **)&n))
 		term_heapcheck(n);
@@ -1250,7 +1250,7 @@ static int bif_proc_put_3(tpl_query *q)
 
 	if (!q->kvs) {
 		q->kvs = malloc(sizeof(skiplist));
-		sl_init(q->kvs, 0, &strcmp, &free);
+		sl_init(q->kvs, &strcmp, &free);
 	}
 	else if (sl_del(q->kvs, VAL_S(term1), (void **)&n))
 		term_heapcheck(n);
@@ -1274,7 +1274,7 @@ static int bif_proc_put_2(tpl_query *q)
 
 	if (!q->kvs) {
 		q->kvs = malloc(sizeof(skiplist));
-		sl_init(q->kvs, 0, &strcmp, &free);
+		sl_init(q->kvs, &strcmp, &free);
 	}
 	else if (sl_del(q->kvs, VAL_S(term1), (void **)&n))
 		term_heapcheck(n);
@@ -1444,7 +1444,7 @@ static int bif_proc_end_wait_0(tpl_query *q)
 static int bif_proc_wait_0(tpl_query *q)
 {
 	skiplist tmplist;
-	sl_init(&tmplist, 0, NULL, NULL);
+	sl_init(&tmplist, NULL, NULL);
 
 	while (!g_abort && !q->pl->halt && !q->pl->end_wait) {
 		if (!sl_count(&q->pl->idle)) {
