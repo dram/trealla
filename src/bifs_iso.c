@@ -453,7 +453,6 @@ static int bif_iso_call(tpl_query *q)
 	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
 	term1->flags |= FLAG_NOFOLLOW;
-	put_env(q, q->c.curr_frame + var->slot, term1, term1_ctx);
 	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
