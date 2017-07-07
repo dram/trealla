@@ -75,7 +75,7 @@ int sl_set(skiplist *d, const char *key, void *value)
 	int k;
 
 	for (k = d->level; k >= 0; k--) {
-		while ((q = p->forward[k]) && (d->compare(q->key, key) < 0))
+		while ((q = p->forward[k]) && (d->compare(q->key, key) <= 0))
 			p = q;
 
 		update[k] = p;
