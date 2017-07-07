@@ -1564,21 +1564,16 @@ trealla *trealla_create(const char *name)
 
 	trealla_make_rule(pl, "(A -> B ; _C) :- call(A), !, call(B).");
 	trealla_make_rule(pl, "(_A -> _B ; C) :- !, call(C).");
-
 	trealla_make_rule(pl, "(A -> B) :- call(A), !, call(B).");
-
 	trealla_make_rule(pl, "(A ; _B) :- call(A).");
 	trealla_make_rule(pl, "(_A ; B) :- call(B).");
-
 	trealla_make_rule(pl, "once(G) :- call(G), !.");
-
-	trealla_make_rule(pl, "not(G) :- call(G), !, fail.");
-	trealla_make_rule(pl, "not(_G) :- true.");
-
 	trealla_make_rule(pl, "\\+ G :- call(G), !, fail.");
 	trealla_make_rule(pl, "\\+ _G :- true.");
 
 #ifndef ISO_ONLY
+	trealla_make_rule(pl, "not(G) :- call(G), !, fail.");
+	trealla_make_rule(pl, "not(_G) :- true.");
 	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- nonvar(K), nonvar(V), assertz(?SYSTEMSTR(K,V),_).");

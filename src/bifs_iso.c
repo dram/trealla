@@ -1464,7 +1464,6 @@ static int bif_iso_read_term_3(tpl_query *q)
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_next_arg(q, &args);
-	stream *sp = term1->val_str;
 	char *line = NULL;
 
 	if (term3) {
@@ -1479,6 +1478,8 @@ static int bif_iso_read_term_3(tpl_query *q)
 	}
 
 #ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
 	if (is_socket(term1)) {
 		if (!session_readmsg((session *)sp->sptr, &line)) {
 			q->is_yielded = 1;
@@ -1707,6 +1708,7 @@ static int bif_iso_get_code_2(tpl_query *q)
 	node *term2 = get_int_or_var(term2);
 	int ch;
 
+#ifndef ISO_ONLY
 	if (is_socket(term1)) {
 		stream *sp = (stream *)term1->val_str;
 
@@ -1716,6 +1718,7 @@ static int bif_iso_get_code_2(tpl_query *q)
 		}
 	}
 	else
+#endif
 		ch = getc_utf8(get_input_stream(term1));
 
 	return unify_int(q, term2, q->latest_context, ch);
@@ -1742,6 +1745,7 @@ static int bif_iso_get_byte_2(tpl_query *q)
 	node *term2 = get_int_or_var(term2);
 	int ch;
 
+#ifndef ISO_ONLY
 	if (is_socket(term1)) {
 		stream *sp = (stream *)term1->val_str;
 		char c;
@@ -1754,6 +1758,7 @@ static int bif_iso_get_byte_2(tpl_query *q)
 		ch = c;
 	}
 	else
+#endif
 		ch = fgetc(get_input_stream(term1));
 
 	return unify_int(q, term2, q->latest_context, ch);
@@ -1793,6 +1798,7 @@ static int bif_iso_get_char_2(tpl_query *q)
 	node *term2 = get_atom_or_var(term2);
 	int ch;
 
+#ifndef ISO_ONLY
 	if (is_socket(term1)) {
 		stream *sp = (stream *)term1->val_str;
 
@@ -1802,6 +1808,7 @@ static int bif_iso_get_char_2(tpl_query *q)
 		}
 	}
 	else
+#endif
 		ch = getc_utf8(get_input_stream(term1));
 
 	if (ch == EOF)
@@ -7123,13 +7130,10 @@ void bifs_load_iso(void)
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
 	DEFINE_BIF("]-[", 1, bif_iso_negative);
 	DEFINE_BIF("]+[", 1, bif_iso_positive);
-	//DEFINE_BIF("once", 1 + 1, bif_iso_once);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);
 	DEFINE_BIF(",", 2, bif_iso_and);
-	//DEFINE_BIF(";", 2, bif_iso_or);
-	//DEFINE_BIF("->", 2, bif_iso_ifthen);
 	DEFINE_BIF("+", 2, bif_iso_add);
 	DEFINE_BIF("-", 2, bif_iso_subtract);
 	DEFINE_BIF("*", 2, bif_iso_multiply);

@@ -1194,6 +1194,8 @@ static int attach_ops(lexer *l, node *term, int depth)
 				n->val_i = neg ? -tmp->val_i : tmp->val_i;
 			else if (is_float(tmp))
 				n->val_f = neg ? -tmp->val_f : tmp->val_f;
+
+#ifndef ISO_ONLY
 			else if (is_bignum(tmp)) {
 				n->val_bn = tmp->val_bn;
 
@@ -1202,6 +1204,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 
 				tmp->val_bn = NULL;
 			}
+#endif
 
 			n->flags = tmp->flags;
 			term_heapcheck(tmp);
