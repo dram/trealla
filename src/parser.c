@@ -956,7 +956,7 @@ int dir_function(lexer *l, node *n)
 }
 #endif
 
-int dir_include(lexer *l, node *n)
+static int dir_include(lexer *l, node *n)
 {
 	node *term1 = n;
 
