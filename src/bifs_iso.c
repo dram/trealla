@@ -464,11 +464,14 @@ static int bif_iso_once(tpl_query *q)
 	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
 	node *s = clone_term(q, term1);
-	allocate_frame(q);
 	term_append(s, make_cut());
 	put_env(q, q->c.curr_frame + var->slot, s, term1_ctx);
 	term_heapcheck(s);
 	try_me_nochoice(q);
+
+	if (term1_ctx != -1)
+		q->c.curr_frame = term1_ctx;
+
 	begin_query(q, s);
 	return call(q);
 }
@@ -482,7 +485,10 @@ static int bif_iso_call(tpl_query *q)
 	put_env(q, q->c.curr_frame + var->slot, s, term1_ctx);
 	term_heapcheck(s);
 	try_me_nochoice(q);
-	q->c.curr_frame = term1_ctx;
+
+	if (term1_ctx != -1)
+		q->c.curr_frame = term1_ctx;
+
 	begin_query(q, s);
 	return call(q);
 }
