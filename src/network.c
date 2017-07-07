@@ -628,6 +628,8 @@ void session_clr_stash(session *s)
 {
 	if (s->stash)
 		sl_clear(s->stash, &free);
+
+	s->iter = NULL;
 }
 
 const char *session_get_key(session *s, const char *key)
