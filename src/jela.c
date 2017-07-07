@@ -209,6 +209,9 @@ static int proceed(tpl_query *q)
 		choice *c = &q->choices[q->c.prev_choice];
 		q->c.prev_choice = c->prev_choice;
 
+		if (c->curr_term->flags & FLAG_NOFOLLOW)
+			continue;
+
 		if (!c->nofollow)
 			q->c.curr_term = term_next(c->curr_term);
 
@@ -222,7 +225,7 @@ static int proceed(tpl_query *q)
 		q->c.frame_size = c->frame_size;
 		TRACE("proceed");
 
-		if (q->c.curr_term == NULL)
+		if (!q->c.curr_term)
 			continue;
 
 		break;
@@ -231,7 +234,7 @@ static int proceed(tpl_query *q)
 	// if (q->trace && q->c.curr_term)
 	//	trace(q, 0, 0);
 
-	return q->c.curr_term != NULL;
+	return q->c.curr_term ? 1 : 0;
 }
 
 static int follow(tpl_query *q)
@@ -239,7 +242,7 @@ static int follow(tpl_query *q)
 	if (q->c.curr_term->flags & FLAG_NOFOLLOW)
 		return proceed(q);
 
-	if ((q->c.curr_term = term_next(q->c.curr_term)) == NULL)
+	if (!(q->c.curr_term = term_next(q->c.curr_term)))
 		return proceed(q);
 
 	if (is_var(q->c.curr_term))

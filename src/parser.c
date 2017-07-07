@@ -2187,17 +2187,6 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			term->flags |= FLAG_NOARGS;
 		}
 
-		if (!l->quoted && !strcmp(l->tok, ")") && is_atom(term_first(term))) {
-			if (!strcmp(term_functor(term), "once")) {
-				node *tmp = make_and();
-				tmp->flags |= FLAG_HIDDEN;
-				term_append(term, tmp);
-				tmp = make_cut();
-				tmp->flags |= FLAG_HIDDEN;
-				term_append(term, tmp);
-			}
-		}
-
 		if (!l->quoted && (!strcmp(l->tok, "]") || !strcmp(l->tok, ")"))) {
 			if (term->flags & FLAG_CONSING) {
 				node *tmp = term_make();
@@ -2366,8 +2355,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 						n->flags &= ~FLAG_NOARGS;
 						n->cpos = tmp->cpos;
 
-						if (!strcmp(functor, "call") || !strcmp(functor, "once") ||
-							!strcmp(functor, "phrase") || !strcmp(functor, "bagof") ||
+						if (!strcmp(functor, "call") || !strcmp(functor, "phrase") || !strcmp(functor, "bagof") ||
 						    !strcmp(functor, "setof") || !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
 						    !strcmp(functor, "sys:write_file") || !strcmp(functor, "write_file") ||
 						    !strcmp(functor, "findnsols")) {

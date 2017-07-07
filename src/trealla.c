@@ -1570,6 +1570,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "(A ; _B) :- call(A).");
 	trealla_make_rule(pl, "(_A ; B) :- call(B).");
 
+	trealla_make_rule(pl, "once(G) :- call(G), !.");
+
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),_).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),R).");
