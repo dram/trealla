@@ -39,7 +39,7 @@ typedef uint64_t mask_t;
 
 #define MAX_MASK_SIZE (sizeof(mask_t) * 8)
 #define MAX_FRAME_SIZE (MAX_MASK_SIZE * NBR_MASKS)
-#define MAX_UOPS 100
+#define MAX_UOPS 1000
 
 #define TYPE_INTEGER (1ULL << 0)
 #define TYPE_FLOAT (1ULL << 1)
