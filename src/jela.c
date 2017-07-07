@@ -160,21 +160,29 @@ void allocate_frame(tpl_query *q)
 		}
 	}
 
-	q->c.mask1 = q->c.mask2 = 0;
+	for (int i = 0; i < NBR_MASKS; i++)
+		q->c.mask1[i] = q->c.mask2[i] = 0;
+
 	env *e = &q->envs[q->c.curr_frame];
 	mask_t bit = 1;
 
-	for (unsigned i = 0; i < q->c.frame_size; i++, e++) {
+	for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++, e++) {
 		if (!e->context)
-			q->c.mask1 |= bit;
+			q->c.mask1[j] |= bit;
 		else if (!e->term) {
 			env *e2 = e - e->binding;
 
 			if (!e2->context)
-				q->c.mask2 |= bit;
+				q->c.mask2[j] |= bit;
 		}
 
-		bit <<= 1;
+		if (++i == MAX_MASK_SIZE) {
+			j++;
+			i = 0;
+			bit = 1;
+		}
+		else
+			bit <<= 1;
 	}
 }
 
@@ -184,20 +192,26 @@ void reallocate_frame(tpl_query *q)
 	env *e = &q->envs[q->c.curr_frame];
 	mask_t bit = 1;
 
-	for (unsigned i = 0; i < q->c.frame_size; i++, e++) {
-		if ((q->c.mask1 & bit) && !(q->pins & bit)) {
+	for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++, e++) {
+		if ((q->c.mask1[j] & bit) && !(q->pins[j] & bit)) {
 			term_heapcheck(e->term);
 			e->term = NULL;
 			e->context = 0;
 		}
-		else if ((q->c.mask2 & bit) && !(q->pins & bit)) {
-			env *e = get_env(q, q->c.curr_frame + i);
+		else if ((q->c.mask2[j] & bit) && !(q->pins[j] & bit)) {
+			env *e = get_env(q, q->c.curr_frame + k);
 			term_heapcheck(e->term);
 			e->term = NULL;
 			e->context = 0;
 		}
 
-		bit <<= 1;
+		if (++i == MAX_MASK_SIZE) {
+			j++;
+			i = 0;
+			bit = 1;
+		}
+		else
+			bit <<= 1;
 	}
 
 	reclaim_trail(q);
@@ -215,8 +229,11 @@ static int proceed(tpl_query *q)
 		if (!c->nofollow)
 			q->c.curr_term = term_next(c->curr_term);
 
-		q->c.mask1 = c->mask1;
-		q->c.mask2 = c->mask2;
+		for (int i = 0; i < NBR_MASKS; i++) {
+			q->c.mask1[i] = c->mask1[i];
+			q->c.mask2[i] = c->mask2[i];
+		}
+
 		q->c.curr_match = c->curr_match;
 		q->curr_context = c->curr_frame;
 		q->c.idx_iter = c->idx_iter;

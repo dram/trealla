@@ -3801,7 +3801,7 @@ static int bif_iso_bagof(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_structure(term2);
 	node *term3 = get_term(term3);
-	unsigned isfree[MAX_FRAME_SIZE] = {0};
+	unsigned char isfree[MAX_FRAME_SIZE] = {0};
 	stream *sp;
 
 	skiplist vars;
@@ -3896,9 +3896,14 @@ static int bif_iso_bagof(tpl_query *q)
 			l = tmp;
 		}
 
-		for (unsigned i = 0; i < q->c.frame_size; i++) {
-			if (!isfree[i])
-				subq->pins |= 1 << i;
+		for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++) {
+			if (!isfree[k])
+				subq->pins[j] |= 1 << i;
+
+			if (++i == MAX_MASK_SIZE) {
+				j++;
+				i = 0;
+			}
 		}
 
 		ok = query_continue(subq);
@@ -4026,9 +4031,14 @@ static int bif_iso_setof(tpl_query *q)
 			l = tmp;
 		}
 
-		for (unsigned i = 0; i < q->c.frame_size; i++) {
-			if (!isfree[i])
-				subq->pins |= 1 << i;
+		for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++) {
+			if (!isfree[k])
+				subq->pins[j] |= 1 << i;
+
+			if (++i == MAX_MASK_SIZE) {
+				j++;
+				i = 0;
+			}
 		}
 
 		ok = query_continue(subq);

@@ -34,13 +34,11 @@ extern uint64_t g_choicepoints, g_heap_used, g_backtracks, g_executes, g_reexecu
 
 extern uint64_t g_busy;
 
-#if defined(__TINYC__) || defined(_WIN32) || defined(NO128)
 typedef uint64_t mask_t;
-#else
-typedef __uint128_t mask_t;
-#endif
+#define NBR_MASKS 2
 
-#define MAX_FRAME_SIZE (sizeof(mask_t) * 8)
+#define MAX_MASK_SIZE (sizeof(mask_t) * 8)
+#define MAX_FRAME_SIZE (MAX_MASK_SIZE * NBR_MASKS)
 #define MAX_UOPS 100
 
 #define TYPE_INTEGER (1ULL << 0)
@@ -256,7 +254,7 @@ typedef struct {
 	sbiter *idx_iter;
 	module *curr_db;
 	node *curr_term, *curr_match;
-	mask_t mask1, mask2;
+	mask_t mask1[NBR_MASKS], mask2[NBR_MASKS];
 	uint32_t env_point, trail_point, prev_choice, curr_frame;
 	uint8_t frame_size, trail_size;
 	uint8_t cut, nofollow;
@@ -290,7 +288,7 @@ struct tpl_query_ {
 	};
 
 	choice c;
-	mask_t pins;
+	mask_t pins[NBR_MASKS];
 	uint64_t started, elapsed, tmo_when_msecs;
 	uint32_t choices_used, choices_possible, choice_point;
 	uint32_t envs_used, envs_possible;
