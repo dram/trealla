@@ -112,31 +112,6 @@ node *make_quick_int(nbr_t v)
 	return make_int(v);
 }
 
-static int expand_frame(tpl_query *q, unsigned cnt)
-{
-	extern int grow_environment(tpl_query * q);
-
-	if (q->c.env_point != (q->c.curr_frame + q->c.frame_size)) {
-		printf("*** DO SOMETHING HERE\n");
-		QABORT(ABORT_OUTOFMEMORY);
-		return 0;
-	}
-
-	while ((q->c.env_point + cnt) >= q->envs_possible) {
-		if (!grow_environment(q)) {
-			QABORT(ABORT_OUTOFMEMORY);
-			return 0;
-		}
-	}
-
-	prepare_frame(q, cnt);
-	q->c.env_point += cnt;
-	//choice *c = &q->choices[q->choice_point];
-	//c->frame_size += cnt;
-	//c->env_point += cnt;
-	return 1;
-}
-
 static int collect_vars2(tpl_query *q, node *term, int depth)
 {
 	if (depth > MAX_UNIFY_DEPTH) {
@@ -274,7 +249,8 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	n->flags |= from->flags;
 
 	if (is_builtin(from))
-	n->bifptr = from->bifptr;
+		n->bifptr = from->bifptr;
+
 	n->frame_size = from->frame_size;
 	from = term_first(from);
 	int this_context = q->latest_context;
@@ -404,12 +380,6 @@ int bif_iso_cut(tpl_query *q)
 {
 	trust_me(q);
 	return 1;
-}
-
-int bif_xtra_cutfail(tpl_query *q)
-{
-	trust_me(q);
-	return 0;
 }
 
 static int bif_iso_repeat(tpl_query *q)
@@ -1387,14 +1357,6 @@ static int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, 
 	q->d = &vars;
 	int cnt = collect_vars(q, term);
 
-	if (cnt) {
-		expand_frame(q, cnt);
-		q->c.frame_size++;
-		//node *tmp = copy_term(q, term);
-		//term_heapcheck(term);
-		//save_term = term = tmp;
-	}
-
 	if (varlist) {
 		node *save_l = NULL;
 
@@ -2298,6 +2260,8 @@ static int bif_iso_current_output(tpl_query *q)
 
 static int bif_iso_copy_term(tpl_query *q)
 {
+	unsigned nbr = q->c.env_point - q->c.curr_frame;
+	printf("*** frame_size=%u, nbr=%u\n", q->c.frame_size, nbr);
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
@@ -2305,18 +2269,10 @@ static int bif_iso_copy_term(tpl_query *q)
 	skiplist vars;
 	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
-	int cnt = collect_vars(q, term1);
-	sl_clear(&vars, NULL);
-
-	if (cnt) {
-		if (!expand_frame(q, cnt))
-			return 0;
-	}
-
 	node *tmp = copy_term(q, term1);
-	sl_done(&vars, NULL);
 	q->d = NULL;
-	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? term1_ctx : -1);
+	sl_done(&vars, NULL);
+	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -3530,7 +3486,7 @@ static int bif_iso_univ(tpl_query *q)
 				first = 0;
 			}
 			else
-				term_append(s, clone_term(q, head));
+				term_append(s, copy_term(q, head));
 
 			node *tail = term_next(head);
 
@@ -3564,9 +3520,6 @@ static int bif_iso_functor(tpl_query *q)
 
 		if (v > 0) {
 			if (is_var(term1)) {
-				if (!expand_frame(q, v))
-					return 0;
-
 				node *s = make_compound();
 				term_append(s, clone_term(q, term2));
 
@@ -3678,11 +3631,6 @@ static int bif_iso_length(tpl_query *q)
 
 	node *l = make_list();
 	node *save_l = l;
-
-	if (!expand_frame(q, cnt)) {
-		term_heapcheck(save_l);
-		return 0;
-	}
 
 	for (int i = 0; i < cnt; i++) {
 		term_append(l, make_var(q));

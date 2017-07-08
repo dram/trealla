@@ -310,12 +310,14 @@ enum { HELLO, BYE, CMD, HTTP2 };
 
 extern funcs g_bifs[];
 extern size_t g_bifs_idx;
+
 extern const funcs *get_bifarity(lexer *l, const char *functor, int arity);
 extern const funcs *get_bif(lexer *l, const char *functor);
 extern void bifs_load_iso(void);
 extern char *url_decode(const char *src, char *dstbuf);
 extern const char *make_key(trealla *pl, char *dstbuf, node *term);
 extern void reset_arg(tpl_query *q, const node *term, unsigned frame);
+extern void is_expandable(lexer *l, const char *functor);
 
 #ifndef ISO_ONLY
 extern int configure_server(tpl_query *q, handler *h, node *term, int (*f)(session *, void *data), int *has_uncle);
@@ -594,7 +596,6 @@ extern int bif_iso_and(tpl_query *q);
 extern int bif_iso_or(tpl_query *q);
 extern int bif_iso_cut(tpl_query *q);
 extern int bif_iso_fail(tpl_query *q);
-extern int bif_xtra_cutfail(tpl_query *q);
 extern int bif_xtra_enter(tpl_query *q);
 extern int bif_iso_retract(tpl_query *q);
 extern int bif_iso_asserta(tpl_query *q);

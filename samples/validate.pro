@@ -1,12 +1,5 @@
 :-initialization(main).
 
-% This is just a bunch of conformance tests.
-% Hopefully more will get added over time.
-%
-%   swipl -q -l samples/validate.pro --traditional
-%   yap -q -l samples/validate.pro
-%   tpl -q -l samples/validate.pro
-
 main :- test1, test2, test3, test4a, test4b, test5a, test5b, test6a, test6b, test6c, test7,
 		test8, test9a, test9b, test9c, test10, test11a, test11b, test12, test13, test14,
 		test15a, test15b, test15c, test15d, test16a, test16b, test16c, test17, test18, test19,

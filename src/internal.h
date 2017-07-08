@@ -84,6 +84,7 @@ typedef uint64_t mask_t;
 #define FLAG_PASSTHRU (1ULL << 42)
 #define FLAG_NOOP (1ULL << 43)
 #define FLAG_SMALL (1ULL << 44)
+#define FLAG_EXPANDABLE (1ULL << 45)
 
 #define FLAG_DBS_STORAGE (1ULL << 50)
 #define FLAG_DBS_ASSERTA (1ULL << 51)
@@ -229,7 +230,7 @@ struct lexer_ {
 	char *init, *tok, quote, last;
 	uint32_t cpos;
 	int depth, numeric, line_nbr, was_atom, was_paren, is_paren, error, finalized;
-	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, vars;
+	int fact, dcg, dcg_passthru, consult, quoted, was_atomic, vars, expandable;
 	int internal, comment, was_op, is_op, was_op2, is_op2, is_spaced, was_spaced;
 	int flag_unknown, flag_character_escapes, flag_char_conversion;
 	int flag_debug, flag_double_quotes;

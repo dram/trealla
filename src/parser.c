@@ -391,14 +391,6 @@ node *make_cut(void)
 	return n;
 }
 
-node *make_cutfail(void)
-{
-	node *n = make_const_atom("!fail");
-	n->flags |= FLAG_BUILTIN;
-	n->bifptr = bif_xtra_cutfail;
-	return n;
-}
-
 char *dict(module *db, const char *key)
 {
 	char *value = NULL;
@@ -1035,6 +1027,25 @@ static int directive(lexer *l, node *n)
 	return 1;
 }
 
+void is_expandable(lexer *l, const char *functor)
+{
+	static const char *s_expandable[] =
+	{
+		"functor",
+		"copy_term",
+		"read_term",
+		"length",
+		"=..",
+		NULL
+	};
+
+	for (int i = 0; !l->expandable && s_expandable[i]; i++) {
+		if (!strcmp(s_expandable[i], functor)) {
+			l->expandable = 1;
+		}
+	}
+}
+
 // This basically removes the effect of redundant parenthesis
 // by promoting the inner structure of 'n' into 'term'.
 
@@ -1305,10 +1316,16 @@ static int attach_ops(lexer *l, node *term, int depth)
 			;
 	}
 
+	// ???????
+
 	if (is_builtin(term)) {
 		const char *functor = VAL_S(term_first(term));
 		int arity = term_arity(term);
-		term->bifptr = get_bifarity(l, functor, arity)->bifptr;
+
+		if ((term->bifptr = get_bifarity(l, functor, arity)->bifptr) != NULL) {
+			term->flags |= FLAG_BUILTIN;
+			is_expandable(l, functor);
+		}
 	}
 
 	return 0;
@@ -2135,6 +2152,9 @@ static void lexer_finalize(lexer *l)
 		n->frame_size = l->vars;
 		n->flags |= FLAG_CLAUSE;
 
+		if (l->expandable)
+			n->flags |= FLAG_EXPANDABLE;
+
 		if (l->fact)
 			n->flags |= FLAG_FACT;
 
@@ -2149,6 +2169,7 @@ static void lexer_finalize(lexer *l)
 	}
 
 	sl_clear(&l->symtab, NULL);
+	l->expandable = 0;
 	l->vars = 0;
 	l->r = NULL;
 }
@@ -2351,6 +2372,8 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 						n->flags &= ~FLAG_NOARGS;
 						n->cpos = tmp->cpos;
 
+						is_expandable(l, functor);
+
 						if (!strcmp(functor, "call") || !strcmp(functor, "phrase") || !strcmp(functor, "bagof") ||
 						    !strcmp(functor, "setof") || !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
 						    !strcmp(functor, "sys:write_file") || !strcmp(functor, "write_file") ||
@@ -2538,8 +2561,10 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 #endif
 
 			if (is_op(l->db, l->tok)) {
-				if ((n->bifptr = get_bif(l, l->tok)->bifptr) != NULL)
+				if ((n->bifptr = get_bif(l, l->tok)->bifptr) != NULL) {
 					n->flags |= FLAG_BUILTIN;
+					is_expandable(l, l->tok);
+				}
 			}
 
 			if (l->quoted && !*l->tok) {

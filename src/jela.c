@@ -338,12 +338,12 @@ void trust_me(tpl_query *q)
 #endif
 }
 
-static void execute_term(tpl_query *q, node *term, unsigned frame_size)
+static void execute_term(tpl_query *q, node *term, unsigned frame_size, unsigned alloc_size)
 {
 	TRACE("execute_term");
 	q->curr_context = q->c.env_point;
 	q->c.curr_frame = q->c.env_point;
-	q->c.env_point += frame_size;
+	q->c.env_point += alloc_size;
 	q->c.frame_size = frame_size;
 	q->c.curr_term = term;
 	q->is_det = 1;
@@ -353,7 +353,7 @@ static void execute_term(tpl_query *q, node *term, unsigned frame_size)
 #endif
 }
 
-static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
+static void reexecute_term(tpl_query *q, node *term, unsigned frame_size, unsigned alloc_size)
 {
 	TRACE("reexecute_term");
 	env *to = &q->envs[q->c.curr_frame];
@@ -380,7 +380,7 @@ static void reexecute_term(tpl_query *q, node *term, unsigned frame_size)
 		from->term = NULL;
 	}
 
-	q->c.env_point = q->c.curr_frame + frame_size;
+	q->c.env_point = q->c.curr_frame + alloc_size;
 	q->c.frame_size = frame_size;
 	q->c.curr_term = term;
 	q->is_det = 1;
@@ -777,7 +777,16 @@ int match(tpl_query *q)
 
 		q->unify_depth = q->fail_arg = 0;
 		const unsigned frame_size = q->c.curr_match->frame_size;
-		prepare_frame(q, frame_size);
+		unsigned alloc_size;
+
+		if (q->c.curr_match->flags & FLAG_EXPANDABLE) {
+			//printf("*** HERE\n");
+			alloc_size = MAX_FRAME_SIZE;				// HACK
+		}
+		else
+			alloc_size = frame_size;
+
+		prepare_frame(q, alloc_size);
 
 		DEBUGPRINT
 		{
@@ -830,13 +839,13 @@ int match(tpl_query *q)
 			int is_tco = is_tailrecursive(q->c.curr_term) && !q->envs[q->c.curr_frame].choices;
 
 			if ((q->optimize > 2) && is_tco)
-				reexecute_term(q, head, frame_size);
+				reexecute_term(q, head, frame_size, alloc_size);
 			else
-				execute_term(q, head, frame_size);
+				execute_term(q, head, frame_size, alloc_size);
 		}
 		else {
 			try_me(q);
-			execute_term(q, head, frame_size);
+			execute_term(q, head, frame_size, alloc_size);
 		}
 
 		return 1;
