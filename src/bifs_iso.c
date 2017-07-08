@@ -3475,30 +3475,19 @@ static int bif_iso_univ(tpl_query *q)
 
 		node *s = make_compound();
 		node *l = term2;
-		int first = 1;
 
 		while (is_list(l)) {
+			unsigned this_context = q->latest_context;
 			node *head = term_firstarg(l);
-
-			if (first) { // should have a functor
-				node *from = subst(q, head, term2_ctx);
-				term_append(s, clone_term(q, from));
-				first = 0;
-			}
-			else
-				term_append(s, copy_term(q, head));
-
+			node *from = subst(q, head, this_context);
+			term_append(s, copy_term(q, from));
 			node *tail = term_next(head);
-
-			if (is_var(tail))
-				tail = subst(q, tail, term2_ctx);
-
-			l = tail;
+			l = subst(q, tail, this_context);
 		}
 
 		node *term = !term_arity(s) ? term_first(s) : s;
 		xref_clause(q->lex, term);
-		put_env(q, q->c.curr_frame + term1->slot, term, term2_ctx);
+		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
 		term_heapcheck(s);
 		return 1;
 	}
