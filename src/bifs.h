@@ -465,7 +465,6 @@ inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 #define is_postfix(db, f) OP_POSTFIX(get_op((db), (f), 0)->spec)
 
 #define clone_term(q, n) copy_term2(q, n, 1, 0) // make exact copy
-#define copy_term(q, n) copy_term2(q, n, 0, 0)  // make fresh vars
 
 #define FUNCTOR_LEN 1000               // in UTF-8 characters
 #define FUNCTOR_SIZE (FUNCTOR_LEN * 4) // in encoded bytes

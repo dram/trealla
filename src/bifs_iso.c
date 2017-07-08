@@ -223,8 +223,8 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 			return copy_var(from);
 
 		if (!q->d) {
-			QABORT(ABORT_INVALIDARGMISSING);
-			return 0;
+			QABORT2(ABORT_INVALIDARGMISSING, "COPY TERM");
+			return NULL;
 		}
 
 		node *tmp;
@@ -258,11 +258,26 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	while (from) {
 		node *from2 = subst(q, from, this_context);
 		node *tmp = copy_term2(q, from2, clone, depth + 1);
+
+		if (!tmp)
+			break;
+
 		term_append(n, tmp);
 		from = term_next(from);
 	}
 
 	return n;
+}
+
+static node *copy_term(tpl_query *q, node *n)
+{
+	skiplist vars;
+	sl_init(&vars, NULL, NULL);
+	q->d = &vars;
+	node *tmp = copy_term2(q, n, 0, 0);
+	sl_done(&vars, NULL);
+	q->d = NULL;
+	return tmp;
 }
 
 const funcs *get_bif(lexer *l, const char *functor)
@@ -2260,18 +2275,11 @@ static int bif_iso_current_output(tpl_query *q)
 
 static int bif_iso_copy_term(tpl_query *q)
 {
-	//unsigned nbr = q->c.env_point - q->c.curr_frame;
-	//printf("*** frame_size=%u, nbr=%u\n", q->c.frame_size, nbr);
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
 	q->latest_context = term1_ctx;
-	skiplist vars;
-	sl_init(&vars, NULL, NULL);
-	q->d = &vars;
 	node *tmp = copy_term(q, term1);
-	q->d = NULL;
-	sl_done(&vars, NULL);
 	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
 	term_heapcheck(tmp);
 	return 1;
@@ -3473,13 +3481,12 @@ static int bif_iso_univ(tpl_query *q)
 			}
 		}
 
-		skiplist vars;
-		sl_init(&vars, NULL, NULL);
-		q->d = &vars;
-		term2 = copy_term(q, term2);
-		sl_done(&vars, NULL);
-		q->d = NULL;
+		// A var loses context when you copy it out of a list, we are creating
+		// new vars in the local context. Ideally they should be bound back to
+		// their origin. We are not doing that yet as it has not been needed,
+		// but I expect it soon will be...
 
+		term2 = copy_term(q, term2);
 		node *s = make_compound();
 		node *l = term2;
 
