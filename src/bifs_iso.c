@@ -2260,8 +2260,8 @@ static int bif_iso_current_output(tpl_query *q)
 
 static int bif_iso_copy_term(tpl_query *q)
 {
-	unsigned nbr = q->c.env_point - q->c.curr_frame;
-	printf("*** frame_size=%u, nbr=%u\n", q->c.frame_size, nbr);
+	//unsigned nbr = q->c.env_point - q->c.curr_frame;
+	//printf("*** frame_size=%u, nbr=%u\n", q->c.frame_size, nbr);
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
@@ -3473,18 +3473,23 @@ static int bif_iso_univ(tpl_query *q)
 			}
 		}
 
+		skiplist vars;
+		sl_init(&vars, NULL, NULL);
+		q->d = &vars;
+		term2 = copy_term(q, term2);
+		sl_done(&vars, NULL);
+		q->d = NULL;
+
 		node *s = make_compound();
 		node *l = term2;
 
 		while (is_list(l)) {
-			unsigned this_context = q->latest_context;
 			node *head = term_firstarg(l);
-			node *from = subst(q, head, this_context);
-			term_append(s, copy_term(q, from));
-			node *tail = term_next(head);
-			l = subst(q, tail, this_context);
+			term_append(s, clone_term(q, head));
+			l = term_next(head);
 		}
 
+		term_heapcheck(term2);
 		node *term = !term_arity(s) ? term_first(s) : s;
 		xref_clause(q->lex, term);
 		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
