@@ -3506,9 +3506,7 @@ static int bif_iso_univ(tpl_query *q)
 			if (is_var(from) /*&& (q->latest_context != q->c.curr_frame)*/) {
 				node *tmp = copy_term(q, from);
 				term_append(s, tmp);
-
-				if (is_var(tmp))
-					bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
+				bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
 			}
 			else
 				term_append(s, clone_term(q, from));
