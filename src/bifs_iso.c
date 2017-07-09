@@ -205,7 +205,7 @@ static node *copy_var(node *from)
 	return n;
 }
 
-static node *copy_term2(tpl_query *q, node *from, int notdeep, int depth)
+static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 {
 	if (depth > (1000*1000)) {
 		QABORT2(ABORT_MAXDEPTH, "COPY_TERM");
@@ -219,7 +219,7 @@ static node *copy_term2(tpl_query *q, node *from, int notdeep, int depth)
 		return copy_atom(from);
 
 	if (is_var(from)) {
-		if (notdeep)
+		if (!deep)
 			return copy_var(from);
 
 		if (!q->d) {
@@ -258,7 +258,7 @@ static node *copy_term2(tpl_query *q, node *from, int notdeep, int depth)
 
 	while (from) {
 		node *from2 = subst(q, from, this_context);
-		node *tmp = copy_term2(q, from2, notdeep, depth + 1);
+		node *tmp = copy_term2(q, from2, deep, depth + 1);
 
 		if (!tmp)
 			break;
@@ -273,12 +273,12 @@ static node *copy_term2(tpl_query *q, node *from, int notdeep, int depth)
 static node *deep_copy_term(tpl_query *q, node *n)
 {
 	if (q->d)
-		return copy_term2(q, n, 0, 0);
+		return copy_term2(q, n, 1, 0);
 
 	skiplist vars;
 	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
-	node *tmp = copy_term2(q, n, 0, 0);
+	node *tmp = copy_term2(q, n, 1, 0);
 	sl_done(&vars, NULL);
 	q->d = NULL;
 	return tmp;
@@ -286,7 +286,7 @@ static node *deep_copy_term(tpl_query *q, node *n)
 
 node *copy_term(tpl_query *q, node *n)
 {
-	return copy_term2(q, n, 1, 0);
+	return copy_term2(q, n, 0, 0);
 }
 
 const funcs *get_bif(lexer *l, const char *functor)
