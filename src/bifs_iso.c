@@ -231,14 +231,12 @@ static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 		node *tmp;
 
 		if (sl_get(q->d, (char *)e, (void **)&tmp)) {
-			tmp = copy_var(tmp);
-			bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
-			return tmp;
+			return copy_var(tmp);
 		}
 
 		sl_set(q->d, (char *)e, tmp = make_var(q));
 		tmp->val_s = VAL_S(from);
-			bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
+		bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
 		return tmp;
 	}
 
@@ -257,6 +255,8 @@ static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	n->frame_size = from->frame_size;
 	from = term_first(from);
 	int this_context = q->latest_context;
+
+	// FIXME: need special list copy?
 
 	while (from) {
 		node *from2 = subst(q, from, this_context);
