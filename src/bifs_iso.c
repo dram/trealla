@@ -2289,9 +2289,9 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *term2 = get_var(term2);
 	q->latest_context = term1_ctx;
 	node *tmp = copy_term(q, term1);
-	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
+	int ok = unify(q, term1, term1_ctx, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
 	term_heapcheck(tmp);
-	return 1;
+	return ok;
 }
 
 static void rebase(lexer *l, node *term)
