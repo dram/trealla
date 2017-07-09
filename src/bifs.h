@@ -464,8 +464,6 @@ inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 #define is_prefix(db, f) OP_PREFIX(get_op((db), (f), 0)->spec)
 #define is_postfix(db, f) OP_POSTFIX(get_op((db), (f), 0)->spec)
 
-#define clone_term(q, n) copy_term2(q, n, 1, 0) // make exact copy
-
 #define FUNCTOR_LEN 1000               // in UTF-8 characters
 #define FUNCTOR_SIZE (FUNCTOR_LEN * 4) // in encoded bytes
 #define KEY_SIZE (FUNCTOR_SIZE + 100)
@@ -521,7 +519,8 @@ inline static void term_heapcheck(node *n)
 
 extern void term_destroy(node *n);
 extern void trace(tpl_query *q, int fail, int leave);
-extern node *copy_term2(tpl_query *q, node *from, int clone, int depth);
+extern node *clone_term(tpl_query *q, node *from);
+extern node *copy_term(tpl_query *q, node *from);
 extern uint64_t gettimeofday_usec(void);
 
 extern void attach_vars(lexer *l, node *var);

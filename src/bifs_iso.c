@@ -205,7 +205,7 @@ static node *copy_var(node *from)
 	return n;
 }
 
-node *copy_term2(tpl_query *q, node *from, int clone, int depth)
+static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 {
 	if (depth > (1000*1000)) {
 		QABORT2(ABORT_MAXDEPTH, "COPY_TERM");
@@ -228,9 +228,10 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 		}
 
 		node *tmp;
+		const env *e = &q->envs[q->latest_context + from->slot];
 
-		if (!sl_get(q->d, (char *)(size_t)from->slot, (void **)&tmp)) {
-			sl_set(q->d, (char *)(size_t)from->slot, tmp = make_var(q));
+		if (!sl_get(q->d, (char *)e, (void **)&tmp)) {
+			sl_set(q->d, (char *)e, tmp = make_var(q));
 			tmp->val_s = VAL_S(from);
 		}
 		else
@@ -269,8 +270,11 @@ node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	return n;
 }
 
-static node *copy_term(tpl_query *q, node *n)
+node *copy_term(tpl_query *q, node *n)
 {
+	if (q->d)
+		return copy_term2(q, n, 0, 0);
+
 	skiplist vars;
 	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
@@ -278,6 +282,11 @@ static node *copy_term(tpl_query *q, node *n)
 	sl_done(&vars, NULL);
 	q->d = NULL;
 	return tmp;
+}
+
+node *clone_term(tpl_query *q, node *n)
+{
+	return copy_term2(q, n, 1, 0);
 }
 
 const funcs *get_bif(lexer *l, const char *functor)
@@ -3481,22 +3490,39 @@ static int bif_iso_univ(tpl_query *q)
 			}
 		}
 
-		// A var loses context when you copy it out of a list, we are creating
-		// new vars in the local context. Ideally they should be bound back to
-		// their origin. We are not doing that yet as it has not been needed,
-		// but I expect it soon will be...
+		// A var loses context when you copy it out of a list, and we are creating
+		// new vars in the local context. So they should be bound their origin.
 
-		term2 = copy_term(q, term2);
+		skiplist vars;
+		sl_init(&vars, NULL, NULL);
+		q->d = &vars;
+
 		node *s = make_compound();
 		node *l = term2;
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			term_append(s, clone_term(q, head));
-			l = term_next(head);
+			unsigned this_context = q->latest_context;
+			node *from = subst(q, head, this_context);
+			node *tmp;
+
+			if (q->latest_context != q->c.curr_frame) {
+				term_append(s, tmp = copy_term(q, from));
+
+				if (is_var(tmp)) {
+					bind_vars(q, this_context + from->slot, q->c.curr_frame + tmp->slot);
+				}
+			}
+			else
+				term_append(s, tmp = clone_term(q, from));
+
+			node *tail = term_next(head);
+			l = subst(q, tail, this_context);
 		}
 
-		term_heapcheck(term2);
+		sl_done(&vars, NULL);
+		q->d = NULL;
+
 		node *term = !term_arity(s) ? term_first(s) : s;
 		xref_clause(q->lex, term);
 		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
