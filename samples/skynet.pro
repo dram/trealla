@@ -1,9 +1,11 @@
 % Skynet - see https://github.com/atemerev/skynet
 
+:-initialization(main).
 :-using([proc]).
 
-start :- run_skynet(1000000).
-test :- run_skynet(100).
+main :-
+	run_skynet(1000000),
+	halt.
 
 run_skynet(Size) :-
 	fork, !,
