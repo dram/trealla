@@ -428,7 +428,7 @@ inline static node *subst(tpl_query *q, node *term, unsigned frame)
 		return e->term;
 	}
 
-	q->latest_context = frame /*- e->binding*/;
+	q->latest_context = frame;
 	return term;
 }
 
