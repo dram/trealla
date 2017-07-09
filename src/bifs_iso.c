@@ -3519,7 +3519,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		node *term = !term_arity(s) ? term_first(s) : s;
-		//xref_clause(q->lex, term);
+		xref_clause(q->lex, term);
 		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
 		term_heapcheck(new_term2);
 		term_heapcheck(s);
