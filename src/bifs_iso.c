@@ -3506,14 +3506,15 @@ static int bif_iso_univ(tpl_query *q)
 			unsigned this_context = q->latest_context;
 			node *from = subst(q, head, this_context);
 
-			if (is_var(from) && (q->latest_context != -1) /*&& (q->latest_context != q->c.curr_frame)*/) {
-				node *tmp = copy_term(q, from);
-				term_append(s, tmp);
-				bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
-			}
-			else
-				term_append(s, clone_term(q, from));
+			if (q->latest_context == -1)
+				q->latest_context = q->c.curr_frame;
 
+			node *tmp = copy_term(q, from);
+
+			if (is_var(from))
+				bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
+
+			term_append(s, tmp);
 			node *tail = term_next(head);
 			l = subst(q, tail, this_context);
 		}
