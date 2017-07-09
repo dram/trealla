@@ -2289,7 +2289,7 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *term2 = get_var(term2);
 	q->latest_context = term1_ctx;
 	node *tmp = copy_term(q, term1);
-	int ok = unify(q, term1, term1_ctx, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
+	int ok = unify(q, term1, term1_ctx, tmp, term2_ctx);
 	term_heapcheck(tmp);
 	return ok;
 }
