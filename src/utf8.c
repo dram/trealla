@@ -6,6 +6,8 @@
 #include <unistd.h>
 #endif
 
+#include "utf8.h"
+
 size_t strlen_utf8(const char *s)
 {
 	size_t cnt = 0;
@@ -119,6 +121,12 @@ int put_char_utf8(char *dst, int ch)
 	int len = put_char_bare_utf8(dst, ch);
 	dst[len] = '\0';
 	return len;
+}
+
+int peek_char_utf8(const char *_src)
+{
+	const char *src = _src;
+	return get_char_utf8(&src);
 }
 
 int get_char_utf8(const char **_src)
