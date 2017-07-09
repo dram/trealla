@@ -227,16 +227,14 @@ static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 			return NULL;
 		}
 
-		node *tmp;
 		const env *e = &q->envs[q->latest_context + from->slot];
+		node *tmp;
 
-		if (!sl_get(q->d, (char *)e, (void **)&tmp)) {
-			sl_set(q->d, (char *)e, tmp = make_var(q));
-			tmp->val_s = VAL_S(from);
-		}
-		else
-			tmp = copy_var(tmp);
+		if (sl_get(q->d, (char *)e, (void **)&tmp))
+			return copy_var(tmp);
 
+		sl_set(q->d, (char *)e, tmp = make_var(q));
+		tmp->val_s = VAL_S(from);
 		return tmp;
 	}
 
@@ -3504,17 +3502,16 @@ static int bif_iso_univ(tpl_query *q)
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
 			node *from = subst(q, head, this_context);
-			node *tmp;
 
-			if (q->latest_context != q->c.curr_frame) {
-				term_append(s, tmp = copy_term(q, from));
+			if (is_var(from) /*&& (q->latest_context != q->c.curr_frame)*/) {
+				node *tmp = copy_term(q, from);
+				term_append(s, tmp);
 
-				if (is_var(tmp)) {
-					bind_vars(q, this_context + from->slot, q->c.curr_frame + tmp->slot);
-				}
+				if (is_var(tmp))
+					bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
 			}
 			else
-				term_append(s, tmp = clone_term(q, from));
+				term_append(s, clone_term(q, from));
 
 			node *tail = term_next(head);
 			l = subst(q, tail, this_context);
