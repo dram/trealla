@@ -230,11 +230,15 @@ static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 		const env *e = &q->envs[q->latest_context + from->slot];
 		node *tmp;
 
-		if (sl_get(q->d, (char *)e, (void **)&tmp))
-			return copy_var(tmp);
+		if (sl_get(q->d, (char *)e, (void **)&tmp)) {
+			tmp = copy_var(tmp);
+			bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
+			return tmp;
+		}
 
 		sl_set(q->d, (char *)e, tmp = make_var(q));
 		tmp->val_s = VAL_S(from);
+			bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
 		return tmp;
 	}
 
@@ -3510,10 +3514,6 @@ static int bif_iso_univ(tpl_query *q)
 				q->latest_context = q->c.curr_frame;
 
 			node *tmp = copy_term(q, from);
-
-			if (is_var(from))
-				bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
-
 			term_append(s, tmp);
 			node *tail = term_next(head);
 			l = subst(q, tail, this_context);
