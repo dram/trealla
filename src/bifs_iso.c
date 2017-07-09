@@ -270,7 +270,7 @@ static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	return n;
 }
 
-node *copy_term(tpl_query *q, node *n)
+static node *copy_term(tpl_query *q, node *n)
 {
 	if (q->d)
 		return copy_term2(q, n, 0, 0);
@@ -2288,7 +2288,7 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
 	q->latest_context = term1_ctx;
-	node *tmp = copy_term(q, term1);
+	node *tmp = clone_term(q, term1);
 	put_env(q, q->c.curr_frame + term2->slot, tmp, is_compound(tmp) ? q->c.curr_frame : -1);
 	term_heapcheck(tmp);
 	return 1;

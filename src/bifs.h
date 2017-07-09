@@ -520,7 +520,6 @@ inline static void term_heapcheck(node *n)
 extern void term_destroy(node *n);
 extern void trace(tpl_query *q, int fail, int leave);
 extern node *clone_term(tpl_query *q, node *from);
-extern node *copy_term(tpl_query *q, node *from);
 extern uint64_t gettimeofday_usec(void);
 
 extern void attach_vars(lexer *l, node *var);
