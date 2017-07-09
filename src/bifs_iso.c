@@ -3486,6 +3486,8 @@ static int bif_iso_univ(tpl_query *q)
 				QABORT(ABORT_INVALIDARGNOTGROUNDED);
 				return 0;
 			}
+
+			q->latest_context = term2_ctx;
 		}
 
 		// A var loses context when you copy it out of a list, and we are creating
@@ -3495,7 +3497,7 @@ static int bif_iso_univ(tpl_query *q)
 		sl_init(&vars, NULL, NULL);
 		q->d = &vars;
 
-		unsigned save_context = q->latest_context = term2_ctx;
+		unsigned save_context = q->latest_context;
 		node *s = make_compound();
 		node *l = term2;
 
