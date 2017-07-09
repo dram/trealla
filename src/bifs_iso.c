@@ -3495,6 +3495,7 @@ static int bif_iso_univ(tpl_query *q)
 		sl_init(&vars, NULL, NULL);
 		q->d = &vars;
 
+		unsigned save_context = q->latest_context = term2_ctx;
 		node *s = make_compound();
 		node *l = term2;
 
@@ -3503,10 +3504,10 @@ static int bif_iso_univ(tpl_query *q)
 			unsigned this_context = q->latest_context;
 			node *from = subst(q, head, this_context);
 
-			if (is_var(from) /*&& (q->latest_context != q->c.curr_frame)*/) {
+			if (is_var(from) && (this_context != -1) /*&& (q->latest_context != q->c.curr_frame)*/) {
 				node *tmp = copy_term(q, from);
 				term_append(s, tmp);
-				bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
+				bind_vars(q, this_context + from->slot, q->c.curr_frame + tmp->slot);
 			}
 			else
 				term_append(s, clone_term(q, from));
@@ -3522,6 +3523,7 @@ static int bif_iso_univ(tpl_query *q)
 		xref_clause(q->lex, term);
 		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
 		term_heapcheck(s);
+		q->latest_context = save_context;
 		return 1;
 	}
 

@@ -24,6 +24,8 @@
 extern atomic int64_t g_allocs;
 int g_force_unbounded = 0;
 
+#define USE_SMALL 1
+
 const char *g_escapes = "\e\a\f\b\t\v\r\n";
 const char *g_anti_escapes = "eafbtvrn";
 
@@ -308,7 +310,7 @@ node *make_atom(char *s)
 {
 	node *n = make_basic_atom(s);
 
-	if (strlen(s) < sizeof(n->val_ch)) {
+	if ((strlen(s) < sizeof(n->val_ch)) && USE_SMALL) {
 		n->flags |= FLAG_CONST | FLAG_SMALL;
 		strcpy(n->val_ch, s);
 		free(s);
@@ -2573,7 +2575,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				l->tok = (char *)"";
 			}
 
-			if (*l->tok && !is_const(n) && (strlen(l->tok) < sizeof(n->val_ch)) && !strchr(l->tok, ':')) {
+			if (*l->tok && !is_const(n) && (strlen(l->tok) < sizeof(n->val_ch)) && USE_SMALL && !strchr(l->tok, ':')) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
 				strcpy(n->val_ch, l->tok);
 				free(l->tok);
