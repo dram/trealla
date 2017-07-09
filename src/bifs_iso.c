@@ -236,7 +236,6 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 
 		sl_set(q->d, (char *)e, tmp = make_var(q));
 		tmp->val_s = VAL_S(from);
-		bind_vars(q, q->latest_context + from->slot, q->c.curr_frame + tmp->slot);
 		return tmp;
 	}
 
@@ -3495,13 +3494,16 @@ static int bif_iso_univ(tpl_query *q)
 		// A var loses context when you copy it out of a list, and we are creating
 		// new vars in the local context. So they should be bound their origin.
 
-		skiplist vars;
-		sl_init(&vars, NULL, NULL);
-		q->d = &vars;
+		node *new_term2 = deep_copy_term(q, term2);
+
+		if (!unify(q, term2, term2_ctx, new_term2, q->c.curr_frame)) {
+			term_heapcheck(new_term2);
+			return 0;
+		}
 
 		unsigned save_context = q->latest_context;
 		node *s = make_compound();
-		node *l = term2;
+		node *l = new_term2;
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
@@ -3511,18 +3513,15 @@ static int bif_iso_univ(tpl_query *q)
 			if (q->latest_context == -1)
 				q->latest_context = q->c.curr_frame;
 
-			node *tmp = deep_copy_term(q, from);
-			term_append(s, tmp);
+			term_append(s, copy_term(q, from));
 			node *tail = term_next(head);
 			l = subst(q, tail, this_context);
 		}
 
-		sl_done(&vars, NULL);
-		q->d = NULL;
-
 		node *term = !term_arity(s) ? term_first(s) : s;
-		xref_clause(q->lex, term);
+		//xref_clause(q->lex, term);
 		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
+		term_heapcheck(new_term2);
 		term_heapcheck(s);
 		q->latest_context = save_context;
 		return 1;
