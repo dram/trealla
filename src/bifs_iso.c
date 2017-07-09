@@ -174,21 +174,21 @@ static node *copy_atom(node *from)
 	node *n = term_make();
 	n->flags |= from->flags;
 
-	if (from->flags & FLAG_BLOB) {
+	if (is_blob(from)) {
 		n->val_s = (char *)malloc(from->val_len + 1);
 		memcpy(n->val_s, from->val_s, from->val_len);
 		n->val_len = from->val_len;
 		n->val_s[n->val_len] = '\0';
 		n->flags &= ~FLAG_CONST;
 	}
-	else if (from->flags & FLAG_SMALL)
+	else if (is_small(from))
 		strcpy(n->val_ch, from->val_ch);
-	else if (from->flags & FLAG_CONST)
+	else if (is_const(from))
 		n->val_s = from->val_s;
 	else
 		n->val_s = strdup(from->val_s);
 
-	if (n->flags & FLAG_BUILTIN)
+	if (is_builtin(n))
 		n->bifptr = from->bifptr;
 	else
 		n->match = from->match;
@@ -246,7 +246,7 @@ static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	}
 
 	node *n = make_compound();
-	n->cpos = from->cpos;
+	//n->cpos = from->cpos;
 	n->flags |= from->flags;
 
 	if (is_builtin(from))
@@ -255,8 +255,6 @@ static node *copy_term2(tpl_query *q, node *from, int clone, int depth)
 	n->frame_size = from->frame_size;
 	from = term_first(from);
 	int this_context = q->latest_context;
-
-	// FIXME: need special list copy?
 
 	while (from) {
 		node *from2 = subst(q, from, this_context);
