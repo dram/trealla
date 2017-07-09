@@ -134,6 +134,6 @@ src/trealla.o: src/trealla.c src/trealla.h src/bifs.h src/internal.h \
  src/utf8.h src/history.h src/jela.h src/uuid.h
 src/uncle.o: src/uncle.c src/jsonq.h src/network.h src/thread.h \
  src/skipbuck.h src/uncle.h
-src/utf8.o: src/utf8.c
+src/utf8.o: src/utf8.c src/utf8.h
 src/uuid.o: src/uuid.c src/uuid.h
 src/xmlq.o: src/xmlq.c src/xmlq.h
