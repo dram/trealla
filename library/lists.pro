@@ -1,5 +1,6 @@
 :-module(lists).
 :-export([member/2]).
+:-export([memberchk/2]).
 :-export([select/3]).
 :-export([subtract/3]).
 :-export([union/3]).
@@ -13,6 +14,8 @@
 member(X,X) :- var(X), !, fail.
 member(X,[X|_]).
 member(X,[_|T]) :- member(X,T).
+
+memberchk(T,L) :- once(member(T,L)).
 
 select(X,[X|T],T).
 select(X,[H|T],[H|Rest]) :- select(X,T,Rest).
