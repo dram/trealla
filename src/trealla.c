@@ -524,7 +524,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 	const char *src = strchr(functor, ':');
 	rule *r = NULL;
 
-	if (isalpha_utf8(peek_char_utf8(functor)) && src) {
+	if (src && isalpha_utf8(peek_char_utf8(functor))) {
 		char tmpbuf2[FUNCTOR_SIZE + 10];
 		strncpy(tmpbuf2, functor, src - functor);
 		tmpbuf2[src - functor] = '\0';

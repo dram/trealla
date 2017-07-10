@@ -158,10 +158,10 @@ int needs_quoting(const char *s)
 	if (isupper(*s) || isdigit(*s) || isspace(*s) || iscntrl(*s) || strchr(chars, *s))
 		return 1;
 
-	int any_signs = 0, any_ans = 0;
+	int any_signs = 0, any_alnums = 0;
 
 	while (*s) {
-		unsigned char ch = *s++;
+		int ch = get_char_utf8(&s);
 
 		if (isspace(ch) || iscntrl(ch))
 			return 1;
@@ -171,11 +171,11 @@ int needs_quoting(const char *s)
 		    (ch == ':') ||
 #endif
 		    (ch == '_'))
-			any_ans = 1;
+			any_alnums = 1;
 		else
 			any_signs = 1;
 
-		if (any_ans && any_signs)
+		if (any_alnums && any_signs)
 			return 1;
 	}
 

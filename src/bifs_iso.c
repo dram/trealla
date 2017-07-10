@@ -245,7 +245,7 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 	}
 
 	node *n = make_compound();
-	//n->cpos = from->cpos;
+	n->cpos = from->cpos;
 	n->flags |= from->flags;
 
 	if (is_builtin(from))
