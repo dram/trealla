@@ -6464,7 +6464,7 @@ static int bif_xtra_see_1(tpl_query *q)
 		if (!strcmp(q->curr_stdin_name, filename))
 			return 1;
 
-		if (!strcmp(filename, "user")) {
+		if (!strcmp(filename, "user") || !strcmp(filename, "user_input")) {
 			free(q->curr_stdin_name);
 			stream *sp = (stream*)calloc(1, sizeof(stream));
 			sp->filename = strdup(filename);
@@ -6542,7 +6542,7 @@ static int bif_xtra_tell_1(tpl_query *q)
 		if (!strcmp(filename, q->curr_stdout_name))
 			return 1;
 
-		if (!strcmp(filename, "user")) {
+		if (!strcmp(filename, "user") || !strcmp(filename, "user_output")) {
 			free(q->curr_stdout_name);
 			stream *sp = (stream*)calloc(1, sizeof(stream));
 			sp->filename = strdup(filename);
