@@ -153,6 +153,9 @@ int needs_quoting(const char *s)
 	if (!strcmp(s, "[]") || !strcmp(s, ":-"))
 		return 0;
 
+	if (!strcmp(s, g_list_cons))
+		return 1;
+
 	static const char chars[] = "%_\"'`|.,()[]{}";
 
 	if (isupper(*s) || isdigit(*s) || isspace(*s) || iscntrl(*s) || strchr(chars, *s))
