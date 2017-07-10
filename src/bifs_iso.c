@@ -5500,6 +5500,43 @@ static int bif_iso_truncate(tpl_query *q)
 	return 1;
 }
 
+static int bif_iso_catch(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	node *term2 = get_term(term2);
+	node *term3 = get_term(term3);
+
+	if (q->retry) {
+		printf("TODO: CATCHING '"); term_print(q->pl, q, term2, 0); printf("'\n");
+		q->halt_code = 0;
+		q->halt = ABORT_HALT;
+		q->did_halt = 1;
+		return 0;
+	}
+
+	printf("TODO: CATCH '"); term_print(q->pl, q, term1, 0); printf("'\n");
+	term1->flags |= FLAG_NOFOLLOW;
+	try_me(q);
+
+	if (term1_ctx != -1)
+		q->c.curr_frame = term1_ctx;
+
+	begin_query(q, term1);
+	return call(q);
+}
+
+static int bif_iso_throw(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	printf("TODO: THROW '"); term_print(q->pl, q, term1, 0); printf("'\n");
+	q->halt_code = 0;
+	q->halt = ABORT_HALT;
+	q->did_halt = 1;
+	return 0;
+}
+
 #ifndef ISO_ONLY
 static int bif_xtra_between_3(tpl_query *q)
 {
@@ -7240,8 +7277,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("setof", 3 + 1, bif_iso_setof);
 	DEFINE_BIF("compare", 3, bif_iso_compare);
 
-	DEFINE_BIF("catch", 3, bif_iso_true);
-	DEFINE_BIF("throw", 1, bif_iso_halt);
+	DEFINE_BIF("catch", 3, bif_iso_catch);
+	DEFINE_BIF("throw", 1, bif_iso_throw);
 
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 	DEFINE_BIF("op", 3, bif_iso_op);
