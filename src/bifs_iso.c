@@ -3135,11 +3135,6 @@ static int bif_clause(tpl_query *q, int wait)
 	}
 
 	if (!q->c.curr_match && !wait) {
-		if (save_match && is_deleted(save_match)) {
-			NLIST_REMOVE(&r->val_l, save_match);
-			term_heapcheck(save_match);
-		}
-
 		return 0;
 	}
 
@@ -3164,11 +3159,6 @@ static int bif_clause(tpl_query *q, int wait)
 		return process_yield_locked(q);
 	}
 #endif
-
-	if (save_match && is_deleted(save_match)) {
-		NLIST_REMOVE(&r->val_l, save_match);
-		term_heapcheck(save_match);
-	}
 
 	try_me_nofollow(q);
 
