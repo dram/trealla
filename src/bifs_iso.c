@@ -3508,6 +3508,9 @@ static int bif_iso_univ(tpl_query *q)
 			l = subst(q, tail, this_context);
 		}
 
+		if ((term_arity(s) == 2) && !strcmp(term_functor(s), "."))
+			s->flags |= FLAG_LIST;
+
 		node *term = !term_arity(s) ? term_first(s) : s;
 		xref_clause(q->lex, term);
 		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
