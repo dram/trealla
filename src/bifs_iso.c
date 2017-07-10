@@ -7236,6 +7236,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("bagof", 3 + 1, bif_iso_bagof);
 	DEFINE_BIF("setof", 3 + 1, bif_iso_setof);
 	DEFINE_BIF("compare", 3, bif_iso_compare);
+	DEFINE_BIF("throw", 1, bif_iso_fail);
 
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 	DEFINE_BIF("op", 3, bif_iso_op);
