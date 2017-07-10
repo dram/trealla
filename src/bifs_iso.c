@@ -6464,6 +6464,17 @@ static int bif_xtra_see_1(tpl_query *q)
 		if (!strcmp(q->curr_stdin_name, filename))
 			return 1;
 
+		if (!strcmp(filename, "user")) {
+			free(q->curr_stdin_name);
+			stream *sp = (stream*)calloc(1, sizeof(stream));
+			sp->filename = strdup(filename);
+			sp->fptr = stdin;
+			q->curr_stdin_stream = sp;
+			q->curr_stdin = stdin;
+			q->curr_stdin_name = strdup(filename);
+			return 1;
+		}
+
 		FILE *fp = fopen(filename, "r");
 
 		if (!fp) {
@@ -6528,10 +6539,20 @@ static int bif_xtra_tell_1(tpl_query *q)
 	if (is_atom(term1)) {
 		const char *filename = VAL_S(term1);
 
-		if (!strcmp(q->curr_stdout_name, filename))
+		if (!strcmp(filename, q->curr_stdout_name))
 			return 1;
 
-		free(q->curr_stdout_name);
+		if (!strcmp(filename, "user")) {
+			free(q->curr_stdout_name);
+			stream *sp = (stream*)calloc(1, sizeof(stream));
+			sp->filename = strdup(filename);
+			sp->fptr = stdout;
+			q->curr_stdout_stream = sp;
+			q->curr_stdout = stdout;
+			q->curr_stdout_name = strdup(filename);
+			return 1;
+		}
+
 		FILE *fp = fopen(filename, "w");
 
 		if (!fp) {
@@ -6541,6 +6562,7 @@ static int bif_xtra_tell_1(tpl_query *q)
 			return 0;
 		}
 
+		free(q->curr_stdout_name);
 		stream *sp = (stream*)calloc(1, sizeof(stream));
 		sp->filename = strdup(filename);
 		sp->fptr = fp;
