@@ -6467,11 +6467,11 @@ static int bif_xtra_see_1(tpl_query *q)
 		if (!strcmp(filename, "user") || !strcmp(filename, "user_input")) {
 			free(q->curr_stdin_name);
 			stream *sp = (stream*)calloc(1, sizeof(stream));
-			sp->filename = strdup(filename);
+			sp->filename = strdup("user");
 			sp->fptr = stdin;
 			q->curr_stdin_stream = sp;
 			q->curr_stdin = stdin;
-			q->curr_stdin_name = strdup(filename);
+			q->curr_stdin_name = strdup("user");
 			return 1;
 		}
 
@@ -6545,11 +6545,11 @@ static int bif_xtra_tell_1(tpl_query *q)
 		if (!strcmp(filename, "user") || !strcmp(filename, "user_output")) {
 			free(q->curr_stdout_name);
 			stream *sp = (stream*)calloc(1, sizeof(stream));
-			sp->filename = strdup(filename);
+			sp->filename = strdup("user");
 			sp->fptr = stdout;
 			q->curr_stdout_stream = sp;
 			q->curr_stdout = stdout;
-			q->curr_stdout_name = strdup(filename);
+			q->curr_stdout_name = strdup("user");
 			return 1;
 		}
 
