@@ -237,7 +237,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, head, listing);
 
 		if (!is_fact(n)) {
-			if ((listing <= 1) && strcmp(functor, "is"))
+			if ((listing <= 1) && !isalpha(functor[0]))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", tmpbuf);
 			else
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), " %s ", tmpbuf);
@@ -260,6 +260,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	}
 	else if ((listing < 2) && pl && is_postfix(&pl->db, functor) && !ignore_ops) {
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term_next(nf), listing);
+		if (isalpha(functor[0])) *dst++ = ' ';
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, nf, listing);
 	}
 	else if ((listing < 2) && pl && is_prefix(&pl->db, functor) && !ignore_ops) {
@@ -273,7 +274,8 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		else if (!strcmp(functor, "]+["))
 			functor = "+";
 
-		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s%s", functor, isalpha(functor[0])?" ":"");
+		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", functor);
+		if (isalpha(functor[0])) *dst++ = ' ';
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, n, listing);
 	}
 	else if (!isop || (listing == 2) || ignore_ops) {

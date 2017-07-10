@@ -43,8 +43,9 @@ make_cons([X|Xs],I,Rows,Cols,Boxs,Out) :-
 	get_col(I,Cols,C),
 	get_box(I,Boxs,B),
 	(
-		var(X) -> Out=[sq(I,X,R,C,B)|Cs] ;
-		(Cs=Out, set_dig(X,R), set_dig(X,C), set_dig(X,B))
+		var(X) ->
+			Out=[sq(I,X,R,C,B)|Cs] ;
+			(Cs=Out, set_dig(X,R), set_dig(X,C), set_dig(X,B))
 	),
 	I1 is I + 1,
 	make_cons(Xs,I1,Rows,Cols,Boxs,Cs).
