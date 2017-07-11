@@ -635,7 +635,7 @@ int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, in
 			if (!match && !is_builtin(term)) {
 				if ((tmp->bifptr = get_bifarity(l, VAL_S(tmp), term_arity(term))->bifptr) != NULL) {
 					tmp->flags |= FLAG_BUILTIN;
-					is_expandable(l, VAL_S(tmp));
+					check_expandable(l, VAL_S(tmp));
 				}
 			}
 
@@ -657,7 +657,7 @@ int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, in
 		if (!is_builtin(term)) {
 			if ((term->bifptr = get_bifarity(l, VAL_S(term), 0)->bifptr) != NULL) {
 				term->flags |= FLAG_BUILTIN;
-				is_expandable(l, VAL_S(term));
+				check_expandable(l, VAL_S(term));
 			}
 		}
 

@@ -317,7 +317,7 @@ extern void bifs_load_iso(void);
 extern char *url_decode(const char *src, char *dstbuf);
 extern const char *make_key(trealla *pl, char *dstbuf, node *term);
 extern void reset_arg(tpl_query *q, const node *term, unsigned frame);
-extern void is_expandable(lexer *l, const char *functor);
+extern void check_expandable(lexer *l, const char *functor);
 
 #ifndef ISO_ONLY
 extern int configure_server(tpl_query *q, handler *h, node *term, int (*f)(session *, void *data), int *has_uncle);

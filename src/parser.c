@@ -1032,7 +1032,7 @@ static int directive(lexer *l, node *n)
 	return 1;
 }
 
-void is_expandable(lexer *l, const char *functor)
+void check_expandable(lexer *l, const char *functor)
 {
 	static const char *s_expandable[] =
 	{
@@ -1329,7 +1329,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 
 		if ((term->bifptr = get_bifarity(l, functor, arity)->bifptr) != NULL) {
 			term->flags |= FLAG_BUILTIN;
-			is_expandable(l, functor);
+			check_expandable(l, functor);
 		}
 	}
 
@@ -2377,7 +2377,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 						n->flags &= ~FLAG_NOARGS;
 						n->cpos = tmp->cpos;
 
-						is_expandable(l, functor);
+						check_expandable(l, functor);
 
 						if (!strcmp(functor, "call") || !strcmp(functor, "phrase") || !strcmp(functor, "bagof") ||
 						    !strcmp(functor, "setof") || !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
@@ -2568,7 +2568,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			if (is_op(l->db, l->tok)) {
 				if ((n->bifptr = get_bif(l, l->tok)->bifptr) != NULL) {
 					n->flags |= FLAG_BUILTIN;
-					is_expandable(l, l->tok);
+					check_expandable(l, l->tok);
 				}
 			}
 
