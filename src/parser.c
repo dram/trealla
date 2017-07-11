@@ -1196,14 +1196,14 @@ static int attach_ops(lexer *l, node *term, int depth)
 		if (n_prev && is_atom(n_prev)) {
 			const char *f = VAL_S(n_prev);
 
-			if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-") && strcmp(f, "is"))
+			if (get_op(&l->pl->db, f, 0)->fun && strcmp(f, ",") && strcmp(f, ";") && strcmp(f, ":-") && strcmp(f, "->") && strcmp(f, "is"))
 				prev_op = 1;
 		}
 
 		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, noop=%d\n", depth, functor, is_quoted(n), prev_op, is_noop(n));
 
 		if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[") || !strcmp(functor, "]~[")) &&
-				n_next && is_number(n_next)) {
+			n_next && is_number(n_next)) {
 			node *tmp = n_next;
 			term_remove(term, tmp);
 			int neg = !strcmp(functor, "]-[");

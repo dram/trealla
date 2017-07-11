@@ -30,32 +30,6 @@
 		       q->c.trail_size);                                                                                               \
 	}
 
-static int grow_trail(tpl_query *q)
-{
-	TRACE("grow_trail\n");
-
-	//if (!q->parent)
-	//	printf("*** TRAIL %lld = %lld\n", (long long)q->trails_possible, (long long)(sizeof(trail)*q->trails_possible));
-
-	int MULT = 2;
-
-	if (((sizeof(trail) * q->trails_possible / 1024 / 1024) * MULT) >= g_trealla_memlimit_mb) {
-		QABORT(ABORT_MAXTRAILS);
-		return 0;
-	}
-
-	if (q->def_trail) {
-		q->trails = (trail *)calloc(1, sizeof(trail) * q->trails_possible * MULT);
-		memcpy(q->trails, q->trail_stack, sizeof(trail) * q->trails_possible);
-		q->def_trail = 0;
-	}
-	else
-		q->trails = (trail *)realloc(q->trails, sizeof(trail) * q->trails_possible * MULT);
-
-	q->trails_possible *= MULT;
-	return 1;
-}
-
 int grow_environment(tpl_query *q)
 {
 	TRACE("grow_environment\n");
@@ -110,6 +84,32 @@ static int grow_choice(tpl_query *q)
 	return 1;
 }
 
+static int grow_trail(tpl_query *q)
+{
+	TRACE("grow_trail\n");
+
+	//if (!q->parent)
+	//	printf("*** TRAIL %lld = %lld\n", (long long)q->trails_possible, (long long)(sizeof(trail)*q->trails_possible));
+
+	int MULT = 2;
+
+	if (((sizeof(trail) * q->trails_possible / 1024 / 1024) * MULT) >= g_trealla_memlimit_mb) {
+		QABORT(ABORT_MAXTRAILS);
+		return 0;
+	}
+
+	if (q->def_trail) {
+		q->trails = (trail *)calloc(1, sizeof(trail) * q->trails_possible * MULT);
+		memcpy(q->trails, q->trail_stack, sizeof(trail) * q->trails_possible);
+		q->def_trail = 0;
+	}
+	else
+		q->trails = (trail *)realloc(q->trails, sizeof(trail) * q->trails_possible * MULT);
+
+	q->trails_possible *= MULT;
+	return 1;
+}
+
 static void reclaim_trail(tpl_query *q)
 {
 	TRACE("reclaim_trail");
@@ -120,6 +120,8 @@ static void reclaim_trail(tpl_query *q)
 		e->term = NULL;
 		e->context = 0;
 	}
+
+	q->c.trail_size = 0;
 }
 
 void prepare_frame(tpl_query *q, unsigned frame_size)
