@@ -1021,7 +1021,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 	}
 	else {
 		char tmpbuf[1024];
-		term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, q, term2, 0);
+		term_sprint(tmpbuf, sizeof(tmpbuf), q->pl, q, term3, 0);
 
 		if (strstr(tmpbuf, "quoted(true)"))
 			quoted = 1;
@@ -1036,6 +1036,7 @@ static int bif_iso_write_term_3(tpl_query *q)
 			q->ignore_ops = 1;
 	}
 
+	q->latest_context = term2_ctx;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
@@ -1100,6 +1101,7 @@ static int bif_iso_write_term(tpl_query *q)
 			q->ignore_ops = 1;
 	}
 
+	q->latest_context = term1_ctx;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
@@ -5538,6 +5540,60 @@ static int bif_iso_throw(tpl_query *q)
 }
 
 #ifndef ISO_ONLY
+static int bif_xtra_display_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_stream(term1);
+	node *term2 = get_term(term2);
+	q->ignore_ops = 1;
+	q->latest_context = term2_ctx;
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
+	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 0);
+	q->ignore_ops = 0;
+
+	if (q->halt) {
+		free(tmpbuf);
+		return 0;
+	}
+
+	int ok;
+
+#ifndef ISO_ONLY
+	stream *sp = term1->val_str;
+
+	if (is_socket(term1))
+		ok = session_write((session *)sp->sptr, tmpbuf, len);
+	else
+#endif
+		ok = fwrite(tmpbuf, 1, len, get_output_stream(term1));
+
+	free(tmpbuf);
+	return ok > 0;
+}
+
+static int bif_xtra_display_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	q->ignore_ops = 1;
+	size_t max_len = PRINTBUF_SIZE;
+	char *tmpbuf = (char *)malloc(max_len + 1);
+	char *dst = tmpbuf;
+	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
+	q->ignore_ops = 0;
+
+	if (q->halt) {
+		free(tmpbuf);
+		return 0;
+	}
+
+	fwrite(tmpbuf, 1, len, q->curr_stdout);
+	free(tmpbuf);
+	return 1;
+}
+
 static int bif_xtra_between_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -7336,6 +7392,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 
 #ifndef ISO_ONLY
+	DEFINE_BIF("display", 1, bif_xtra_display_1);
+	DEFINE_BIF("display", 2, bif_xtra_display_2);
 	DEFINE_BIF("consult", 1, bif_xtra_consult_1);
 	DEFINE_BIF("deconsult", 1, bif_xtra_deconsult_1);
 	DEFINE_BIF("reconsult", 1, bif_xtra_reconsult_1);

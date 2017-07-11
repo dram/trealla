@@ -45,12 +45,6 @@ find(N,[_|T],L) :- N1 is N-1, find(N1,T,L).
 
 % These should be somewhere else, but for now...
 
-display(T) :-
-	write_term(T,[ignore_ops(true)]).
-
-display(S,T) :-
-	write_term(S,T,[ignore_ops(true)]).
-
 put(C) :-
 	integer(C) ->
 		put_code(C) ;
