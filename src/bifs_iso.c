@@ -7237,7 +7237,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("is", 2, bif_iso_is);
 	DEFINE_BIF("=", 2, bif_iso_unify);
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
-	DEFINE_BIF("]\\[", 1, bif_iso_complement);
+	DEFINE_BIF("]~[", 1, bif_iso_complement);
 	DEFINE_BIF("]-[", 1, bif_iso_negative);
 	DEFINE_BIF("]+[", 1, bif_iso_positive);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
@@ -7270,7 +7270,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("/\\", 2, bif_iso_bitand);
 	DEFINE_BIF("\\/", 2, bif_iso_bitor);
 	DEFINE_BIF("xor", 2, bif_iso_xor);
-	DEFINE_BIF("\\", 2, bif_iso_complement);
 	DEFINE_BIF("abs", 1, bif_iso_abs);
 	DEFINE_BIF("ceiling", 1, bif_iso_ceiling);
 	DEFINE_BIF("sign", 1, bif_iso_sign);

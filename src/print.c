@@ -273,7 +273,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 			functor = "-";
 		else if (!strcmp(functor, "]+["))
 			functor = "+";
-		else if (!strcmp(functor, "]\\["))
+		else if (!strcmp(functor, "]~["))
 			functor = "\\ ";
 
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", functor);
@@ -286,7 +286,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 				functor = " -";
 			else if (!strcmp(functor, "]+["))
 				functor = " +";
-			else if (!strcmp(functor, "]\\["))
+			else if (!strcmp(functor, "]~["))
 				functor = " \\ ";
 
 			const char *src = functor;
