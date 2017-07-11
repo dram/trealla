@@ -93,8 +93,10 @@ static op g_ops[] = {
 	 {"\\", "fy", 200},
 	 //{"-", "fy", 200}, // HACK
 	 //{"+", "fy", 200}, // HACK
+	 //{"\\", "fy", 200}, // HACK
 	 {"]-[", "fy", 200}, // HACK
 	 {"]+[", "fy", 200}, // HACK
+	 {"]\\[", "fy", 200}, // HACK
 	 //{"$", "fx", 1},
 
 	 {0}
@@ -1200,13 +1202,16 @@ static int attach_ops(lexer *l, node *term, int depth)
 
 		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, noop=%d\n", depth, functor, is_quoted(n), prev_op, is_noop(n));
 
-		if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[")) &&
+		if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[") || !strcmp(functor, "]\\[")) &&
 				n_next && is_number(n_next)) {
 			node *tmp = n_next;
 			term_remove(term, tmp);
 			int neg = !strcmp(functor, "]-[");
+			int bitneg = !strcmp(functor, "]\\[");
 
-			if (is_integer(tmp))
+			if (bitneg && is_integer(tmp))
+				n->val_u = ~tmp->val_u;
+			else if (is_integer(tmp))
 				n->val_i = neg ? -tmp->val_i : tmp->val_i;
 			else if (is_float(tmp))
 				n->val_f = neg ? -tmp->val_f : tmp->val_f;
@@ -1226,12 +1231,14 @@ static int attach_ops(lexer *l, node *term, int depth)
 			term_heapcheck(tmp);
 			continue;
 		}
-		else if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[")) &&
+		else if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[") || !strcmp(functor, "]\\[")) &&
 				(!n_next || is_builtin(n_next) || is_noop(n))) {
 			if (!strcmp(functor, "]-["))
 				n->val_s = (char*)"-";
-			else
+			else if (!strcmp(functor, "]+["))
 				n->val_s = (char*)"+";
+			else if (!strcmp(functor, "]\\["))
+				n->val_s = (char*)"\\";
 		}
 
 		if (prev_op || is_noop(n)) {
@@ -2541,6 +2548,12 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				free(l->tok);
 				n->flags |= FLAG_CONST;
 				l->tok =  (char*)"]+[";
+			}
+			else if (!l->quoted && !strcmp(l->tok, "\\") &&
+				(l->was_paren || l->was_op2 || l->was_op)) {
+				free(l->tok);
+				n->flags |= FLAG_CONST;
+				l->tok =  (char*)"]\\[";
 			}
 
 			if (!l->quoted && strcmp(l->tok, "\\+") &&

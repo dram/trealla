@@ -4319,6 +4319,25 @@ static int bif_iso_float(tpl_query *q)
 	}
 }
 
+int bif_iso_bitnegative(tpl_query *q)
+{
+	node *args = get_args(q);
+	eval(q, &args);
+
+	if (is_integer(&q->nv))
+		q->nv.val_u = ~q->nv.val_u;
+#if USE_SSL
+	else if (is_bignum(&q->nv))
+		BN_set_word(q->nv.val_bn, ~get_word(&q->nv));
+#endif
+	else {
+		QABORT(ABORT_TYPEERROR);
+		return 0;
+	}
+
+	return 1;
+}
+
 int bif_iso_negative(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -7216,6 +7235,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("is", 2, bif_iso_is);
 	DEFINE_BIF("=", 2, bif_iso_unify);
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
+	DEFINE_BIF("]\\[", 1, bif_iso_bitnegative);
 	DEFINE_BIF("]-[", 1, bif_iso_negative);
 	DEFINE_BIF("]+[", 1, bif_iso_positive);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
