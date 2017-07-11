@@ -5540,7 +5540,7 @@ static int bif_iso_throw(tpl_query *q)
 }
 
 #ifndef ISO_ONLY
-static int bif_xtra_display_2(tpl_query *q)
+static int bif_edin_display_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -5573,7 +5573,7 @@ static int bif_xtra_display_2(tpl_query *q)
 	return ok > 0;
 }
 
-static int bif_xtra_display_1(tpl_query *q)
+static int bif_edin_display_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
@@ -6509,7 +6509,7 @@ static int bif_linda_out(tpl_query *q)
 }
 #endif
 
-static int bif_xtra_see_1(tpl_query *q)
+static int bif_edin_see_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -6557,7 +6557,7 @@ static int bif_xtra_see_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_seeing_1(tpl_query *q)
+static int bif_edin_seeing_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
@@ -6573,7 +6573,7 @@ static int bif_xtra_seeing_1(tpl_query *q)
 		return unify_atom(q, term1, q->latest_context, strdup(q->curr_stdin_name));
 }
 
-static int bif_xtra_seen_0(tpl_query *q)
+static int bif_edin_seen_0(tpl_query *q)
 {
 	if (q->curr_stdin != stdin) {
 		free(q->curr_stdin_name);
@@ -6587,7 +6587,7 @@ static int bif_xtra_seen_0(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_tell_1(tpl_query *q)
+static int bif_edin_tell_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -6637,7 +6637,7 @@ static int bif_xtra_tell_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_append_1(tpl_query *q)
+static int bif_edin_append_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -6669,7 +6669,7 @@ static int bif_xtra_append_1(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_telling_1(tpl_query *q)
+static int bif_edin_telling_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_var(term1);
@@ -6685,7 +6685,7 @@ static int bif_xtra_telling_1(tpl_query *q)
 		return unify_atom(q, term1, q->latest_context, strdup(q->curr_stdout_name));
 }
 
-static int bif_xtra_told_0(tpl_query *q)
+static int bif_edin_told_0(tpl_query *q)
 {
 	if (q->curr_stdout != stdout) {
 		free(q->curr_stdout_name);
@@ -6699,7 +6699,7 @@ static int bif_xtra_told_0(tpl_query *q)
 	return 1;
 }
 
-static int bif_xtra_get_1(tpl_query *q)
+static int bif_edin_get_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
@@ -6728,7 +6728,7 @@ LOOP:
 	return unify_int(q, term1, q->latest_context, ch);
 }
 
-static int bif_xtra_get_2(tpl_query *q)
+static int bif_edin_get_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -6747,7 +6747,7 @@ LOOP:
 	return unify_int(q, term2, q->latest_context, ch);
 }
 
-static int bif_xtra_tab_2(tpl_query *q)
+static int bif_edin_tab_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
@@ -6768,7 +6768,7 @@ static int bif_xtra_tab_2(tpl_query *q)
 	return ok > 0;
 }
 
-static int bif_xtra_tab_1(tpl_query *q)
+static int bif_edin_tab_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
@@ -6780,33 +6780,6 @@ static int bif_xtra_tab_1(tpl_query *q)
 
 	return ok > 0;
 }
-
-#if 0
-static int bif_xtra_memberchk_2(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_term(term1);
-	node *term2 = get_atom_or_list(term2);
-	node *l = term2;
-	allocate_frame(q);
-
-	while (is_list(l)) {
-		node *head = term_firstarg(l);
-		unsigned this_context = q->latest_context;
-		node *n = subst(q, head, q->latest_context);
-
-		if (unify(q, term1, term1_ctx, n, term2_ctx)) {
-			return 1;
-		}
-
-		reallocate_frame(q);
-		node *tail = term_next(head);
-		l = subst(q, tail, this_context);
-	}
-
-	return 0;
-}
-#endif
 
 static int bif_xtra_predicate_property_2(tpl_query *q)
 {
@@ -7431,7 +7404,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("fixed", 4, bif_xtra_fixed_4);
 	DEFINE_BIF("rational", 2, bif_xtra_rational_2);
 	DEFINE_BIF("rdiv", 2, bif_xtra_rdiv);
-	//DEFINE_BIF("memberchk", 2, bif_xtra_memberchk_2);
 
 #if USE_SSL
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
@@ -7449,21 +7421,21 @@ void bifs_load_iso(void)
 // These are for Edinburgh-style file handling...
 
 #ifndef ISO_ONLY
-	DEFINE_BIF("see", 1, bif_xtra_see_1);
-	DEFINE_BIF("seeing", 1, bif_xtra_seeing_1);
-	DEFINE_BIF("seen", 0, bif_xtra_seen_0);
-	DEFINE_BIF("tell", 1, bif_xtra_tell_1);
-	DEFINE_BIF("append", 1, bif_xtra_append_1);
-	DEFINE_BIF("telling", 1, bif_xtra_telling_1);
-	DEFINE_BIF("told", 0, bif_xtra_told_0);
-	DEFINE_BIF("tab", 1, bif_xtra_tab_1);
-	DEFINE_BIF("tab", 2, bif_xtra_tab_2);
+	DEFINE_BIF("see", 1, bif_edin_see_1);
+	DEFINE_BIF("seeing", 1, bif_edin_seeing_1);
+	DEFINE_BIF("seen", 0, bif_edin_seen_0);
+	DEFINE_BIF("tell", 1, bif_edin_tell_1);
+	DEFINE_BIF("append", 1, bif_edin_append_1);
+	DEFINE_BIF("telling", 1, bif_edin_telling_1);
+	DEFINE_BIF("told", 0, bif_edin_told_0);
+	DEFINE_BIF("tab", 1, bif_edin_tab_1);
+	DEFINE_BIF("tab", 2, bif_edin_tab_2);
 	DEFINE_BIF("get0", 1, bif_iso_get_code);
 	DEFINE_BIF("get0", 2, bif_iso_get_code);
-	DEFINE_BIF("get", 1, bif_xtra_get_1);
-	DEFINE_BIF("get", 2, bif_xtra_get_2);
-	DEFINE_BIF("display", 1, bif_xtra_display_1);
-	DEFINE_BIF("display", 2, bif_xtra_display_2);
+	DEFINE_BIF("get", 1, bif_edin_get_1);
+	DEFINE_BIF("get", 2, bif_edin_get_2);
+	DEFINE_BIF("display", 1, bif_edin_display_1);
+	DEFINE_BIF("display", 2, bif_edin_display_2);
 #endif
 
 #ifndef ISO_ONLY
