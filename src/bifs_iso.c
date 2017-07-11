@@ -675,12 +675,10 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 		return 1;
 	}
-	else if (is_atom(n1) && is_atom(n2)) {
+	else if (is_atom(n1) && is_atom(n2))
 		return strcmp(VAL_S(n1), VAL_S(n2));
-	}
-	else if (is_compound(n1) && is_compound(n2)) {
+	else if (is_compound(n1) && is_compound(n2))
 		return compare_compounds(q, n1, n2, mode);
-	}
 	else if (is_var(n1))
 		return -1;
 	else if (is_var(n2))
