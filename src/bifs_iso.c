@@ -7415,6 +7415,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("phrase", 1 + 2, bif_xtra_phrase);
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
+	DEFINE_BIF("garbage_collect", 0, bif_iso_true);
 #endif
 
 // These are for Edinburgh-style file handling...
