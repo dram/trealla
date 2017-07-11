@@ -1024,7 +1024,23 @@ char *query_get_text(tpl_query *q, unsigned idx)
 
 void query_trace(tpl_query *q) { q->trace = !q->trace; }
 
-int query_choices(tpl_query *q) { return q->choice_point > 1; }
+int query_choices(tpl_query *q)
+{
+	//return q->choice_point > 1;
+
+	if (!q->choice_point)
+		return 0;
+
+	choice *c = &q->choices[q->choice_point-1];
+
+	if (c->curr_match == NULL)
+		return 0;
+
+	if (term_next(c->curr_match) == NULL)
+		return 0;
+
+	return 1;
+}
 
 int query_get_haltcode(tpl_query *q) { return q->halt_code; }
 

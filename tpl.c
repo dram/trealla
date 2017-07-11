@@ -447,7 +447,7 @@ int main(int ac, char *av[])
 				break;
 			}
 
-			while (ok && isatty(0) && query_choices(q) > 1) {
+			while (ok && isatty(0) && query_choices(q)) {
 				printf("%s", " (abort=a,trace=t,next=;): ");
 				int ch = history_getch();
 				printf("\n");
