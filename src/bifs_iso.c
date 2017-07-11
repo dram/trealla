@@ -7392,8 +7392,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("assert", 1, bif_iso_assertz);
 
 #ifndef ISO_ONLY
-	DEFINE_BIF("display", 1, bif_xtra_display_1);
-	DEFINE_BIF("display", 2, bif_xtra_display_2);
 	DEFINE_BIF("consult", 1, bif_xtra_consult_1);
 	DEFINE_BIF("deconsult", 1, bif_xtra_deconsult_1);
 	DEFINE_BIF("reconsult", 1, bif_xtra_reconsult_1);
@@ -7464,6 +7462,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("get0", 2, bif_iso_get_code);
 	DEFINE_BIF("get", 1, bif_xtra_get_1);
 	DEFINE_BIF("get", 2, bif_xtra_get_2);
+	DEFINE_BIF("display", 1, bif_xtra_display_1);
+	DEFINE_BIF("display", 2, bif_xtra_display_2);
 #endif
 
 #ifndef ISO_ONLY
