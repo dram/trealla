@@ -458,7 +458,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	}
 	else if (q && q->display_slots && is_var(n) && 0) {
 		env *e = get_env(q, q->latest_context + n->slot);
-		unsigned slot = (size_t)(e - q->envs) - q->latest_context;
+		unsigned slot = (size_t)(e - q->envs);
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "_%u", slot);
 	}
 	else if (listing && is_var(n) && (n->flags & FLAG_ANON))
