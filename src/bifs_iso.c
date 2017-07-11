@@ -5545,13 +5545,12 @@ static int bif_edin_display_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_term(term2);
-	q->ignore_ops = 1;
-	q->latest_context = term2_ctx;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
+	q->display_slots = q->ignore_ops = 1;
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 0);
-	q->ignore_ops = 0;
+	q->display_slots = q->ignore_ops = 0;
 
 	if (q->halt) {
 		free(tmpbuf);
@@ -5577,12 +5576,12 @@ static int bif_edin_display_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	q->ignore_ops = 1;
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
+	q->display_slots = q->ignore_ops = 1;
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
-	q->ignore_ops = 0;
+	q->display_slots = q->ignore_ops = 0;
 
 	if (q->halt) {
 		free(tmpbuf);

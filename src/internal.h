@@ -302,7 +302,7 @@ struct tpl_query_ {
 	uint8_t halt_code, halt, is_running, did_halt;
 	uint8_t is_yielded, retry, ok, def_choice, def_env, def_trail;
 	uint8_t is_det, timed_out, trace, optimize;
-	uint8_t eval, did_getc, in_tran, ignore_ops;
+	uint8_t eval, did_getc, in_tran, ignore_ops, display_slots;
 
 #ifndef ISO_ONLY
 	list queue; // process queue
