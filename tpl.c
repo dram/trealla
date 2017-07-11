@@ -447,7 +447,7 @@ int main(int ac, char *av[])
 				break;
 			}
 
-			while (ok && isatty(0) && query_choices(q)) {
+			while (ok && isatty(0) && query_choices(q) > 1) {
 				printf("%s", " (abort=a,trace=t,next=;): ");
 				int ch = history_getch();
 				printf("\n");
@@ -468,7 +468,7 @@ int main(int ac, char *av[])
 				printf("(%.3lf) ", query_elapsed(q));
 
 			if (isatty(0))
-				history_output("", ok ? "true." : "false.");
+				history_output("\n", ok ? "true." : "false.");
 			else
 				printf("%s\n", ok ? "true." : "false.");
 
