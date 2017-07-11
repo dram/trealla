@@ -2367,7 +2367,8 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 					}
 
 					if (optr->fun && OP_INFIX(optr->spec) && !l->was_spaced &&
-						strcmp(functor, ":-") && strcmp(functor, ";") && strcmp(functor, ","))
+						strcmp(functor, ":-") && strcmp(functor, ";") &&
+						strcmp(functor, ",") && strcmp(functor, "->"))
 						doit = 1;
 
 					if (!optr->fun || doit) {
