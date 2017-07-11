@@ -604,7 +604,6 @@ static int dir_initialization(lexer *l, node *n)
 	tmpbuf[0] = 0;
 	term_sprint(tmpbuf, sizeof(tmpbuf), l->pl, NULL, n, 1);
 	strcat(tmpbuf, ".");
-	printf("*** '%s'\n", tmpbuf);
 	l->init = strdup(tmpbuf);
 	l->pl->quiet = 1;
 	return 1;
