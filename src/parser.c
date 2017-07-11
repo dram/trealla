@@ -1211,6 +1211,10 @@ static int attach_ops(lexer *l, node *term, int depth)
 
 			if (bitneg && is_integer(tmp))
 				n->val_u = ~tmp->val_u;
+#ifndef ISO_ONLY
+			else if (bitneg && is_bignum(tmp))
+				BN_set_word(n->val_bn, ~(unbr_t)get_word(tmp));
+#endif
 			else if (is_integer(tmp))
 				n->val_i = neg ? -tmp->val_i : tmp->val_i;
 			else if (is_float(tmp))

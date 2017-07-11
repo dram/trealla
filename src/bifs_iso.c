@@ -174,6 +174,7 @@ static node *copy_atom(node *from)
 	node *n = term_make();
 	n->flags |= from->flags;
 
+#ifndef ISO_ONLY
 	if (is_blob(from)) {
 		n->val_s = (char *)malloc(from->val_len + 1);
 		memcpy(n->val_s, from->val_s, from->val_len);
@@ -181,7 +182,9 @@ static node *copy_atom(node *from)
 		n->val_s[n->val_len] = '\0';
 		n->flags &= ~FLAG_CONST;
 	}
-	else if (is_small(from))
+	else
+#endif
+	if (is_small(from))
 		strcpy(n->val_ch, from->val_ch);
 	else if (is_const(from))
 		n->val_s = from->val_s;
@@ -3052,7 +3055,9 @@ static int bif_clause(tpl_query *q, int wait)
 	node *term2 = get_next_arg(q, &args);
 	unsigned term2_ctx = q->latest_context;
 	node *term3 = get_next_arg(q, &args);
+#ifndef ISO_ONLY
 	node *save_match = q->c.curr_match;
+#endif
 	node *head = NULL;
 	rule *r = NULL;
 
@@ -3089,10 +3094,15 @@ static int bif_clause(tpl_query *q, int wait)
 			if (did_lock)
 				DBUNLOCK(q->c.curr_db);
 
+#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NULL;
+#endif
 		}
-		else
+		else {
+#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
+#endif
+		}
 
 		if (did_lock)
 			DBUNLOCK(q->c.curr_db);
@@ -3103,11 +3113,16 @@ static int bif_clause(tpl_query *q, int wait)
 	else {
 		r = q->curr_rule;
 
-		if (!q->c.curr_match)
+		if (!q->c.curr_match) {
+#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
+#endif
+}
 		else {
 			r = q->curr_rule;
+#ifndef ISO_ONLY
 			save_match = q->c.curr_match;
+#endif
 			q->c.curr_match = term_next(q->c.curr_match);
 		}
 	}
@@ -5041,13 +5056,19 @@ static int bif_iso_complement(tpl_query *q)
 	node *args = get_args(q);
 	eval(q, &args);
 
-	if (q->nv.flags != TYPE_INTEGER) {
+	if (is_integer(&q->nv)) {
+		q->nv.val_u = ~q->nv.val_u;
+	}
+#ifndef ISO_ONLY
+	else if (is_bignum(&q->nv)) {
+		BN_set_word(q->nv.val_bn, ~(unbr_t)get_word(&q->nv));
+	}
+#endif
+	else {
 		QABORT(ABORT_TYPEERROR);
 		return 0;
 	}
 
-	q->nv.val_u = ~q->nv.val_u;
-	q->nv.flags = TYPE_INTEGER;
 	return 1;
 }
 
