@@ -270,12 +270,13 @@ static int follow(tpl_query *q)
 	return 1;
 }
 
-void try_me2(tpl_query *q, int nofollow, int nochoice)
+void try_me2(tpl_query *q, int nofollow, int nochoice, int transparent)
 {
 	TRACE("try_me");
 	choice *c = &q->choices[q->choice_point];
 	*c = q->c;
 	c->nofollow = nofollow;
+	c->transparent = transparent;
 	c->cut = nochoice;
 	q->c.prev_choice = q->choice_point++;
 
@@ -334,6 +335,13 @@ void trust_me(tpl_query *q)
 	choice *c = &q->choices[q->c.prev_choice];
 	c->cut = 1;
 	q->envs[c->curr_frame].choices = 0;
+
+	if (c->transparent) {
+		q->c.prev_choice = c->prev_choice;
+		c = &q->choices[q->choice_point-1];
+		c->cut = 1;
+		return trust_me(q);
+	}
 
 #ifdef DEBUG
 	g_cuts++;

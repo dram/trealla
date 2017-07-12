@@ -191,7 +191,7 @@ static node *copy_atom(node *from)
 	else
 		n->val_s = strdup(from->val_s);
 
-	if (is_builtin(n))
+	if (is_builtin(from))
 		n->bifptr = from->bifptr;
 	else
 		n->match = from->match;
@@ -253,6 +253,8 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 
 	if (is_builtin(from))
 		n->bifptr = from->bifptr;
+	else
+		n->match = from->match;
 
 	n->frame_size = from->frame_size;
 	from = term_first(from);
@@ -408,6 +410,23 @@ int bif_iso_cut(tpl_query *q)
 	return 1;
 }
 
+int bif_iso_if_then(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_callable(term1);
+	node *term2 = get_callable(term2);
+
+	if (!q->retry) {
+		allocate_frame(q);
+		try_me(q);
+	}
+	else {
+		q->c.curr_term = term2;
+	}
+
+	return 1;
+}
+
 static int bif_iso_repeat(tpl_query *q)
 {
 	if (!q->retry)
@@ -439,6 +458,20 @@ static int bif_iso_do(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_list_or_callable(term1);
 	trust_me(q);
+	begin_query(q, term1);
+	return call(q);
+}
+
+static int bif_iso_call_transparent(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_callable(term1);
+	term1->flags |= FLAG_NOFOLLOW;
+	try_me_transparent(q);
+
+	if (term1_ctx != -1)
+		q->c.curr_frame = term1_ctx;
+
 	begin_query(q, term1);
 	return call(q);
 }
@@ -2323,10 +2356,10 @@ static int bif_iso_copy_term(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	node *term2 = get_var(term2);
+	node *term2 = get_term(term2);
 	q->latest_context = term1_ctx;
 	node *tmp = copy_term(q, term1);
-	int ok = unify(q, term1, term1_ctx, tmp, term2_ctx);
+	int ok = unify(q, term2, term2_ctx, tmp, term1_ctx);
 	term_heapcheck(tmp);
 	return ok;
 }
@@ -7199,9 +7232,11 @@ void bifs_load_iso(void)
 	DEFINE_BIF("is", 2, bif_iso_is);
 	DEFINE_BIF("=", 2, bif_iso_unify);
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
+	//DEFINE_BIF("->", 2, bif_iso_if_then);
 	DEFINE_BIF("]~[", 1, bif_iso_complement);
 	DEFINE_BIF("]-[", 1, bif_iso_negative);
 	DEFINE_BIF("]+[", 1, bif_iso_positive);
+	DEFINE_BIF("call_transparent", 1, bif_iso_call_transparent);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);
