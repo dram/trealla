@@ -1304,7 +1304,7 @@ int trealla_consult_fp(trealla *pl, FILE *fp)
 		xref_clauses(&l);
 
 		if (l.init && !l.error) {
-			l.error = !trealla_run_query(pl, l.init);
+			trealla_run_query(pl, l.init);
 		}
 	}
 
@@ -1323,7 +1323,7 @@ int trealla_consult_file(trealla *pl, const char *filename)
 		xref_clauses(&l);
 
 		if (l.init && !l.error) {
-			l.error = !trealla_run_query(pl, l.init);
+			trealla_run_query(pl, l.init);
 		}
 	}
 
@@ -1383,8 +1383,7 @@ int trealla_consult_text(trealla *pl, const char *src, const char *filename)
 	xref_clauses(&l);
 
 	if (l.init && !l.error) {
-		if (!trealla_run_query(pl, l.init))
-			l.error = 1;
+		trealla_run_query(pl, l.init);
 	}
 
 	lexer_done(&l);

@@ -361,13 +361,13 @@ int main(int ac, char *av[])
 			break;
 		else if ((av[i][0] != '-') && !get) {
 			if (!trealla_consult_file(pl, av[i])) {
-				error = -1;
+				error = 1;
 				break;
 			}
 		}
 		else if (!strcmp(av[i], "--consult")) {
 			if (!trealla_consult_fp(pl, stdin)) {
-				error = -1;
+				error = 1;
 				break;
 			}
 		}
