@@ -595,7 +595,6 @@ extern int bif_iso_true(tpl_query *q);
 extern int bif_iso_negative(tpl_query *q);
 extern int bif_iso_positive(tpl_query *q);
 extern int bif_iso_and(tpl_query *q);
-extern int bif_iso_or(tpl_query *q);
 extern int bif_iso_cut(tpl_query *q);
 extern int bif_iso_fail(tpl_query *q);
 extern int bif_xtra_enter(tpl_query *q);

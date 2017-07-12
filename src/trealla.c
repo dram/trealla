@@ -1603,8 +1603,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "(A -> B ; _C) :- call(A), !, call(B).");
 	trealla_make_rule(pl, "(_A -> _B ; C) :- !, call(C).");
 	trealla_make_rule(pl, "(A -> B) :- call(A), !, call_transparent(B).");
-	trealla_make_rule(pl, "(A ; _B) :- call_transparent(A).");
-	trealla_make_rule(pl, "(_A ; B) :- call_transparent(B).");
+	//trealla_make_rule(pl, "(A ; _B) :- call_transparent(A).");
+	//trealla_make_rule(pl, "(_A ; B) :- call_transparent(B).");
 	trealla_make_rule(pl, "once(G) :- call(G), !.");
 	trealla_make_rule(pl, "\\+ G :- call(G), !, fail.");
 	trealla_make_rule(pl, "\\+ _G :- true.");

@@ -410,7 +410,29 @@ int bif_iso_cut(tpl_query *q)
 	return 1;
 }
 
-int bif_iso_if_then(tpl_query *q)
+static int bif_iso_or(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_callable(term1);
+	node *term2 = get_callable(term2);
+
+	if (!q->retry) {
+		allocate_frame(q);
+		term1->flags |= FLAG_NOFOLLOW;
+		try_me(q);
+		begin_query(q, term1);
+	}
+	else {
+		q->retry = 0;
+		try_me_nochoice(q);
+		begin_query(q, term2);
+	}
+
+	return call(q);
+}
+
+#if 0
+static int bif_iso_ifthen(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -426,6 +448,7 @@ int bif_iso_if_then(tpl_query *q)
 
 	return 1;
 }
+#endif
 
 static int bif_iso_repeat(tpl_query *q)
 {
@@ -7232,7 +7255,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("is", 2, bif_iso_is);
 	DEFINE_BIF("=", 2, bif_iso_unify);
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
-	//DEFINE_BIF("->", 2, bif_iso_if_then);
+	DEFINE_BIF(";", 2, bif_iso_or);
+	//DEFINE_BIF("->", 2, bif_iso_ifthen);
 	DEFINE_BIF("]~[", 1, bif_iso_complement);
 	DEFINE_BIF("]-[", 1, bif_iso_negative);
 	DEFINE_BIF("]+[", 1, bif_iso_positive);
