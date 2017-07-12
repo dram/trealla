@@ -5582,8 +5582,8 @@ static int bif_iso_ceiling(tpl_query *q)
 		return 0;
 	}
 
-	q->nv.val_f -= (flt_t)ceil(q->nv.val_f);
-	q->nv.flags = TYPE_FLOAT;
+	q->nv.val_i = (nbr_t)ceil(q->nv.val_f);
+	q->nv.flags = TYPE_INTEGER;
 	return 1;
 }
 
