@@ -343,6 +343,7 @@ void sl_done(skiplist *d, void (*deleter)(void *))
 
 		if (deleter)
 			deleter(p->value);
+
 		free(p);
 		p = q;
 	}

@@ -84,7 +84,7 @@ static void stream_close(stream *sp)
 #endif
 }
 
-void term_destroy(node *n)
+static void term_destroy(node *n)
 {
 	while (n) {
 		node *save = n;
@@ -95,12 +95,24 @@ void term_destroy(node *n)
 
 void term_heapclean(node *n)
 {
+	node *save_n;
+
+LOOP:
+
+	save_n = NULL;
+
 	if (is_compound(n)) {
 		node *n2 = term_first(n);
 
 		while (n2) {
 			node *save = n2;
 			n2 = term_next(n2);
+
+			if (is_list(save) && !n2) {
+				save_n = save;
+				break;
+			}
+
 			term_heapcheck(save);
 		}
 	}
@@ -121,6 +133,13 @@ void term_heapclean(node *n)
 
 	g_allocs--;
 	free(n);
+
+	if (save_n) {
+		if (term_heaptest(save_n)) {
+			n = save_n;
+			goto LOOP;
+		}
+	}
 }
 
 const char *make_key(trealla *pl, char *dstbuf, node *term)

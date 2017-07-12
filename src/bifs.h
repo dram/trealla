@@ -501,23 +501,28 @@ inline static const char *term_functor(node *s) { return VAL_S(NLIST_FRONT(&s->v
 inline static node *term_firstarg(node *s) { return term_next(term_first(s)); }
 #endif
 
+inline static int term_heaptest(node *n)
+{
+	if (n == NULL)
+		return 0;
+
+	if (!(n->flags & FLAG_HEAP))
+		return 0;
+
+	if (--n->refcnt != 0)
+		return 0;
+
+	return 1;
+}
+
 inline static void term_heapcheck(node *n)
 {
 	extern void term_heapclean(node * n);
 
-	if (n == NULL)
-		return;
-
-	if (!(n->flags & FLAG_HEAP))
-		return;
-
-	if (--n->refcnt != 0)
-		return;
-
-	term_heapclean(n);
+	if (term_heaptest(n))
+		term_heapclean(n);
 }
 
-extern void term_destroy(node *n);
 extern void trace(tpl_query *q, int fail, int leave);
 extern node *copy_term(tpl_query *q, node *from);
 extern uint64_t gettimeofday_usec(void);
