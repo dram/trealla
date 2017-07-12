@@ -21,36 +21,9 @@ extern void bind_vars(tpl_query *q, unsigned point1, unsigned point2);
 #define try_me_nochoice(q) try_me2(q, 0, 1)
 #define try_me_noall(q) try_me2(q, 1, 1)
 
-inline static int unify_int(tpl_query *q, node *term, unsigned context, nbr_t v)
-{
-	node *n = make_quick_int(v);
-	int ok = unify(q, term, context, n, -1);
-	term_heapcheck(n);
-	return ok;
-}
-
-inline static int unify_float(tpl_query *q, node *term, unsigned context, flt_t v)
-{
-	node *n = make_float(v);
-	int ok = unify(q, term, context, n, -1);
-	term_heapcheck(n);
-	return ok;
-}
-
-inline static int unify_atom(tpl_query *q, node *term, unsigned context, char *v)
-{
-	node *n = make_atom(v);
-	int ok = unify(q, term, context, n, -1);
-	term_heapcheck(n);
-	return ok;
-}
-
-inline static int unify_const_atom(tpl_query *q, node *term, unsigned context, const char *v)
-{
-	node *n = make_const_atom(v);
-	int ok = unify(q, term, context, n, -1);
-	term_heapcheck(n);
-	return ok;
-}
+extern int unify_int(tpl_query *q, node *term, unsigned context, nbr_t v);
+extern int unify_float(tpl_query *q, node *term, unsigned context, flt_t v);
+extern int unify_atom(tpl_query *q, node *term, unsigned context, char *v);
+extern int unify_const_atom(tpl_query *q, node *term, unsigned context, const char *v);
 
 #endif

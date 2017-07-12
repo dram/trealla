@@ -592,7 +592,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 
 			return r;
 		}
-		else if (tmpbuf2[0] && functor[0]) {
+		else if (!is_quoted(term) && tmpbuf2[0] && functor[0]) {
 			printf("ERROR: in '%s', not exported '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
 			l->error = 1;
 			return NULL;

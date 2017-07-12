@@ -560,6 +560,46 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 	}
 }
 
+int unify_int(tpl_query *q, node *term, unsigned context, nbr_t v)
+{
+	node *n = make_quick_int(v);
+	int ok = unify(q, term, context, n, -1);
+	term_heapcheck(n);
+	return ok;
+}
+
+int unify_float(tpl_query *q, node *term, unsigned context, flt_t v)
+{
+	node *n = make_float(v);
+	int ok = unify(q, term, context, n, -1);
+	term_heapcheck(n);
+	return ok;
+}
+
+int unify_atom(tpl_query *q, node *term, unsigned context, char *v)
+{
+	node *n = make_atom(v);
+
+	if (needs_quoting(v))
+		n->flags |= FLAG_QUOTED;
+
+	int ok = unify(q, term, context, n, -1);
+	term_heapcheck(n);
+	return ok;
+}
+
+int unify_const_atom(tpl_query *q, node *term, unsigned context, const char *v)
+{
+	node *n = make_const_atom(v);
+
+	if (needs_quoting(v))
+		n->flags |= FLAG_QUOTED;
+
+	int ok = unify(q, term, context, n, -1);
+	term_heapcheck(n);
+	return ok;
+}
+
 static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned context2)
 {
 	DEBUGPRINT
