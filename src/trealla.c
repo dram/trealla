@@ -1609,6 +1609,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "once(G) :- call(G), !.");
 	trealla_make_rule(pl, "\\+ G :- call(G), !, fail.");
 	trealla_make_rule(pl, "\\+ _G :- true.");
+	trealla_make_rule(pl, "forall(A,B) :- call(A), \\+ call(B), !, fail.");
+	trealla_make_rule(pl, "forall(A,B).");
 
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "not(G) :- call(G), !, fail.");

@@ -6861,59 +6861,6 @@ static int bif_xtra_predicate_property_2(tpl_query *q)
 	return 0;
 }
 
-static int bif_xtra_forall_2(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_callable(term1);
-	node *term2 = get_callable(term2);
-	tpl_query *subq = query_create_subquery(q);
-
-	if (!subq) {
-		QABORT(ABORT_OUTOFMEMORY);
-		return 0;
-	}
-
-	int did_lock = 0;
-
-	if (is_dynamic(term1) && !q->in_tran) {
-		did_lock = 1;
-		DBLOCK(q->c.curr_db);
-	}
-
-	unsigned save_frame_size = subq->c.frame_size;
-	node *t1 = copy_term(q, term1);
-	begin_query(subq, t1);
-	int ok = query_run(subq), subok = 1;
-
-	while (ok && !g_abort) {
-		subq->c.curr_frame = FUDGE_FACTOR;
-		subq->c.frame_size = save_frame_size;
-		tpl_query *subq2 = query_create_subquery(subq);
-
-		if (!subq2) {
-			QABORT(ABORT_OUTOFMEMORY);
-			subok = 0;
-			break;
-		}
-
-		begin_query(subq2, term2);
-		subok = query_run(subq2);
-		query_destroy(subq2);
-
-		if (!subok)
-			break;
-
-		ok = query_continue(subq);
-	}
-
-	if (did_lock)
-		DBUNLOCK(q->c.curr_db);
-
-	term_heapcheck(t1);
-	query_destroy(subq);
-	return subok;
-}
-
 static int bif_xtra_getenv_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -7462,7 +7409,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("unbounded", 1, bif_xtra_unbounded_1);
 #endif
 
-	DEFINE_BIF("forall", 2, bif_xtra_forall_2);
 	DEFINE_BIF("time", 1, bif_xtra_time_1);
 	DEFINE_BIF("time", 2, bif_xtra_time_2);
 	DEFINE_BIF("between", 3, bif_xtra_between_3);
