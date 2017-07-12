@@ -3541,6 +3541,21 @@ static int bif_iso_univ(tpl_query *q)
 			return 0;
 		}
 
+		node *head = term_firstarg(new_term2);
+		node *tail = term_next(head);
+
+		if (!is_atomic(head)) {
+			QABORT(ABORT_INVALIDARGNOTATOMIC);
+			term_heapcheck(new_term2);
+			return 0;
+		}
+
+		if (is_atomic(tail)) {
+			put_env(q, q->c.curr_frame + term1->slot, head, -1);
+			term_heapcheck(new_term2);
+			return 1;
+		}
+
 		unsigned save_context = q->latest_context;
 		node *s = make_compound();
 		node *l = new_term2;
