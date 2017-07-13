@@ -29,7 +29,7 @@ int g_force_unbounded = 0;
 const char *g_escapes = "\e\a\f\b\t\v\r\n";
 const char *g_anti_escapes = "eafbtvrn";
 
-static op g_ops[] = {
+op g_ops[] = {
 	{":-", "xfx", 1200},
 	{":-", "fx", 1200},
 	{"-->", "xfx", 1200},

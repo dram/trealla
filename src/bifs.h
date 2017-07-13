@@ -563,6 +563,7 @@ extern int dir_unload_file(lexer *l, node *n);
 
 extern int dir_dynamic(lexer *l, node *n);
 extern int dir_op_3(lexer *l, int pri, const char *spec, const char *name);
+extern op g_ops[];
 
 extern size_t term_sprint(char *dst, size_t size, trealla *pl, tpl_query *q, node *n, int listing);
 extern void term_print(trealla *pl, tpl_query *q, node *n, int listing);

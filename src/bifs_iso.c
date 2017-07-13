@@ -916,28 +916,58 @@ static int bif_iso_current_op(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
 	node *term2 = get_atom_or_var(term2);
-	node *term3 = get_atom(term3);
+	node *term3 = get_atom_or_var(term3);
+	const op *optr;
 
-	// FIXME to backtrack
+	if (!q->retry) {
+		optr = g_ops;
+		q->uops = 0;
 
-	const op *cur_op =
-	    is_atom(term2) ? get_op_2(q->c.curr_db, VAL_S(term3), VAL_S(term2)) :
-			get_op(q->c.curr_db, VAL_S(term3), 1);
+		if (is_var(term3)) {
+			allocate_frame(q);
+			try_me_nofollow(q);
+		}
+	}
+	else
+		optr = ++q->optr;
 
-	if (!cur_op->fun) {
-		cur_op =
+	if (!is_var(term3)) {
+		optr =
 			is_atom(term2) ? get_op_2(q->c.curr_db, VAL_S(term3), VAL_S(term2)) :
-				get_op(q->c.curr_db, VAL_S(term3), 0);
+				get_op(q->c.curr_db, VAL_S(term3), 1);
+
+		if (!optr->fun) {
+			optr =
+				is_atom(term2) ? get_op_2(q->c.curr_db, VAL_S(term3), VAL_S(term2)) :
+					get_op(q->c.curr_db, VAL_S(term3), 0);
+		}
 	}
 
-	if (!cur_op->fun)
+	if (!optr->fun && !q->uops) {
+		q->uops = 1;
+		q->optr = q->c.curr_db->uops;
+		return bif_iso_current_op(q);
+	}
+
+	if (!optr->fun)
 		return 0;
 
-	if (!unify_const_atom(q, term2, term2_ctx, cur_op->spec))
+	if (is_var(term3)) {
+		if (!unify_const_atom(q, term3, term3_ctx, optr->fun))
+			return 0;
+	}
+
+	if (!unify_const_atom(q, term2, term2_ctx, optr->spec))
 		return 0;
 
-	if (!unify_int(q, term1, term1_ctx, (int)cur_op->priority))
+	if (!unify_int(q, term1, term1_ctx, (int)optr->priority))
 		return 0;
+
+	q->optr = optr;
+
+	if (q->retry) {
+		try_me_nofollow(q);
+	}
 
 	return 1;
 }
