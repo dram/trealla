@@ -3157,52 +3157,62 @@ static int bif_clause(tpl_query *q, int wait)
 	node *term2 = get_term(term2);
 	node *term3 = get_next_arg(q, &args);
 #ifndef ISO_ONLY
-	node *save_match = q->c.curr_match;
+	node *save_match = NULL;
 #endif
 	node *head = NULL;
 	rule *r = NULL;
+	int did_lock = 0;
+
+	if ((!term3 || !is_ptr(term3)) && is_var(term1)) {
+		QABORT(ABORT_INVALIDARGISVAR);
+		return 0;
+	}
 
 	if (!q->retry) {
 		const char *functor;
 		int arity = 0;
 
-		if (is_compound(term1)) {
-			functor = term_functor(term1);
-			arity = term_arity(term1);
-		}
-		else if (!is_builtin(term1))
-			functor = VAL_S(term1);
-		else
-			return 0;
-
-		char tmpbuf[FUNCTOR_SIZE + 10];
-		snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
-		int did_lock = 0;
-
-		if (!q->in_tran) {
-			did_lock = 1;
-			DBLOCK(q->c.curr_db);
-		}
-
-		if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
-			if (did_lock)
-				DBUNLOCK(q->c.curr_db);
-
-			return 0;
-		}
-
-		if (!NLIST_COUNT(&r->val_l)) {
-			if (did_lock)
-				DBUNLOCK(q->c.curr_db);
-
-#ifndef ISO_ONLY
-			save_match = q->c.curr_match = NULL;
-#endif
+		if (is_var(term1)) {
+			save_match = q->c.curr_match = term3->val_ptr;	// FIXME: check ptr is valid!
 		}
 		else {
+			if (is_compound(term1)) {
+				functor = term_functor(term1);
+				arity = term_arity(term1);
+			}
+			else if (!is_builtin(term1))
+				functor = VAL_S(term1);
+			else
+				return 0;
+
+			char tmpbuf[FUNCTOR_SIZE + 10];
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
+
+			if (!q->in_tran) {
+				did_lock = 1;
+				DBLOCK(q->c.curr_db);
+			}
+
+			if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
+				if (did_lock)
+					DBUNLOCK(q->c.curr_db);
+
+				return 0;
+			}
+
+			if (!NLIST_COUNT(&r->val_l)) {
+				if (did_lock)
+					DBUNLOCK(q->c.curr_db);
+
 #ifndef ISO_ONLY
-			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
+				save_match = q->c.curr_match = NULL;
 #endif
+			}
+			else {
+#ifndef ISO_ONLY
+				save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
+#endif
+			}
 		}
 
 		if (did_lock)
