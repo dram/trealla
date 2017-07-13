@@ -3021,15 +3021,11 @@ static int bif_iso_abolish(tpl_query *q)
 		return 1;
 	}
 
-	unsigned cnt = 0;
-
 	for (node *match = NLIST_FRONT(&r->val_l); match; match = term_next(match)) {
 		if (is_fact(match))
 			term_heapcheck(match);
 		else
 			match->flags |= FLAG_DELETED;
-
-		cnt++;
 	}
 
 	if (sl_del(&q->c.curr_db->rules, tmpbuf, (void **)&r))
