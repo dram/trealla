@@ -38,30 +38,14 @@ reverse(L1,L2) :- revzap(L1,[],L2).
 append([],L,L).
 append([H|T],L2,[H|L3]) :- append(T,L2,L3).
 
-nth(N,L,E) :- integer(N), nth1_1(N,L,E).
-nth(N,L,E) :- var(N), nth1_2(N,L,E).
+nth(1, [H|_],H).
+nth(N, [_|T],H) :- nth(M,T,H), N is M+1.
 
-nth1(N,L,E) :- integer(N), nth1_1(N,L,E).
-nth1(N,L,E) :- var(N), nth1_2(N,L,E).
+nth1(1, [H|_],H).
+nth1(N, [_|T],H) :- nth1(M,T,H), N is M+1.
 
-nth0(N,L,E) :- integer(N), nth0_1(N,L,E).
-nth0(N,L,E) :- var(N), nth0_2(N,L,E).
-
-% Internals of Nth...
-
-nth1_1(N,[],L) :- !.
-nth1_1(1,[H|_],H) :- !.
-nth1_1(N,[_|T],L) :- N1 is N-1, nth1_1(N1,T,L).
-
-nth1_2(1, [H|_],H).
-nth1_2(N, [_|T],H) :- nth1_2(M,T,H), N is M+1.
-
-nth0_1(N,[],L) :- !.
-nth0_1(1,[H|_],H) :- !.
-nth0_1(N,[_|T],L) :- N1 is N-1, nth0_1(N1,T,L).
-
-nth0_2(1, [H|_],H).
-nth0_2(N, [_|T],H) :- nth0_2(M,T,H), N is M+1.
+nth0(0, [H|_],H).
+nth0(N, [_|T],H) :- nth0(M,T,H), N is M+1.
 
 % These should be somewhere else, but for now...
 
