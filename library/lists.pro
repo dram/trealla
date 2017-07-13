@@ -48,8 +48,8 @@ nth1(1,[H|_],H) :- !.
 nth1(N,[_|T],L) :- integer(N), N1 is N-1, nth1(N1,T,L).
 
 nth0(N,[],L) :- integer(N), nonvar(L), !.
-nth1(0,[H|_],H) :- !.
-nth1(N,[_|T],L) :- integer(N), N1 is N-1, nth0(N1,T,L).
+nth0(0,[H|_],H) :- !.
+nth0(N,[_|T],L) :- integer(N), N1 is N-1, nth0(N1,T,L).
 
 % These should be somewhere else, but for now...
 
