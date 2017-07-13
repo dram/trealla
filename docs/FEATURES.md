@@ -149,7 +149,8 @@ and for accessing the rule database:
 	assertz(+Clause,-Ref)
 	erase(+Ref)
 	clause(?Head,?Body,?Ref)
-	abolish(+Name,+Arity)
+	abolish(+Name,+Arity)       - Name/Arity forms a Predicate Indicator
+	abolish(+List)              - takes a Predicate Indicator list
 	retractw(+Clause)           - retract or wait (see dynamic 'notify')
 	clausew(+Head,-Body)        - clause or wait (see dynamic 'notify')
 
