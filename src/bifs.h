@@ -19,7 +19,8 @@
 #define is_integer(n) (((n)->flags & TYPE_INTEGER) ? 1 : 0)
 #define is_bignum(n) (((n)->flags & TYPE_BIGNUM) ? 1 : 0)
 #define is_rational(n) (((n)->flags & TYPE_RATIONAL) ? 1 : 0)
-#define is_number(n) (is_integer(n) || is_float(n) || is_bignum(n) || is_rational(n) ? 1 : 0)
+#define is_integral(n) (is_integer(n) || is_bignum(n))
+#define is_number(n) (is_integral(n) || is_float(n) || is_rational(n))
 
 #define is_functor(n) (((n)->flags & FLAG_FUNCTOR) ? 1 : 0)
 #define is_quoted(n) (((n)->flags & FLAG_QUOTED) ? 1 : 0)

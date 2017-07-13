@@ -2979,11 +2979,25 @@ static int bif_iso_abolish(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_structure(term1);
-	size_t max_len = PRINTBUF_SIZE;
-	char *tmpbuf = (char *)malloc(max_len + 1);
-	char *dst = tmpbuf;
-	term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 1);
-	printf("DEBUG: *** %s\n", tmpbuf);
+
+	node *fa = term_firstarg(term1);
+
+	if (!is_atom(fa)) {
+		QABORT(ABORT_INVALIDARGNOTATOM);
+		return 0;
+	}
+
+	node *f2 = term_next(fa);
+
+	if (!is_integral(f2)) {
+		QABORT(ABORT_INVALIDARGNOTINT);
+		return 0;
+	}
+
+	const char *functor = VAL_S(fa);
+	int arity = get_word(f2);
+	char tmpbuf[FUNCTOR_SIZE + 10];
+	snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 	rule *r = NULL;
 	int did_lock = 0;
 
@@ -3007,11 +3021,15 @@ static int bif_iso_abolish(tpl_query *q)
 		return 1;
 	}
 
+	unsigned cnt = 0;
+
 	for (node *match = NLIST_FRONT(&r->val_l); match; match = term_next(match)) {
 		if (is_fact(match))
 			term_heapcheck(match);
 		else
 			match->flags |= FLAG_DELETED;
+
+		cnt++;
 	}
 
 	if (sl_del(&q->c.curr_db->rules, tmpbuf, (void **)&r))
@@ -3020,7 +3038,6 @@ static int bif_iso_abolish(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	free(tmpbuf);
 	return 1;
 }
 
