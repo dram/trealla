@@ -7,7 +7,7 @@
 :-export([intersection/3]).
 :-export([reverse/2]).
 :-export([append/3]).
-:-export([find/3]).
+:-export([nth/3,nth1/3,nth0/3]).
 :-export([display/1,display/2]).
 :-export([put/1,put/2]).
 
@@ -39,9 +39,17 @@ reverse(L1,L2) :- revzap(L1,[],L2).
 append([],L,L).
 append([H|T],L2,[H|L3]) :- append(T,L2,L3).
 
-find(N,[],L) :- !.
-find(1,[H|_],H) :- !.
-find(N,[_|T],L) :- N1 is N-1, find(N1,T,L).
+nth(N,[],L) :- integer(N), nonvar(L), !.
+nth(1,[H|_],H) :- !.
+nth(N,[_|T],L) :- integer(N), N1 is N-1, nth(N1,T,L).
+
+nth1(N,[],L) :- integer(N), nonvar(L), !.
+nth1(1,[H|_],H) :- !.
+nth1(N,[_|T],L) :- integer(N), N1 is N-1, nth1(N1,T,L).
+
+nth0(N,[],L) :- integer(N), nonvar(L), !.
+nth1(0,[H|_],H) :- !.
+nth1(N,[_|T],L) :- integer(N), N1 is N-1, nth0(N1,T,L).
 
 % These should be somewhere else, but for now...
 

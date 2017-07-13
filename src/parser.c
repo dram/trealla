@@ -40,18 +40,19 @@ op g_ops[] = {
 	{"*->", "xfy", 1050},
 	{",", "xfy", 1000},
 
+	{"multifile", "fx", 1150},
+	{"discontiguous", "fx", 1150},
 	{"initialization", "fx", 1150},
-	{"dynamic", "fy", 1050},
+	{"dynamic", "fx", 1150},
 
 #ifndef ISO_ONLY
-	{"public", "fy", 1050},
-	{"export", "fy", 1050},
-	{"import", "fy", 1050},
-	{"use_module", "fy", 1050},
-	{"module", "fy", 1050},
-	{"module", "fy", 1050},
-	{"receive", "fy", 900},
-	{"undo", "fy", 900},
+	{"public", "fx", 1150},
+	{"export", "fx", 1150},
+	{"import", "fx", 1150},
+	{"use_module", "fx", 1150},
+	{"module", "fx", 1150},
+	{"receive", "fx", 1150},
+	{"undo", "fx", 1150},
 #endif
 
 	 {"\\+", "fy", 900},

@@ -758,7 +758,8 @@ and can be used for compatability with other Prologs:
 	intersection(+L1,+L2,?L)    - intersection of L1 & L2
 	reverse(+L1,-L2)            - reverse a list
 	append(+L1,+L2,-List)       - make a joined list
-	find(+N,+L,-Term)           - find nth arg of list
+	nth0(+N,+L,-Term)           - find nth arg (index from 0) of list
+	nth1(+N,+L,-Term)           - find nth arg (index from 1) of list
 
 Dictionary library module: namespace  'dict'
 --------------------------------------------
