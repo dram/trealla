@@ -159,7 +159,7 @@ const char *make_key(trealla *pl, char *dstbuf, node *term)
 
 // Should be called with DBLOCK in effect
 
-static int assert_index(lexer *l, node *n, int manual, int *persist, int append_mode, int in_tran)
+static rule *assert_index(lexer *l, node *n, int manual, int *persist, int append_mode, int in_tran)
 {
 	module *db = l->db;
 	node *tmp = term_first(n);
@@ -194,7 +194,8 @@ static int assert_index(lexer *l, node *n, int manual, int *persist, int append_
 	if (r->hidden && (manual >= 0)) {
 		if (!l->pl->quiet)
 			printf("WARN: ignoring user predicate '%s'\n", tmpbuf);
-		return 0;
+
+		return r;
 	}
 
 	if (idx && r->idx) {
@@ -275,15 +276,15 @@ static int assert_index(lexer *l, node *n, int manual, int *persist, int append_
 	}
 #endif
 
-	return 1;
+	return r;
 }
 
-int asserta_index(lexer *l, node *n, int manual, int *persist, int in_tran)
+rule *asserta_index(lexer *l, node *n, int manual, int *persist, int in_tran)
 {
 	return assert_index(l, n, manual, persist, 0, in_tran);
 }
 
-int assertz_index(lexer *l, node *n, int manual, int *persist, int in_tran)
+rule *assertz_index(lexer *l, node *n, int manual, int *persist, int in_tran)
 {
 	return assert_index(l, n, manual, persist, 1, in_tran);
 }

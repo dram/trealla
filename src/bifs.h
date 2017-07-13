@@ -573,8 +573,8 @@ extern size_t term_sprint2(char **dstbuf, size_t *bufsize, char **dst, trealla *
 extern void process_error(tpl_query *q);
 extern int process_enqueue(trealla *pl, tpl_query *q, tpl_query *who, node *term, int noerror);
 
-extern int asserta_index(lexer *l, node *n, int manual, int *persist, int in_tran);
-extern int assertz_index(lexer *l, node *n, int manual, int *persist, int in_tran);
+extern rule *asserta_index(lexer *l, node *n, int manual, int *persist, int in_tran);
+extern rule *assertz_index(lexer *l, node *n, int manual, int *persist, int in_tran);
 extern int retract_index(module *db, node *n, node *n2, int *persist, int in_tran);
 extern tpl_query *query_create_subquery(tpl_query *q);
 

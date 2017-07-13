@@ -2449,7 +2449,8 @@ int bif_asserta(tpl_query *q, node *n)
 	lexer l;
 	lexer_init(&l, q->pl);
 	l.db = q->c.curr_db;
-	asserta_index(&l, n, 1, &persist, q->in_tran);
+	rule *r = asserta_index(&l, n, 1, &persist, q->in_tran);
+	q->curr_rule = r;
 	lexer_done(&l);
 	return persist;
 }
@@ -2509,7 +2510,8 @@ int bif_assertz(tpl_query *q, node *n)
 	lexer l;
 	lexer_init(&l, q->pl);
 	l.db = q->c.curr_db;
-	assertz_index(&l, n, 1, &persist, q->in_tran);
+	rule *r = assertz_index(&l, n, 1, &persist, q->in_tran);
+	q->curr_rule = r;
 	lexer_done(&l);
 	return persist;
 }
@@ -3216,7 +3218,29 @@ static int bif_clause(tpl_query *q, int wait)
 		int arity = 0;
 
 		if (is_var(term1)) {
-			save_match = q->c.curr_match = term3->val_ptr;	// FIXME: check ptr is valid!
+			node *ref = term3->val_ptr;
+			rule *r = q->curr_rule;
+
+			if (!r || !ref) {
+				QABORT(ABORT_NOTEXISTREFERENCE);
+				return 0;
+			}
+
+			int found = 0;
+
+			for (node *n = NLIST_FRONT(&r->val_l); n; n = term_next(n)) {
+				if (n == ref) {
+					found = 1;
+					break;
+				}
+			}
+
+			if (!found || is_deleted(ref)) {
+				QABORT(ABORT_ISDELETED);
+				return 0;
+			}
+
+			save_match = q->c.curr_match = ref;
 			nochoice = 1;
 		}
 		else {
