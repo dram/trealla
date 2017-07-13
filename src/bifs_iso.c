@@ -3153,9 +3153,8 @@ static int bif_xtra_erase_1(tpl_query *q)
 static int bif_clause(tpl_query *q, int wait)
 {
 	node *args = get_args(q);
-	node *term1 = get_callable(term1);
-	node *term2 = get_next_arg(q, &args);
-	unsigned term2_ctx = q->latest_context;
+	node *term1 = get_term(term1);
+	node *term2 = get_term(term2);
 	node *term3 = get_next_arg(q, &args);
 #ifndef ISO_ONLY
 	node *save_match = q->c.curr_match;
