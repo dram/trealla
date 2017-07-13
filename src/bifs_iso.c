@@ -3226,6 +3226,11 @@ static int bif_clause(tpl_query *q, int wait)
 				return 0;
 			}
 
+			if (!q->in_tran) {
+				did_lock = 1;
+				DBLOCK(q->c.curr_db);
+			}
+
 			int found = 0;
 
 			for (node *n = NLIST_FRONT(&r->val_l); n; n = term_next(n)) {
@@ -3234,6 +3239,9 @@ static int bif_clause(tpl_query *q, int wait)
 					break;
 				}
 			}
+
+			if (did_lock)
+				DBUNLOCK(q->c.curr_db);
 
 			if (!found || is_deleted(ref)) {
 				QABORT(ABORT_ISDELETED);
@@ -3269,9 +3277,6 @@ static int bif_clause(tpl_query *q, int wait)
 			}
 
 			if (!NLIST_COUNT(&r->val_l)) {
-				if (did_lock)
-					DBUNLOCK(q->c.curr_db);
-
 #ifndef ISO_ONLY
 				save_match = q->c.curr_match = NULL;
 #endif
@@ -3373,9 +3378,18 @@ static int bif_clause(tpl_query *q, int wait)
 	if (is_eof && wait) {
 		q->c.curr_match = save_match;
 		try_me_nofollow(q);
-		DBLOCK(q->c.curr_db);
+
+		if (!q->in_tran) {
+			did_lock = 1;
+			DBLOCK(q->c.curr_db);
+		}
+
 		sl_set(&r->procs, (const char *)q, NULL);
-		DBUNLOCK(q->c.curr_db);
+
+		if (did_lock) {
+			DBUNLOCK(q->c.curr_db);
+		}
+
 		PIDLOCK(q->pl);
 
 		if (q->tmo_msecs > 0) {
