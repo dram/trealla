@@ -705,6 +705,24 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 
 		return 1;
 	}
+	else if (is_float(n1) && is_number(n2)) {
+		if (n1->val_f < get_word(n2))
+			return -1;
+
+		if (n1->val_f == get_word(n2))
+			return 0;
+
+		return 1;
+	}
+	else if (is_float(n2) && is_number(n1)) {
+		if ((flt_t)get_word(n1) < n2->val_f)
+			return -1;
+
+		if ((flt_t)get_word(n1) == n2->val_f)
+			return 0;
+
+		return 1;
+	}
 	else if (is_bignum(n1) && is_bignum(n2)) {  // TODO
 		if (get_word(n1) < get_word(n2))
 			return -1;
