@@ -840,7 +840,7 @@ static int trealla_make_rule(trealla *pl, const char *src)
 	if (l.error) {
 		node *r = NLIST_FRONT(&l.val_l);
 		term_heapcheck(r);
-		printf("ERROR: make_rule\n");
+		printf("ERROR: in make_rule\n");
 	}
 	else {
 		xref_clauses(&l);

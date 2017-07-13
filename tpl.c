@@ -84,7 +84,7 @@ static void manifest_file(session *s, const char *branch, const char *appname, c
 	FILE *fp = fopen(tmpbuf, "wb");
 
 	if (!fp)
-		printf("ERROR: Can't create '%s'\n", tmpbuf);
+		printf("ERROR: can't create '%s'\n", tmpbuf);
 	else
 		printf("INFO: GET %s/%s\n", appname, filename);
 

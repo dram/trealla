@@ -438,7 +438,7 @@ static int dynamic(tpl_query *q)
 		snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor[0] ? functor : ":", arity);
 
 		if (!sl_get(&q->c.curr_db->rules, tmpbuf, (void **)&r)) {
-			printf("ERROR: UNKNOWN -> '%s'\n", tmpbuf);
+			printf("ERROR: unknown -> '%s'\n", tmpbuf);
 			q->halt_code = 1;
 			q->halt = ABORT_HALT;
 			return 0;
@@ -446,7 +446,7 @@ static int dynamic(tpl_query *q)
 	}
 
 	if (r == NULL) {
-		printf("ERROR: NOT CALLABLE -> '%s/%d'\n", VAL_S(n), arity);
+		printf("ERROR: not callable -> '%s/%d'\n", VAL_S(n), arity);
 		q->halt_code = 1;
 		q->halt = ABORT_HALT;
 		return 0;
@@ -738,7 +738,7 @@ int match(tpl_query *q)
 
 	if (NLIST_FRONT(&r->val_l) == NULL) {
 		if (!r->dynamic)
-			printf("ERROR: No rule for '%s'\n", r->functor);
+			printf("ERROR: no rule for '%s'\n", r->functor);
 
 		return 0;
 	}
