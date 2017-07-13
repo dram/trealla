@@ -8,7 +8,6 @@
 :-export([reverse/2]).
 :-export([append/3]).
 :-export([nth/3,nth1/3,nth0/3]).
-:-export([display/1,display/2]).
 :-export([put/1,put/2]).
 
 member(X,X) :- var(X), !, fail.
