@@ -3201,9 +3201,7 @@ static int bif_clause(tpl_query *q, int wait)
 	node *term1 = get_term(term1);
 	node *term2 = get_term(term2);
 	node *term3 = get_next_arg(q, &args);
-#ifndef ISO_ONLY
 	node *save_match = NULL;
-#endif
 	node *head = NULL;
 	rule *r = NULL;
 	int did_lock = 0, nochoice = 0;
@@ -3277,14 +3275,10 @@ static int bif_clause(tpl_query *q, int wait)
 			}
 
 			if (!NLIST_COUNT(&r->val_l)) {
-#ifndef ISO_ONLY
 				save_match = q->c.curr_match = NULL;
-#endif
 			}
 			else {
-#ifndef ISO_ONLY
 				save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
-#endif
 			}
 
 			if (did_lock)
@@ -3298,15 +3292,11 @@ static int bif_clause(tpl_query *q, int wait)
 		r = q->curr_rule;
 
 		if (!q->c.curr_match) {
-#ifndef ISO_ONLY
 			save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
-#endif
 }
 		else {
 			r = q->curr_rule;
-#ifndef ISO_ONLY
 			save_match = q->c.curr_match;
-#endif
 			q->c.curr_match = term_next(q->c.curr_match);
 		}
 	}
@@ -3372,11 +3362,11 @@ static int bif_clause(tpl_query *q, int wait)
 		return 0;
 	}
 
-#ifndef ISO_ONLY
 	int is_eof = !q->c.curr_match;
 
 	if (is_eof && wait) {
 		q->c.curr_match = save_match;
+#ifndef ISO_ONLY
 		try_me_nofollow(q);
 
 		if (!q->in_tran) {
@@ -3400,8 +3390,8 @@ static int bif_clause(tpl_query *q, int wait)
 		}
 
 		return process_yield_locked(q);
-	}
 #endif
+	}
 
 	if (!nochoice)
 		try_me_nofollow(q);
