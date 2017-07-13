@@ -6595,8 +6595,28 @@ static int bif_iso_op(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
 	node *term2 = get_atom(term2);
-	node *term3 = get_atom(term3);
-	return dir_op_3(q->lex, get_word(term1), VAL_S(term2), VAL_S(term3));
+	node *term3 = get_atom_or_list(term3);
+
+	if (is_atom(term3))
+		return dir_op_3(q->lex, get_word(term1), VAL_S(term2), VAL_S(term3));
+
+	node * l = term3;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		node *n = subst(q, head, this_context);
+
+		if (!is_atom(n))
+			return 0;
+
+		dir_op_3(q->lex, get_word(term1), VAL_S(term2), VAL_S(n));
+
+		node *tail = term_next(head);
+		l = subst(q, tail, this_context);
+	}
+
+	return 1;
 }
 
 static int bif_iso_dynamic(tpl_query *q)
