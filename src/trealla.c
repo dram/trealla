@@ -935,7 +935,7 @@ int query_run(tpl_query *q)
 
 	if (!q->is_yielded && (q->halt >= ABORT_HALT)) {
 		if (q->halt > ABORT_HALT)
-			printf("ERROR: ERROR %s\n", q->halt_s ? q->halt_s : "ABORT");
+			printf("ERROR: %s\n", q->halt_s ? q->halt_s : "ABORT");
 		else if (q->did_halt && !q->pl->quiet)
 			printf("Halted\n");
 
