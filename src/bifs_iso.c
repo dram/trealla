@@ -3161,7 +3161,7 @@ static int bif_clause(tpl_query *q, int wait)
 #endif
 	node *head = NULL;
 	rule *r = NULL;
-	int did_lock = 0;
+	int did_lock = 0, nochoice = 0;
 
 	if ((!term3 || !is_ptr(term3)) && is_var(term1)) {
 		QABORT(ABORT_INVALIDARGISVAR);
@@ -3174,6 +3174,7 @@ static int bif_clause(tpl_query *q, int wait)
 
 		if (is_var(term1)) {
 			save_match = q->c.curr_match = term3->val_ptr;	// FIXME: check ptr is valid!
+			nochoice = 1;
 		}
 		else {
 			if (is_compound(term1)) {
@@ -3213,13 +3214,13 @@ static int bif_clause(tpl_query *q, int wait)
 				save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 #endif
 			}
+
+			if (did_lock)
+				DBUNLOCK(q->c.curr_db);
+
+			allocate_frame(q);
+			q->curr_rule = r;
 		}
-
-		if (did_lock)
-			DBUNLOCK(q->c.curr_db);
-
-		allocate_frame(q);
-		q->curr_rule = r;
 	}
 	else {
 		r = q->curr_rule;
@@ -3321,13 +3322,11 @@ static int bif_clause(tpl_query *q, int wait)
 	}
 #endif
 
-	try_me_nofollow(q);
+	if (!nochoice)
+		try_me_nofollow(q);
 
 	if (term3 && is_var(term3))
 		put_ptr(q, q->c.curr_frame + term3->slot, q->c.curr_match);
-
-	if (!term2)
-		return 1;
 
 	node *body = term_next(head);
 	return unify(q, term2, term2_ctx, body, q->c.curr_frame);
