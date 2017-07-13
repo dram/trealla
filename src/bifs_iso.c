@@ -943,7 +943,7 @@ static int bif_iso_current_op(tpl_query *q)
 		}
 	}
 
-	if (!optr->fun && !q->uops) {
+	if (q->retry && !optr->fun && !q->uops) {
 		q->uops = 1;
 		q->optr = q->c.curr_db->uops;
 		return bif_iso_current_op(q);
