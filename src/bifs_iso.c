@@ -5631,7 +5631,7 @@ static int bif_iso_round(tpl_query *q)
 
 	if (is_float(&q->nv)) {
 		q->nv.flags = TYPE_INTEGER;
-		q->nv.val_i = (nbr_t)(q->nv.val_f + (flt_t)0.5);
+		q->nv.val_i = (nbr_t)q->nv.val_f;
 	}
 	else if (q->nv.flags != TYPE_INTEGER) {
 		QABORT(ABORT_TYPEERROR);
