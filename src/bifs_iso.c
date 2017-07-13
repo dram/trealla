@@ -2975,19 +2975,19 @@ static int bif_iso_retractall(tpl_query *q)
 	return 1;
 }
 
-static int bif_iso_abolish(tpl_query *q)
+static int bif_abolish(tpl_query *q, node *term1)
 {
-	node *args = get_args(q);
-	node *term1 = get_structure(term1);
-
 	node *fa = term_firstarg(term1);
+	node *f2 = term_next(fa);
+
+	fa = subst(q, fa, q->latest_context);
 
 	if (!is_atom(fa)) {
 		QABORT(ABORT_INVALIDARGNOTATOM);
 		return 0;
 	}
 
-	node *f2 = term_next(fa);
+	f2 = subst(q, f2, q->latest_context);
 
 	if (!is_integral(f2)) {
 		QABORT(ABORT_INVALIDARGNOTINT);
@@ -3033,6 +3033,36 @@ static int bif_iso_abolish(tpl_query *q)
 
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
+
+	return 1;
+}
+
+static int bif_iso_abolish(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_compound(term1);
+
+	if (!is_list(term1))
+		return bif_abolish(q, term1);
+
+#ifndef ISO_ONLY
+	node *l = term1;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		node *n = subst(q, head, this_context);
+
+		if (!bif_abolish(q, n))
+			return 0;
+
+		node *tail = term_next(head);
+		l = subst(q, tail, this_context);
+	}
+#else
+	QABORT(ABORT_INVALIDARGNOTPREDICATEINDICATOR);
+	return 0;
+#endif
 
 	return 1;
 }
