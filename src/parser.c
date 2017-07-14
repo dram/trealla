@@ -95,9 +95,9 @@ op g_ops[] = {
 	 //{"-", "fy", 200}, // HACK
 	 //{"+", "fy", 200}, // HACK
 	 //{"\\", "fy", 200}, // HACK
-	 {"]-[", "fy", 200}, // HACK
-	 {"]+[", "fy", 200}, // HACK
-	 {"]~[", "fy", 200}, // HACK
+	 {OP_SUB, "fy", 200}, // HACK
+	 {OP_ADD, "fy", 200}, // HACK
+	 {OP_BCK, "fy", 200}, // HACK
 	 //{"$", "fx", 1},
 
 	 {0}
@@ -1203,12 +1203,12 @@ static int attach_ops(lexer *l, node *term, int depth)
 
 		//printf("*** OP [%d] = '%s' quoted=%d, prev=%d, noop=%d\n", depth, functor, is_quoted(n), prev_op, is_noop(n));
 
-		if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[") || !strcmp(functor, "]~[")) &&
+		if ((!strcmp(functor, OP_SUB) || !strcmp(functor, OP_ADD) || !strcmp(functor, OP_BCK)) &&
 			n_next && is_number(n_next)) {
 			node *tmp = n_next;
 			term_remove(term, tmp);
-			int neg = !strcmp(functor, "]-[");
-			int bitneg = !strcmp(functor, "]~[");
+			int neg = !strcmp(functor, OP_SUB);
+			int bitneg = !strcmp(functor, OP_BCK);
 
 			if (bitneg && is_integer(tmp))
 				n->val_u = ~tmp->val_u;
@@ -1236,13 +1236,13 @@ static int attach_ops(lexer *l, node *term, int depth)
 			term_heapcheck(tmp);
 			continue;
 		}
-		else if ((!strcmp(functor, "]-[") || !strcmp(functor, "]+[") || !strcmp(functor, "]~[")) &&
+		else if ((!strcmp(functor, OP_SUB) || !strcmp(functor, OP_ADD) || !strcmp(functor, OP_BCK)) &&
 				(!n_next || is_builtin(n_next) || is_noop(n))) {
-			if (!strcmp(functor, "]-["))
+			if (!strcmp(functor, OP_SUB))
 				n->val_s = (char*)"-";
-			else if (!strcmp(functor, "]+["))
+			else if (!strcmp(functor, OP_ADD))
 				n->val_s = (char*)"+";
-			else if (!strcmp(functor, "]~["))
+			else if (!strcmp(functor, OP_BCK))
 				n->val_s = (char*)"\\";
 		}
 
@@ -2547,19 +2547,19 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				(l->was_paren || l->was_op2 || l->was_op)) {
 				free(l->tok);
 				n->flags |= FLAG_CONST;
-				l->tok =  (char*)"]-[";
+				l->tok =  (char*)OP_SUB;
 			}
 			else if (!l->quoted && !strcmp(l->tok, "+") &&
 				(l->was_paren || l->was_op2 || l->was_op)) {
 				free(l->tok);
 				n->flags |= FLAG_CONST;
-				l->tok =  (char*)"]+[";
+				l->tok =  (char*)OP_ADD;
 			}
 			else if (!l->quoted && !strcmp(l->tok, "\\") &&
 				(l->was_paren || l->was_op2 || l->was_op)) {
 				free(l->tok);
 				n->flags |= FLAG_CONST;
-				l->tok =  (char*)"]~[";
+				l->tok =  (char*)OP_BCK;
 			}
 
 			if (!l->quoted && strcmp(l->tok, "\\+") &&

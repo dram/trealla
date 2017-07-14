@@ -3528,7 +3528,7 @@ static int bif_iso_keysort(tpl_query *q)
 			if (!is_compound(n))
 				return 0;
 
-			if ((term_arity(n) != 2) || !is_atom(term_first(n)) || strcmp(VAL_S(term_first(n)), "-"))
+			if ((term_arity(n) != 2) || !is_atom(term_first(n)) || strcmp(VAL_S(term_first(n)), OP_SUB))
 				return 0;
 
 			cnt++;
@@ -7360,9 +7360,9 @@ void bifs_load_iso(void)
 	DEFINE_BIF("is", 2, bif_iso_is);
 	DEFINE_BIF("=", 2, bif_iso_unify);
 	DEFINE_BIF("\\=", 2, bif_iso_notunify);
-	DEFINE_BIF("]~[", 1, bif_iso_complement);
-	DEFINE_BIF("]-[", 1, bif_iso_negative);
-	DEFINE_BIF("]+[", 1, bif_iso_positive);
+	DEFINE_BIF(OP_BCK, 1, bif_iso_complement);
+	DEFINE_BIF(OP_SUB, 1, bif_iso_negative);
+	DEFINE_BIF(OP_ADD, 1, bif_iso_positive);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);

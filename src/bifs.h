@@ -606,6 +606,10 @@ extern int bif_iso_assertz(tpl_query *q);
 
 enum { NUM_NONE, NUM_REAL, NUM_RATIONAL, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
 
+#define OP_SUB "]-["
+#define OP_ADD "]+["
+#define OP_BCK "]~["
+
 inline static nbr_t get_word(node *n)
 {
 	if (is_integer(n))
