@@ -1534,6 +1534,8 @@ static int tmocmp(const char *k1, const char *k2)
 
 trealla *trealla_create(const char *name)
 {
+	srand(time(NULL));
+
 	if (!name)
 		name = "default";
 
