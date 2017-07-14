@@ -2443,16 +2443,15 @@ static void rebase(lexer *l, node *term)
 	}
 }
 
-int bif_asserta(tpl_query *q, node *n)
+int bif_asserta(tpl_query *q, node *n, int *persist)
 {
-	int persist;
 	lexer l;
 	lexer_init(&l, q->pl);
 	l.db = q->c.curr_db;
-	rule *r = asserta_index(&l, n, 1, &persist, q->in_tran);
+	rule *r = asserta_index(&l, n, 1, persist, q->in_tran);
 	q->curr_rule = r;
 	lexer_done(&l);
-	return persist;
+	return 1;
 }
 
 int bif_iso_asserta(tpl_query *q)
@@ -2497,23 +2496,22 @@ int bif_iso_asserta(tpl_query *q)
 #endif
 	{
 		DBLOCK(q->c.curr_db);
-		bif_asserta(q, n);
+		bif_asserta(q, n, NULL);
 		DBUNLOCK(q->c.curr_db);
 	}
 
 	return 1;
 }
 
-int bif_assertz(tpl_query *q, node *n)
+int bif_assertz(tpl_query *q, node *n, int *persist)
 {
-	int persist;
 	lexer l;
 	lexer_init(&l, q->pl);
 	l.db = q->c.curr_db;
-	rule *r = assertz_index(&l, n, 1, &persist, q->in_tran);
+	rule *r = assertz_index(&l, n, 1, persist, q->in_tran);
 	q->curr_rule = r;
 	lexer_done(&l);
-	return persist;
+	return 1;
 }
 
 int bif_iso_assertz(tpl_query *q)
@@ -2558,7 +2556,7 @@ int bif_iso_assertz(tpl_query *q)
 #endif
 	{
 		DBLOCK(q->c.curr_db);
-		bif_assertz(q, n);
+		bif_assertz(q, n, NULL);
 		DBUNLOCK(q->c.curr_db);
 	}
 
@@ -3112,7 +3110,7 @@ static int bif_xtra_asserta_2(tpl_query *q)
 		if (!q->in_tran)
 			DBLOCK(q->c.curr_db);
 
-		bif_asserta(q, n);
+		bif_asserta(q, n, NULL);
 
 		if (!q->in_tran)
 			DBUNLOCK(q->c.curr_db);
@@ -3164,7 +3162,7 @@ static int bif_xtra_assertz_2(tpl_query *q)
 		if (!q->in_tran)
 			DBLOCK(q->c.curr_db);
 
-		bif_assertz(q, n);
+		bif_assertz(q, n, NULL);
 
 		if (!q->in_tran)
 			DBUNLOCK(q->c.curr_db);

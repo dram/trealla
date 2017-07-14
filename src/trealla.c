@@ -165,7 +165,9 @@ static rule *assert_index(lexer *l, node *n, int manual, int *persist, int appen
 	node *tmp = term_first(n);
 	node *head = tmp = term_next(tmp), *idx = NULL;
 	int arity = 0;
-	*persist = 0;
+
+	if (persist)
+		*persist = 0;
 
 	if (is_compound(head)) {
 		arity = term_arity(head);
@@ -234,7 +236,9 @@ static rule *assert_index(lexer *l, node *n, int manual, int *persist, int appen
 
 #ifndef ISO_ONLY
 	if (r->persist) {
-		*persist = 1;
+		if (persist)
+			*persist = 1;
+
 		nbr_t save_pos = dbs_get_fpos(db);
 
 		if (!db->loading) {
@@ -772,9 +776,7 @@ void add_clauses(lexer *l)
 		if (l->internal)
 			n->flags |= FLAG_HIDDEN;
 
-		int persist;
-
-		if (!assertz_index(l, n, -l->internal, &persist, 1)) {
+		if (!assertz_index(l, n, -l->internal, NULL, 1)) {
 			term_destroy(n);
 			continue;
 		}
