@@ -1603,8 +1603,8 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "stream_property(S,position(P)) :- stream_property_position(S,P).");
 	trealla_make_rule(pl, "stream_property(S,file_name(F)) :- stream_property_file_name(S,F).");
 
-	trealla_make_rule(pl, "(A -> B ; _C) :- call(A), !, call(B).");
-	trealla_make_rule(pl, "(_A -> _B ; C) :- !, call(C).");
+	trealla_make_rule(pl, "(A -> B ; _C) :- call(A), !, call_transparent(B).");
+	trealla_make_rule(pl, "(_A -> _B ; C) :- !, call_transparent(C).");
 	trealla_make_rule(pl, "(A -> B) :- call(A), !, call_transparent(B).");
 	trealla_make_rule(pl, "(A ; _B) :- call_transparent(A).");
 	trealla_make_rule(pl, "(_A ; B) :- call_transparent(B).");

@@ -331,16 +331,18 @@ int retry_me(tpl_query *q)
 void trust_me(tpl_query *q)
 {
 	TRACE("trust_me");
-	q->choice_point = q->c.prev_choice + 1;
+	q->choice_point = q->c.prev_choice + 1;		// prune
 	choice *c = &q->choices[q->c.prev_choice];
 	c->cut = 1;
 	q->envs[c->curr_frame].choices = 0;
 
 	if (c->transparent) {
-		q->c.prev_choice = c->prev_choice;
-		c = &q->choices[q->choice_point-1];
+		//printf("*** transparent: %u/%u\n", q->c.prev_choice, c->prev_choice);
+		c = &q->choices[c->prev_choice];
 		c->cut = 1;
-		return trust_me(q);
+		unsigned prev_choice = c->prev_choice;
+		c = &q->choices[prev_choice];
+		c->cut = 1;
 	}
 
 #ifdef DEBUG

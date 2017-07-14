@@ -483,16 +483,16 @@ static int bif_iso_do(tpl_query *q)
 	return call(q);
 }
 
-static int bif_iso_call_transparent(tpl_query *q)
+static int bif_internal_call_transparent(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	term1->flags |= FLAG_NOFOLLOW;
 	try_me_transparent(q);
 
 	if (term1_ctx != -1)
 		q->c.curr_frame = term1_ctx;
 
+	term1->flags |= FLAG_NOFOLLOW;
 	begin_query(q, term1);
 	return call(q);
 }
@@ -502,12 +502,12 @@ static int bif_iso_call(tpl_query *q)
 	node *args = get_args(q);
 	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
-	term1->flags |= FLAG_NOFOLLOW;
 	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
 		q->c.curr_frame = term1_ctx;
 
+	term1->flags |= FLAG_NOFOLLOW;
 	begin_query(q, term1);
 	return call(q);
 }
@@ -2983,14 +2983,14 @@ static int bif_abolish(tpl_query *q, node *term1)
 	fa = subst(q, fa, q->latest_context);
 
 	if (!is_atom(fa)) {
-		QABORT(ABORT_INVALIDARGNOTATOM);
+		QABORT(ABORT_INVALIDARGNOTPREDICATEINDICATOR);
 		return 0;
 	}
 
 	f2 = subst(q, f2, q->latest_context);
 
 	if (!is_integral(f2)) {
-		QABORT(ABORT_INVALIDARGNOTINT);
+		QABORT(ABORT_INVALIDARGNOTPREDICATEINDICATOR);
 		return 0;
 	}
 
@@ -7403,7 +7403,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("]~[", 1, bif_iso_complement);
 	DEFINE_BIF("]-[", 1, bif_iso_negative);
 	DEFINE_BIF("]+[", 1, bif_iso_positive);
-	DEFINE_BIF("call_transparent", 1, bif_iso_call_transparent);
 	DEFINE_BIF("call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);
@@ -7550,6 +7549,8 @@ void bifs_load_iso(void)
 
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 	DEFINE_BIF("op", 3, bif_iso_op);
+
+	DEFINE_BIF("call_transparent", 1, bif_internal_call_transparent);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
 
