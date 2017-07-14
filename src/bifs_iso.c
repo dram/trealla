@@ -6351,7 +6351,7 @@ static int bif_xtra_listing(tpl_query *q)
 
 	while (sl_next(&db->rules, (void **)&r) != NULL) {
 		for (node *n = NLIST_FRONT(&r->val_l); n; n = term_next(n)) {
-			if ((n->flags & FLAG_HIDDEN) && !functor)
+			if (is_hidden(n) && !functor)
 				continue;
 
 			if (functor) {
@@ -6401,7 +6401,7 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 
 	while (sl_next(&db->rules, (void **)&r) != NULL) {
 		for (node *n = NLIST_FRONT(&r->val_l); n; n = term_next(n)) {
-			if ((n->flags & FLAG_HIDDEN) && !functor)
+			if (is_hidden(n) && !functor)
 				continue;
 
 			if (functor) {

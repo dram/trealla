@@ -116,7 +116,7 @@ LOOP:
 			term_heapcheck(save);
 		}
 	}
-	else if (!(n->flags & FLAG_CONST)) {
+	else if (!is_const(n)) {
 		if (is_atom(n))
 			free(n->val_s);
 		else if (is_var(n))
@@ -520,7 +520,7 @@ static rule *xref_term2(lexer *l, module *db, const char *functor, node *term, i
 	if (!db)
 		return NULL;
 
-	if (!strcmp(functor, "[]") || !strcmp(functor, g_list_cons) || (term->flags & FLAG_QUOTED))
+	if (!strcmp(functor, "[]") || !strcmp(functor, g_list_cons) || is_quoted(term))
 		return NULL;
 
 	char tmpbuf[FUNCTOR_SIZE + 10];
@@ -649,7 +649,7 @@ int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, in
 		for (node *n = term_next(tmp); n != NULL; n = term_next(n))
 			xref_body(l, n, head_functor, head_arity, is_last);
 
-		if (is_atom(tmp) /*&& !(tmp->flags & FLAG_QUOTED)*/ && !(tmp->flags & FLAG_BUILTIN)) {
+		if (is_atom(tmp) /*&& !is_quoted(tmp)*/ && !is_builtin(tmp)) {
 			rule *match = xref_term(l, tmp, term_arity(term));
 
 			if (!match && !is_builtin(term)) {
@@ -671,7 +671,7 @@ int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, in
 			arity = term_arity(term);
 		}
 	}
-	else if (is_atom(term) && !(term->flags & FLAG_QUOTED) && !(term->flags & FLAG_BUILTIN)) {
+	else if (is_atom(term) && !is_quoted(term) && !is_builtin(term)) {
 		rule *match = xref_term(l, term, 0);
 
 		if (!is_builtin(term)) {
@@ -897,7 +897,7 @@ void trace(tpl_query *q, int fail, int leave)
 	if (!q->c.curr_term)
 		return;
 
-	if (q->c.curr_term->flags & FLAG_HIDDEN)
+	if (is_hidden(q->c.curr_term))
 		return;
 
 	const int save_context = q->latest_context;

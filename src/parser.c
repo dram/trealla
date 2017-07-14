@@ -1166,7 +1166,7 @@ static node *attach_op_postfix(lexer *l, node *term, node *n)
 
 static int attach_ops(lexer *l, node *term, int depth)
 {
-	if (!is_compound(term) || (term->flags & FLAG_ATTACHED))
+	if (!is_compound(term) || is_attached(term))
 		return 0;
 
 	unsigned priority = UINT_MAX;
@@ -1259,7 +1259,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 	int did_something = 0;
 
 	for (node *n = xfy ? term_last(term) : term_first(term); n != NULL; n = xfy ? term_prev(n) : term_next(n)) {
-		if (!is_atom(n) /*|| (n->flags & FLAG_QUOTED)*/)
+		if (!is_atom(n) /*|| is_quoted(n)*/)
 			continue;
 
 		if (!strcmp(VAL_S(n), ",") && is_quoted(n)) // HACK
@@ -1357,7 +1357,7 @@ static int dcg_term(lexer *l, node *term, int i, int j)
 		node *tmp = term_make();
 		tmp->flags |= term->flags;
 
-		if (term->flags & FLAG_SMALL)
+		if (is_small(term))
 			strcpy(tmp->val_ch, term->val_ch);
 		else
 			tmp->val_s = term->val_s;
@@ -2182,11 +2182,12 @@ static void lexer_finalize(lexer *l)
 		if (l->consult)
 			add_clauses(l);
 
-		// xref_clauses(l);
+		//xref_clauses(l);
 	}
 
 	sl_clear(&l->symtab, NULL);
 	l->expandable = 0;
+	l->save_vars = l->vars;
 	l->vars = 0;
 	l->r = NULL;
 }
@@ -2222,7 +2223,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 		}
 
 		if (!l->quoted && (!strcmp(l->tok, "]") || !strcmp(l->tok, ")"))) {
-			if (term->flags & FLAG_CONSING) {
+			if (is_consing(term)) {
 				node *tmp = term_make();
 				tmp->flags |= TYPE_ATOM | FLAG_CONST;
 				tmp->val_s = (char *)"[]";
@@ -2283,7 +2284,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				return NULL;
 			}
 
-			if (term->flags & FLAG_CONSING) {
+			if (is_consing(term)) {
 				free(l->tok);
 				node *tmp = make_list();
 				tmp->flags |= FLAG_CONSING;
@@ -2298,13 +2299,13 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			continue;
 		}
 
-		if (!l->quoted && !strcmp(l->tok, "|") && !(term->flags & FLAG_CONSING)) {
+		if (!l->quoted && !strcmp(l->tok, "|") && !is_consing(term)) {
 			printf("ERROR: extra bar: '%s'\n", l->tok);
 			l->error = 1;
 			free(l->tok);
 			return src;
 		}
-		else if (!l->quoted && !strcmp(l->tok, "|") && (term->flags & FLAG_CONSING)) {
+		else if (!l->quoted && !strcmp(l->tok, "|") && is_consing(term)) {
 			free(l->tok);
 			term->flags &= ~FLAG_CONSING;
 			l->was_atomic = 0;
