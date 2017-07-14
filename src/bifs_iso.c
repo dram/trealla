@@ -3308,7 +3308,7 @@ static int bif_clause(tpl_query *q, int wait)
 		// (%u)\n",
 		// q->c.curr_match->frame_size);
 
-		if (!unify(q, term1, term1_ctx, head, q->c.env_point)) {
+		if (!unify(q, term1, term1_ctx, head, -1)) {
 			if (save_head)
 				term_heapcheck(save_head);
 
