@@ -889,7 +889,7 @@ int query_parse_file(tpl_query *q, const char *src, FILE *fp)
 		return 0;
 	}
 
-	q->c.frame_size = q->lex->vars;
+	q->c.frame_size = q->lex->save_vars;
 	begin_query(q, NLIST_FRONT(&q->lex->val_l));
 	return 1;
 }
@@ -931,7 +931,7 @@ int query_run(tpl_query *q)
 	q->started = gettimeofday_usec();
 	q->c.env_point = q->c.curr_frame + q->c.frame_size;
 	q->envs_used = q->c.env_point;
-	prepare_frame(q, q->c.frame_size);
+	allocate_frame(q);
 	run_me(q);
 	q->elapsed = gettimeofday_usec() - q->started;
 
