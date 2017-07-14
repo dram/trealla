@@ -1534,8 +1534,6 @@ static int tmocmp(const char *k1, const char *k2)
 
 trealla *trealla_create(const char *name)
 {
-	srand(time(NULL));
-
 	if (!name)
 		name = "default";
 
@@ -1556,6 +1554,7 @@ trealla *trealla_create(const char *name)
 
 	if (first_time) {
 		first_time = 0;
+		srand(time(NULL));
 		bifs_load_iso();
 
 #ifndef ISO_ONLY
