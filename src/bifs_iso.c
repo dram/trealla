@@ -459,6 +459,20 @@ static int bif_internal_call_transparent(tpl_query *q)
 	return call(q);
 }
 
+static int bif_internal_call_opaque(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_callable(term1);
+	try_me_nochoice(q);
+
+	if (term1_ctx != -1)
+		q->c.curr_frame = term1_ctx;
+
+	term1->flags |= FLAG_NOFOLLOW;
+	begin_query(q, term1);
+	return call(q);
+}
+
 static int bif_iso_call(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -7511,6 +7525,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("op", 3, bif_iso_op);
 
 	DEFINE_BIF("call_transparent", 1, bif_internal_call_transparent);
+	DEFINE_BIF("call_opaque", 1, bif_internal_call_opaque);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
 
