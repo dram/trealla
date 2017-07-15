@@ -5776,16 +5776,42 @@ static int bif_xtra_split_string_4(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
-	node *term2b = get_atom(term2b);
-	node *term3 = get_var(term3);
+	node *term3 = get_atom(term3);
+	node *term4 = get_var(term4);
 	const char *src = VAL_S(term1);
 
-	while (isspace(*src))
-		src++;
+	const char *src_pad = VAL_S(term3);
+	int pads[256];
+
+	for (int i = 0; *src_pad && (i < 255); i++) {
+		int ch = get_char_utf8(&src_pad);
+		pads[i] = ch;
+		pads[1+1] = 0;
+	}
+
+	const char *save_src = src;
+	int ch = get_char_utf8(&src);
+	int skip = 0;
+
+	while (*src) {
+		for (int i = 0; pads[i] && (i < 255); i++) {
+			if (ch == pads[i]) {
+				save_src = src;
+				ch = get_char_utf8(&src);
+				skip = 1;
+				break;
+			}
+		}
+
+		if (!skip)
+			break;
+	}
+
+	src = save_src;
 
 	if (!*src) {
 		node *tmp = make_const_atom("[]");
-		put_env(q, q->c.curr_frame + term3->slot, tmp, q->c.curr_frame);
+		put_env(q, q->c.curr_frame + term4->slot, tmp, q->c.curr_frame);
 		term_heapcheck(tmp);
 		return 1;
 	}
@@ -5793,23 +5819,62 @@ static int bif_xtra_split_string_4(tpl_query *q)
 	node *l = make_list();
 	node *save_l = l;
 	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+	const char *src_sep = VAL_S(term2);
+	int seps[256];
+
+	for (int i = 0; *src_sep && (i < 255); i++) {
+		int ch = get_char_utf8(&src_sep);
+		seps[i] = ch;
+		seps[1+1] = 0;
+	}
 
 	while (*src) {
 		char *dst = dstbuf;
+		int ch = get_char_utf8(&src), found = 0;
 
-		while (*src && strncmp(src, VAL_S(term2), LEN(term2)))
-			*dst++ = *src++;
 
-		if (*src) {
-			src += LEN(term2);
+		while (!found) {
+			for (int i = 0; seps[i] && !found && (i < 255); i++) {
+				if (ch == seps[i]) {
+					found = 1;
+					break;
+				}
+			}
 
-			while (isspace(*src))
-				src++;
+			if (found)
+				break;
+
+			dst += put_char_utf8(dst, ch);
+
+			if (!*src)
+				break;
+
+			ch = get_char_utf8(&src);
 		}
 
 		*dst = '\0';
 		node *tmp = make_atom(strdup(dstbuf));
 		term_append(l, tmp);
+
+		const char *save_src = src;
+		ch = get_char_utf8(&src);
+		int skip = 0;
+
+		while (*src) {
+			for (int i = 0; pads[i] && (i < 255); i++) {
+				if (ch == pads[i]) {
+					save_src = src;
+					ch = get_char_utf8(&src);
+					skip = 1;
+					break;
+				}
+			}
+
+			if (!skip)
+				break;
+		}
+
+		src = save_src;
 
 		if (!*src)
 			break;
@@ -5819,7 +5884,7 @@ static int bif_xtra_split_string_4(tpl_query *q)
 
 	free(dstbuf);
 	term_append(l, make_const_atom("[]"));
-	put_env(q, q->c.curr_frame + term3->slot, save_l, q->c.curr_frame);
+	put_env(q, q->c.curr_frame + term4->slot, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
 }
