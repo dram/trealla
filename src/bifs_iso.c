@@ -4103,7 +4103,7 @@ static int bif_iso_bagof(tpl_query *q)
 			isfree[n->slot] = 1;
 	}
 
-	sl_clear(&vars, NULL);
+	sl_done(&vars, NULL);
 	q->d = NULL;
 
 	if (!q->retry) {
@@ -4236,7 +4236,7 @@ static int bif_iso_setof(tpl_query *q)
 			isfree[n->slot] = 1;
 	}
 
-	sl_clear(&vars, NULL);
+	sl_done(&vars, NULL);
 	q->d = NULL;
 
 	if (!q->retry) {
