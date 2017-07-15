@@ -241,7 +241,9 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 
 		int tmp_listing = listing;
 
-		if (!listing && is_structure(head))
+		if ((listing <= 0) && is_structure(head) && strcmp(functor, ":-") &&
+			strcmp(functor, "->") && strcmp(functor, "-->") &&
+			strcmp(functor, ",") && strcmp(functor, ";"))
 			tmp_listing = 1;
 
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, head, tmp_listing);
