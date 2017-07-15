@@ -5771,6 +5771,59 @@ static int bif_edin_display_1(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_split_string_4(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_atom(term2);
+	node *term2b = get_atom(term2b);
+	node *term3 = get_var(term3);
+	const char *src = VAL_S(term1);
+
+	while (isspace(*src))
+		src++;
+
+	if (!*src) {
+		node *tmp = make_const_atom("[]");
+		put_env(q, q->c.curr_frame + term3->slot, tmp, q->c.curr_frame);
+		term_heapcheck(tmp);
+		return 1;
+	}
+
+	node *l = make_list();
+	node *save_l = l;
+	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+
+	while (*src) {
+		char *dst = dstbuf;
+
+		while (*src && strncmp(src, VAL_S(term2), LEN(term2)))
+			*dst++ = *src++;
+
+		if (*src) {
+			src += LEN(term2);
+
+			while (isspace(*src))
+				src++;
+		}
+
+		*dst = '\0';
+		node *tmp = make_atom(strdup(dstbuf));
+		term_append(l, tmp);
+
+		if (!*src)
+			break;
+
+		l = term_append(l, make_list());
+	}
+
+	free(dstbuf);
+	term_append(l, make_const_atom("[]"));
+	put_env(q, q->c.curr_frame + term3->slot, save_l, q->c.curr_frame);
+	term_heapcheck(save_l);
+	return 1;
+}
+
 static int bif_xtra_between_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -7563,6 +7616,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("phrase", 1 + 3, bif_xtra_phrase);
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
 	DEFINE_BIF("garbage_collect", 0, bif_iso_true);
+	DEFINE_BIF("split_string", 4, bif_xtra_split_string_4);
 #endif
 
 // These are for Edinburgh-style file handling...

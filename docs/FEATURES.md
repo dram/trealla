@@ -136,6 +136,8 @@ implementations:
 
 	read_term_from_atom(+Atom,?Term,+Opts) - convert atom to term
 
+	split_string(+Atom,+SepChars,+PadChars,-L)   - split atom based on separator(s) into list
+
 	atom_number(+A,?V)          - convert atom to Int or Float
 	unbounded(+Int)             - function to convert integer to unbounded
 	fixed(+Int,+Digs,+Prec,-V)  - format integer with fixed number of decimal digits
@@ -202,7 +204,6 @@ These are an assortment of utilities:
 	bwrite(+S,+Atom)            - block write to stream
 	rand(-Int)                  - random int value >= 0 and <= RAND_MAX
 	uuid(-Atom)                 - return representation of a new UUID
-	split_all(+Atom,+Sep,-L)    - split atom based on separator into list
 	split(+Atom,+Sep,?L,?R)     - split atom based on first separator into left & right
 	split_last(+Atom,+Sep,?L,?R) - split atom based on last separator into left & right
 	xmlq(+Atom,+N,-Atom)        - quick get named value from XML source (can retry))
