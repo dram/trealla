@@ -163,7 +163,12 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		node *head = term_firstarg(n);
 		node *tail = term_next(head);
 		node *term = q ? subst(q, head, this_context) : head;
-		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term, listing);
+		int tmp_listing = listing;
+
+		if ((listing <=0) && is_structure(term) && !strcmp(term_functor(term), ","))
+			tmp_listing = 1;
+
+		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term, tmp_listing);
 		term = q ? subst(q, tail, this_context) : tail;
 
 		if (is_list(term)) {
@@ -174,7 +179,7 @@ static size_t sprint2_list(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 		if (!is_atom(term) || strcmp(VAL_S(term), "[]")) {
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "|");
-			dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term, listing);
+			dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term, tmp_listing);
 		}
 
 		break;
@@ -224,7 +229,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	else if ((listing < 2) && pl && is_infix(&pl->db, functor) && (arity > 1) && !ignore_ops) {
 		int parens = 0;
 
-		if (((listing == 1) || (depth > 2)) && strcmp(functor, ":")) {
+		if (listing == 1) {
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "(");
 			parens = 1;
 		}
@@ -269,11 +274,11 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		if (is_hidden(n))
 			n = term_next(n);
 
-		if (!strcmp(functor, "]-["))
+		if (!strcmp(functor, OP_NEG))
 			functor = "-";
-		else if (!strcmp(functor, "]+["))
+		else if (!strcmp(functor, OP_POS))
 			functor = "+";
-		else if (!strcmp(functor, "]~["))
+		else if (!strcmp(functor, OP_INV))
 			functor = "\\ ";
 
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", functor);
@@ -282,11 +287,11 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	}
 	else if (!isop || (listing == 2) || ignore_ops) {
 		if (!(n->flags & FLAG_CONSING) || (listing >= 2)) {
-			if (!strcmp(functor, "]-["))
+			if (!strcmp(functor, OP_NEG))
 				functor = " -";
-			else if (!strcmp(functor, "]+["))
+			else if (!strcmp(functor, OP_POS))
 				functor = " +";
-			else if (!strcmp(functor, "]~["))
+			else if (!strcmp(functor, OP_INV))
 				functor = " \\ ";
 
 			const char *src = functor;

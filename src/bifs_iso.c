@@ -4232,20 +4232,23 @@ static int bif_iso_setof(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
+	query_destroy(subq);
+
 	if (l)
 		term_append(l, make_const_atom("[]"));
 	else
 		save_l = make_const_atom("[]");
 
-	if (!is_atom(save_l)) {
+	if (is_list(save_l)) {
 		node *l = save_l;
 		size_t cnt = 0;
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
+			unsigned this_context = q->latest_context;
 			cnt++;
 			node *tail = term_next(head);
-			l = subst(q, tail, q->latest_context);
+			l = subst(q, tail, this_context);
 		}
 
 		node **base = (node **)malloc(sizeof(node *) * cnt);
@@ -4255,10 +4258,11 @@ static int bif_iso_setof(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			node *n = subst(q, head, q->latest_context);
+			unsigned this_context = q->latest_context;
+			node *n = subst(q, head, this_context);
 			base[idx++] = n;
 			node *tail = term_next(head);
-			l = subst(q, tail, q->latest_context);
+			l = subst(q, tail, this_context);
 		}
 
 		qsort(base, cnt, sizeof(node *), nodecmp);
@@ -4292,7 +4296,6 @@ static int bif_iso_setof(tpl_query *q)
 		try_me(q);
 
 	term_heapcheck(save_l);
-	query_destroy(subq);
 	return ok;
 }
 
