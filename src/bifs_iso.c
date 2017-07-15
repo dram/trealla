@@ -3754,6 +3754,7 @@ static int bif_iso_univ(tpl_query *q)
 		node *save_l = l;
 
 		while (n) {
+			q->latest_context = term1_ctx;
 			term_append(l, copy_term(q, n));
 
 			if (!term_next(n))
@@ -4236,8 +4237,11 @@ static int bif_iso_setof(tpl_query *q)
 			isfree[n->slot] = 1;
 	}
 
-	sl_done(&vars, NULL);
+	sl_clear(&vars, NULL);
+	collect_vars(q, term2);
 	q->d = NULL;
+
+	sl_done(&vars, NULL);  // TODO: use to unify with subq
 
 	if (!q->retry) {
 		if (!is_var(var)) {
