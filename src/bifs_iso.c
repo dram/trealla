@@ -3308,7 +3308,7 @@ static int bif_clause(tpl_query *q, int wait)
 		// (%u)\n",
 		// q->c.curr_match->frame_size);
 
-		if (!unify(q, term1, term1_ctx, head, -1)) {
+		if (!unify(q, term1, term1_ctx, head, q->c.env_point)) {
 			if (save_head)
 				term_heapcheck(save_head);
 
@@ -3367,14 +3367,16 @@ static int bif_clause(tpl_query *q, int wait)
 #endif
 	}
 
-	if (!nochoice)
+	if (!nochoice) {
 		try_me_nofollow(q);
+		q->c.env_point += q->c.curr_match->frame_size;	// FIXME: make nice
+	}
 
 	if (term3 && is_var(term3))
 		put_ptr(q, q->c.curr_frame + term3->slot, q->c.curr_match);
 
 	node *body = term_next(head);
-	return unify(q, term2, term2_ctx, body, q->c.curr_frame);
+	return unify(q, term2, term2_ctx, body, q->c.env_point);
 }
 
 static int bif_iso_clause(tpl_query *q) { return bif_clause(q, 0); }
@@ -5726,9 +5728,9 @@ static int bif_edin_display_2(tpl_query *q)
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
-	q->display_slots = q->ignore_ops = 1;
+	q->ignore_ops = 1;
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 0);
-	q->display_slots = q->ignore_ops = 0;
+	q->ignore_ops = 0;
 
 	if (q->halt) {
 		free(tmpbuf);
@@ -5757,9 +5759,9 @@ static int bif_edin_display_1(tpl_query *q)
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
-	q->display_slots = q->ignore_ops = 1;
+	q->ignore_ops = 1;
 	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term1, 0);
-	q->display_slots = q->ignore_ops = 0;
+	q->ignore_ops = 0;
 
 	if (q->halt) {
 		free(tmpbuf);

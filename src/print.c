@@ -465,7 +465,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		if (!strchr(save_dst, '.'))
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), ".0");
 	}
-	else if (q && q->display_slots && is_var(n) && 0) {
+	else if (q && is_var(n) && q->trace) {
 		env *e = get_env(q, q->latest_context + n->slot);
 		unsigned slot = (size_t)(e - q->envs);
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "_%u", slot);
