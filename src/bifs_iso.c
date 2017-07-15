@@ -3450,6 +3450,57 @@ static int nodecmp(const void *p1, const void *p2)
 	return 0;
 }
 
+static node *bif_nodesort(tpl_query *q, node *term1, unsigned term1_ctx)
+{
+	q->latest_context = term1_ctx;
+	node *l = term1;
+	size_t cnt = 0;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		unsigned this_context = q->latest_context;
+		cnt++;
+		node *tail = term_next(head);
+		l = subst(q, tail, this_context);
+	}
+
+	node **base = (node **)malloc(sizeof(node *) * cnt);
+	l = term1;
+	q->latest_context = term1_ctx;
+	size_t idx = 0;
+
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		node *n = subst(q, head, q->latest_context);
+		base[idx++] = n;
+		node *tail = term_next(head);
+		l = subst(q, tail, q->latest_context);
+	}
+
+	qsort(base, cnt, sizeof(node *), nodecmp);
+	l = make_list();
+	node *tmp = l;
+
+	for (int i = 0; i < cnt; i++) {
+		if (i < (cnt - 1))
+			if (!nodecmp(&base[i], &base[i + 1]))
+				continue;
+
+		term_append(tmp, copy_term(q, base[i]));
+
+		if (i == (cnt - 1))
+			break;
+
+		node *tmp2;
+		term_append(tmp, tmp2 = make_list());
+		tmp = tmp2;
+	}
+
+	term_append(tmp, make_const_atom("[]"));
+	free(base);
+	return l;
+}
+
 static int bif_iso_sort(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -3458,55 +3509,7 @@ static int bif_iso_sort(tpl_query *q)
 	q->latest_context = term1_ctx;
 
 	if (is_list(term1)) {
-		node *l = term1;
-		size_t cnt = 0;
-
-		while (is_list(l)) {
-			node *head = term_firstarg(l);
-			node *n = subst(q, head, q->latest_context);
-
-			if (!is_atomic(n))
-				return 0;
-
-			cnt++;
-			node *tail = term_next(head);
-			l = subst(q, tail, q->latest_context);
-		}
-
-		node **base = (node **)malloc(sizeof(node *) * cnt);
-		l = term1;
-		q->latest_context = term1_ctx;
-		size_t idx = 0;
-
-		while (is_list(l)) {
-			node *head = term_firstarg(l);
-			node *n = subst(q, head, q->latest_context);
-			base[idx++] = n;
-			node *tail = term_next(head);
-			l = subst(q, tail, q->latest_context);
-		}
-
-		qsort(base, cnt, sizeof(node *), nodecmp);
-		l = make_list();
-		node *tmp = l;
-
-		for (int i = 0; i < cnt; i++) {
-			if (i < (cnt - 1))
-				if (!nodecmp(&base[i], &base[i + 1]))
-					continue;
-
-			term_append(tmp, copy_term(q, base[i]));
-
-			if (i == (cnt - 1))
-				break;
-
-			node *tmp2;
-			term_append(tmp, tmp2 = make_list());
-			tmp = tmp2;
-		}
-
-		term_append(tmp, make_const_atom("[]"));
-		free(base);
+		node *l = bif_nodesort(q, term1, term1_ctx);
 		int ok = unify(q, term2, term2_ctx, l, q->c.curr_frame);
 		term_heapcheck(l);
 		return ok;
@@ -4097,20 +4100,18 @@ static int bif_iso_bagof(tpl_query *q)
 	if (did_lock)
 		DBUNLOCK(q->c.curr_db);
 
-	if (l) {
-		term_append(l, make_const_atom("[]"));
-		ok = unify(q, term3, term3_ctx, save_l, term1_ctx);
-	}
-	else {
-		save_l = make_const_atom("[]");
-		ok = 0;
-	}
+	query_destroy(subq);
+
+	if (!l)
+		return 0;
+
+	term_append(l, make_const_atom("[]"));
+	ok = unify(q, term3, term3_ctx, save_l, term1_ctx);
+	term_heapcheck(save_l);
 
 	if (ok)
 		try_me(q);
 
-	term_heapcheck(save_l);
-	query_destroy(subq);
 	return ok;
 }
 
@@ -4234,68 +4235,18 @@ static int bif_iso_setof(tpl_query *q)
 
 	query_destroy(subq);
 
-	if (l)
-		term_append(l, make_const_atom("[]"));
-	else
-		save_l = make_const_atom("[]");
+	if (!l)
+		return 0;
 
-	if (is_list(save_l)) {
-		node *l = save_l;
-		size_t cnt = 0;
-
-		while (is_list(l)) {
-			node *head = term_firstarg(l);
-			unsigned this_context = q->latest_context;
-			cnt++;
-			node *tail = term_next(head);
-			l = subst(q, tail, this_context);
-		}
-
-		node **base = (node **)malloc(sizeof(node *) * cnt);
-		l = save_l;
-		// q->latest_context = save_context;
-		size_t idx = 0;
-
-		while (is_list(l)) {
-			node *head = term_firstarg(l);
-			unsigned this_context = q->latest_context;
-			node *n = subst(q, head, this_context);
-			base[idx++] = n;
-			node *tail = term_next(head);
-			l = subst(q, tail, this_context);
-		}
-
-		qsort(base, cnt, sizeof(node *), nodecmp);
-		l = make_list();
-		node *tmp = l;
-
-		for (int i = 0; i < cnt; i++) {
-			if (i < (cnt - 1))
-				if (!nodecmp(&base[i], &base[i + 1]))
-					continue;
-
-			term_append(tmp, copy_term(q, base[i]));
-
-			if (i == (cnt - 1))
-				break;
-
-			node *tmp2;
-			term_append(tmp, tmp2 = make_list());
-			tmp = tmp2;
-		}
-
-		term_append(tmp, make_const_atom("[]"));
-		free(base);
-		ok = unify(q, term3, term3_ctx, l, term1_ctx);
-		term_heapcheck(l);
-	}
-	else
-		ok = 0;
+	term_append(l, make_const_atom("[]"));
+	l = bif_nodesort(q, save_l, term1_ctx);
+	term_heapcheck(save_l);
+	ok = unify(q, term3, term3_ctx, l, term1_ctx);
+	term_heapcheck(l);
 
 	if (ok)
 		try_me(q);
 
-	term_heapcheck(save_l);
 	return ok;
 }
 
