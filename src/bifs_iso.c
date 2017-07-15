@@ -1925,10 +1925,6 @@ static int bif_iso_peek_code(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
 	int ch = fgetc(q->curr_stdin);
-
-	if (ch == EOF)
-		return 0;
-
 	ungetc(ch, q->curr_stdin); // FIXME
 	return unify_int(q, term1, q->latest_context, ch);
 }
@@ -1939,10 +1935,6 @@ static int bif_iso_peek_code_2(tpl_query *q)
 	node *term1 = get_atom_or_file(term1);
 	node *term2 = get_int_or_var(term2);
 	int ch = fgetc(get_input_stream(term1));
-
-	if (ch == EOF)
-		return 0;
-
 	ungetc(ch, get_input_stream(term1)); // FIXME
 	return unify_int(q, term2, q->latest_context, ch);
 }
@@ -1952,7 +1944,6 @@ static int bif_iso_peek_byte(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
 	int ch = fgetc(q->curr_stdin);
-
 	ungetc(ch, q->curr_stdin); // FIXME
 	return unify_int(q, term1, q->latest_context, ch);
 }
@@ -1963,7 +1954,6 @@ static int bif_iso_peek_byte_2(tpl_query *q)
 	node *term1 = get_atom_or_file(term1);
 	node *term2 = get_int_or_var(term2);
 	int ch = fgetc(get_input_stream(term1));
-
 	ungetc(ch, get_input_stream(term1)); // FIXME
 	return unify_int(q, term2, q->latest_context, ch);
 }
