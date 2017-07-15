@@ -111,6 +111,13 @@ const op *get_op_2(module *db, const char *functor, const char *spec)
 	const op *optr;
 	int i;
 
+	if (!strcmp(functor, "-") && OP_PREFIX(spec))
+		functor = OP_NEG;
+	else if (!strcmp(functor, "+") && OP_PREFIX(spec))
+		functor = OP_POS;
+	else if (!strcmp(functor, "\\") && OP_PREFIX(spec))
+		functor = OP_INV;
+
 	for (i = 0, optr = db->uops; (i < db->uops_cnt) && optr->fun; i++, optr++) {
 		if (!strcmp(optr->fun, functor) && !strcmp(optr->spec, spec))
 			return optr;
