@@ -14,6 +14,7 @@
 #define snprintf _snprintf
 #define fseeko _fseeki64
 #define ftello _ftelli64
+#define isatty _isatty
 #else
 #include <sys/time.h>
 #include <unistd.h>
@@ -1656,40 +1657,149 @@ static int bif_iso_set_stream_position(tpl_query *q)
 static int bif_iso_stream_property_position(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_var(term2);
-	stream *sp = term1->val_str;
-	put_int(q, q->c.curr_frame + term2->slot, ftello(sp->fptr));
+	stream *sp;
+
+	if (is_atom(term1)) {
+		if (!strcmp(VAL_S(term1), "current_input"))
+			sp = q->curr_stdin_stream;
+		else if (!strcmp(VAL_S(term1), "current_output"))
+			sp = q->curr_stdout_stream;
+		else
+			return 0;
+	}
+	else
+		sp = term1->val_str;
+
+	put_int(q, q->c.curr_frame + term2->slot, sp ? ftello(sp->fptr) : 0);
 	return 1;
 }
 
 static int bif_iso_stream_property_file_name(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_var(term2);
-	stream *sp = term1->val_str;
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp->filename));
+	const char *filename = "";
+	stream *sp;
+
+	if (is_atom(term1)) {
+		if (!strcmp(VAL_S(term1), "current_input")) {
+			sp = q->curr_stdin_stream;
+			filename = "current_input";
+		}
+		else if (!strcmp(VAL_S(term1), "current_output")) {
+			sp = q->curr_stdout_stream;
+			filename = "current_output";
+		}
+		else
+			return 0;
+	}
+	else
+		sp = term1->val_str;
+
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp ? sp->filename : filename));
+	return 1;
+}
+
+static int bif_iso_stream_property_file_no(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_stream(term1);
+	node *term2 = get_var(term2);
+	int no = 0;
+	stream *sp;
+
+	if (is_atom(term1)) {
+		if (!strcmp(VAL_S(term1), "current_input")) {
+			sp = q->curr_stdin_stream;
+			no = 0;
+		}
+		else if (!strcmp(VAL_S(term1), "current_output")) {
+			sp = q->curr_stdout_stream;
+			no = 1;
+		}
+		else
+			return 0;
+	}
+	else
+		sp = term1->val_str;
+
+	int file_no = sp ? fileno(sp->fptr) : no;
+	put_int(q, q->c.curr_frame + term2->slot, file_no);
+	return 1;
+}
+
+static int bif_iso_stream_property_file_tty(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_stream(term1);
+	node *term2 = get_var(term2);
+	FILE *fptr = NULL;
+
+	if (is_atom(term1)) {
+		if (!strcmp(VAL_S(term1), "current_input"))
+			fptr = q->curr_stdin;
+		else if (!strcmp(VAL_S(term1), "current_output"))
+			fptr = q->curr_stdout;
+		else
+			return 0;
+	}
+	else
+		fptr = term1->val_str->fptr;
+
+	int tty = isatty(fileno(fptr));
+	put_int(q, q->c.curr_frame + term2->slot, tty);
 	return 1;
 }
 
 static int bif_iso_stream_property_mode(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_var(term2);
-	stream *sp = term1->val_str;
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp->mode));
+	const char *mode = "";
+	stream *sp;
+
+	if (is_atom(term1)) {
+		if (!strcmp(VAL_S(term1), "current_input")) {
+			sp = q->curr_stdin_stream;
+			mode = "read";
+		}
+		else if (!strcmp(VAL_S(term1), "current_output")) {
+			sp = q->curr_stdout_stream;
+			mode = "write";
+		}
+		else
+			return 0;
+	}
+	else
+		sp = term1->val_str;
+
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp ? sp->mode : mode));
 	return 1;
 }
 
 static int bif_iso_stream_property_type(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_file(term1);
+	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_var(term2);
-	stream *sp = term1->val_str;
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp->type));
+	stream *sp;
+
+	if (is_atom(term1)) {
+		if (!strcmp(VAL_S(term1), "current_input"))
+			sp = q->curr_stdin_stream;
+		else if (!strcmp(VAL_S(term1), "current_output"))
+			sp = q->curr_stdout_stream;
+		else
+			return 0;
+	}
+	else
+		sp = term1->val_str;
+
+	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp ? sp->type : "text"));
 	return 1;
 }
 
@@ -7548,6 +7658,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("stream_property_mode", 2, bif_iso_stream_property_mode);
 	DEFINE_BIF("stream_property_position", 2, bif_iso_stream_property_position);
 	DEFINE_BIF("stream_property_file_name", 2, bif_iso_stream_property_file_name);
+	DEFINE_BIF("stream_property_file_no", 2, bif_iso_stream_property_file_no);
+	DEFINE_BIF("stream_property_file_tty", 2, bif_iso_stream_property_file_tty);
 	DEFINE_BIF("copy_term", 2, bif_iso_copy_term);
 	DEFINE_BIF("term_variables", 2, bif_iso_term_variables);
 	DEFINE_BIF("functor", 3, bif_iso_functor);
