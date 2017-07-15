@@ -176,6 +176,12 @@ Plus the Edinburgh file routines:
 	append
 	telling
 	told
+	get
+	get0
+	tab
+	skip
+	display
+
 
 System-extras: namespace 'sys'
 ------------------------------

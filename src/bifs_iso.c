@@ -1950,34 +1950,22 @@ static int bif_iso_peek_code_2(tpl_query *q)
 static int bif_iso_peek_byte(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_atom_or_var(term1);
+	node *term1 = get_int_or_var(term1);
 	int ch = fgetc(q->curr_stdin);
 
-	if (ch == EOF)
-		return 0;
-
 	ungetc(ch, q->curr_stdin); // FIXME
-	char tmpbuf[2];
-	tmpbuf[0] = (char)ch;
-	tmpbuf[1] = '\0';
-	return unify_atom(q, term1, q->latest_context, strdup(tmpbuf));
+	return unify_int(q, term1, q->latest_context, ch);
 }
 
 static int bif_iso_peek_byte_2(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_atom_or_file(term1);
-	node *term2 = get_atom_or_var(term2);
+	node *term2 = get_int_or_var(term2);
 	int ch = fgetc(get_input_stream(term1));
 
-	if (ch == EOF)
-		return 0;
-
 	ungetc(ch, get_input_stream(term1)); // FIXME
-	char tmpbuf[2];
-	tmpbuf[0] = (char)ch;
-	tmpbuf[1] = '\0';
-	return unify_atom(q, term1, q->latest_context, strdup(tmpbuf));
+	return unify_int(q, term2, q->latest_context, ch);
 }
 
 static int bif_iso_peek_char(tpl_query *q)
@@ -7020,7 +7008,6 @@ static int bif_edin_get_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
-	int ch;
 
 	if (q->pl->tty && !q->curr_stdin_name && !q->did_getc) {
 		printf("| ");
@@ -7030,15 +7017,14 @@ static int bif_edin_get_1(tpl_query *q)
 LOOP:
 
 	q->did_getc = 1;
-	ch = getc_utf8(q->curr_stdin);
+	int ch = getc_utf8(q->curr_stdin);
 
 	if (ch == EOF)
 		q->did_getc = 0;
 	else {
 		if (ch == '\n')
 			q->did_getc = 0;
-
-		if (isspace(ch))
+		else if (isspace(ch))
 			goto LOOP;
 	}
 
@@ -7062,6 +7048,53 @@ LOOP:
 	}
 
 	return unify_int(q, term2, q->latest_context, ch);
+}
+
+static int bif_edin_skip_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+
+	if (q->pl->tty && !q->curr_stdin_name && !q->did_getc) {
+		printf("| ");
+		fflush(q->curr_stdout);
+	}
+
+LOOP:
+
+	q->did_getc = 1;
+	int ch = getc_utf8(q->curr_stdin);
+
+	if (ch == EOF)
+		q->did_getc = 0;
+	else {
+		if (ch == '\n')
+			q->did_getc = 0;
+
+		if (ch != get_word(term1))
+			goto LOOP;
+	}
+
+	return 1;
+}
+
+static int bif_edin_skip_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_stream(term1);
+	node *term2 = get_int(term2);
+	int ch;
+
+LOOP:
+
+	ch = getc_utf8(get_input_stream(term1));
+
+	if (ch != EOF) {
+		if (ch != get_word(term2))
+			goto LOOP;
+	}
+
+	return 1;
 }
 
 static int bif_edin_tab_2(tpl_query *q)
@@ -7702,6 +7735,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("get0", 2, bif_iso_get_code);
 	DEFINE_BIF("get", 1, bif_edin_get_1);
 	DEFINE_BIF("get", 2, bif_edin_get_2);
+	DEFINE_BIF("skip", 1, bif_edin_skip_1);
+	DEFINE_BIF("skip", 2, bif_edin_skip_2);
 	DEFINE_BIF("display", 1, bif_edin_display_1);
 	DEFINE_BIF("display", 2, bif_edin_display_2);
 #endif
