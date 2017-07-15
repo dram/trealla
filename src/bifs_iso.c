@@ -929,7 +929,16 @@ static int bif_iso_current_op(tpl_query *q)
 		return 0;
 
 	if (is_var(term3)) {
-		if (!unify_const_atom(q, term3, term3_ctx, optr->fun))
+		const char *functor = optr->fun;
+
+		if (!strcmp(functor, OP_NEG))
+			functor = "-";
+		else if (!strcmp(functor, OP_POS))
+			functor = "+";
+		else if (!strcmp(functor, OP_INV))
+			functor = "\\";
+
+		if (!unify_const_atom(q, term3, term3_ctx, functor))
 			return 0;
 	}
 
