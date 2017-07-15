@@ -6701,7 +6701,7 @@ static int bif_xtra_random_1(tpl_query *q)
 	return 1;
 }
 
-static uint32_t jenkins_one_at_a_time_hash(char *key)
+static uint32_t jenkins_one_at_a_time_hash(const char *key)
 {
 	uint32_t hash = 0;
 
