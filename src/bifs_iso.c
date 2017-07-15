@@ -6895,7 +6895,7 @@ static int bif_edin_seen_0(tpl_query *q)
 	if (q->curr_stdin != stdin) {
 		free(q->curr_stdin_name);
 		fclose(q->curr_stdin);
-		q->curr_stdin_stream->fptr = NULL;
+		q->curr_stdin_stream->fptr = stdin;
 		q->curr_stdin_stream = NULL;
 		q->curr_stdin_name = strdup("user");
 		q->curr_stdin = stdin;
@@ -7007,7 +7007,7 @@ static int bif_edin_told_0(tpl_query *q)
 	if (q->curr_stdout != stdout) {
 		free(q->curr_stdout_name);
 		fclose(q->curr_stdout);
-		q->curr_stdout_stream->fptr = NULL;
+		q->curr_stdout_stream->fptr = stdout;
 		q->curr_stdout_stream = NULL;
 		q->curr_stdout_name = strdup("user");
 		q->curr_stdout = stdout;
