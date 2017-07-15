@@ -205,6 +205,7 @@ These are an assortment of utilities:
 	rand(-Int)                  - random int value >= 0 and <= RAND_MAX
 	uuid(-Atom)                 - return representation of a new UUID
 	split(+Atom,+Sep,?L,?R)     - split atom based on first separator into left & right
+	split_all(+Atom,+Sep,-L)    - split atom based on separator into list
 	split_last(+Atom,+Sep,?L,?R) - split atom based on last separator into left & right
 	xmlq(+Atom,+N,-Atom)        - quick get named value from XML source (can retry))
 	xmlq(+Atom,+N,+Idx,-Atom)   - quick get I'th named value from XML source
