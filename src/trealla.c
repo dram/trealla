@@ -1614,7 +1614,7 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "once(G) :- call_opaque(G), !.");
 	trealla_make_rule(pl, "\\+ G :- call(G), !, fail.");
 	trealla_make_rule(pl, "\\+ _G :- true.");
-	trealla_make_rule(pl, "forall(A,B) :- \\+ (call_opaque(A), \\+ call_opaque(B)).");
+	trealla_make_rule(pl, "forall(A,B) :- \\+ (call_opaque(A), \\+ B).");
 
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "clausew(H,B) :- '$clausew'(H,B).");
