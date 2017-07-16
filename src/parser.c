@@ -1429,7 +1429,12 @@ static node *dcg_elem(lexer *l, node *term, int i, int j)
 		term_heapcheck(tail);
 		tail = term_make();
 		tail->flags |= TYPE_VAR | FLAG_CONST;
-		snprintf(tmpbuf, sizeof(tmpbuf), "S%u", j);
+
+		if (j != -1)
+			snprintf(tmpbuf, sizeof(tmpbuf), "S%u", j);
+		else
+			snprintf(tmpbuf, sizeof(tmpbuf), "S");
+
 		tail->val_s = dict(l->db, tmpbuf);
 		attach_vars(l, tail);
 		term_append(nl, tail);
@@ -1491,7 +1496,7 @@ static void dcg_clause(lexer *l, node *term)
 	node *body = term_next(head);
 	dcg_term(l, head, 0, -1);
 	l->dcg_last = NULL;
-	int i = 0;
+	int i = 0, first_list = 1;;
 
 	while (body != NULL) {
 		if (is_structure(body)) {
@@ -1501,19 +1506,19 @@ static void dcg_clause(lexer *l, node *term)
 				head = term_firstarg(body);
 
 				if (is_list(head)) {
+					first_list = 0;
 					node *next = term_next(head);
 					term_remove(body, head);
-
 					head = dcg_elem(l, head, i, i + 1);
-					i++;
-
 					term_insert_before(body, next, head);
+					i++;
 				}
 				else {
 					if (dcg_term(l, head, i, i + 1))
 						i++;
 				}
 
+				term = body;
 				body = term_next(head);
 				continue;
 			}
@@ -1522,7 +1527,12 @@ static void dcg_clause(lexer *l, node *term)
 		}
 		else if (is_list(body)) {
 			term_remove(term, body);
-			body = dcg_list(l, body);
+
+			if (!first_list)
+				body = dcg_elem(l, body, i, -1);
+			else
+				body = dcg_list(l, body);
+
 			term_append(term, body);
 			body = NULL;
 		}

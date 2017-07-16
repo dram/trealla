@@ -2511,7 +2511,7 @@ static void rebase(lexer *l, node *term)
 	for (node *n = term_first(term); n; n = term_next(n)) {
 		if (is_compound(n))
 			rebase(l, n);
-		else if (l && is_var(n))
+		else if (is_var(n))
 			attach_vars(l, n);
 	}
 }
@@ -3794,7 +3794,7 @@ static int bif_iso_univ(tpl_query *q)
 
 		node *new_term2 = deep_copy_term(q, term2);
 
-		if (!unify(q, term2, term2_ctx, new_term2, q->c.curr_frame)) {
+		if (!unify(q, term2, term2_ctx, new_term2, term2_ctx)) {
 			term_heapcheck(new_term2);
 			return 0;
 		}
