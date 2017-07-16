@@ -834,7 +834,7 @@ static int trealla_make_rule(trealla *pl, const char *src)
 {
 	lexer l;
 	lexer_init(&l, pl);
-	l.internal = 0;//;
+	l.internal = 1;
 	l.consult = 1;
 	lexer_parse(&l, l.r, src, NULL);
 	int ok = !l.error;
