@@ -24,8 +24,6 @@
 extern atomic int64_t g_allocs;
 int g_force_unbounded = 0;
 
-#define USE_SMALL 1
-
 const char *g_escapes = "\e\a\f\b\t\v\r\n";
 const char *g_anti_escapes = "eafbtvrn";
 
@@ -323,7 +321,7 @@ node *make_atom(char *s)
 {
 	node *n = make_basic_atom(s);
 
-	if ((strlen(s) < sizeof(n->val_ch)) && USE_SMALL) {
+	if ((strlen(s) < SIZEOF_SMALL) && USE_SMALL) {
 		n->flags |= FLAG_CONST | FLAG_SMALL;
 		strcpy(n->val_ch, s);
 		free(s);
@@ -370,15 +368,6 @@ node *make_tuple(void)
 	node *n = make_compound();
 	n->flags |= FLAG_TUPLE;
 	term_append(n, make_const_atom("{}"));
-	return n;
-}
-
-node *make_var(tpl_query *q)
-{
-	node *n = term_make();
-	n->flags |= TYPE_VAR | FLAG_ANON | FLAG_CONST;
-	n->val_s = (char *)"_";
-	n->slot = q->c.frame_size++;
 	return n;
 }
 
@@ -2676,7 +2665,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				l->tok = (char *)"";
 			}
 
-			if (*l->tok && !is_const(n) && (strlen(l->tok) < sizeof(n->val_ch)) && USE_SMALL && !strchr(l->tok, ':')) {
+			if (*l->tok && !is_const(n) && (strlen(l->tok) < SIZEOF_SMALL) && USE_SMALL && !strchr(l->tok, ':')) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
 				strcpy(n->val_ch, l->tok);
 				free(l->tok);

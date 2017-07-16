@@ -113,6 +113,24 @@ node *make_quick_int(nbr_t v)
 	return make_int(v);
 }
 
+static node *make_var(tpl_query *q)
+{
+	node *n = term_make();
+	n->flags |= TYPE_VAR;
+	char tmpbuf[40];
+	sprintf(tmpbuf, "_%u", q->c.frame_size);
+
+	if ((strlen(tmpbuf) < SIZEOF_SMALL) && USE_SMALL && 0) {
+		n->flags |= FLAG_CONST | FLAG_SMALL;
+		strcpy(n->val_ch, tmpbuf);
+	}
+	else
+		n->val_s = strdup(tmpbuf);
+
+	n->slot = q->c.frame_size++;
+	return n;
+}
+
 static int collect_vars2(tpl_query *q, node *term, int depth)
 {
 	if (depth > MAX_UNIFY_DEPTH) {
@@ -204,7 +222,15 @@ static node *copy_var(node *from)
 {
 	node *n = term_make();
 	n->flags |= from->flags;
-	n->val_s = from->val_s;
+	const char *s = VAL_S(from);
+
+	if ((strlen(s) < SIZEOF_SMALL) && USE_SMALL && 0) {
+		n->flags |= FLAG_CONST | FLAG_SMALL;
+		strcpy(n->val_ch, s);
+	}
+	else
+		n->val_s = strdup(s);
+
 	n->slot = from->slot;
 	return n;
 }
@@ -3790,7 +3816,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		// A var loses context when you copy it out of a list, and we are creating
-		// new vars in the local context. So they should be bound their origin.
+		// new vars in the local context. So they should be bound to their origin.
 
 		node *new_term2 = deep_copy_term(q, term2);
 
@@ -6463,7 +6489,7 @@ static int bif_xtra_listing(tpl_query *q)
 				}
 			}
 
-			term_print(q->pl, q, n, 1);
+			term_print(q->pl, q, n, 2);
 			printf(".\n");
 		}
 	}
@@ -6513,7 +6539,7 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 				}
 			}
 
-			term_print(q->pl, q, n, 2);
+			term_print(q->pl, q, n, 3);
 			printf(".\n");
 		}
 	}

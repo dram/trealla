@@ -226,7 +226,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term, -listing);
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "}");
 	}
-	else if ((listing < 2) && pl && is_infix(&pl->db, functor) && (arity > 1) && !ignore_ops) {
+	else if ((listing < 3) && pl && is_infix(&pl->db, functor) && (arity > 1) && !ignore_ops) {
 		int parens = 0;
 
 		if ((listing == 1) || !strcmp(functor, ",")) {
@@ -270,12 +270,12 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		if (parens)
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), ")");
 	}
-	else if ((listing < 2) && pl && is_postfix(&pl->db, functor) && !ignore_ops) {
+	else if ((listing < 3) && pl && is_postfix(&pl->db, functor) && !ignore_ops) {
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, term_next(nf), listing);
 		if (isalpha(functor[0])) *dst++ = ' ';
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, nf, listing);
 	}
-	else if ((listing < 2) && pl && is_prefix(&pl->db, functor) && !ignore_ops) {
+	else if ((listing < 3) && pl && is_prefix(&pl->db, functor) && !ignore_ops) {
 		node *n = term_next(nf);
 
 		if (is_hidden(n))
@@ -292,8 +292,8 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 		if (isalpha(functor[0])) *dst++ = ' ';
 		dst += sprint2_term(depth+1, dstbuf, bufsize, &dst, pl, q, n, listing);
 	}
-	else if (!isop || (listing == 2) || ignore_ops) {
-		if (!(n->flags & FLAG_CONSING) || (listing >= 2)) {
+	else if (!isop || (listing == 3) || ignore_ops) {
+		if (!(n->flags & FLAG_CONSING) || (listing == 3)) {
 			if (!strcmp(functor, OP_NEG))
 				functor = " -";
 			else if (!strcmp(functor, OP_POS))
@@ -303,16 +303,16 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 
 			const char *src = functor;
 
-			if (((nf->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(src)) && (!isop || (listing == 2)))
+			if (((nf->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(src)) && (!isop || (listing == 3)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"");
-			else if ((needs_quoting(src)) && (!isop || (listing == 2)))
+			else if ((needs_quoting(src)) && (!isop || (listing == 3)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");
 
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", src);
 
-			if (((nf->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(src)) && (!isop || (listing == 2)))
+			if (((nf->flags & FLAG_DOUBLE_QUOTE) && needs_quoting(src)) && (!isop || (listing == 3)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"");
-			else if ((needs_quoting(src)) && (!isop || (listing == 2)))
+			else if ((needs_quoting(src)) && (!isop || (listing == 3)))
 				dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'");
 
 			n = term_next(nf);
@@ -384,7 +384,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 
 	int flag_character_escapes = pl ? pl->flag_character_escapes : 1;
 
-	if (is_list(n) && (listing < 2))
+	if (is_list(n) && (listing < 3))
 		dst += sprint2_list(depth+1, dstbuf, bufsize, &dst, pl, q, n, listing);
 	else if (is_compound(n))
 		dst += sprint2_compound(depth+1, dstbuf, bufsize, &dst, pl, q, n, listing);
@@ -427,18 +427,18 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	else if (is_rational(n)) {
 		reduce(n);
 
-		if (listing == 2)
+		if (listing == 3)
 			dst += sprintf(dst, "rdiv(");
 
 		dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_num);
 
-		if ((listing > 0) && (listing < 2) && (n->val_den == 1)) {
+		if ((listing > 0) && (listing < 3) && (n->val_den == 1)) {
 			*dst++ = 'R';
 			*dst = '\0';
 		}
 
 		if (n->val_den != 1) {
-			if (listing == 2)
+			if (listing == 3)
 				dst += sprintf(dst, ",");
 			else
 				dst += sprintf(dst, " rdiv ");
@@ -446,7 +446,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 			dst += sprint_int(dst, *bufsize - (dst - *dstbuf), n->val_den);
 		}
 
-		if (listing == 2)
+		if (listing == 3)
 			dst += sprintf(dst, ")");
 	}
 	else if (is_integer(n) && (n->flags & FLAG_BINARY) && listing)
@@ -538,7 +538,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"%s\"", VAL_S(n));
 	else if (listing && is_atom(n) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
-	else if ((listing == 2) && is_atom(n) && needs_quoting(VAL_S(n)))
+	else if ((listing == 3) && is_atom(n) && needs_quoting(VAL_S(n)))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
 	else if (is_atom(n))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", VAL_S(n));

@@ -337,7 +337,6 @@ extern node *make_atom(char *s);
 extern node *make_const_atom(const char *s);
 extern node *make_compound(void);
 extern node *make_list(void);
-extern node *make_var(tpl_query *q);
 extern node *make_tuple(void);
 extern node *make_quick_int(nbr_t v);
 extern node *make_rational(const char *s);
@@ -464,6 +463,8 @@ inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 #define is_infix(db, f) OP_INFIX(get_op((db), (f), 0)->spec)
 #define is_prefix(db, f) OP_PREFIX(get_op((db), (f), 0)->spec)
 #define is_postfix(db, f) OP_POSTFIX(get_op((db), (f), 0)->spec)
+
+#define USE_SMALL 1
 
 #define FUNCTOR_LEN 1000               // in UTF-8 characters
 #define FUNCTOR_SIZE (FUNCTOR_LEN * 4) // in encoded bytes
