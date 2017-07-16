@@ -1471,6 +1471,12 @@ static void dcg_clause(lexer *l, node *term)
 			term_append(term, body);
 			body = NULL;
 		}
+		else if (is_atom(body) && !strcmp(VAL_S(body), "[]")) {
+			term_remove(term, body);
+			body = dcg_list(l, body);
+			term_append(term, body);
+			body = NULL;
+		}
 		else if (is_atom(body)) {
 			if (dcg_term(l, body, i, i + 1))
 				i++;
