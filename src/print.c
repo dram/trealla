@@ -229,7 +229,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 	else if ((listing < 2) && pl && is_infix(&pl->db, functor) && (arity > 1) && !ignore_ops) {
 		int parens = 0;
 
-		if (listing == 1) {
+		if ((listing == 1) && (depth > 1)) {
 			dst += snprintf(dst, *bufsize - (dst - *dstbuf), "(");
 			parens = 1;
 		}

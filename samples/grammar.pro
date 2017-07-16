@@ -1,6 +1,6 @@
 % A grammar in DCG
 
-:-initialization(main).
+%:-initialization(main).
 
 %%%%%%%%%%%%%%%%% Grammar %%%%%%%%%%%%%%%%%%%
 

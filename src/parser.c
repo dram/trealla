@@ -1442,6 +1442,8 @@ static void dcg_clause(lexer *l, node *term)
 		return;
 
 	node *func = term_first(term);
+	func->flags &= ~FLAG_SMALL;
+	func->flags |= FLAG_CONST;
 	func->val_s = (char *)":-";
 	node *head = term_next(func);
 	node *body = term_next(head);
