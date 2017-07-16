@@ -1375,9 +1375,9 @@ static int dcg_term(lexer *l, node *term, int i, int j)
 		term_append(term, tmp);
 	}
 
-	char tmpbuf[40];
 	node *tmp = term_make();
 	tmp->flags |= TYPE_VAR | FLAG_CONST;
+	char tmpbuf[40];
 	snprintf(tmpbuf, sizeof(tmpbuf), "S%u", i);
 	tmp->val_s = dict(l->db, tmpbuf);
 	attach_vars(l, tmp);
@@ -1397,21 +1397,63 @@ static int dcg_term(lexer *l, node *term, int i, int j)
 	return 1;
 }
 
+static node *dcg_elem(lexer *l, node *term, int i, int j)
+{
+	extern int bif_iso_unify(tpl_query * q);
+	node *s = make_compound();
+	s->flags |= FLAG_BUILTIN;
+	s->bifptr = bif_iso_unify;
+	node *n = make_const_atom("=");
+	n->flags |= FLAG_BUILTIN;
+	term_append(s, n);
+	n = term_make();
+	n->flags |= TYPE_VAR | FLAG_CONST;
+	char tmpbuf[40];
+	snprintf(tmpbuf, sizeof(tmpbuf), "S%u", i);
+	n->val_s = dict(l->db, tmpbuf);
+	attach_vars(l, n);
+	term_append(s, n);
+	term_append(s, term);
+	node *nl = term;
+
+	while (is_list(nl)) {
+		node *head = term_firstarg(nl);
+		node *tail = term_next(head);
+
+		if (is_list(tail)) {
+			nl = tail;
+			continue;
+		}
+
+		term_remove(nl, tail);
+		term_heapcheck(tail);
+		tail = term_make();
+		tail->flags |= TYPE_VAR | FLAG_CONST;
+		snprintf(tmpbuf, sizeof(tmpbuf), "S%u", j);
+		tail->val_s = dict(l->db, tmpbuf);
+		attach_vars(l, tail);
+		term_append(nl, tail);
+		break;
+	}
+
+	return s;
+}
+
 static node *dcg_list(lexer *l, node *term)
 {
 	extern int bif_iso_unify(tpl_query * q);
-	node *tmp = make_compound();
-	tmp->flags |= FLAG_BUILTIN;
-	tmp->bifptr = bif_iso_unify;
+	node *s = make_compound();
+	s->flags |= FLAG_BUILTIN;
+	s->bifptr = bif_iso_unify;
 	node *n = make_const_atom("=");
 	n->flags |= FLAG_BUILTIN;
-	term_append(tmp, n);
+	term_append(s, n);
 	n = term_make();
 	n->flags |= TYPE_VAR | FLAG_CONST;
 	n->val_s = dict(l->db, "S0");
 	attach_vars(l, n);
-	term_append(tmp, n);
-	term_append(tmp, term);
+	term_append(s, n);
+	term_append(s, term);
 	node *nl = term;
 
 	while (is_list(nl)) {
@@ -1433,7 +1475,7 @@ static node *dcg_list(lexer *l, node *term)
 		break;
 	}
 
-	return tmp;
+	return s;
 }
 
 static void dcg_clause(lexer *l, node *term)
@@ -1458,8 +1500,19 @@ static void dcg_clause(lexer *l, node *term)
 			if (!strcmp(functor, ",") || !strcmp(functor, ";")) {
 				head = term_firstarg(body);
 
-				if (dcg_term(l, head, i, i + 1))
+				if (is_list(head)) {
+					node *next = term_next(head);
+					term_remove(body, head);
+
+					head = dcg_elem(l, head, i, i + 1);
 					i++;
+
+					term_insert_before(body, next, head);
+				}
+				else {
+					if (dcg_term(l, head, i, i + 1))
+						i++;
+				}
 
 				body = term_next(head);
 				continue;
