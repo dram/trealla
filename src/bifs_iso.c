@@ -263,8 +263,15 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 			return copy_var(tmp);
 
 		sl_set(q->d, (char *)e, tmp = make_var(q));
-		tmp->flags &= ~FLAG_SMALL;
-		tmp->val_s = VAL_S(from);
+		const char *s = VAL_S(from);
+
+		if ((strlen(s) < SIZEOF_SMALL_ATOM) && USE_SMALL_ATOMS) {
+			tmp->flags |= FLAG_CONST | FLAG_SMALL;
+			strcpy(tmp->val_ch, s);
+		}
+		else
+			tmp->val_s = from->val_s;
+
 		return tmp;
 	}
 
