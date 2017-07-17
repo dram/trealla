@@ -2572,7 +2572,7 @@ static int rebase_term(tpl_query *q, node *term)
 	return cnt;
 }
 
-static void rebase_vars(tpl_query *q, node *n)
+static void rebase_clause(tpl_query *q, node *n)
 {
 	skiplist vars;
 	sl_init(&vars, NULL, NULL);
@@ -2617,7 +2617,7 @@ int bif_iso_asserta(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	rebase_vars(q, n);
+	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -2673,7 +2673,7 @@ int bif_iso_assertz(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	rebase_vars(q, n);
+	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -3224,7 +3224,7 @@ static int bif_xtra_asserta_2(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	rebase_vars(q, n);
+	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -3272,7 +3272,7 @@ static int bif_xtra_assertz_2(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	rebase_vars(q, n);
+	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
 
