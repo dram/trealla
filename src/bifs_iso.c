@@ -2543,13 +2543,13 @@ static int bif_iso_copy_term(tpl_query *q)
 	return ok;
 }
 
-static int rebase(tpl_query *q, node *term)
+static int rebase_term(tpl_query *q, node *term)
 {
 	int cnt = 0;
 
 	for (node *n = term_first(term); n; n = term_next(n)) {
 		if (is_compound(n)) {
-			cnt += rebase(q, n);
+			cnt += rebase_term(q, n);
 			continue;
 		}
 
@@ -2570,6 +2570,16 @@ static int rebase(tpl_query *q, node *term)
 	}
 
 	return cnt;
+}
+
+static void rebase_vars(tpl_query *q, node *n)
+{
+	skiplist vars;
+	sl_init(&vars, NULL, NULL);
+	q->d = &vars;
+	n->frame_size = rebase_term(q, n);
+	sl_done(&vars, NULL);
+	q->d = NULL;
 }
 
 int bif_asserta(tpl_query *q, node *n, int *persist)
@@ -2607,12 +2617,7 @@ int bif_iso_asserta(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	skiplist vars;
-	sl_init(&vars, NULL, NULL);
-	q->d = &vars;
-	n->frame_size = rebase(q, n);
-	sl_done(&vars, NULL);
-	q->d = NULL;
+	rebase_vars(q, n);
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -2668,12 +2673,7 @@ int bif_iso_assertz(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	skiplist vars;
-	sl_init(&vars, NULL, NULL);
-	q->d = &vars;
-	n->frame_size = rebase(q, n);
-	sl_done(&vars, NULL);
-	q->d = NULL;
+	rebase_vars(q, n);
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -3224,12 +3224,7 @@ static int bif_xtra_asserta_2(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	skiplist vars;
-	sl_init(&vars, NULL, NULL);
-	q->d = &vars;
-	n->frame_size = rebase(q, n);
-	sl_done(&vars, NULL);
-	q->d = NULL;
+	rebase_vars(q, n);
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -3277,12 +3272,7 @@ static int bif_xtra_assertz_2(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	skiplist vars;
-	sl_init(&vars, NULL, NULL);
-	q->d = &vars;
-	n->frame_size = rebase(q, n);
-	sl_done(&vars, NULL);
-	q->d = NULL;
+	rebase_vars(q, n);
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
 
