@@ -4102,7 +4102,7 @@ static int bif_iso_findall(tpl_query *q)
 
 	while (ok && !g_abort) {
 		node *from = subst(subq, term1, FUDGE_FACTOR);
-		node *res2 = deep_copy_term(subq, from);
+		node *res2 = copy_term(subq, from);
 		node *res = deep_copy_term(q, res2);
 		term_heapcheck(res2);
 
