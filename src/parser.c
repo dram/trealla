@@ -407,6 +407,19 @@ char *dict(module *db, const char *key)
 	return value;
 }
 
+static void attach_vars(lexer *l, node *var)
+{
+	void *v;
+
+	if (sl_get(&l->symtab, VAL_S(var), &v)) {
+		var->slot = (uint16_t)(size_t)v;
+		return;
+	}
+
+	var->slot = l->vars++;
+	sl_set(&l->symtab, strdup(VAL_S(var)), (void *)(size_t)var->slot);
+}
+
 #ifndef ISO_ONLY
 static int get_ns(lexer *l, const char *name)
 {
@@ -2109,19 +2122,6 @@ LOOP: // FIXME someday
 #endif
 
 	return s;
-}
-
-void attach_vars(lexer *l, node *var)
-{
-	void *v;
-
-	if (sl_get(&l->symtab, VAL_S(var), &v)) {
-		var->slot = (uint16_t)(size_t)v;
-		return;
-	}
-
-	var->slot = l->vars++;
-	sl_set(&l->symtab, strdup(VAL_S(var)), (void *)(size_t)var->slot);
 }
 
 lexer *lexer_create(trealla *pl)

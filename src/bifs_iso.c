@@ -132,6 +132,19 @@ static node *make_var(tpl_query *q)
 	return n;
 }
 
+static void attach_vars(lexer *l, node *var)
+{
+	void *v;
+
+	if (sl_get(&l->symtab, VAL_S(var), &v)) {
+		var->slot = (uint16_t)(size_t)v;
+		return;
+	}
+
+	var->slot = l->vars++;
+	sl_set(&l->symtab, strdup(VAL_S(var)), (void *)(size_t)var->slot);
+}
+
 static int collect_vars2(tpl_query *q, node *term, int depth)
 {
 	if (depth > MAX_UNIFY_DEPTH) {

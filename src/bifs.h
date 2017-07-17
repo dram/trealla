@@ -528,7 +528,6 @@ extern void trace(tpl_query *q, int fail, int leave);
 extern node *copy_term(tpl_query *q, node *from);
 extern uint64_t gettimeofday_usec(void);
 
-extern void attach_vars(lexer *l, node *var);
 extern int xref_clause(lexer *l, node *r);
 extern rule *xref_term(lexer *l, node *term, int arity);
 extern int xref_body(lexer *l, node *term, const char *head_functor, int head_arity, int is_last);
