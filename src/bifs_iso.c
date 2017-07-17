@@ -117,8 +117,10 @@ static node *make_var(tpl_query *q)
 {
 	node *n = term_make();
 	n->flags |= TYPE_VAR | FLAG_CONST;
-	n->val_s = (char*)"_";
 	n->slot = q->c.frame_size++;
+	char tmpbuf[40];
+	snprintf(tmpbuf, sizeof(tmpbuf), "_%d", n->slot);
+	n->val_s = dict(q->c.curr_db, tmpbuf);
 	return n;
 }
 
@@ -241,11 +243,11 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 		}
 
 		const env *e = &q->envs[q->latest_context + from->slot];
+		e -= e->binding;
 		node *tmp;
 
-		if (sl_get(q->d, (char *)e, (void **)&tmp)) {
+		if (sl_get(q->d, (char *)e, (void **)&tmp))
 			return copy_var(tmp);
-		}
 
 		sl_set(q->d, (char *)e, tmp = make_var(q));
 		tmp->val_s = VAL_S(from);

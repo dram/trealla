@@ -2466,9 +2466,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 						    !strcmp(functor, "findnsols")) {
 							node *tmp = term_make();
 							tmp->flags |= TYPE_VAR | FLAG_ANON | FLAG_HIDDEN | FLAG_CONST;
-							char tmpbuf[40];
-							snprintf(tmpbuf, sizeof(tmpbuf), "_%d", l->vars);
-							tmp->val_s = dict(l->db, tmpbuf);
+							tmp->val_s = (char *)"_";
 							attach_vars(l, tmp);
 							term_append(n, tmp);
 						}
@@ -2486,9 +2484,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			if (get_function(l, n)) {
 				node *tmp = term_make();
 				tmp->flags |= TYPE_VAR | FLAG_ANON | FLAG_HIDDEN | FLAG_CONST;
-				char tmpbuf[40];
-				snprintf(tmpbuf, sizeof(tmpbuf), "_%d", l->vars);
-				tmp->val_s = dict(l->db, tmpbuf);
+				tmp->val_s = (char *)"_";
 				attach_vars(l, tmp);
 				term_append(n, tmp);
 			}
