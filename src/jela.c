@@ -590,7 +590,7 @@ int unify_atom(tpl_query *q, node *term, unsigned context, char *v)
 {
 	node *n = make_atom(v);
 
-	if (needs_quoting(v))
+	if (needs_quoting(VAL_S(n)))
 		n->flags |= FLAG_QUOTED;
 
 	int ok = unify(q, term, context, n, -1);
@@ -602,7 +602,7 @@ int unify_const_atom(tpl_query *q, node *term, unsigned context, const char *v)
 {
 	node *n = make_const_atom(v);
 
-	if (needs_quoting(v))
+	if (needs_quoting(VAL_S(n)))
 		n->flags |= FLAG_QUOTED;
 
 	int ok = unify(q, term, context, n, -1);
