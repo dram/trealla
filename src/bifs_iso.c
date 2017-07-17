@@ -223,7 +223,12 @@ static node *copy_var(node *from)
 {
 	node *n = term_make();
 	n->flags |= from->flags;
-	n->val_s = from->val_s;
+
+	if (is_small(from))
+		strcpy(n->val_ch, from->val_ch);
+	else
+		n->val_s = from->val_s;
+
 	n->slot = from->slot;
 	return n;
 }
