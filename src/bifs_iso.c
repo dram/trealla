@@ -116,17 +116,8 @@ node *make_quick_int(nbr_t v)
 static node *make_var(tpl_query *q)
 {
 	node *n = term_make();
-	n->flags |= TYPE_VAR;
-	char tmpbuf[40];
-	sprintf(tmpbuf, "_%u", q->c.frame_size);
-
-	if ((strlen(tmpbuf) < SIZEOF_SMALL) && USE_SMALL && 0) {
-		n->flags |= FLAG_CONST | FLAG_SMALL;
-		strcpy(n->val_ch, tmpbuf);
-	}
-	else
-		n->val_s = strdup(tmpbuf);
-
+	n->flags |= TYPE_VAR | FLAG_CONST;
+	n->val_s = (char*)"_";
 	n->slot = q->c.frame_size++;
 	return n;
 }
@@ -222,15 +213,7 @@ static node *copy_var(node *from)
 {
 	node *n = term_make();
 	n->flags |= from->flags;
-	const char *s = VAL_S(from);
-
-	if ((strlen(s) < SIZEOF_SMALL) && USE_SMALL && 0) {
-		n->flags |= FLAG_CONST | FLAG_SMALL;
-		strcpy(n->val_ch, s);
-	}
-	else
-		n->val_s = strdup(s);
-
+	n->val_s = from->val_s;
 	n->slot = from->slot;
 	return n;
 }
@@ -1286,7 +1269,7 @@ static int bif_iso_write_canonical_2(tpl_query *q)
 	size_t max_len = PRINTBUF_SIZE;
 	char *tmpbuf = (char *)malloc(max_len + 1);
 	char *dst = tmpbuf;
-	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 2);
+	size_t len = term_sprint2(&tmpbuf, &max_len, &dst, q->pl, q, term2, 3);
 
 	if (q->halt) {
 		free(tmpbuf);
@@ -1312,7 +1295,7 @@ static int bif_iso_write_canonical(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	term_print(q->pl, q, term1, 2);
+	term_print(q->pl, q, term1, 3);
 
 	if (q->halt)
 		return 0;

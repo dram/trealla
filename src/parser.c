@@ -321,7 +321,7 @@ node *make_atom(char *s)
 {
 	node *n = make_basic_atom(s);
 
-	if ((strlen(s) < SIZEOF_SMALL) && USE_SMALL) {
+	if ((strlen(s) < SIZEOF_SMALL_ATOM) && USE_SMALL_ATOMS) {
 		n->flags |= FLAG_CONST | FLAG_SMALL;
 		strcpy(n->val_ch, s);
 		free(s);
@@ -2665,7 +2665,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				l->tok = (char *)"";
 			}
 
-			if (*l->tok && !is_const(n) && (strlen(l->tok) < SIZEOF_SMALL) && USE_SMALL && !strchr(l->tok, ':')) {
+			if (*l->tok && !is_const(n) && (strlen(l->tok) < SIZEOF_SMALL_ATOM) && USE_SMALL_ATOMS && !strchr(l->tok, ':')) {
 				n->flags |= FLAG_CONST | FLAG_SMALL;
 				strcpy(n->val_ch, l->tok);
 				free(l->tok);

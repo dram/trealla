@@ -115,7 +115,7 @@ typedef struct stream_ stream;
 // By having all nodes the same size makes the job of
 // the allocator easier and simplifies the code.
 
-#define SIZEOF_SMALL sizeof(list)
+#define SIZEOF_SMALL_ATOM sizeof(list)
 
 struct node_ {
 	lnode hdr;
@@ -130,7 +130,7 @@ struct node_ {
 			node *n1, *n2;
 		};
 
-		char val_ch[SIZEOF_SMALL]; // small atoms
+		char val_ch[SIZEOF_SMALL_ATOM]; // small atoms
 
 		stream *val_str; // stream ptr
 		void *val_ptr;   // other ptr

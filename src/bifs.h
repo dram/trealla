@@ -464,8 +464,7 @@ inline static node *get_next_arg(tpl_query *q, node **term_ptr)
 #define is_prefix(db, f) OP_PREFIX(get_op((db), (f), 0)->spec)
 #define is_postfix(db, f) OP_POSTFIX(get_op((db), (f), 0)->spec)
 
-#define USE_SMALL 1
-
+#define USE_SMALL_ATOMS 0
 #define FUNCTOR_LEN 1000               // in UTF-8 characters
 #define FUNCTOR_SIZE (FUNCTOR_LEN * 4) // in encoded bytes
 #define KEY_SIZE (FUNCTOR_SIZE + 100)
