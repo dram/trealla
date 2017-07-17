@@ -594,9 +594,6 @@ int unify_float(tpl_query *q, node *term, unsigned context, flt_t v)
 
 int unify_atom(tpl_query *q, node *term, unsigned context, char *v)
 {
-	if (is_atom(term))
-		return strcmp(VAL_S(term), v) == 0 ? 1 : 0;
-
 	node *n = make_atom(v);
 
 	if (needs_quoting(VAL_S(n)))
