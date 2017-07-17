@@ -132,21 +132,6 @@ static node *make_var(tpl_query *q)
 	return n;
 }
 
-static int attach_vars(tpl_query *q, node *var)
-{
-	env *e = get_env(q, q->latest_context + var->slot);
-	void *v;
-
-	if (sl_get(q->d, (void *)e, &v)) {
-		var->slot = (uint16_t)(size_t)v;
-		return 0;
-	}
-
-	var->slot = sl_count(q->d);
-	sl_set(q->d, (void *)e, (void *)(size_t)var->slot);
-	return 1;
-}
-
 static int collect_vars2(tpl_query *q, node *term, int depth)
 {
 	if (depth > MAX_UNIFY_DEPTH) {
@@ -2563,10 +2548,25 @@ static int rebase(tpl_query *q, node *term)
 	int cnt = 0;
 
 	for (node *n = term_first(term); n; n = term_next(n)) {
-		if (is_compound(n))
+		if (is_compound(n)) {
 			cnt += rebase(q, n);
-		else if (is_var(n))
-			cnt += attach_vars(q, n);
+			continue;
+		}
+
+		if (!is_var(n))
+			continue;
+
+		env *e = get_env(q, q->latest_context + n->slot);
+		void *v;
+
+		if (sl_get(q->d, (void *)e, &v)) {
+			n->slot = (uint16_t)(size_t)v;
+			continue;
+		}
+
+		n->slot = sl_count(q->d);
+		sl_set(q->d, (void *)e, (void *)(size_t)n->slot);
+		cnt += 1;
 	}
 
 	return cnt;
