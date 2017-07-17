@@ -728,10 +728,15 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 		return 1;
 	}
 	else if (is_var(n1) && is_var(n2)) {
-		if (n1->slot < n2->slot)
+		env *e = get_env(q, q->latest_context + n1->slot);
+		unsigned slot1 = (size_t)(e - q->envs) - e->binding;
+		e = get_env(q, q->latest_context + n2->slot);
+		unsigned slot2 = (size_t)(e - q->envs) - e->binding;
+
+		if (slot1 < slot2)
 			return -1;
 
-		if (n1->slot == n2->slot)
+		if (slot1 == slot2)
 			return 0;
 
 		return 1;
