@@ -117,9 +117,7 @@ LOOP:
 		}
 	}
 	else if (!is_const(n)) {
-		if (is_atom(n))
-			free(n->val_s);
-		else if (is_var(n))
+		if (is_atom(n) || is_var(n))
 			free(n->val_s);
 		else if (is_stream(n)) {
 			stream_close(n->val_str);
