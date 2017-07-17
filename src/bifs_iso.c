@@ -2048,31 +2048,12 @@ static int bif_iso_get_char_2(tpl_query *q)
 	return unify_atom(q, term2, q->latest_context, strdup(tmpbuf));
 }
 
-static int bif_iso_peek_code(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_int_or_var(term1);
-	int ch = fgetc(q->curr_stdin);
-	ungetc(ch, q->curr_stdin); // FIXME
-	return unify_int(q, term1, q->latest_context, ch);
-}
-
-static int bif_iso_peek_code_2(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom_or_file(term1);
-	node *term2 = get_int_or_var(term2);
-	int ch = fgetc(get_input_stream(term1));
-	ungetc(ch, get_input_stream(term1)); // FIXME
-	return unify_int(q, term2, q->latest_context, ch);
-}
-
 static int bif_iso_peek_byte(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int_or_var(term1);
 	int ch = fgetc(q->curr_stdin);
-	ungetc(ch, q->curr_stdin); // FIXME
+	ungetc(ch, q->curr_stdin);
 	return unify_int(q, term1, q->latest_context, ch);
 }
 
@@ -2082,6 +2063,25 @@ static int bif_iso_peek_byte_2(tpl_query *q)
 	node *term1 = get_atom_or_file(term1);
 	node *term2 = get_int_or_var(term2);
 	int ch = fgetc(get_input_stream(term1));
+	ungetc(ch, get_input_stream(term1));
+	return unify_int(q, term2, q->latest_context, ch);
+}
+
+static int bif_iso_peek_code(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int_or_var(term1);
+	int ch = getc_utf8(q->curr_stdin);
+	ungetc(ch, q->curr_stdin); // FIXME
+	return unify_int(q, term1, q->latest_context, ch);
+}
+
+static int bif_iso_peek_code_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_file(term1);
+	node *term2 = get_int_or_var(term2);
+	int ch = getc_utf8(get_input_stream(term1));
 	ungetc(ch, get_input_stream(term1)); // FIXME
 	return unify_int(q, term2, q->latest_context, ch);
 }
