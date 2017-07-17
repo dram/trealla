@@ -132,17 +132,19 @@ static node *make_var(tpl_query *q)
 	return n;
 }
 
-static void attach_vars(lexer *l, node *var)
+static int attach_vars(tpl_query *q, node *var)
 {
+	env *e = get_env(q, q->latest_context + var->slot);
 	void *v;
 
-	if (sl_get(&l->symtab, VAL_S(var), &v)) {
+	if (sl_get(q->d, (void *)e, &v)) {
 		var->slot = (uint16_t)(size_t)v;
-		return;
+		return 0;
 	}
 
-	var->slot = l->vars++;
-	sl_set(&l->symtab, strdup(VAL_S(var)), (void *)(size_t)var->slot);
+	var->slot = sl_count(q->d);
+	sl_set(q->d, (void *)e, (void *)(size_t)var->slot);
+	return 1;
 }
 
 static int collect_vars2(tpl_query *q, node *term, int depth)
@@ -2556,14 +2558,18 @@ static int bif_iso_copy_term(tpl_query *q)
 	return ok;
 }
 
-static void rebase(lexer *l, node *term)
+static int rebase(tpl_query *q, node *term)
 {
+	int cnt = 0;
+
 	for (node *n = term_first(term); n; n = term_next(n)) {
 		if (is_compound(n))
-			rebase(l, n);
+			cnt += rebase(q, n);
 		else if (is_var(n))
-			attach_vars(l, n);
+			cnt += attach_vars(q, n);
 	}
+
+	return cnt;
 }
 
 int bif_asserta(tpl_query *q, node *n, int *persist)
@@ -2601,11 +2607,12 @@ int bif_iso_asserta(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	lexer l;
-	lexer_init(&l, q->pl);
-	rebase(&l, n);
-	n->frame_size = l.vars;
-	lexer_done(&l);
+	skiplist vars;
+	sl_init(&vars, NULL, NULL);
+	q->d = &vars;
+	n->frame_size = rebase(q, n);
+	sl_done(&vars, NULL);
+	q->d = NULL;
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -2661,11 +2668,12 @@ int bif_iso_assertz(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	lexer l;
-	lexer_init(&l, q->pl);
-	rebase(&l, n);
-	n->frame_size = l.vars;
-	lexer_done(&l);
+	skiplist vars;
+	sl_init(&vars, NULL, NULL);
+	q->d = &vars;
+	n->frame_size = rebase(q, n);
+	sl_done(&vars, NULL);
+	q->d = NULL;
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -3216,11 +3224,12 @@ static int bif_xtra_asserta_2(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	lexer l;
-	lexer_init(&l, q->pl);
-	rebase(&l, n);
-	n->frame_size = l.vars;
-	lexer_done(&l);
+	skiplist vars;
+	sl_init(&vars, NULL, NULL);
+	q->d = &vars;
+	n->frame_size = rebase(q, n);
+	sl_done(&vars, NULL);
+	q->d = NULL;
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -3268,11 +3277,12 @@ static int bif_xtra_assertz_2(tpl_query *q)
 	else
 		n = copy_term(q, term1);
 
-	lexer l;
-	lexer_init(&l, q->pl);
-	rebase(&l, n);
-	n->frame_size = l.vars;
-	lexer_done(&l);
+	skiplist vars;
+	sl_init(&vars, NULL, NULL);
+	q->d = &vars;
+	n->frame_size = rebase(q, n);
+	sl_done(&vars, NULL);
+	q->d = NULL;
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
 
