@@ -572,6 +572,9 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 
 int unify_int(tpl_query *q, node *term, unsigned context, nbr_t v)
 {
+	if (is_integral(term))
+		return get_word(term) == v ? 1 : 0;
+
 	node *n = make_quick_int(v);
 	int ok = unify(q, term, context, n, -1);
 	term_heapcheck(n);
@@ -580,6 +583,9 @@ int unify_int(tpl_query *q, node *term, unsigned context, nbr_t v)
 
 int unify_float(tpl_query *q, node *term, unsigned context, flt_t v)
 {
+	if (is_float(term))
+		return term->val_f == v ? 1 : 0;
+
 	node *n = make_float(v);
 	int ok = unify(q, term, context, n, -1);
 	term_heapcheck(n);
@@ -588,6 +594,9 @@ int unify_float(tpl_query *q, node *term, unsigned context, flt_t v)
 
 int unify_atom(tpl_query *q, node *term, unsigned context, char *v)
 {
+	if (is_atom(term))
+		return strcmp(VAL_S(term), v) == 0 ? 1 : 0;
+
 	node *n = make_atom(v);
 
 	if (needs_quoting(VAL_S(n)))
@@ -600,6 +609,9 @@ int unify_atom(tpl_query *q, node *term, unsigned context, char *v)
 
 int unify_const_atom(tpl_query *q, node *term, unsigned context, const char *v)
 {
+	if (is_atom(term))
+		return strcmp(VAL_S(term), v) == 0 ? 1 : 0;
+
 	node *n = make_const_atom(v);
 
 	if (needs_quoting(VAL_S(n)))
