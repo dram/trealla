@@ -3873,8 +3873,8 @@ static int bif_iso_univ(tpl_query *q)
 
 		while (is_list(l)) {
 			node *head = term_firstarg(l);
-			term_append(s, copy_term(q, head));
-			l = term_next(head);
+			l = term_remove(l, head);
+			term_append(s, head);
 		}
 
 		if ((term_arity(s) == 2) && !strcmp(term_functor(s), "."))
