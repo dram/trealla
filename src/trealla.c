@@ -560,7 +560,7 @@ rule *xref_term(lexer *l, node *term, int arity)
 					return NULL;
 				}
 
-				printf("ERROR: in '%s', no module '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
+				printf("ERROR: in '%s', unknown '%s:%s/%d'\n", l->db->name, tmpbuf2, functor, arity);
 				l->error = 1;
 				return NULL;
 			}
