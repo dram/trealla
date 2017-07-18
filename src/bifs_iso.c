@@ -298,6 +298,11 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 	return n;
 }
 
+node *copy_term(tpl_query *q, node *n)
+{
+	return copy_term2(q, n, 0, 0);
+}
+
 static node *deep_copy_term(tpl_query *q, node *n)
 {
 	if (q->d)
@@ -324,11 +329,6 @@ static node *skim_copy_term(tpl_query *q, node *n)
 	sl_done(&vars, NULL);
 	q->d = NULL;
 	return tmp;
-}
-
-node *copy_term(tpl_query *q, node *n)
-{
-	return copy_term2(q, n, 0, 0);
 }
 
 const funcs *get_bif(lexer *l, const char *functor)
@@ -2569,21 +2569,25 @@ static void rebase_term(tpl_query *q, node *term)
 
 		if (sl_get(q->d, (void *)e, &v)) {
 			n->slot = (uint16_t)(size_t)v;
+			//printf("*** got=%d, e=%u\n", n->slot, (unsigned)(e-q->envs));
 			continue;
 		}
 
 		n->slot = sl_count(q->d);
 		sl_set(q->d, (void *)e, (void *)(size_t)n->slot);
+		//printf("*** add=%d, e=%u\n", n->slot, (unsigned)(e-q->envs));
 	}
 }
 
 static void rebase_clause(tpl_query *q, node *n)
 {
+	//printf("*** "); term_print(q->pl, q, n, 0); printf("\n");
 	skiplist vars;
 	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	rebase_term(q, n);
 	n->frame_size = sl_count(&vars);
+	//printf("*** size=%d ", n->frame_size); term_print(q->pl, q, n, 0); printf("\n");
 	sl_done(&vars, NULL);
 	q->d = NULL;
 }
@@ -6515,7 +6519,7 @@ static int bif_xtra_listing(tpl_query *q)
 				}
 			}
 
-			term_print(q->pl, q, n, 2);
+			term_print(q->pl, NULL, n, 2);
 			printf(".\n");
 		}
 	}
@@ -6565,7 +6569,7 @@ static int bif_xtra_listing_canonical(tpl_query *q)
 				}
 			}
 
-			term_print(q->pl, q, n, 3);
+			term_print(q->pl, NULL, n, 3);
 			printf(".\n");
 		}
 	}

@@ -570,41 +570,41 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 	}
 }
 
-int unify_int(tpl_query *q, node *term, unsigned context, nbr_t v)
+int unify_int(tpl_query *q, node *term, unsigned term_ctx, nbr_t v)
 {
 	if (is_integral(term))
 		return get_word(term) == v ? 1 : 0;
 
 	node *n = make_quick_int(v);
-	int ok = unify(q, term, context, n, -1);
+	int ok = unify(q, term, term_ctx, n, -1);
 	term_heapcheck(n);
 	return ok;
 }
 
-int unify_float(tpl_query *q, node *term, unsigned context, flt_t v)
+int unify_float(tpl_query *q, node *term, unsigned term_ctx, flt_t v)
 {
 	if (is_float(term))
 		return term->val_f == v ? 1 : 0;
 
 	node *n = make_float(v);
-	int ok = unify(q, term, context, n, -1);
+	int ok = unify(q, term, term_ctx, n, -1);
 	term_heapcheck(n);
 	return ok;
 }
 
-int unify_atom(tpl_query *q, node *term, unsigned context, char *v)
+int unify_atom(tpl_query *q, node *term, unsigned term_ctx, char *v)
 {
 	node *n = make_atom(v);
 
 	if (needs_quoting(VAL_S(n)))
 		n->flags |= FLAG_QUOTED;
 
-	int ok = unify(q, term, context, n, -1);
+	int ok = unify(q, term, term_ctx, n, -1);
 	term_heapcheck(n);
 	return ok;
 }
 
-int unify_const_atom(tpl_query *q, node *term, unsigned context, const char *v)
+int unify_const_atom(tpl_query *q, node *term, unsigned term_ctx, const char *v)
 {
 	if (is_atom(term))
 		return strcmp(VAL_S(term), v) == 0 ? 1 : 0;
@@ -614,32 +614,32 @@ int unify_const_atom(tpl_query *q, node *term, unsigned context, const char *v)
 	if (needs_quoting(VAL_S(n)))
 		n->flags |= FLAG_QUOTED;
 
-	int ok = unify(q, term, context, n, -1);
+	int ok = unify(q, term, term_ctx, n, -1);
 	term_heapcheck(n);
 	return ok;
 }
 
-static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned context2)
+static int unify_atomic(tpl_query *q, node *term1, unsigned term1_ctx, node *term2, unsigned term2_ctx)
 {
 	DEBUGPRINT
 	{
 		printf("### unify : ");
 		term_print(q->pl, NULL, term1, 1);
-		printf(" (%d) <==> (%d) ", context1, context2);
+		printf(" (%d) <==> (%d) ", term1_ctx, term2_ctx);
 		term_print(q->pl, NULL, term2, 1);
 		printf("\n");
 	}
 
 	if (is_var(term1)) {
 		if (is_var(term2)) {
-			bind_vars(q, context1 + term1->slot, context2 + term2->slot);
+			bind_vars(q, term1_ctx + term1->slot, term2_ctx + term2->slot);
 			return 1;
 		}
 
 		if (is_compound(term2))
 			q->is_det = 0;
 
-		put_env(q, context1 + term1->slot, term2, is_compound(term2) ? context2 : -1);
+		put_env(q, term1_ctx + term1->slot, term2, is_compound(term2) ? term2_ctx : -1);
 		return 1;
 	}
 
@@ -647,7 +647,7 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term
 		if (is_compound(term1))
 			q->is_det = 0;
 
-		put_env(q, context2 + term2->slot, term1, is_compound(term1) ? context1 : -1);
+		put_env(q, term2_ctx + term2->slot, term1, is_compound(term1) ? term1_ctx : -1);
 		return 1;
 	}
 
@@ -687,7 +687,7 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned context1, node *term
 	return 0;
 }
 
-static int unify_compound(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned context2)
+static int unify_compound(tpl_query *q, node *term1, unsigned term1_ctx, node *term2, unsigned term2_ctx)
 {
 	if (term_count(term1) != term_count(term2))
 		return 0;
@@ -709,9 +709,9 @@ static int unify_compound(tpl_query *q, node *term1, unsigned context1, node *te
 	int ok = 1;
 
 	while (term1 != NULL) {
-		node *tmp1 = subst(q, term1, context1);
+		node *tmp1 = subst(q, term1, term1_ctx);
 		int tmp1_ctx = q->latest_context;
-		node *tmp2 = subst(q, term2, context2);
+		node *tmp2 = subst(q, term2, term2_ctx);
 		int tmp2_ctx = q->latest_context;
 		q->fail_arg++;
 
@@ -731,12 +731,12 @@ static int unify_compound(tpl_query *q, node *term1, unsigned context1, node *te
 	return ok;
 }
 
-int unify(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned context2)
+int unify(tpl_query *q, node *term1, unsigned term1_ctx, node *term2, unsigned term2_ctx)
 {
 	if (is_compound(term1) && is_compound(term2))
-		return unify_compound(q, term1, context1, term2, context2);
+		return unify_compound(q, term1, term1_ctx, term2, term2_ctx);
 	else
-		return unify_atomic(q, term1, context1, term2, context2);
+		return unify_atomic(q, term1, term1_ctx, term2, term2_ctx);
 }
 
 int match(tpl_query *q)
