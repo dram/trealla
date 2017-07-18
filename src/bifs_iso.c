@@ -3868,7 +3868,6 @@ static int bif_iso_univ(tpl_query *q)
 			return 1;
 		}
 
-		unsigned save_context = q->latest_context;
 		node *s = make_compound();
 		node *l = new_term2;
 
@@ -3876,10 +3875,6 @@ static int bif_iso_univ(tpl_query *q)
 			node *head = term_firstarg(l);
 			unsigned this_context = q->latest_context;
 			node *from = subst(q, head, this_context);
-
-			if (q->latest_context == -1)
-				q->latest_context = q->c.curr_frame;
-
 			term_append(s, copy_term(q, from));
 			node *tail = term_next(head);
 			l = subst(q, tail, this_context);
@@ -3893,7 +3888,6 @@ static int bif_iso_univ(tpl_query *q)
 		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
 		term_heapcheck(new_term2);
 		term_heapcheck(s);
-		q->latest_context = save_context;
 		return 1;
 	}
 
