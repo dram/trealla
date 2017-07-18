@@ -1,6 +1,7 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
