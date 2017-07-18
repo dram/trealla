@@ -1618,10 +1618,10 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "clausew(H,B) :- '$clausew'(H,B).");
 	trealla_make_rule(pl, "not(G) :- call(G), !, fail.");
 	trealla_make_rule(pl, "not(_G) :- true.");
-	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V)).");
-	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), nonvar(V), asserta(?SYSTEMSTR(K,V),R).");
-	trealla_make_rule(pl, "recordz(K,V) :- nonvar(K), nonvar(V), assertz(?SYSTEMSTR(K,V)).");
-	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), nonvar(V), assertz(?SYSTEMSTR(K,V),R).");
+	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), asserta(?SYSTEMSTR(K,V)).");
+	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), asserta(?SYSTEMSTR(K,V),R).");
+	trealla_make_rule(pl, "recordz(K,V) :- nonvar(K), assertz(?SYSTEMSTR(K,V)).");
+	trealla_make_rule(pl, "recordz(K,V,R) :- nonvar(K), assertz(?SYSTEMSTR(K,V),R).");
 	trealla_make_rule(pl, "recorded(K,V) :- clause(?SYSTEMSTR(K,V),_B).");
 	trealla_make_rule(pl, "recorded(K,V,R) :- clause(?SYSTEMSTR(K,V),_B,R).");
 	trealla_make_rule(pl, "current_key(K) :- clause(?SYSTEMSTR(K,_V),_B).");
