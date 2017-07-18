@@ -294,7 +294,7 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 	int this_context = q->latest_context;
 
 	while (from) {
-		node *from2 = subst(q, from, this_context);
+		node *from2 = deep < 2 ? subst(q, from, this_context) : from;
 		node *tmp = copy_term2(q, from2, deep, depth + 1);
 
 		if (!tmp)
@@ -316,6 +316,20 @@ static node *deep_copy_term(tpl_query *q, node *n)
 	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	node *tmp = copy_term2(q, n, 1, 0);
+	sl_done(&vars, NULL);
+	q->d = NULL;
+	return tmp;
+}
+
+static node *skim_copy_term(tpl_query *q, node *n)
+{
+	if (q->d)
+		return copy_term2(q, n, 2, 0);
+
+	skiplist vars;
+	sl_init(&vars, NULL, NULL);
+	q->d = &vars;
+	node *tmp = copy_term2(q, n, 2, 0);
 	sl_done(&vars, NULL);
 	q->d = NULL;
 	return tmp;
@@ -4098,7 +4112,7 @@ static int bif_iso_findall(tpl_query *q)
 	while (ok && !g_abort) {
 		node *from = subst(subq, term1, FUDGE_FACTOR);
 		node *res2 = copy_term(subq, from);
-		node *res = deep_copy_term(q, res2);
+		node *res = skim_copy_term(q, res2);
 		term_heapcheck(res2);
 
 		if (!l) {
