@@ -841,7 +841,6 @@ int match(tpl_query *q)
 		unsigned alloc_size;
 
 		if (q->c.curr_match->flags & FLAG_EXPANDABLE) {
-			//printf("*** HERE\n");
 			alloc_size = MAX_FRAME_SIZE;				// HACK
 		}
 		else

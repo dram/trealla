@@ -653,15 +653,15 @@ int bif_iso_unify(tpl_query *q)
 
 static int bif_iso_notunify(tpl_query *q) { return !bif_iso_unify(q); }
 
-static int compare_terms(tpl_query *q, node *term1, node *term2, int mode);
+static int compare_terms(tpl_query *q, node *term1, unsigned term1_ctx, node *term2, unsigned term2_ctx, int mode);
 enum { CMP_NONE, CMP_LT, CMP_LE, CMP_EQ };
 
-static int compare_compounds(tpl_query *q, node *term1, node *term2, int mode)
+static int compare_compounds(tpl_query *q, node *term1, unsigned term1_ctx, node *term2, unsigned term2_ctx, int mode)
 {
 	node *n1 = term_first(term1), *n2 = term_first(term2);
 
 	while (n1 && n2) {
-		int status = compare_terms(q, n1, n2, mode);
+		int status = compare_terms(q, n1, term1_ctx, n2, term2_ctx, mode);
 
 		if (status > 0)
 			return 1;
@@ -682,10 +682,12 @@ static int compare_compounds(tpl_query *q, node *term1, node *term2, int mode)
 	return 0;
 }
 
-static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
+static int compare_terms(tpl_query *q, node *term1, unsigned term1_ctx, node *term2, unsigned term2_ctx, int mode)
 {
 	node *n1 = subst(q, term1, q->c.curr_frame);
+	term1_ctx = q->latest_context;
 	node *n2 = subst(q, term2, q->c.curr_frame);
+	term2_ctx = q->latest_context;
 
 	if (is_integer(n1) && (is_integer(n2) || is_bignum(n2))) {
 		if (get_word(n1) < get_word(n2))
@@ -751,9 +753,9 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 		return 1;
 	}
 	else if (is_var(n1) && is_var(n2)) {
-		env *e = get_env(q, q->latest_context + n1->slot);
+		env *e = get_env(q, term1_ctx + n1->slot);
 		unsigned slot1 = (size_t)(e - q->envs) - e->binding;
-		e = get_env(q, q->latest_context + n2->slot);
+		e = get_env(q, term2_ctx + n2->slot);
 		unsigned slot2 = (size_t)(e - q->envs) - e->binding;
 
 		if (slot1 < slot2)
@@ -767,7 +769,7 @@ static int compare_terms(tpl_query *q, node *term1, node *term2, int mode)
 	else if (is_atom(n1) && is_atom(n2))
 		return strcmp(VAL_S(n1), VAL_S(n2));
 	else if (is_compound(n1) && is_compound(n2))
-		return compare_compounds(q, n1, n2, mode);
+		return compare_compounds(q, n1, term1_ctx, n2, term2_ctx, mode);
 	else if (is_var(n1))
 		return -1;
 	else if (is_var(n2))
@@ -789,7 +791,7 @@ static int bif_iso_slt(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_term(term2);
-	return compare_terms(q, term1, term2, CMP_LT) < 0;
+	return compare_terms(q, term1, term1_ctx, term2, term2_ctx, CMP_LT) < 0;
 }
 
 static int bif_iso_sle(tpl_query *q)
@@ -797,7 +799,7 @@ static int bif_iso_sle(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_term(term2);
-	return compare_terms(q, term1, term2, CMP_LE) <= 0;
+	return compare_terms(q, term1, term1_ctx, term2, term2_ctx, CMP_LE) <= 0;
 }
 
 static int bif_iso_seq(tpl_query *q)
@@ -805,7 +807,7 @@ static int bif_iso_seq(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 	node *term2 = get_term(term2);
-	return compare_terms(q, term1, term2, CMP_EQ) == 0;
+	return compare_terms(q, term1, term1_ctx, term2, term2_ctx, CMP_EQ) == 0;
 }
 
 static int bif_iso_sgt(tpl_query *q) { return !bif_iso_sle(q); }
@@ -2543,20 +2545,21 @@ static int bif_iso_copy_term(tpl_query *q)
 	return ok;
 }
 
-static int rebase_term(tpl_query *q, node *term)
+static void rebase_term(tpl_query *q, node *term)
 {
-	int cnt = 0;
+	unsigned this_context = q->latest_context;
 
 	for (node *n = term_first(term); n; n = term_next(n)) {
 		if (is_compound(n)) {
-			cnt += rebase_term(q, n);
+			rebase_term(q, n);
 			continue;
 		}
 
 		if (!is_var(n))
 			continue;
 
-		env *e = get_env(q, q->latest_context + n->slot);
+		env *e = get_env(q, this_context + n->slot);
+		e -= e->binding;
 		void *v;
 
 		if (sl_get(q->d, (void *)e, &v)) {
@@ -2566,10 +2569,7 @@ static int rebase_term(tpl_query *q, node *term)
 
 		n->slot = sl_count(q->d);
 		sl_set(q->d, (void *)e, (void *)(size_t)n->slot);
-		cnt += 1;
 	}
-
-	return cnt;
 }
 
 static void rebase_clause(tpl_query *q, node *n)
@@ -2577,7 +2577,8 @@ static void rebase_clause(tpl_query *q, node *n)
 	skiplist vars;
 	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
-	n->frame_size = rebase_term(q, n);
+	rebase_term(q, n);
+	n->frame_size = sl_count(&vars);
 	sl_done(&vars, NULL);
 	q->d = NULL;
 }
@@ -2835,11 +2836,8 @@ static int bif_retract2(tpl_query *q, int wait)
 		}
 #endif
 
-		// printf("*** (%u) ", q->c.frame_size); term_print(q->pl, NULL,
-		// n, 0);
-		// printf(" <==> "); term_print(q->pl, NULL, match, 0); printf("
-		// (%u)\n",
-		// q->c.frame_size);
+		// printf("*** (%u) ", q->c.frame_size); term_print(q->pl, NULL, n, 0);
+		// printf(" <==> "); term_print(q->pl, NULL, match, 0); printf(" (%u)\n", q->c.frame_size);
 
 		int ok = unify(q, n, term1_ctx, match, q->c.env_point);
 
@@ -3428,10 +3426,9 @@ static int bif_clause(tpl_query *q, int wait)
 			continue;
 		}
 
-		head = term_firstarg(q->c.curr_match);
 		unsigned frame_size = q->c.curr_match->frame_size;
 		prepare_frame(q, frame_size);
-
+		head = term_firstarg(q->c.curr_match);
 		node *save_head = NULL;
 
 #ifndef ISO_ONLY
@@ -3448,12 +3445,10 @@ static int bif_clause(tpl_query *q, int wait)
 			head = term_firstarg(save_head);
 		}
 #endif
-		// printf("***(%u) ", q->c.frame_size); term_print(q->pl, NULL,
-		// term1,
-		// 0);
-		// printf(" <==> "); term_print(q->pl, NULL, head, 0); printf("
-		// (%u)\n",
-		// q->c.curr_match->frame_size);
+		q->latest_context = term1_ctx;
+
+		// printf("***(%u) ", q->c.frame_size); term_print(q->pl, q, term1, 0); q->latest_context = q->c.env_point;
+		// printf(" <==> "); term_print(q->pl, q, head, 0); printf(" (%u)\n", q->c.curr_match->frame_size);
 
 		if (!unify(q, term1, term1_ctx, head, q->c.env_point)) {
 			if (save_head)
@@ -5205,11 +5200,11 @@ static int bif_iso_compare(tpl_query *q)
 	node *term3 = get_term(term3);
 
 	if (term1->bifptr == bif_iso_nlt)
-		return compare_terms(q, term2, term3, CMP_LT) < 0;
+		return compare_terms(q, term2, term2_ctx, term3, term2_ctx, CMP_LT) < 0;
 	else if (term1->bifptr == bif_iso_ngt)
-		return compare_terms(q, term2, term3, CMP_LE) > 0;
+		return compare_terms(q, term2, term2_ctx, term3, term3_ctx, CMP_LE) > 0;
 	else if (term1->bifptr == bif_iso_unify)
-		return compare_terms(q, term2, term3, CMP_EQ) == 0;
+		return compare_terms(q, term2, term2_ctx, term3, term3_ctx, CMP_EQ) == 0;
 
 	QABORT(ABORT_INVALIDOPUNKNOWN);
 	return 0;

@@ -1057,9 +1057,10 @@ void check_expandable(lexer *l, const char *functor)
 		NULL
 	};
 
-	for (int i = 0; !l->expandable && s_expandable[i]; i++) {
+	for (int i = 0; s_expandable[i]; i++) {
 		if (!strcmp(s_expandable[i], functor)) {
 			l->expandable = 1;
+			break;
 		}
 	}
 }
