@@ -1611,13 +1611,13 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "(_A ; B) :- call_transparent(B).");
 	trealla_make_rule(pl, "once(G) :- call_opaque(G), !.");
 	trealla_make_rule(pl, "\\+ G :- call(G), !, fail.");   // must be call/1, WHY?
-	trealla_make_rule(pl, "\\+ _G :- true.");
+	trealla_make_rule(pl, "\\+ _G.");
 	trealla_make_rule(pl, "forall(A,B) :- \\+ (call_opaque(A), \\+ B).");
 
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "clausew(H,B) :- '$clausew'(H,B).");
 	trealla_make_rule(pl, "not(G) :- call(G), !, fail.");
-	trealla_make_rule(pl, "not(_G) :- true.");
+	trealla_make_rule(pl, "not(_G).");
 	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), asserta(?SYSTEMSTR(K,V)).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), asserta(?SYSTEMSTR(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- nonvar(K), assertz(?SYSTEMSTR(K,V)).");
