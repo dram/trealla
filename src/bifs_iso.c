@@ -255,7 +255,7 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 			return NULL;
 		}
 
-		const env *e = &q->envs[q->latest_context + from->slot];
+		const env *e = get_env(q, q->latest_context + from->slot);
 		e -= e->binding;
 		node *tmp;
 
@@ -263,15 +263,6 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 			return copy_var(tmp);
 
 		sl_set(q->d, (char *)e, tmp = make_var(q));
-		const char *s = VAL_S(from);
-
-		if ((strlen(s) < SIZEOF_SMALL_ATOM) && USE_SMALL_ATOMS) {
-			tmp->flags |= FLAG_CONST | FLAG_SMALL;
-			strcpy(tmp->val_ch, s);
-		}
-		else
-			tmp->val_s = from->val_s;
-
 		return tmp;
 	}
 
