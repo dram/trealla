@@ -3830,16 +3830,14 @@ static int bif_iso_univ(tpl_query *q)
 			q->latest_context = term2_ctx;
 		}
 
-		// A var loses context when you copy it out of a list, and we are creating
-		// new vars in the local context. So they should be bound to their origin.
+		// A var loses context when you copy it out of a list, so we are creating a copy
+		// of the list in the local context then unifying it with the original. This gets
+		// the new vars bound to the originals and their contexts will be correct. Then
+		// we can make the structure from the copy...
 
-		env *e = &q->envs[term1_ctx + term1->slot];
-		int bound = e->binding != 0;
+		node *new_term2 = deep_copy_term(q, term2);
 
-		node *new_term2 = !bound ?
-			deep_copy_term(q, term2) : copy_term(q, term2);
-
-		if (!unify(q, term2, term2_ctx, new_term2, term2_ctx)) {
+		if (!unify(q, term2, term2_ctx, new_term2, q->c.curr_frame)) {
 			term_heapcheck(new_term2);
 			return 0;
 		}
@@ -3873,7 +3871,7 @@ static int bif_iso_univ(tpl_query *q)
 
 		node *term = !term_arity(s) ? term_first(s) : s;
 		xref_clause(q->lex, term);
-		put_env(q, q->c.curr_frame + term1->slot, term, term2_ctx);
+		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
 		term_heapcheck(new_term2);
 		term_heapcheck(s);
 		return 1;
@@ -4113,7 +4111,7 @@ static int bif_iso_findall(tpl_query *q)
 	else
 		save_l = make_const_atom("[]");
 
-	ok = unify(q, term3, term3_ctx, save_l, term1_ctx);
+	ok = unify(q, term3, term3_ctx, save_l, term3_ctx);
 	term_heapcheck(save_l);
 	term_heapcheck(from);
 	query_destroy(subq);
