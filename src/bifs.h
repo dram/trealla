@@ -348,8 +348,8 @@ extern node *make_bignum(const char *s);
 inline static void put_env(tpl_query *q, unsigned point, node *term, signed frame)
 {
 	env *e = &q->envs[point];
-	e -= e->binding;
 	point -= e->binding;
+	e -= e->binding;
 
 	if ((point < q->c.curr_frame) || (point >= (q->c.curr_frame + q->c.frame_size)))
 		q->trails[q->c.trail_point + q->c.trail_size++] = point;

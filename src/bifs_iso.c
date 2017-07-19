@@ -3452,8 +3452,8 @@ static int bif_clause(tpl_query *q, int wait)
 #endif
 		q->latest_context = term1_ctx;
 
-		// printf("***(%u) ", q->c.frame_size); term_print(q->pl, q, term1, 0); q->latest_context = q->c.env_point;
-		// printf(" <==> "); term_print(q->pl, q, head, 0); printf(" (%u)\n", q->c.curr_match->frame_size);
+		// printf("***(%u) ", q->c.frame_size); TERM_PRINT(term1); q->latest_context = q->c.env_point;
+		// printf(" <==> "); TERM_PRINT(head); printf(" (%u)\n", q->c.curr_match->frame_size);
 
 		if (!unify(q, term1, term1_ctx, head, q->c.env_point)) {
 			if (save_head)
