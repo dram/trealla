@@ -22,8 +22,9 @@ static int bif_posix_format_time_3(tpl_query *q)
 
 	// XXX: Is this check reasonable? May strftime() return non-empty
 	// result for empty format?
+
 	if (length == 0) {
-		return unify_atom(q, term3, q->latest_context, strdup(""));
+		return unify_atom(q, term3, term3_ctx, strdup(""));
 	}
 
 	struct tm tm;
@@ -40,6 +41,7 @@ static int bif_posix_format_time_3(tpl_query *q)
 	char *buffer = NULL;
 	int tries = 0;
 	const int max_tries = 5;
+
 	while (++tries <= max_tries) {
 		// make enough space for some long formats, e.g. `%c'
 		length = 128 + length * 2;
@@ -47,13 +49,13 @@ static int bif_posix_format_time_3(tpl_query *q)
 
 		// FIXME: `0' returned by strftime() does not always indicate
 		// an error, seems there is no easy way to check that.
+
 		if (strftime(buffer, length, format, &tm) > 0) {
-			return unify_atom(q, term3, q->latest_context, buffer);
+			return unify_atom(q, term3, term3_ctx, buffer);
 		}
 	}
 
 	free(buffer);
-
 	// XXX: maybe raise an error?
 	return 0;
 }
@@ -147,7 +149,7 @@ static int bif_posix_make_time_2(tpl_query *q)
 	if (t == -1) {
 		return 0;
 	} else {
-		return unify_int(q, term2, q->latest_context, t);
+		return unify_int(q, term2, term2_ctx, t);
 	}
 }
 
@@ -161,7 +163,6 @@ static int bif_posix_parse_time_3(tpl_query *q)
 	node *term3 = get_var(term3);
 
 	struct tm tm;
-
 	memset(&tm, 0, sizeof(struct tm));
 
 	if (strptime(VAL_S(term2), VAL_S(term1), &tm) == NULL) {
@@ -196,7 +197,7 @@ static int bif_posix_time_1(tpl_query *q)
 	if (t == -1) {
 		return 0;
 	} else {
-		return unify_int(q, term1, q->latest_context, t);
+		return unify_int(q, term1, term1_ctx, t);
 	}
 }
 
