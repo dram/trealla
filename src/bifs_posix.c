@@ -18,13 +18,13 @@ static int bif_posix_format_time_3(tpl_query *q)
 	}
 
 	const char *format = VAL_S(term1);
-	size_t length = strlen(format);
+	size_t length = LEN(term1);
 
 	// XXX: Is this check reasonable? May strftime() return non-empty
 	// result for empty format?
 
 	if (length == 0) {
-		return unify_atom(q, term3, term3_ctx, strdup(""));
+		return unify_const_atom(q, term3, term3_ctx, "");
 	}
 
 	struct tm tm;
@@ -86,7 +86,6 @@ static int bif_posix_gmt_time_2(tpl_query *q)
 		term_append(tmp, make_int(tm.tm_isdst));
 
 		unify(q, term2, term2_ctx, tmp, -1);
-
 		return 1;
 	}
 }
@@ -117,7 +116,6 @@ static int bif_posix_local_time_2(tpl_query *q)
 		term_append(tmp, make_int(tm.tm_isdst));
 
 		unify(q, term2, term2_ctx, tmp, -1);
-
 		return 1;
 	}
 }
@@ -182,7 +180,6 @@ static int bif_posix_parse_time_3(tpl_query *q)
 		term_append(tmp, make_int(tm.tm_isdst));
 
 		unify(q, term3, term3_ctx, tmp, -1);
-
 		return 1;
 	}
 }
