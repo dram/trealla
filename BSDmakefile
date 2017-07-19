@@ -8,6 +8,7 @@ OBJECTS_ISO = src/trealla.o src/parser.o src/bifs_iso.o src/jela.o \
 
 OBJECTS_ALL = $(OBJECTS_ISO) src/base64.o src/bifs_sys.o src/bifs_http.o \
 			src/jsonq.o src/bifs_net.o src/bifs_proc.o \
+			src/bifs_posix.o \
 			src/network.o src/thread.o src/uncle.o \
 			src/uuid.o src/xmlq.o src/bifs_dbs.o src/library.o \
 			src/auth.o src/blog.o src/dict.o src/lists.o \
@@ -110,6 +111,8 @@ src/bifs_proc.o: src/bifs_proc.c src/trealla.h src/bifs.h src/internal.h \
 src/bifs_sys.o: src/bifs_sys.c src/trealla.h src/base64.h src/bifs.h \
  src/internal.h src/skiplist.h src/skipbuck.h src/list.h src/network.h \
  src/thread.h src/utf8.h src/jela.h src/jsonq.h src/uuid.h src/xmlq.h
+src/bifs_posix.o: src/bifs_posix.c src/trealla.h src/bifs.h src/internal.h \
+ src/skiplist.h src/skipbuck.h src/list.h src/utf8.h src/jela.h
 src/daemon.o: src/daemon.c src/daemon.h
 src/history.o: src/history.c src/history.h src/utf8.h
 src/jela.o: src/jela.c src/trealla.h src/bifs.h src/internal.h src/skiplist.h \
