@@ -2569,25 +2569,21 @@ static void rebase_term(tpl_query *q, node *term)
 
 		if (sl_get(q->d, (void *)e, &v)) {
 			n->slot = (uint16_t)(size_t)v;
-			//printf("*** got=%d, e=%u\n", n->slot, (unsigned)(e-q->envs));
 			continue;
 		}
 
 		n->slot = sl_count(q->d);
 		sl_set(q->d, (void *)e, (void *)(size_t)n->slot);
-		//printf("*** add=%d, e=%u\n", n->slot, (unsigned)(e-q->envs));
 	}
 }
 
 static void rebase_clause(tpl_query *q, node *n)
 {
-	//printf("*** "); term_print(q->pl, q, n, 0); printf("\n");
 	skiplist vars;
 	sl_init(&vars, NULL, NULL);
 	q->d = &vars;
 	rebase_term(q, n);
 	n->frame_size = sl_count(&vars);
-	//printf("*** size=%d ", n->frame_size); term_print(q->pl, q, n, 0); printf("\n");
 	sl_done(&vars, NULL);
 	q->d = NULL;
 }
@@ -3846,7 +3842,11 @@ static int bif_iso_univ(tpl_query *q)
 		// A var loses context when you copy it out of a list, and we are creating
 		// new vars in the local context. So they should be bound to their origin.
 
-		node *new_term2 = deep_copy_term(q, term2);
+		env *e = &q->envs[term1_ctx + term1->slot];
+		int bound = e->binding != 0;
+
+		node *new_term2 = !bound ?
+			deep_copy_term(q, term2) : copy_term(q, term2);
 
 		if (!unify(q, term2, term2_ctx, new_term2, term2_ctx)) {
 			term_heapcheck(new_term2);
@@ -3882,7 +3882,7 @@ static int bif_iso_univ(tpl_query *q)
 
 		node *term = !term_arity(s) ? term_first(s) : s;
 		xref_clause(q->lex, term);
-		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
+		put_env(q, q->c.curr_frame + term1->slot, term, term2_ctx);
 		term_heapcheck(new_term2);
 		term_heapcheck(s);
 		return 1;
