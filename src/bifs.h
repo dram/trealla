@@ -595,6 +595,7 @@ extern void bifs_load_dbs(void);
 extern void bifs_load_http(void);
 extern void bifs_load_ws(void);
 extern void bifs_load_stomp(void);
+extern void bifs_load_posix(void);
 #endif
 
 extern int bif_iso_true(tpl_query *q);
