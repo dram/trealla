@@ -1563,6 +1563,7 @@ trealla *trealla_create(const char *name)
 		bifs_load_http();
 		bifs_load_ws();
 		bifs_load_stomp();
+		bifs_load_posix();
 		uuid_seed(time(NULL));
 #endif
 	}
@@ -1586,6 +1587,7 @@ trealla *trealla_create(const char *name)
 	sl_set(&pl->mods, strdup("http"), NULL);
 	sl_set(&pl->mods, strdup("ws"), NULL);
 	sl_set(&pl->mods, strdup("linda"), NULL);
+	sl_set(&pl->mods, strdup("posix"), NULL);
 
 	pl->pid_guard = lock_create();
 	pl->dbs_guard = lock_create();
