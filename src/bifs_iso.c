@@ -3843,7 +3843,7 @@ static int bif_iso_univ(tpl_query *q)
 		// new vars in the local context. So they should be bound to their origin.
 
 		env *e = &q->envs[term1_ctx + term1->slot];
-		int bound = 0;//e->binding != 0;
+		int bound = e->binding != 0;
 
 		node *new_term2 = !bound ?
 			deep_copy_term(q, term2) : copy_term(q, term2);
