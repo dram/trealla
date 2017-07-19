@@ -118,17 +118,7 @@ static node *make_var(tpl_query *q)
 	node *n = term_make();
 	n->flags |= TYPE_VAR | FLAG_CONST;
 	n->slot = q->c.frame_size++;
-	char tmpbuf[40];
-	snprintf(tmpbuf, sizeof(tmpbuf), "_%d", n->slot);
-	const char *s = tmpbuf;
-
-	if ((strlen(s) < SIZEOF_SMALL_ATOM) && USE_SMALL_ATOMS) {
-		n->flags |= FLAG_CONST | FLAG_SMALL;
-		strcpy(n->val_ch, s);
-	}
-	else
-		n->val_s = dict(q->c.curr_db, tmpbuf);
-
+	n->val_s = (char *)"_";
 	return n;
 }
 
@@ -263,6 +253,7 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 			return copy_var(tmp);
 
 		sl_set(q->d, (char *)e, tmp = make_var(q));
+		tmp->val_s = from->val_s;
 		return tmp;
 	}
 
