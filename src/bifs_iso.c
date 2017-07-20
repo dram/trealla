@@ -478,6 +478,7 @@ static int bif_internal_call_transparent(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
+	allocate_frame(q);
 	try_me_transparent(q);
 
 	if (term1_ctx != -1)
@@ -492,6 +493,7 @@ static int bif_internal_call_opaque(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
+	allocate_frame(q);
 	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
@@ -507,6 +509,7 @@ static int bif_iso_call(tpl_query *q)
 	node *args = get_args(q);
 	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
+	allocate_frame(q);
 	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
@@ -749,15 +752,15 @@ static int compare_terms(tpl_query *q, node *term1, unsigned term1_ctx, node *te
 		return 1;
 	}
 	else if (is_var(n1) && is_var(n2)) {
-		env *e = get_env(q, term1_ctx + n1->slot);
-		unsigned slot1 = (size_t)(e - q->envs) - e->binding;
-		e = get_env(q, term2_ctx + n2->slot);
-		unsigned slot2 = (size_t)(e - q->envs) - e->binding;
+		const env *e1 = get_env(q, term1_ctx + n1->slot);
+		e1 -= e1->binding;
+		const env *e2 = get_env(q, term2_ctx + n2->slot);
+		e2 -= e2->binding;
 
-		if (slot1 < slot2)
+		if (e1 < e2)
 			return -1;
 
-		if (slot1 == slot2)
+		if (e1 == e2)
 			return 0;
 
 		return 1;
@@ -2543,8 +2546,6 @@ static int bif_iso_copy_term(tpl_query *q)
 
 static void rebase_term(tpl_query *q, node *term)
 {
-	unsigned this_context = q->latest_context;
-
 	for (node *n = term_first(term); n; n = term_next(n)) {
 		if (is_compound(n)) {
 			rebase_term(q, n);
@@ -2554,7 +2555,7 @@ static void rebase_term(tpl_query *q, node *term)
 		if (!is_var(n))
 			continue;
 
-		env *e = get_env(q, this_context + n->slot);
+		env *e = get_env(q, q->c.curr_frame + n->slot);
 		e -= e->binding;
 		void *v;
 
@@ -2608,11 +2609,11 @@ int bif_iso_asserta(tpl_query *q)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, copy_term(q, term1));
+		term_append(n, deep_copy_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = copy_term(q, term1);
+		n = deep_copy_term(q, term1);
 
 	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTA;
@@ -2664,11 +2665,11 @@ int bif_iso_assertz(tpl_query *q)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, copy_term(q, term1));
+		term_append(n, deep_copy_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = copy_term(q, term1);
+		n = deep_copy_term(q, term1);
 
 	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTZ;
