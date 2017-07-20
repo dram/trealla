@@ -552,6 +552,9 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 	point1 -= q->envs[point1].binding;
 	point2 -= q->envs[point2].binding;
 
+	if (point1 == point2)
+		return;
+
 	if (point2 >= point1) {
 		q->envs[point2].binding = (signed)point2 - (signed)point1;
 
