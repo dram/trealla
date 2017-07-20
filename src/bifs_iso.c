@@ -7792,7 +7792,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("call_transparent", 1, bif_internal_call_transparent);
 	DEFINE_BIF("call_opaque", 1, bif_internal_call_opaque);
 	DEFINE_BIF("$call", 1 + 1, bif_iso_call);
-	DEFINE_BIF("$call", -1, bif_iso_calln);
+	DEFINE_BIF("$calln", -1, bif_iso_calln);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
 

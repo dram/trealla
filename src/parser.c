@@ -2460,7 +2460,8 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 
 						check_expandable(l, functor);
 
-						if (!strcmp(functor, "$call") || !strcmp(functor, "phrase") || !strcmp(functor, "findnsols") ||
+						if (!strcmp(functor, "$call") || !strcmp(functor, "$calln") ||
+							!strcmp(functor, "phrase") || !strcmp(functor, "findnsols") ||
 						    !strcmp(functor, "bagof") || !strcmp(functor, "setof")  ||
 						    !strcmp(functor, "sys:xmlq") || !strcmp(functor, "xmlq") ||
 						    !strcmp(functor, "sys:write_file") || !strcmp(functor, "write_file")) {
