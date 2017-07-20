@@ -7626,6 +7626,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF(OP_INV, 1, bif_iso_complement);
 	DEFINE_BIF(OP_NEG, 1, bif_iso_negative);
 	DEFINE_BIF(OP_POS, 1, bif_iso_positive);
+	DEFINE_BIF("$calln", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);
 	DEFINE_BIF(",", 2, bif_iso_and);
 	DEFINE_BIF("+", 2, bif_iso_add);
