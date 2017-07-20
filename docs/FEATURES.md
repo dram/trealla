@@ -407,9 +407,6 @@ compound. A process yields when entering a blocking recv, send, read, write, del
 	wait/0                     - wait indefinitely (used by parent)
 	end_wait/0                 - abort the wait (used by child)
 
-	receive ?Term              - receive message (operator fy)
-	undo ?Term                 - undo message (operator fy)
-
 	pid(+Name,-Pid)            - get Pid of named process
 	pid(-Pid)                  - get current Pid
 	send(+Pid,+Term)           - send to Pid
@@ -479,15 +476,15 @@ becomes in Trealla:
 
 	important(L, L2) :-
 		tmo(0),
-		receive {Priority, Message},
+		recv({Priority, Message}),
 		after -> normal(L, L2) ;
 		Priority > 10 ->
 		important([Message | L], L2) ;
-		undo {Priority, Message}.
+		undo({Priority, Message}).
 
 	normal(L, L2) :-
 		tmo(0),
-		receive {_, Message},
+		recv({_, Message}),
 		after -> L2 = L ;
 		normal([Message | L], L2).
 

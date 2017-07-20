@@ -49,8 +49,6 @@ op g_ops[] = {
 	{"import", "fx", 1150},
 	{"use_module", "fx", 1150},
 	{"module", "fx", 1150},
-	{"receive", "fx", 1150},
-	{"undo", "fx", 1150},
 #endif
 
 	 {"\\+", "fy", 900},

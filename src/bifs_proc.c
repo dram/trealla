@@ -1596,7 +1596,6 @@ void bifs_load_proc(void)
 	DEFINE_BIF("proc:send", 1, bif_proc_send_1);
 	DEFINE_BIF("proc:recv", 2, bif_proc_recv_2);
 	DEFINE_BIF("proc:recv", 1, bif_proc_recv_1);
-	DEFINE_BIF("proc:receive", 1, bif_proc_recv_1);
 	DEFINE_BIF("proc:undo", 1, bif_proc_undo_1);
 	DEFINE_BIF("proc:server", 3, bif_proc_server_3);
 	DEFINE_BIF("proc:server", 2, bif_proc_server_2);
