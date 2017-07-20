@@ -552,6 +552,11 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 	point1 -= q->envs[point1].binding;
 	point2 -= q->envs[point2].binding;
 
+	// This makes sure we don't rebind any vars...
+
+	point1 -= q->envs[point1].binding;
+	point2 -= q->envs[point2].binding;
+
 	if (point1 == point2)
 		return;
 
