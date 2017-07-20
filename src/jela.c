@@ -555,7 +555,7 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 	if (point1 == point2)
 		return;
 
-	if (point2 >= point1) {
+	if (point2 > point1) {
 		q->envs[point2].binding = (signed)point2 - (signed)point1;
 
 		if ((point2 < q->c.curr_frame) || (point2 >= (q->c.curr_frame + q->c.frame_size))) {
