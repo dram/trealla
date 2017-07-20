@@ -504,22 +504,6 @@ static int bif_internal_call_opaque(tpl_query *q)
 	return call(q);
 }
 
-static int bif_iso_call(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *var = get_var(var); // FLAG_HIDDEN
-	node *term1 = get_callable(term1);
-	allocate_frame(q);
-	try_me_nochoice(q);
-
-	if (term1_ctx != -1)
-		q->c.curr_frame = term1_ctx;
-
-	term1->flags |= FLAG_NOFOLLOW;
-	begin_query(q, term1);
-	return call(q);
-}
-
 static int bif_iso_calln(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -7642,8 +7626,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF(OP_INV, 1, bif_iso_complement);
 	DEFINE_BIF(OP_NEG, 1, bif_iso_negative);
 	DEFINE_BIF(OP_POS, 1, bif_iso_positive);
-	DEFINE_BIF("call", 1 + 1, bif_iso_call);
-	DEFINE_BIF("call", -1, bif_iso_calln);
 	DEFINE_BIF("?-", 1, bif_iso_do);
 	DEFINE_BIF(",", 2, bif_iso_and);
 	DEFINE_BIF("+", 2, bif_iso_add);
@@ -7793,6 +7775,7 @@ void bifs_load_iso(void)
 
 	DEFINE_BIF("call_transparent", 1, bif_internal_call_transparent);
 	DEFINE_BIF("call_opaque", 1, bif_internal_call_opaque);
+	DEFINE_BIF("$calln", -1, bif_iso_calln);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
 
