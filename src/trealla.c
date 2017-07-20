@@ -1622,6 +1622,12 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4) :- '$calln'(G,_1,_2,_3,_4).");
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5) :- '$calln'(G,_1,_2,_3,_4,_5).");
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6) :- '$calln'(G,_1,_2,_3,_4,_5,_6).");
+	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7).");
+	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8).");
+	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9).");
+	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10).");
+	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11).");
+	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12).");
 
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "clausew(H,B) :- '$clausew'(H,B).");
