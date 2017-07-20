@@ -180,7 +180,7 @@ int needs_quoting(const char *s)
 		    (ch == '_'))
 		    ;
 		else
-			return 1;
+			;
 	}
 
 	return 0;
@@ -816,7 +816,10 @@ static int dir_define(lexer *l, node *n)
 
 	char tmpbuf[KEY_SIZE + 10];
 	char *dst = tmpbuf;
+	*dst++ = '\'';
 	dst += term_sprint(dst, sizeof(tmpbuf), l->pl, NULL, term2, 1);
+	*dst++ = '\'';
+	*dst = '\0';
 	add_define(l, VAL_S(term1), tmpbuf);
 	return 1;
 }
@@ -2113,6 +2116,7 @@ LOOP: // FIXME someday
 		printf("Warning: undefined constant '%s'\n", key);
 		l->error = 1;
 		get_token(l, key, line);
+		l->quoted = 1;
 	}
 #endif
 
@@ -2543,7 +2547,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 		}
 		else if (!l->error && !l->quoted && !is_op(l->db, l->tok) && !isalnum_utf8(l->tok[0]) &&
 		         strcmp(l->tok, "!") && strcmp(l->tok, ".") && needs_quoting(l->tok)) {
-			printf("ERROR: unknown operator: '%s'\n", l->tok);
+			printf("ERROR: operator expected: '%s'\n", l->tok);
 			l->error = 1;
 			return NULL;
 		}
