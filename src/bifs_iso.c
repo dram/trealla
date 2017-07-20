@@ -2605,6 +2605,8 @@ int bif_iso_asserta(tpl_query *q)
 	else
 		return 0;
 
+	unsigned save_size = q->c.frame_size;
+
 	if (strcmp(functor, ":-") && strcmp(functor, "-->")) {
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
@@ -2616,6 +2618,9 @@ int bif_iso_asserta(tpl_query *q)
 		n = deep_copy_term(q, term1);
 
 	rebase_clause(q, n);
+	q->c.frame_size = save_size;
+	q->c.env_point = q->c.curr_frame + save_size;
+
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
 
@@ -2661,6 +2666,8 @@ int bif_iso_assertz(tpl_query *q)
 	else
 		return 0;
 
+	unsigned save_size = q->c.frame_size;
+
 	if (strcmp(functor, ":-") && strcmp(functor, "-->")) {
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
@@ -2672,6 +2679,9 @@ int bif_iso_assertz(tpl_query *q)
 		n = deep_copy_term(q, term1);
 
 	rebase_clause(q, n);
+	q->c.frame_size = save_size;
+	q->c.env_point = q->c.curr_frame + save_size;
+
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
 
