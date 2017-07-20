@@ -2617,9 +2617,8 @@ int bif_iso_asserta(tpl_query *q)
 	else
 		n = deep_copy_term(q, term1);
 
-	rebase_clause(q, n);
 	q->c.frame_size = save_size;
-	q->c.env_point = q->c.curr_frame + save_size;
+	rebase_clause(q, n);
 
 	n->flags |= FLAG_DBS_ASSERTA;
 	n->cpos = q->c.curr_term->cpos;
@@ -2678,9 +2677,8 @@ int bif_iso_assertz(tpl_query *q)
 	else
 		n = deep_copy_term(q, term1);
 
-	rebase_clause(q, n);
 	q->c.frame_size = save_size;
-	q->c.env_point = q->c.curr_frame + save_size;
+	rebase_clause(q, n);
 
 	n->flags |= FLAG_DBS_ASSERTZ;
 	n->cpos = q->c.curr_term->cpos;
