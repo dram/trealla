@@ -170,7 +170,7 @@ int needs_quoting(const char *s)
 	while (*s) {
 		int ch = get_char_utf8(&s);
 
-		if (isspace(ch) || iscntrl(ch))
+		if (isspace(ch) || iscntrl(ch) || (ch == '.'))
 			return 1;
 
 		if (isalpha_utf8(ch) || isdigit(ch) ||
