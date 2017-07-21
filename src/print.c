@@ -334,7 +334,7 @@ static size_t sprint2_compound(int depth, char **dstbuf, size_t *bufsize, char *
 				n2 = term_next(n2);
 
 			if (n2)
-				dst += snprintf(dst, *bufsize - (dst - *dstbuf), (listing?", ":","));
+				dst += snprintf(dst, *bufsize - (dst - *dstbuf), (listing  && (listing != 3)?", ":","));
 		}
 
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), ")");
