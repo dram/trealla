@@ -298,9 +298,9 @@ static int bif_net_handler_3(tpl_query *q)
 	stream *sp = term1->val_str;
 
 	if (session_get_udata_flag((session *)sp->sptr, BYE))
-		q->c.curr_term = copy_term(q, term3); // clone?
+		q->c.curr_term = clone_term(q, term3); // clone?
 	else if (session_get_udata_flag((session *)sp->sptr, HELLO))
-		q->c.curr_term = copy_term(q, term2); // clone?
+		q->c.curr_term = clone_term(q, term2); // clone?
 	else
 		return 1;
 

@@ -1850,7 +1850,7 @@ static int bif_sys_get_2(tpl_query *q)
 			node *n2 = make_compound();
 			term_append(n2, make_and());
 			term_append(n2, make_atom(strdup(key)));
-			term_append(n2, copy_term(q, value));
+			term_append(n2, clone_term(q, value));
 			term_append(n, n2);
 			term_append(l, n);
 			cnt++;

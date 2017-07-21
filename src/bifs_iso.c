@@ -289,12 +289,12 @@ static node *copy_term2(tpl_query *q, node *from, int deep, int depth)
 	return n;
 }
 
-node *copy_term(tpl_query *q, node *n)
+node *clone_term(tpl_query *q, node *n)
 {
 	return copy_term2(q, n, 0, 0);
 }
 
-static node *deep_copy_term(tpl_query *q, node *n)
+static node *copy_term(tpl_query *q, node *n)
 {
 	if (q->d)
 		return copy_term2(q, n, 1, 0);
@@ -526,15 +526,15 @@ static int bif_iso_calln(tpl_query *q)
 	node *s;
 
 	if (is_structure(term1)) {
-		s = copy_term(q, term1);
+		s = clone_term(q, term1);
 	}
 	else {
 		s = make_compound();
-		term_append(s, copy_term(q, term1));
+		term_append(s, clone_term(q, term1));
 	}
 
 	while (param) {
-		term_append(s, copy_term(q, param));
+		term_append(s, clone_term(q, param));
 		param = get_next_arg(q, &args);
 	}
 
@@ -1550,7 +1550,7 @@ static int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, 
 
 			while ((sl_next(&vars, (void **)&n)) != NULL) {
 				//q->latest_context = q->c.curr_frame;
-				term_append(l, n=copy_term(q, n));
+				term_append(l, n=clone_term(q, n));
 				//q->c.frame_size++;
 
 				if (!vars.iter)
@@ -2534,7 +2534,7 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_term(term2);
 	q->latest_context = term1_ctx;
-	node *tmp = deep_copy_term(q, term1);
+	node *tmp = copy_term(q, term1);
 	int ok = unify(q, term2, term2_ctx, tmp, q->c.curr_frame);
 	term_heapcheck(tmp);
 	return ok;
@@ -2607,11 +2607,11 @@ int bif_iso_asserta(tpl_query *q)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, deep_copy_term(q, term1));
+		term_append(n, copy_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = deep_copy_term(q, term1);
+		n = copy_term(q, term1);
 
 	q->c.frame_size = save_size;
 	rebase_clause(q, n);
@@ -2667,11 +2667,11 @@ int bif_iso_assertz(tpl_query *q)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, deep_copy_term(q, term1));
+		term_append(n, copy_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = deep_copy_term(q, term1);
+		n = copy_term(q, term1);
 
 	q->c.frame_size = save_size;
 	rebase_clause(q, n);
@@ -2722,11 +2722,11 @@ static int bif_retract2(tpl_query *q, int wait)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, copy_term(q, term1));
+		term_append(n, clone_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = copy_term(q, term1);
+		n = clone_term(q, term1);
 
 	node *save_n = n;
 	node *head = term_firstarg(n);
@@ -2941,11 +2941,11 @@ static int bif_iso_retractall(tpl_query *q)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, copy_term(q, term1));
+		term_append(n, clone_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = copy_term(q, term1);
+		n = clone_term(q, term1);
 
 	node *save_n = n;
 	node *head = term_firstarg(n);
@@ -3217,11 +3217,11 @@ static int bif_xtra_asserta_2(tpl_query *q)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, copy_term(q, term1));
+		term_append(n, clone_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = copy_term(q, term1);
+		n = clone_term(q, term1);
 
 	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTA;
@@ -3265,11 +3265,11 @@ static int bif_xtra_assertz_2(tpl_query *q)
 		n = make_compound();
 		n->flags |= FLAG_CLAUSE | FLAG_FACT;
 		term_append(n, make_const_atom(":-"));
-		term_append(n, copy_term(q, term1));
+		term_append(n, clone_term(q, term1));
 		term_append(n, make_true());
 	}
 	else
-		n = copy_term(q, term1);
+		n = clone_term(q, term1);
 
 	rebase_clause(q, n);
 	n->flags |= FLAG_DBS_ASSERTZ;
@@ -3631,7 +3631,7 @@ static node *bif_nodesort(tpl_query *q, node *term1, unsigned term1_ctx)
 			if (!nodecmp(&base[i], &base[i + 1]))
 				continue;
 
-		term_append(tmp, copy_term(q, base[i]));
+		term_append(tmp, clone_term(q, base[i]));
 
 		if (i == (cnt - 1))
 			break;
@@ -3716,7 +3716,7 @@ static int bif_iso_keysort(tpl_query *q)
 		node *tmp = l;
 
 		for (size_t i = 0; i < cnt; i++) {
-			term_append(tmp, copy_term(q, base[i]));
+			term_append(tmp, clone_term(q, base[i]));
 
 			if (i == (cnt - 1))
 				break;
@@ -3796,7 +3796,7 @@ static int bif_iso_univ(tpl_query *q)
 
 	if (is_compound(term1)) {
 		q->latest_context = term1_ctx;
-		node *new_term1 = deep_copy_term(q, term1);
+		node *new_term1 = copy_term(q, term1);
 
 		if (!unify(q, term1, term1_ctx, new_term1, q->c.curr_frame)) {
 			term_heapcheck(new_term1);
@@ -3827,7 +3827,7 @@ static int bif_iso_univ(tpl_query *q)
 
 	if (is_atomic(term1)) {
 		node *l = make_list();
-		term_append(l, copy_term(q, term1));
+		term_append(l, clone_term(q, term1));
 		term_append(l, make_const_atom("[]"));
 		int ok = unify(q, term2, term2_ctx, l, -1);
 		term_heapcheck(l);
@@ -3849,7 +3849,7 @@ static int bif_iso_univ(tpl_query *q)
 		// the new vars bound to the originals and their contexts will be correct. Then
 		// we can make the structure from the copy...
 
-		node *new_term2 = deep_copy_term(q, term2);
+		node *new_term2 = copy_term(q, term2);
 
 		if (!unify(q, term2, term2_ctx, new_term2, q->c.curr_frame)) {
 			term_heapcheck(new_term2);
@@ -3909,7 +3909,7 @@ static int bif_iso_functor(tpl_query *q)
 		if (v > 0) {
 			if (is_var(term1)) {
 				node *s = make_compound();
-				term_append(s, copy_term(q, term2));
+				term_append(s, clone_term(q, term2));
 
 				for (int i = 0; i < v; i++)
 					term_append(s, make_var(q));
@@ -4058,7 +4058,7 @@ static int bif_iso_term_variables(tpl_query *q)
 	sl_start(&vars);
 
 	while ((sl_next(&vars, (void **)&n)) != NULL) {
-		term_append(l, copy_term(q, n));
+		term_append(l, clone_term(q, n));
 
 		if (!vars.iter)
 			break;
@@ -4093,14 +4093,14 @@ static int bif_iso_findall(tpl_query *q)
 		DBLOCK(q->c.curr_db);
 	}
 
-	node *from = copy_term(q, term2);
+	node *from = clone_term(q, term2);
 	begin_query(subq, from);
 	int ok = query_run(subq);
 	node *save_l = NULL, *l = NULL;
 
 	while (ok && !g_abort) {
 		node *from = subst(subq, term1, FUDGE_FACTOR);
-		node *res2 = copy_term(subq, from);
+		node *res2 = clone_term(subq, from);
 		node *res = skim_copy_term(q, res2);
 		term_heapcheck(res2);
 
@@ -4221,7 +4221,7 @@ static int bif_iso_bagof(tpl_query *q)
 
 		sl_set(sp->kvs, (void *)subq->c.curr_match, NULL);
 		node *from = subst(subq, term1, FUDGE_FACTOR);
-		node *res = copy_term(subq, from);
+		node *res = clone_term(subq, from);
 
 		if (!l) {
 			save_l = l = make_list();
@@ -4357,7 +4357,7 @@ static int bif_iso_setof(tpl_query *q)
 
 		sl_set(sp->kvs, (void *)subq->c.curr_match, NULL);
 		node *from = subst(subq, term1, FUDGE_FACTOR);
-		node *res = copy_term(subq, from);
+		node *res = clone_term(subq, from);
 
 		if (!l) {
 			save_l = l = make_list();
@@ -6053,12 +6053,12 @@ static int bif_xtra_phrase(tpl_query *q)
 
 	if (is_atom(term1)) {
 		tmp = make_compound();
-		term_append(tmp, copy_term(q, term1));
+		term_append(tmp, clone_term(q, term1));
 	}
 	else
-		tmp = copy_term(q, term1);
+		tmp = clone_term(q, term1);
 
-	term_append(tmp, copy_term(q, param));
+	term_append(tmp, clone_term(q, param));
 	param = get_next_arg(q, &args);
 	int made = 0;
 
@@ -6067,7 +6067,7 @@ static int bif_xtra_phrase(tpl_query *q)
 		made = 1;
 	}
 
-	term_append(tmp, copy_term(q, param));
+	term_append(tmp, clone_term(q, param));
 
 	if (made)
 		term_heapcheck(param);
@@ -6306,7 +6306,7 @@ static int bif_xtra_maplist_2(tpl_query *q)
 		node *s = NULL;
 
 		if (is_structure(term1)) {
-			s = copy_term(q, term1);
+			s = clone_term(q, term1);
 		}
 		else {
 			s = make_compound();
@@ -6315,10 +6315,10 @@ static int bif_xtra_maplist_2(tpl_query *q)
 				s->flags |= FLAG_BUILTIN;
 
 			s->bifptr = term1->bifptr;
-			term_append(s, copy_term(q, term1));
+			term_append(s, clone_term(q, term1));
 		}
 
-		term_append(s, copy_term(q, subst(q, l2, this_context)));
+		term_append(s, clone_term(q, subst(q, l2, this_context)));
 		begin_query(subq, s);
 		int ok = query_run(subq);
 		query_destroy(subq);
@@ -6362,7 +6362,7 @@ static int bif_xtra_maplist_3(tpl_query *q)
 		node *s = NULL;
 
 		if (is_structure(term1)) {
-			s = copy_term(q, term1);
+			s = clone_term(q, term1);
 		}
 		else {
 			s = make_compound();
@@ -6371,11 +6371,11 @@ static int bif_xtra_maplist_3(tpl_query *q)
 				s->flags |= FLAG_BUILTIN;
 
 			s->bifptr = term1->bifptr;
-			term_append(s, copy_term(q, term1));
+			term_append(s, clone_term(q, term1));
 		}
 
-		term_append(s, copy_term(q, subst(q, l2, this_context)));
-		term_append(s, copy_term(q, subst(q, l3, this_context)));
+		term_append(s, clone_term(q, subst(q, l2, this_context)));
+		term_append(s, clone_term(q, subst(q, l3, this_context)));
 		begin_query(subq, s);
 		int ok = query_run(subq);
 		query_destroy(subq);
@@ -6421,7 +6421,7 @@ static int bif_xtra_findnsols_4(tpl_query *q)
 		node *n = make_stream(sp);
 		put_env(q, var->slot, n, -1);
 		term_heapcheck(n);
-		sp->subqgoal = copy_term(q, term3);
+		sp->subqgoal = clone_term(q, term3);
 		begin_query(subq, sp->subqgoal);
 		query_run(subq);
 	}
@@ -6441,7 +6441,7 @@ static int bif_xtra_findnsols_4(tpl_query *q)
 
 	while (subq->ok && !g_abort) {
 		subq->latest_context = 0;
-		node *res = copy_term(subq, term2);
+		node *res = clone_term(subq, term2);
 
 		if (!end) {
 			free(acc);

@@ -432,7 +432,7 @@ static int bif_dbs_log_1(tpl_query *q)
 	node *term1 = get_callable(term1);
 	size_t buflen = PRINTBUF_SIZE; // expandable
 	char *dstbuf = (char *)malloc(buflen + 1);
-	node *n = copy_term(q, term1);
+	node *n = clone_term(q, term1);
 	dbs_save_node(q->c.curr_db, q->c.curr_db->fp, &dstbuf, &buflen, n, q->in_tran);
 	term_heapcheck(n);
 	free(dstbuf);

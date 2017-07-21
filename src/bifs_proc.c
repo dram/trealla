@@ -1052,7 +1052,7 @@ static int bif_proc_undo_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	node *tmp = copy_term(q, term1);
+	node *tmp = clone_term(q, term1);
 	tmp->flags |= FLAG_SKIPPED;
 	tmp->pid = q->curr_pid;
 	PIDLOCK(q->pl);
@@ -1379,7 +1379,7 @@ static int bif_proc_get_1(tpl_query *q)
 			node *n2 = make_compound();
 			term_append(n2, make_and());
 			term_append(n2, make_atom(strdup(key)));
-			term_append(n2, copy_term(q, value));
+			term_append(n2, clone_term(q, value));
 			term_append(n, n2);
 			term_append(l, n);
 			cnt++;
