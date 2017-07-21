@@ -539,7 +539,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "\"%s\"", VAL_S(n));
 	else if (listing && is_atom(n) && needs_quoting(VAL_S(n)) && !(n->flags & FLAG_NOOP))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
-	else if ((listing == 3) && is_atom(n) && needs_quoting(VAL_S(n)))
+	else if ((listing == 3) && is_atom(n) && is_quoted(n))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "'%s'", VAL_S(n));
 	else if (is_atom(n))
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", VAL_S(n));
