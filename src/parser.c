@@ -1053,7 +1053,6 @@ void check_expandable(lexer *l, const char *functor)
 	{
 		"findall",
 		"functor",
-		"copy_term",
 		"read_term",
 		"length",
 		"=..",
