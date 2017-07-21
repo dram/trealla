@@ -3795,23 +3795,32 @@ static int bif_iso_univ(tpl_query *q)
 	}
 
 	if (is_compound(term1)) {
+		q->latest_context = term1_ctx;
+		node *new_term1 = deep_copy_term(q, term1);
+
+		if (!unify(q, term1, term1_ctx, new_term1, q->c.curr_frame)) {
+			term_heapcheck(new_term1);
+			return 0;
+		}
+
 		node *l = make_list();
-		node *n = term_first(term1);
 		node *save_l = l;
+		node *n = term_first(new_term1);
 
 		while (n) {
-			q->latest_context = term1_ctx;
-			term_append(l, copy_term(q, n));
+			node *next = term_remove(new_term1, n);
+			term_append(l, n);
 
-			if (!term_next(n))
+			if (!next)
 				break;
 
-			n = term_next(n);
+			n = next;
 			l = term_append(l, make_list());
 		}
 
 		term_append(l, make_const_atom("[]"));
-		int ok = unify(q, term2, term2_ctx, save_l, term1_ctx);
+		int ok = unify(q, term2, term2_ctx, save_l, q->c.curr_frame);
+		term_heapcheck(new_term1);
 		term_heapcheck(save_l);
 		return ok;
 	}
