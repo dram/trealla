@@ -28,15 +28,15 @@ static int bif_posix_format_time_3(tpl_query *q)
 	}
 
 	struct tm tm;
-	node *n = term_firstarg(term2); tm.tm_sec = get_word(n);
-	n = term_next(n); tm.tm_min = get_word(n);
-	n = term_next(n); tm.tm_hour = get_word(n);
-	n = term_next(n); tm.tm_mday = get_word(n);
-	n = term_next(n); tm.tm_mon = get_word(n);
-	n = term_next(n); tm.tm_year = get_word(n);
-	n = term_next(n); tm.tm_wday = get_word(n);
-	n = term_next(n); tm.tm_yday = get_word(n);
-	n = term_next(n); tm.tm_isdst = get_word(n);
+	node *n = term_firstarg(term2); tm.tm_sec = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_min = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_hour = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_mday = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_mon = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_year = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_wday = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_yday = get_word(subst(q, n, term2_ctx));
+	n = term_next(n); tm.tm_isdst = get_word(subst(q, n, term2_ctx));
 
 	char *buffer = NULL;
 	int tries = 0;
@@ -132,15 +132,15 @@ static int bif_posix_make_time_2(tpl_query *q)
 	}
 
 	struct tm tm;
-	node *n = term_firstarg(term1); tm.tm_sec = get_word(n);
-	n = term_next(n); tm.tm_min = get_word(n);
-	n = term_next(n); tm.tm_hour = get_word(n);
-	n = term_next(n); tm.tm_mday = get_word(n);
-	n = term_next(n); tm.tm_mon = get_word(n);
-	n = term_next(n); tm.tm_year = get_word(n);
-	n = term_next(n); tm.tm_wday = get_word(n);
-	n = term_next(n); tm.tm_yday = get_word(n);
-	n = term_next(n); tm.tm_isdst = get_word(n);
+	node *n = term_firstarg(term1); tm.tm_sec = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_min = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_hour = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_mday = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_mon = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_year = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_wday = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_yday = get_word(subst(q, n, term1_ctx));
+	n = term_next(n); tm.tm_isdst = get_word(subst(q, n, term1_ctx));
 
 	time_t t = mktime(&tm);
 
