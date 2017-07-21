@@ -1635,7 +1635,7 @@ static int bif_sys_lput_4(tpl_query *q)
 	node *value = NULL;
 	node *n = NULL;
 
-	if (UTF8LEN(term1) > FUNCTOR_LEN) {
+	if (UTF8LEN_S(term1) > FUNCTOR_LEN) {
 		QABORT(ABORT_ARGTOOBIG);
 		return 0;
 	}
@@ -1679,7 +1679,7 @@ static int bif_sys_put_4(tpl_query *q)
 	node *value = NULL;
 	node *n = NULL;
 
-	if (UTF8LEN(term1) > FUNCTOR_LEN) {
+	if (UTF8LEN_S(term1) > FUNCTOR_LEN) {
 		QABORT(ABORT_ARGTOOBIG);
 		return 0;
 	}
@@ -1721,7 +1721,7 @@ static int bif_sys_put_3(tpl_query *q)
 	stream *sp = term0->val_str;
 	node *n = NULL;
 
-	if (UTF8LEN(term1) > FUNCTOR_LEN) {
+	if (UTF8LEN_S(term1) > FUNCTOR_LEN) {
 		QABORT(ABORT_ARGTOOBIG);
 		return 0;
 	}

@@ -818,7 +818,7 @@ static int bif_iso_atom_length(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_int_or_var(term2);
-	return unify_int(q, term2, q->latest_context, UTF8LEN(term1));
+	return unify_int(q, term2, q->latest_context, UTF8LEN_S(term1));
 }
 
 static int bif_iso_atom_concat(tpl_query *q)

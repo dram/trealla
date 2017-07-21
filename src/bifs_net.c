@@ -607,7 +607,7 @@ int bif_net_stash_set_4(tpl_query *q)
 	stream *sp = term1->val_str;
 	const char *key = VAL_S(term2);
 
-	if (UTF8LEN(term2) > FUNCTOR_LEN) {
+	if (UTF8LEN_S(term2) > FUNCTOR_LEN) {
 		QABORT(ABORT_ARGTOOBIG);
 		return 0;
 	}
@@ -632,7 +632,7 @@ int bif_net_stash_set_3(tpl_query *q)
 	stream *sp = term1->val_str;
 	const char *key = VAL_S(term2);
 
-	if (UTF8LEN(term2) > FUNCTOR_LEN) {
+	if (UTF8LEN_S(term2) > FUNCTOR_LEN) {
 		QABORT(ABORT_ARGTOOBIG);
 		return 0;
 	}

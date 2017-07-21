@@ -277,10 +277,10 @@
 #define VAL_S(n) ((n)->flags & FLAG_SMALL ? (n)->val_ch : (n)->val_s)
 
 #ifndef ISO_ONLY
-#define UTF8LEN(n) (is_blob(n) ? (n)->val_len : strlen_utf8(VAL_S(n)))
+#define UTF8LEN_S(n) (is_blob(n) ? (n)->val_len : strlen_utf8(VAL_S(n)))
 #define LEN_S(n) (is_blob(n) ? (n)->val_len : strlen(VAL_S(n)))
 #else
-#define UTF8LEN(n) strlen_utf8(VAL_S(n))
+#define UTF8LEN_S(n) strlen_utf8(VAL_S(n))
 #define LEN_S(n) strlen(VAL_S(n))
 #endif
 
