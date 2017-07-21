@@ -170,7 +170,7 @@ int needs_quoting(const char *s)
 	while (*s) {
 		int ch = get_char_utf8(&s);
 
-		if (isspace(ch) || iscntrl(ch) || (ch == '/'))
+		if (isspace(ch) || iscntrl(ch))
 			return 1;
 
 		if (isalpha_utf8(ch) || isdigit(ch) ||
@@ -816,7 +816,10 @@ static int dir_define(lexer *l, node *n)
 
 	char tmpbuf[KEY_SIZE + 10];
 	char *dst = tmpbuf;
+	*dst++ = '\'';
 	dst += term_sprint(dst, sizeof(tmpbuf), l->pl, NULL, term2, 1);
+	*dst++ = '\'';
+	*dst = '\0';
 	add_define(l, VAL_S(term1), tmpbuf);
 	return 1;
 }
