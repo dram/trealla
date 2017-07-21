@@ -913,7 +913,7 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 
 	if (!strcmp(f, "length")) {
 		if (is_integer(v))
-			opt->length = get_word(v);
+			opt->length = VAL_INT(v);
 
 		return;
 	}
@@ -923,9 +923,9 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 			opt->persist = 1;
 		else if (is_atom(v) && !strcmp(VAL_S(v), "false"))
 			opt->persist = 0;
-		else if (is_integer(v) && (get_word(v) == 1))
+		else if (is_integer(v) && (VAL_INT(v) == 1))
 			opt->persist = 1;
-		else if (is_integer(v) && (get_word(v) == 0))
+		else if (is_integer(v) && (VAL_INT(v) == 0))
 			opt->persist = 0;
 
 		return;
@@ -934,7 +934,7 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 	if (!strcmp(f, "chunked")) {
 		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
 			opt->chunked = 1;
-		else if (is_integer(v) && (get_word(v) == 1))
+		else if (is_integer(v) && (VAL_INT(v) == 1))
 			opt->chunked = 1;
 
 		return;
@@ -943,7 +943,7 @@ static void parse_option(tpl_query *q, options *opt, node *n)
 	if (!strcmp(f, "debug")) {
 		if (is_atom(v) && !strcmp(VAL_S(v), "true"))
 			opt->debug = 1;
-		else if (is_integer(v) && (get_word(v) == 1))
+		else if (is_integer(v) && (VAL_INT(v) == 1))
 			opt->debug = 1;
 
 		return;

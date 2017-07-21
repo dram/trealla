@@ -600,7 +600,7 @@ static int dir_op(lexer *l, node *n)
 	if (!is_atom(term3))
 		return 0;
 
-	return dir_op_3(l, get_word(term1), VAL_S(term2), VAL_S(term3));
+	return dir_op_3(l, VAL_INT(term1), VAL_S(term2), VAL_S(term3));
 }
 
 static int dir_initialization(lexer *l, node *n)
@@ -1228,7 +1228,7 @@ static int attach_ops(lexer *l, node *term, int depth)
 				n->val_u = ~tmp->val_u;
 #ifndef ISO_ONLY
 			else if (bitneg && is_bignum(tmp))
-				BN_set_word(n->val_bn, ~(unbr_t)get_word(tmp));
+				BN_set_word(n->val_bn, ~(unbr_t)VAL_INT(tmp));
 #endif
 			else if (is_integer(tmp))
 				n->val_i = neg ? -tmp->val_i : tmp->val_i;

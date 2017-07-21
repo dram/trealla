@@ -581,7 +581,7 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 int unify_int(tpl_query *q, node *term, unsigned term_ctx, nbr_t v)
 {
 	if (is_integral(term))
-		return get_word(term) == v ? 1 : 0;
+		return VAL_INT(term) == v ? 1 : 0;
 
 	node *n = make_quick_int(v);
 	int ok = unify(q, term, term_ctx, n, -1);

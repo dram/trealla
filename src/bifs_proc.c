@@ -1155,7 +1155,7 @@ static int bif_proc_tmo_1(tpl_query *q)
 	}
 
 	if (!is_atom(term1))
-		q->tmo_msecs = get_word(term1);
+		q->tmo_msecs = VAL_INT(term1);
 	else
 		q->tmo_msecs = -1;
 

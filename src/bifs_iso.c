@@ -689,19 +689,19 @@ static int compare_terms(tpl_query *q, node *term1, unsigned term1_ctx, node *te
 	term2_ctx = q->latest_context;
 
 	if (is_integer(n1) && (is_integer(n2) || is_bignum(n2))) {
-		if (get_word(n1) < get_word(n2))
+		if (VAL_INT(n1) < VAL_INT(n2))
 			return -1;
 
-		if (get_word(n1) == get_word(n2))
+		if (VAL_INT(n1) == VAL_INT(n2))
 			return 0;
 
 		return 1;
 	}
 	else if (is_integer(n2) && (is_integer(n1) || is_bignum(n1))) {
-		if (get_word(n1) < get_word(n2))
+		if (VAL_INT(n1) < VAL_INT(n2))
 			return -1;
 
-		if (get_word(n1) == get_word(n2))
+		if (VAL_INT(n1) == VAL_INT(n2))
 			return 0;
 
 		return 1;
@@ -716,37 +716,37 @@ static int compare_terms(tpl_query *q, node *term1, unsigned term1_ctx, node *te
 		return 1;
 	}
 	else if (is_float(n1) && is_number(n2)) {
-		if (n1->val_f < get_word(n2))
+		if (n1->val_f < VAL_INT(n2))
 			return -1;
 
-		if (n1->val_f == get_word(n2))
+		if (n1->val_f == VAL_INT(n2))
 			return 0;
 
 		return 1;
 	}
 	else if (is_float(n2) && is_number(n1)) {
-		if ((flt_t)get_word(n1) < n2->val_f)
+		if ((flt_t)VAL_INT(n1) < n2->val_f)
 			return -1;
 
-		if ((flt_t)get_word(n1) == n2->val_f)
+		if ((flt_t)VAL_INT(n1) == n2->val_f)
 			return 0;
 
 		return 1;
 	}
 	else if (is_bignum(n1) && is_bignum(n2)) {  // TODO
-		if (get_word(n1) < get_word(n2))
+		if (VAL_INT(n1) < VAL_INT(n2))
 			return -1;
 
-		if (get_word(n1) == get_word(n2))
+		if (VAL_INT(n1) == VAL_INT(n2))
 			return 0;
 
 		return 1;
 	}
 	else if (is_rational(n1) && is_rational(n2)) {  // TODO
-		if (get_word(n1) < get_word(n2))
+		if (VAL_INT(n1) < VAL_INT(n2))
 			return -1;
 
-		if (get_word(n1) == get_word(n2))
+		if (VAL_INT(n1) == VAL_INT(n2))
 			return 0;
 
 		return 1;
@@ -1021,7 +1021,7 @@ static int bif_iso_current_predicate(tpl_query *q)
 	}
 
 	functor = VAL_S(fa);
-	int arity = get_word(ta);
+	int arity = VAL_INT(ta);
 	char tmpbuf[FUNCTOR_SIZE];
 	sprintf(tmpbuf, "%s/%d", functor, arity);
 
@@ -2178,7 +2178,7 @@ static int bif_iso_number_codes(tpl_query *q)
 				return 0;
 			}
 
-			int i = get_word(n);
+			int i = VAL_INT(n);
 
 			if (i == '.')
 				is_real = 1;
@@ -2191,7 +2191,7 @@ static int bif_iso_number_codes(tpl_query *q)
 				}
 			}
 
-			*dst++ = (char)(int)get_word(n);
+			*dst++ = (char)(int)VAL_INT(n);
 			node *tail = term_next(head);
 			l = subst(q, tail, this_context);
 		}
@@ -2411,7 +2411,7 @@ static int bif_iso_atom_codes(tpl_query *q)
 				return 0;
 			}
 
-			nbr_t v = get_word(n);
+			nbr_t v = VAL_INT(n);
 
 			if (v <= 0) {
 				QABORT(ABORT_INVALIDARGNOTINT);
@@ -3129,7 +3129,7 @@ static int bif_abolish(tpl_query *q, node *term1)
 	}
 
 	const char *functor = VAL_S(fa);
-	int arity = get_word(f2);
+	int arity = VAL_INT(f2);
 	char tmpbuf[FUNCTOR_SIZE + 10];
 	snprintf(tmpbuf, sizeof(tmpbuf), "%s/%d", functor, arity);
 	rule *r = NULL;
@@ -3764,12 +3764,12 @@ static int bif_iso_arg(tpl_query *q)
 		allocate_frame(q);
 	}
 	else if (q->retry) {
-		idx = get_word(term1) + 1;
+		idx = VAL_INT(term1) + 1;
 		reset_arg(q, orig_term1, q->c.curr_frame);
 		put_int(q, q->c.curr_frame + orig_term1->slot, idx);
 	}
 	else
-		idx = get_word(term1);
+		idx = VAL_INT(term1);
 
 	node *n = term_first(term2);
 	n = term_next(n);
@@ -3899,7 +3899,7 @@ static int bif_iso_functor(tpl_query *q)
 	int arity = 0;
 
 	if (is_atom(term2) && (is_integer(term3) || is_bignum(term3))) {
-		nbr_t v = get_word(term3);
+		nbr_t v = VAL_INT(term3);
 
 		if (v > 0) {
 			if (is_var(term1)) {
@@ -4508,9 +4508,9 @@ static int bif_iso_is(tpl_query *q)
 	}
 
 	if (is_integer(term1) && is_integer(&q->nv))
-		return get_word(term1) == get_word(&q->nv);
+		return VAL_INT(term1) == VAL_INT(&q->nv);
 	else if (is_integer(term1) && is_rational(&q->nv)) {
-		return get_word(term1) == get_word(&q->nv);
+		return VAL_INT(term1) == VAL_INT(&q->nv);
 	}
 	else if (is_float(term1) && is_float(&q->nv))
 		return term1->val_f == q->nv.val_f;
@@ -4518,20 +4518,20 @@ static int bif_iso_is(tpl_query *q)
 		return (term1->val_num == q->nv.val_num) && (term1->val_den == q->nv.val_den);
 	}
 	else if (is_rational(term1) && is_integer(&q->nv)) {
-		return get_word(term1) == get_word(&q->nv);
+		return VAL_INT(term1) == VAL_INT(&q->nv);
 	}
 #if USE_SSL
 	else if (is_rational(term1) && is_bignum(&q->nv)) {
-		return get_word(term1) == get_word(&q->nv);
+		return VAL_INT(term1) == VAL_INT(&q->nv);
 	}
 	else if (is_bignum(term1) && is_bignum(&q->nv))
 		return !BN_cmp(term1->val_bn, q->nv.val_bn);
 	else if (is_bignum(term1) && is_integer(&q->nv))
-		return get_word(term1) == get_word(&q->nv);
+		return VAL_INT(term1) == VAL_INT(&q->nv);
 	else if (is_bignum(term1) && is_rational(&q->nv))
-		return get_word(term1) == get_word(&q->nv);
+		return VAL_INT(term1) == VAL_INT(&q->nv);
 	else if (is_integer(term1) && is_bignum(&q->nv))
-		return get_word(term1) == get_word(&q->nv);
+		return VAL_INT(term1) == VAL_INT(&q->nv);
 #endif
 
 	QABORT(ABORT_TYPEERROR);
@@ -4643,13 +4643,13 @@ static int bif_iso_add(tpl_query *q)
 	node nv2 = q->nv;
 
 	if (is_integer(&nv1)) {
-		q->nv.val_i = nv1.val_i + get_word(&nv2);
+		q->nv.val_i = nv1.val_i + VAL_INT(&nv2);
 	}
 	else if (is_float(&nv1) && is_float(&nv2)) {
 		q->nv.val_f = nv1.val_f + nv2.val_f;
 	}
 	else if (is_float(&nv1)) {
-		q->nv.val_f = nv1.val_f + (flt_t)get_word(&nv2);
+		q->nv.val_f = nv1.val_f + (flt_t)VAL_INT(&nv2);
 	}
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
@@ -4659,7 +4659,7 @@ static int bif_iso_add(tpl_query *q)
 		}
 		else {
 			q->nv.val_bn = nv1.val_bn;
-			BN_add_word(q->nv.val_bn, get_word(&nv2));
+			BN_add_word(q->nv.val_bn, VAL_INT(&nv2));
 		}
 	}
 #endif
@@ -4669,7 +4669,7 @@ static int bif_iso_add(tpl_query *q)
 		reduce(&q->nv);
 	}
 	else if (is_rational(&nv1)) {
-		q->nv.val_num = (nv1.val_num * 1) + (nv1.val_den * get_word(&nv2));
+		q->nv.val_num = (nv1.val_num * 1) + (nv1.val_den * VAL_INT(&nv2));
 		q->nv.val_den = nv1.val_den;
 		reduce(&q->nv);
 	}
@@ -4691,13 +4691,13 @@ static int bif_iso_subtract(tpl_query *q)
 	node nv2 = q->nv;
 
 	if (is_integer(&nv1)) {
-		q->nv.val_i = nv1.val_i - get_word(&nv2);
+		q->nv.val_i = nv1.val_i - VAL_INT(&nv2);
 	}
 	else if (is_float(&nv1) && is_float(&nv2)) {
 		q->nv.val_f = nv1.val_f - nv2.val_f;
 	}
 	else if (is_float(&nv1)) {
-		q->nv.val_f = nv1.val_f - (flt_t)get_word(&nv2);
+		q->nv.val_f = nv1.val_f - (flt_t)VAL_INT(&nv2);
 	}
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
@@ -4707,7 +4707,7 @@ static int bif_iso_subtract(tpl_query *q)
 		}
 		else {
 			q->nv.val_bn = nv1.val_bn;
-			BN_sub_word(q->nv.val_bn, get_word(&nv2));
+			BN_sub_word(q->nv.val_bn, VAL_INT(&nv2));
 		}
 	}
 #endif
@@ -4717,7 +4717,7 @@ static int bif_iso_subtract(tpl_query *q)
 		reduce(&q->nv);
 	}
 	else if (is_rational(&nv1)) {
-		q->nv.val_num = (nv1.val_num * 1) - (nv1.val_den * get_word(&nv2));
+		q->nv.val_num = (nv1.val_num * 1) - (nv1.val_den * VAL_INT(&nv2));
 		q->nv.val_den = nv1.val_den;
 		reduce(&q->nv);
 	}
@@ -4744,13 +4744,13 @@ static int bif_iso_multiply(tpl_query *q)
 			nv1.flags = TYPE_FLOAT;
 		}
 		else
-			q->nv.val_i = nv1.val_i * get_word(&nv2);
+			q->nv.val_i = nv1.val_i * VAL_INT(&nv2);
 	}
 	else if (is_float(&nv1)) {
 		if (is_float(&nv2))
 			q->nv.val_f = nv1.val_f * nv2.val_f;
 		else
-			q->nv.val_f = nv1.val_f * (flt_t)get_word(&nv2);
+			q->nv.val_f = nv1.val_f * (flt_t)VAL_INT(&nv2);
 	}
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
@@ -4763,7 +4763,7 @@ static int bif_iso_multiply(tpl_query *q)
 		}
 		else {
 			q->nv.val_bn = nv1.val_bn;
-			BN_mul_word(q->nv.val_bn, get_word(&nv2));
+			BN_mul_word(q->nv.val_bn, VAL_INT(&nv2));
 		}
 	}
 #endif
@@ -4773,7 +4773,7 @@ static int bif_iso_multiply(tpl_query *q)
 		reduce(&q->nv);
 	}
 	else if (is_rational(&nv1)) {
-		q->nv.val_num = nv1.val_num * get_word(&nv2);
+		q->nv.val_num = nv1.val_num * VAL_INT(&nv2);
 		q->nv.val_den = nv1.val_den;
 		reduce(&q->nv);
 	}
@@ -4803,25 +4803,25 @@ static int bif_iso_divide(tpl_query *q)
 		q->nv.val_f = (flt_t)nv1.val_i / nv2.val_f;
 	}
 	else if (is_integer(&nv1) && is_rational(&nv2)) {
-		q->nv.val_num = get_word(&nv1) * nv2.val_den;
+		q->nv.val_num = VAL_INT(&nv1) * nv2.val_den;
 		q->nv.val_den = 1 * nv2.val_num;
 		q->nv.flags = TYPE_RATIONAL;
 		reduce(&q->nv);
 		return 1;
 	}
 	else if (is_integer(&nv1)) {
-		if (get_word(&nv2) == 0) {
+		if (VAL_INT(&nv2) == 0) {
 			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 			return 0;
 		}
 
-		if (!(nv1.val_i % get_word(&nv2))) {			// SWIPL-ism
-			q->nv.val_i = nv1.val_i / get_word(&nv2);
+		if (!(nv1.val_i % VAL_INT(&nv2))) {			// SWIPL-ism
+			q->nv.val_i = nv1.val_i / VAL_INT(&nv2);
 			q->nv.flags = TYPE_INTEGER;
 			return 1;
 		}
 		else
-			q->nv.val_f = (flt_t)nv1.val_i / (flt_t)get_word(&nv2);
+			q->nv.val_f = (flt_t)nv1.val_i / (flt_t)VAL_INT(&nv2);
 	}
 	else if ((is_float(&nv1)) && (is_float(&nv2))) {
 		if (nv2.val_f == (flt_t)0.0) {
@@ -4832,12 +4832,12 @@ static int bif_iso_divide(tpl_query *q)
 		q->nv.val_f = nv1.val_f / nv2.val_f;
 	}
 	else if (is_float(&nv1)) {
-		if (get_word(&nv2) == 0) {
+		if (VAL_INT(&nv2) == 0) {
 			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 			return 0;
 		}
 
-		q->nv.val_f = nv1.val_f / (flt_t)get_word(&nv2);
+		q->nv.val_f = nv1.val_f / (flt_t)VAL_INT(&nv2);
 	}
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
@@ -4859,13 +4859,13 @@ static int bif_iso_divide(tpl_query *q)
 			BN_free(nv0.val_bn);
 		}
 		else {
-			if (get_word(&nv2) == 0) {
+			if (VAL_INT(&nv2) == 0) {
 				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 				return 0;
 			}
 
-			nbr_t rem = BN_div_word(nv1.val_bn, get_word(&nv2));
-			q->nv.val_f = (flt_t)BN_get_word(nv1.val_bn) + ((flt_t)rem / (flt_t)get_word(&nv2));
+			nbr_t rem = BN_div_word(nv1.val_bn, VAL_INT(&nv2));
+			q->nv.val_f = (flt_t)BN_get_word(nv1.val_bn) + ((flt_t)rem / (flt_t)VAL_INT(&nv2));
 		}
 	}
 #endif
@@ -4878,7 +4878,7 @@ static int bif_iso_divide(tpl_query *q)
 	}
 	else if (is_rational(&nv1)) {
 		q->nv.val_num = nv1.val_num * 1;
-		q->nv.val_den = nv1.val_den / get_word(&nv2);
+		q->nv.val_den = nv1.val_den / VAL_INT(&nv2);
 		q->nv.flags = TYPE_RATIONAL;
 		reduce(&q->nv);
 		return 1;
@@ -4909,12 +4909,12 @@ static int bif_iso_divint(tpl_query *q)
 		q->nv.val_i = nv1.val_i / nv2.val_f;
 	}
 	else if (is_integer(&nv1)) {
-		if (get_word(&nv2) == 0) {
+		if (VAL_INT(&nv2) == 0) {
 			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 			return 0;
 		}
 
-		q->nv.val_i = nv1.val_i / get_word(&nv2);
+		q->nv.val_i = nv1.val_i / VAL_INT(&nv2);
 	}
 	else if ((is_float(&nv1)) && (is_float(&nv2))) {
 		if (nv2.val_f == (flt_t)0.0) {
@@ -4925,12 +4925,12 @@ static int bif_iso_divint(tpl_query *q)
 		q->nv.val_i = (nbr_t)nv1.val_f / nv2.val_f;
 	}
 	else if (is_float(&nv1)) {
-		if (get_word(&nv2) == 0) {
+		if (VAL_INT(&nv2) == 0) {
 			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 			return 0;
 		}
 
-		q->nv.val_i = (nbr_t)nv1.val_f / get_word(&nv2);
+		q->nv.val_i = (nbr_t)nv1.val_f / VAL_INT(&nv2);
 	}
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
@@ -4950,12 +4950,12 @@ static int bif_iso_divint(tpl_query *q)
 			BN_free(nv0.val_bn);
 		}
 		else {
-			if (get_word(&nv2) == 0) {
+			if (VAL_INT(&nv2) == 0) {
 				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 				return 0;
 			}
 
-			BN_div_word(nv1.val_bn, get_word(&nv2));
+			BN_div_word(nv1.val_bn, VAL_INT(&nv2));
 			q->nv.val_bn = nv1.val_bn;
 		}
 
@@ -4972,7 +4972,7 @@ static int bif_iso_divint(tpl_query *q)
 	}
 	else if (is_rational(&nv1)) {
 		q->nv.val_num = nv1.val_num * 1;
-		q->nv.val_den = nv1.val_den * get_word(&nv2);
+		q->nv.val_den = nv1.val_den * VAL_INT(&nv2);
 		q->nv.flags = TYPE_RATIONAL;
 		reduce(&q->nv);
 		return 1;
@@ -4995,12 +4995,12 @@ static int bif_iso_rem(tpl_query *q)
 	node nv2 = q->nv;
 
 	if ((is_integer(&nv1)) && (is_number(&nv2))) {
-		if (get_word(&nv2) == 0) {
+		if (VAL_INT(&nv2) == 0) {
 			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 			return 0;
 		}
 
-		q->nv.val_i = nv1.val_i % get_word(&nv2);
+		q->nv.val_i = nv1.val_i % VAL_INT(&nv2);
 	}
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
@@ -5021,13 +5021,13 @@ static int bif_iso_rem(tpl_query *q)
 			q->nv.flags = TYPE_BIGNUM;
 		}
 		else {
-			if (get_word(&nv2) == 0) {
+			if (VAL_INT(&nv2) == 0) {
 				QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 				return 0;
 			}
 
 			q->nv.val_bn = nv1.val_bn;
-			nbr_t rem = BN_mod_word(q->nv.val_bn, get_word(&nv2));
+			nbr_t rem = BN_mod_word(q->nv.val_bn, VAL_INT(&nv2));
 			BN_free(nv1.val_bn);
 			q->nv.val_i = rem;
 			q->nv.flags = TYPE_INTEGER;
@@ -5057,11 +5057,11 @@ static int bif_iso_nlt(tpl_query *q)
 	if ((is_integer(&nv1)) && (is_float(&nv2)))
 		ok = (flt_t)nv1.val_i < nv2.val_f;
 	else if (is_integer(&nv1))
-		ok = nv1.val_i < get_word(&nv2);
+		ok = nv1.val_i < VAL_INT(&nv2);
 	else if ((is_float(&nv1)) && (is_float(&nv2)))
 		ok = nv1.val_f < nv2.val_f;
 	else if (is_float(&nv1))
-		ok = nv1.val_f < (flt_t)get_word(&nv2);
+		ok = nv1.val_f < (flt_t)VAL_INT(&nv2);
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
 		if (is_bignum(&nv2)) {
@@ -5071,14 +5071,14 @@ static int bif_iso_nlt(tpl_query *q)
 		}
 		else {
 			nbr_t val = BN_get_word(nv1.val_bn);
-			ok = val < get_word(&nv2);
+			ok = val < VAL_INT(&nv2);
 			BN_free(nv1.val_bn);
 		}
 	}
 	else if (is_number(&nv1)) {
 		if (is_bignum(&nv2)) {
 			nbr_t val = BN_get_word(nv2.val_bn);
-			ok = get_word(&nv1) < val;
+			ok = VAL_INT(&nv1) < val;
 			BN_free(nv2.val_bn);
 		}
 	}
@@ -5104,11 +5104,11 @@ static int bif_iso_nle(tpl_query *q)
 	if ((is_integer(&nv1)) && (is_float(&nv2)))
 		ok = (flt_t)nv1.val_i <= nv2.val_f;
 	else if (is_integer(&nv1))
-		ok = nv1.val_i <= get_word(&nv2);
+		ok = nv1.val_i <= VAL_INT(&nv2);
 	else if ((is_float(&nv1)) && (is_float(&nv2)))
 		ok = nv1.val_f <= nv2.val_f;
 	else if (is_float(&nv1))
-		ok = nv1.val_f <= (flt_t)get_word(&nv2);
+		ok = nv1.val_f <= (flt_t)VAL_INT(&nv2);
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
 		if (is_bignum(&nv2)) {
@@ -5118,14 +5118,14 @@ static int bif_iso_nle(tpl_query *q)
 		}
 		else {
 			nbr_t val = BN_get_word(nv1.val_bn);
-			ok = val <= get_word(&nv2);
+			ok = val <= VAL_INT(&nv2);
 			BN_free(nv1.val_bn);
 		}
 	}
 	else if (is_number(&nv1)) {
 		if (is_bignum(&nv2)) {
 			nbr_t val = BN_get_word(nv2.val_bn);
-			ok = get_word(&nv1) <= val;
+			ok = VAL_INT(&nv1) <= val;
 			BN_free(nv2.val_bn);
 		}
 	}
@@ -5151,11 +5151,11 @@ static int bif_iso_neq(tpl_query *q)
 	if ((is_integer(&nv1)) && (is_float(&nv2)))
 		ok = (flt_t)nv1.val_i == nv2.val_f;
 	else if (is_integer(&nv1))
-		ok = nv1.val_i == get_word(&nv2);
+		ok = nv1.val_i == VAL_INT(&nv2);
 	else if ((is_float(&nv1)) && (is_float(&nv2)))
 		ok = nv1.val_f == nv2.val_f;
 	else if (is_float(&nv1))
-		ok = nv1.val_f == (flt_t)get_word(&nv2);
+		ok = nv1.val_f == (flt_t)VAL_INT(&nv2);
 #if USE_SSL
 	else if (is_bignum(&nv1)) {
 		if (is_bignum(&nv2)) {
@@ -5165,14 +5165,14 @@ static int bif_iso_neq(tpl_query *q)
 		}
 		else {
 			nbr_t val = BN_get_word(nv1.val_bn);
-			ok = val == get_word(&nv2);
+			ok = val == VAL_INT(&nv2);
 			BN_free(nv1.val_bn);
 		}
 	}
 	else if (is_number(&nv1)) {
 		if (is_bignum(&nv2)) {
 			nbr_t val = BN_get_word(nv2.val_bn);
-			ok = get_word(&nv1) == val;
+			ok = VAL_INT(&nv1) == val;
 			BN_free(nv2.val_bn);
 		}
 	}
@@ -5220,7 +5220,7 @@ static int bif_iso_shiftleft(tpl_query *q)
 		q->nv.val_u = nv1.val_u << nv2.val_u;
 #if USE_SSL
 	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
-		q->nv.val_u = get_word(&nv1) << get_word(&nv2);
+		q->nv.val_u = VAL_INT(&nv1) << VAL_INT(&nv2);
 #endif
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -5243,7 +5243,7 @@ static int bif_iso_shiftright(tpl_query *q)
 		q->nv.val_u = nv1.val_u >> nv2.val_u;
 #if USE_SSL
 	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
-		q->nv.val_u = get_word(&nv1) >> get_word(&nv2);
+		q->nv.val_u = VAL_INT(&nv1) >> VAL_INT(&nv2);
 #endif
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -5266,7 +5266,7 @@ static int bif_iso_bitand(tpl_query *q)
 		q->nv.val_u = nv1.val_u & nv2.val_u;
 #if USE_SSL
 	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
-		q->nv.val_u = get_word(&nv1) & get_word(&nv2);
+		q->nv.val_u = VAL_INT(&nv1) & VAL_INT(&nv2);
 #endif
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -5289,7 +5289,7 @@ static int bif_iso_bitor(tpl_query *q)
 		q->nv.val_u = nv1.val_u | nv2.val_u;
 #if USE_SSL
 	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
-		q->nv.val_u = get_word(&nv1) | get_word(&nv2);
+		q->nv.val_u = VAL_INT(&nv1) | VAL_INT(&nv2);
 #endif
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -5312,7 +5312,7 @@ static int bif_iso_xor(tpl_query *q)
 		q->nv.val_u = nv1.val_u ^ nv2.val_u;
 #if USE_SSL
 	else if (is_bignum(&nv1) && (is_integer(&nv2) || is_bignum(&nv2)))
-		q->nv.val_u = get_word(&nv1) ^ get_word(&nv2);
+		q->nv.val_u = VAL_INT(&nv1) ^ VAL_INT(&nv2);
 #endif
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -5333,7 +5333,7 @@ static int bif_iso_complement(tpl_query *q)
 	}
 #ifndef ISO_ONLY
 	else if (is_bignum(&q->nv)) {
-		BN_set_word(q->nv.val_bn, ~(unbr_t)get_word(&q->nv));
+		BN_set_word(q->nv.val_bn, ~(unbr_t)VAL_INT(&q->nv));
 	}
 #endif
 	else {
@@ -5658,11 +5658,11 @@ static int bif_iso_max(tpl_query *q)
 		np = nv1.val_i > nv2.val_i ? &nv1 : &nv2;
 #if USE_SSL
 	else if (((is_bignum(&nv1)) || (is_integer(&nv1))) && ((is_bignum(&nv2)) || (is_integer(&nv2))))
-		np = get_word(&nv1) > get_word(&nv2) ? &nv1 : &nv2;
+		np = VAL_INT(&nv1) > VAL_INT(&nv2) ? &nv1 : &nv2;
 	else if ((is_bignum(&nv1)) && (is_float(&nv2)))
-		np = get_word(&nv1) > nv2.val_f ? &nv1 : &nv2;
+		np = VAL_INT(&nv1) > nv2.val_f ? &nv1 : &nv2;
 	else if ((is_float(&nv1)) && (is_bignum(&nv2)))
-		np = nv1.val_f > get_word(&nv2) ? &nv1 : &nv2;
+		np = nv1.val_f > VAL_INT(&nv2) ? &nv1 : &nv2;
 #endif
 	else if ((is_integer(&nv1)) && (is_float(&nv2)))
 		np = nv1.val_i > nv2.val_f ? &nv1 : &nv2;
@@ -5692,11 +5692,11 @@ static int bif_iso_min(tpl_query *q)
 		np = nv1.val_i < nv2.val_i ? &nv1 : &nv2;
 #if USE_SSL
 	else if (((is_bignum(&nv1)) || (is_integer(&nv1))) && ((is_bignum(&nv2)) || (is_integer(&nv2))))
-		np = get_word(&nv1) < get_word(&nv2) ? &nv1 : &nv2;
+		np = VAL_INT(&nv1) < VAL_INT(&nv2) ? &nv1 : &nv2;
 	else if ((is_bignum(&nv1)) && (is_float(&nv2)))
-		np = get_word(&nv1) < nv2.val_f ? &nv1 : &nv2;
+		np = VAL_INT(&nv1) < nv2.val_f ? &nv1 : &nv2;
 	else if ((is_float(&nv1)) && (is_bignum(&nv2)))
-		np = nv1.val_f < get_word(&nv2) ? &nv1 : &nv2;
+		np = nv1.val_f < VAL_INT(&nv2) ? &nv1 : &nv2;
 #endif
 	else if ((is_integer(&nv1)) && (is_float(&nv2)))
 		np = nv1.val_i < nv2.val_f ? &nv1 : &nv2;
@@ -5722,7 +5722,7 @@ static int bif_iso_sign(tpl_query *q)
 		q->nv.val_i = q->nv.val_i < 0 ? -1 : q->nv.val_i > 0 ? 1 : 0;
 #if USE_SSL
 	else if (is_bignum(&q->nv))
-		q->nv.val_i = get_word(&q->nv) < 0 ? -1 : get_word(&q->nv) > 0 ? 1 : 0;
+		q->nv.val_i = VAL_INT(&q->nv) < 0 ? -1 : VAL_INT(&q->nv) > 0 ? 1 : 0;
 #endif
 	else if (is_float(&q->nv))
 		q->nv.val_f = q->nv.val_f < (flt_t)0.0 ? (flt_t)-1.0 : q->nv.val_f > (flt_t)0.0 ? (flt_t)1.0 : (flt_t)0.0;
@@ -6003,18 +6003,18 @@ static int bif_xtra_between_3(tpl_query *q)
 	if (is_atom(term2))
 		maxn = LONG_MAX;
 	else
-		maxn = get_word(term2);
+		maxn = VAL_INT(term2);
 
 	if (!q->retry) {
 		term3 = get_term(term3);
 
 		if (is_var(term3)) {
-			nbr_t v = get_word(term1);
+			nbr_t v = VAL_INT(term1);
 			put_int(q, q->c.curr_frame + term3->slot, v);
 		}
 		else {
-			nbr_t v = get_word(term3);
-			return (v >= get_word(term1)) && (v <= get_word(term2));
+			nbr_t v = VAL_INT(term3);
+			return (v >= VAL_INT(term1)) && (v <= VAL_INT(term2));
 		}
 
 		allocate_frame(q);
@@ -6579,13 +6579,13 @@ static int bif_xtra_rdiv(tpl_query *q)
 		return 0;
 	}
 	else if (is_number(&nv1) && is_number(&nv2)) {
-		if (get_word(&nv2) == 0) {
+		if (VAL_INT(&nv2) == 0) {
 			QABORT(ABORT_INVALIDARGDIVIDEBYZERO);
 			return 0;
 		}
 
-		q->nv.val_num = get_word(&nv1);
-		q->nv.val_den = get_word(&nv2);
+		q->nv.val_num = VAL_INT(&nv1);
+		q->nv.val_den = VAL_INT(&nv2);
 	}
 	else {
 		QABORT(ABORT_TYPEERROR);
@@ -6602,8 +6602,8 @@ static int bif_xtra_rational_2(tpl_query *q)
 	node *term1 = get_int(term1);
 	node *term2 = get_int(term2);
 	q->nv.flags = TYPE_RATIONAL;
-	q->nv.val_num = get_word(term1);
-	q->nv.val_den = get_word(term2);
+	q->nv.val_num = VAL_INT(term1);
+	q->nv.val_den = VAL_INT(term2);
 	reduce(&q->nv);
 	return 1;
 }
@@ -6634,8 +6634,8 @@ static int bif_xtra_fixed_4(tpl_query *q)
 	node *term2 = get_int(term2);
 	node *term3 = get_int(term3);
 	node *term4 = get_var(term4);
-	int digs = get_word(term2);
-	int prec = get_word(term3);
+	int digs = VAL_INT(term2);
+	int prec = VAL_INT(term3);
 
 	if ((digs < 0) || (digs > 512)) {
 		QABORT(ABORT_INVALIDARGOUTOFRANGE);
@@ -6848,7 +6848,7 @@ static int bif_iso_op(tpl_query *q)
 	node *term3 = get_atom_or_list(term3);
 
 	if (is_atom(term3))
-		return dir_op_3(q->lex, get_word(term1), VAL_S(term2), VAL_S(term3));
+		return dir_op_3(q->lex, VAL_INT(term1), VAL_S(term2), VAL_S(term3));
 
 	node * l = term3;
 
@@ -6860,7 +6860,7 @@ static int bif_iso_op(tpl_query *q)
 		if (!is_atom(n))
 			return 0;
 
-		dir_op_3(q->lex, get_word(term1), VAL_S(term2), VAL_S(n));
+		dir_op_3(q->lex, VAL_INT(term1), VAL_S(term2), VAL_S(n));
 
 		node *tail = term_next(head);
 		l = subst(q, tail, this_context);
@@ -6899,7 +6899,7 @@ static int bif_xtra_trace_1(tpl_query *q)
 	node *term1 = get_int_or_var(term1);
 
 	if (is_integer(term1))
-		q->trace = get_word(term1);
+		q->trace = VAL_INT(term1);
 
 	return unify_int(q, term1, q->latest_context, q->trace);
 }
@@ -7229,7 +7229,7 @@ LOOP:
 		if (ch == '\n')
 			q->did_getc = 0;
 
-		if (ch != get_word(term1))
+		if (ch != VAL_INT(term1))
 			goto LOOP;
 	}
 
@@ -7248,7 +7248,7 @@ LOOP:
 	ch = getc_utf8(get_input_stream(term1));
 
 	if (ch != EOF) {
-		if (ch != get_word(term2))
+		if (ch != VAL_INT(term2))
 			goto LOOP;
 	}
 
@@ -7261,7 +7261,7 @@ static int bif_edin_tab_2(tpl_query *q)
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_int(term2);
 	stream *sp = term1->val_str;
-	int n = get_word(term2);
+	int n = VAL_INT(term2);
 	int ok = 1;
 
 	for (int i = 0; ok && (i < n); i++) {
@@ -7280,7 +7280,7 @@ static int bif_edin_tab_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
-	int n = get_word(term1);
+	int n = VAL_INT(term1);
 	int ok = 1;
 
 	for (int i = 0; ok && (i < n); i++)
@@ -7427,7 +7427,7 @@ static int bif_xtra_name_2(tpl_query *q)
 				return 0;
 			}
 
-			nbr_t v = get_word(n);
+			nbr_t v = VAL_INT(n);
 
 			if (v <= 0) {
 				QABORT(ABORT_INVALIDARGNOTINT);

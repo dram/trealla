@@ -615,7 +615,7 @@ enum { NUM_NONE, NUM_REAL, NUM_RATIONAL, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OC
 #define OP_POS "]+["
 #define OP_INV "]~["
 
-inline static nbr_t get_word(node *n)
+inline static nbr_t VAL_INT(node *n)
 {
 	if (is_integer(n))
 		return n->val_i;

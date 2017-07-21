@@ -244,7 +244,7 @@ static int bif_sys_write_file_4(tpl_query *q)
 		to = st.st_size - 1;
 	}
 
-	if ((get_word(term3) < 0) || (get_word(term4) <= get_word(term3)))
+	if ((VAL_INT(term3) < 0) || (VAL_INT(term4) <= VAL_INT(term3)))
 		return 0;
 
 	return sys_write_file(q, var, term1, term2, from, to);
@@ -610,7 +610,7 @@ static int bif_sys_jsonqi_4(tpl_query *q)
 	char *tmpbuf = (char *)malloc(len + 1);
 	char *nambuf = (char *)malloc(len + 1);
 
-	if (!jsonqi(VAL_S(term1), get_word(term2), nambuf, len, tmpbuf, len)) {
+	if (!jsonqi(VAL_S(term1), VAL_INT(term2), nambuf, len, tmpbuf, len)) {
 		free(nambuf);
 		free(tmpbuf);
 		return 0;
