@@ -2534,8 +2534,8 @@ static int bif_iso_copy_term(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_term(term2);
 	q->latest_context = term1_ctx;
-	node *tmp = copy_term(q, term1);
-	int ok = unify(q, term2, term2_ctx, tmp, term1_ctx);
+	node *tmp = deep_copy_term(q, term1);
+	int ok = unify(q, term2, term2_ctx, tmp, q->c.curr_frame);
 	term_heapcheck(tmp);
 	return ok;
 }
