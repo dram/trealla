@@ -474,11 +474,10 @@ static int bif_iso_do(tpl_query *q)
 	return call(q);
 }
 
-static int bif_internal_call_transparent(tpl_query *q)
+static int bif_call_transparent(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	allocate_frame(q);
 	try_me_transparent(q);
 
 	if (term1_ctx != -1)
@@ -489,11 +488,10 @@ static int bif_internal_call_transparent(tpl_query *q)
 	return call(q);
 }
 
-static int bif_internal_call_opaque(tpl_query *q)
+static int bif_call_opaque(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	allocate_frame(q);
 	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
@@ -509,7 +507,6 @@ static int bif_iso_call(tpl_query *q)
 	node *args = get_args(q);
 	node *var = get_var(var); // FLAG_HIDDEN
 	node *term1 = get_callable(term1);
-	allocate_frame(q);
 	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
@@ -552,7 +549,6 @@ static int bif_iso_calln(tpl_query *q)
 
 	put_env(q, q->c.curr_frame + var->slot, s, term1_ctx);
 	term_heapcheck(s);
-	allocate_frame(q);
 	try_me_nochoice(q);
 	begin_query(q, s);
 	return call(q);
@@ -7789,8 +7785,8 @@ void bifs_load_iso(void)
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 	DEFINE_BIF("op", 3, bif_iso_op);
 
-	DEFINE_BIF("call_transparent", 1, bif_internal_call_transparent);
-	DEFINE_BIF("call_opaque", 1, bif_internal_call_opaque);
+	DEFINE_BIF("call_transparent", 1, bif_call_transparent);
+	DEFINE_BIF("call_opaque", 1, bif_call_opaque);
 	DEFINE_BIF("$call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("$calln", -1, bif_iso_calln);
 

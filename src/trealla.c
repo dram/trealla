@@ -1615,10 +1615,10 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "(A -> B) :- call_opaque(A), !, call_transparent(B).");
 	trealla_make_rule(pl, "(A ; _B) :- call_transparent(A).");
 	trealla_make_rule(pl, "(_A ; B) :- call_transparent(B).");
-	trealla_make_rule(pl, "once(G) :- call_opaque(G), !.");
+	trealla_make_rule(pl, "once(G) :- '$call'(G), !.");
 	trealla_make_rule(pl, "\\+ G :- '$call'(G), !, fail.");   // must be call/1, WHY?
 	trealla_make_rule(pl, "\\+ _G.");
-	trealla_make_rule(pl, "forall(A,B) :- \\+ (call_opaque(A), \\+ call_opaque(B)).");
+	trealla_make_rule(pl, "forall(A,B) :- \\+ (call_opaque(A), \\+ B).");
 	trealla_make_rule(pl, "call(G) :- '$call'(G).");
 	trealla_make_rule(pl, "call(G,_1) :- '$calln'(G,_1).");
 	trealla_make_rule(pl, "call(G,_1,_2) :- '$calln'(G,_1,_2).");
@@ -1634,9 +1634,9 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12).");
 
 #ifndef ISO_ONLY
-	trealla_make_rule(pl, "clausew(H,B) :- '$clausew'(H,B).");
 	trealla_make_rule(pl, "not(G) :- '$call'(G), !, fail.");
 	trealla_make_rule(pl, "not(_G).");
+	trealla_make_rule(pl, "clausew(H,B) :- '$clausew'(H,B).");
 	trealla_make_rule(pl, "recorda(K,V) :- nonvar(K), asserta(?SYSTEMSTR(K,V)).");
 	trealla_make_rule(pl, "recorda(K,V,R) :- nonvar(K), asserta(?SYSTEMSTR(K,V),R).");
 	trealla_make_rule(pl, "recordz(K,V) :- nonvar(K), assertz(?SYSTEMSTR(K,V)).");
