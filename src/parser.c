@@ -816,10 +816,17 @@ static int dir_define(lexer *l, node *n)
 
 	char tmpbuf[KEY_SIZE + 10];
 	char *dst = tmpbuf;
-	*dst++ = '\'';
-	dst += term_sprint(dst, sizeof(tmpbuf), l->pl, NULL, term2, 1);
-	*dst++ = '\'';
-	*dst = '\0';
+
+	if (is_quoted(term2))
+		*dst++ = '\'';
+
+	dst += term_sprint(dst, sizeof(tmpbuf), l->pl, NULL, term2, 0);
+
+	if (is_quoted(term2)) {
+		*dst++ = '\'';
+		*dst = '\0';
+	}
+
 	add_define(l, VAL_S(term1), tmpbuf);
 	return 1;
 }
