@@ -367,7 +367,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 	char *dst = *_dst;
 	int save_context = q ? q->latest_context : -1;
 	node *n = q ? subst(q, _n, q->latest_context) : _n;
-	size_t xlen = (is_atom(n) ? LEN(n) : 64) + 1024;
+	size_t xlen = (is_atom(n) ? LEN_S(n) : 64) + 1024;
 	size_t rem = (*bufsize - (dst - *dstbuf));
 
 	if (rem < xlen) {
@@ -484,7 +484,7 @@ static size_t sprint2_term(int depth, char **dstbuf, size_t *bufsize, char **_ds
 		dst += snprintf(dst, *bufsize - (dst - *dstbuf), "%s", VAL_S(n));
 #ifndef ISO_ONLY
 	else if (listing && is_blob(n)) {
-		char *tmpbuf = (char *)malloc((LEN(n) * 3) + 1);
+		char *tmpbuf = (char *)malloc((LEN_S(n) * 3) + 1);
 		b64_encode(n->val_s, n->val_len, &tmpbuf, 0, 0);
 		xlen = strlen(tmpbuf) + 1024;
 		rem = (*bufsize - (dst - *dstbuf));

@@ -1543,8 +1543,8 @@ static int bif_http_put_chunk_2(tpl_query *q)
 		return 0;
 	}
 
-	if (LEN(term2) > 0) {
-		if (!session_write(s, VAL_S(term2), LEN(term2))) {
+	if (LEN_S(term2) > 0) {
+		if (!session_write(s, VAL_S(term2), LEN_S(term2))) {
 			session_set_cork(s, 0);
 			return 0;
 		}
@@ -1666,7 +1666,7 @@ static int bif_ws_msg_3(tpl_query *q)
 	const char *op = VAL_S(term2);
 	int bin = is_blob(term3);
 	const char *src = VAL_S(term3);
-	const uint64_t len = LEN(term3);
+	const uint64_t len = LEN_S(term3);
 
 	if (!strcmp(op, "ping")) {
 		if (!session_ws_ping(s, src, len))
@@ -2032,7 +2032,7 @@ static int bif_h2_msg_3(tpl_query *q)
 	node *term3 = get_atom(term3);
 	// stream *sp = term1->val_str;
 	// session *s = sp->sptr;
-	// const uint64_t len = LEN(term3);
+	// const uint64_t len = LEN_S(term3);
 	return 0;
 }
 
@@ -2307,7 +2307,7 @@ static int bif_stomp_msg_4(tpl_query *q)
 	session_set_cork(s, 1);
 	session_writemsg(s, VAL_S(term2));
 	session_writemsg(s, "\n");
-	size_t len = LEN(term3);
+	size_t len = LEN_S(term3);
 
 	if (len) {
 		const char *src = VAL_S(term3);
@@ -2344,7 +2344,7 @@ static int bif_stomp_msg_4(tpl_query *q)
 		free(tmpbuf);
 	}
 
-	len = LEN(term4);
+	len = LEN_S(term4);
 	char tmpbuf[256];
 	snprintf(tmpbuf, sizeof(tmpbuf), "content-length:%u\n\n", (unsigned)len);
 	session_writemsg(s, tmpbuf);

@@ -262,9 +262,9 @@ static int bif_sys_save_file_2(tpl_query *q)
 		return 0;
 	}
 
-	size_t len = fwrite(VAL_S(term2), 1, LEN(term2), fp);
+	size_t len = fwrite(VAL_S(term2), 1, LEN_S(term2), fp);
 	fclose(fp);
-	return len == LEN(term2);
+	return len == LEN_S(term2);
 }
 
 static int bif_sys_append_file_2(tpl_query *q)
@@ -279,9 +279,9 @@ static int bif_sys_append_file_2(tpl_query *q)
 		return 0;
 	}
 
-	size_t len = fwrite(VAL_S(term2), 1, LEN(term2), fp);
+	size_t len = fwrite(VAL_S(term2), 1, LEN_S(term2), fp);
 	fclose(fp);
-	return len == LEN(term2);
+	return len == LEN_S(term2);
 }
 
 static int bif_sys_load_file_2(tpl_query *q)
@@ -382,7 +382,7 @@ static int bif_sys_bwrite_2(tpl_query *q)
 	node *term1 = get_atom_or_stream(term1);
 	node *term2 = get_atom(term2);
 	stream *sp = term1->val_str;
-	size_t len = LEN(term2);
+	size_t len = LEN_S(term2);
 	extern FILE *get_output_stream(node *n);
 
 	if (is_socket(term1)) {
@@ -606,7 +606,7 @@ static int bif_sys_jsonqi_4(tpl_query *q)
 	node *term2 = get_int(term2);
 	node *term3 = get_var(term3);
 	node *term4 = get_var(term4);
-	const size_t len = LEN(term1);
+	const size_t len = LEN_S(term1);
 	char *tmpbuf = (char *)malloc(len + 1);
 	char *nambuf = (char *)malloc(len + 1);
 
@@ -629,7 +629,7 @@ static int bif_sys_jsonq_3(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
-	const size_t len = LEN(term1);
+	const size_t len = LEN_S(term1);
 	char *tmpbuf = (char *)malloc(len + 1);
 
 	if (!jsonq(VAL_S(term1), VAL_S(term2), tmpbuf, len)) {
@@ -649,7 +649,7 @@ static int bif_sys_jsonq_4(tpl_query *q)
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
 	node *term4 = get_atom(term4);
-	const size_t len = LEN(term1);
+	const size_t len = LEN_S(term1);
 	char *tmpbuf = (char *)malloc(len + 1);
 
 	if (!jsonq(VAL_S(term1), VAL_S(term2), tmpbuf, len))
@@ -669,7 +669,7 @@ static int bif_sys_xmlq_4(tpl_query *q)
 	node *term2 = get_atom(term2);
 	node *term3 = get_int(term3);
 	node *term4 = get_var(term4);
-	const size_t len = LEN(term1);
+	const size_t len = LEN_S(term1);
 	char *tmpbuf = (char *)malloc(len + 1);
 
 	if (!xmlq(VAL_S(term1), term3->val_i, VAL_S(term2), tmpbuf, len)) {
@@ -690,7 +690,7 @@ static int bif_sys_xmlq_3(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
-	const size_t len = LEN(term1);
+	const size_t len = LEN_S(term1);
 	char *tmpbuf = (char *)malloc(len + 1);
 
 	if (!q->retry) {
@@ -725,7 +725,7 @@ static int bif_sys_title_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
-	const size_t len = LEN(term1) + 1;
+	const size_t len = LEN_S(term1) + 1;
 	char *dstbuf = (char *)malloc(len + 1);
 	char *dst = dstbuf;
 	const char *src = VAL_S(term1);
@@ -755,7 +755,7 @@ static int bif_sys_upper_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
-	const size_t len = LEN(term1) + 1;
+	const size_t len = LEN_S(term1) + 1;
 	char *dstbuf = (char *)malloc(len + 1);
 	char *dst = dstbuf;
 	const char *src = VAL_S(term1);
@@ -775,7 +775,7 @@ static int bif_sys_lower_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
-	const size_t len = LEN(term1);
+	const size_t len = LEN_S(term1);
 	char *dstbuf = (char *)malloc(len + 1);
 	char *dst = dstbuf;
 	const char *src = VAL_S(term1);
@@ -888,16 +888,16 @@ static int bif_sys_split_all_3(tpl_query *q)
 
 	node *l = make_list();
 	node *save_l = l;
-	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 
 	while (*src) {
 		char *dst = dstbuf;
 
-		while (*src && strncmp(src, VAL_S(term2), LEN(term2)))
+		while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 			*dst++ = *src++;
 
 		if (*src) {
-			src += LEN(term2);
+			src += LEN_S(term2);
 
 			while (isspace(*src))
 				src++;
@@ -928,25 +928,25 @@ static int bif_sys_split_last_4(tpl_query *q)
 	node *term3 = get_atom_or_var(term3);
 	node *term4 = get_atom_or_var(term4);
 	const char *src = VAL_S(term1);
-	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	char *dst = dstbuf;
 
 	while (isspace(*src))
 		src++;
 
 	for (;;) {
-		while (*src && strncmp(src, VAL_S(term2), LEN(term2)))
+		while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 			*dst++ = *src++;
 
 		if (!strstr(src + 2, VAL_S(term2)))
 			break;
 
-		strncpy(dst, src, LEN(term2));
-		dst += LEN(term2);
-		src += LEN(term2);
+		strncpy(dst, src, LEN_S(term2));
+		dst += LEN_S(term2);
+		src += LEN_S(term2);
 	}
 
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN(term2)))
+	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
 		src++;
 
 	*dst = '\0';
@@ -957,15 +957,15 @@ static int bif_sys_split_last_4(tpl_query *q)
 		return 0;
 	}
 
-	if (strncmp(src, VAL_S(term2), LEN(term2))) {
+	if (strncmp(src, VAL_S(term2), LEN_S(term2))) {
 		free(dstbuf);
 		return 1;
 	}
 
-	src += LEN(term2);
+	src += LEN_S(term2);
 	dst = dstbuf;
 
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN(term2)))
+	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
 		src++;
 
 	while (*src && (*src != '\r') && (*src != '\n'))
@@ -985,16 +985,16 @@ static int bif_sys_split_4(tpl_query *q)
 	node *term3 = get_atom_or_var(term3);
 	node *term4 = get_atom_or_var(term4);
 	const char *src = VAL_S(term1);
-	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	char *dst = dstbuf;
 
 	while (isspace(*src))
 		src++;
 
-	while (*src && strncmp(src, VAL_S(term2), LEN(term2)))
+	while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 		*dst++ = *src++;
 
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN(term2)))
+	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
 		src++;
 
 	*dst = '\0';
@@ -1005,15 +1005,15 @@ static int bif_sys_split_4(tpl_query *q)
 		return 0;
 	}
 
-	if (strncmp(src, VAL_S(term2), LEN(term2))) {
+	if (strncmp(src, VAL_S(term2), LEN_S(term2))) {
 		free(dstbuf);
 		return 1;
 	}
 
-	src += LEN(term2);
+	src += LEN_S(term2);
 	dst = dstbuf;
 
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN(term2)))
+	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
 		src++;
 
 	while (*src && (*src != '\r') && (*src != '\n'))
@@ -1032,13 +1032,13 @@ static int bif_sys_replace_4(tpl_query *q)
 	node *term2 = get_atom(term2);
 	node *term3 = get_atom(term3);
 	node *term4 = get_var(term4);
-	int srclen = LEN(term1);
+	int srclen = LEN_S(term1);
 	int dstlen = srclen * 2;
 	const char *src = VAL_S(term1);
 	const char *s1 = VAL_S(term2);
 	const char *s2 = VAL_S(term3);
-	int s1len = LEN(term2);
-	int s2len = LEN(term3);
+	int s1len = LEN_S(term2);
+	int s2len = LEN_S(term3);
 	char *dstbuf = (char *)malloc(dstlen + 1);
 	char *dst = dstbuf;
 
@@ -1108,13 +1108,13 @@ static int bif_sys_left_3(tpl_query *q)
 	node *term3 = get_atom_or_var(term3);
 	int len;
 
-	if (is_integer(term2) && (term2->val_i > LEN(term1)))
+	if (is_integer(term2) && (term2->val_i > LEN_S(term1)))
 		return 0;
 
 	if (is_integer(term2))
 		len = term2->val_i;
 	else if (is_atom(term3))
-		len = LEN(term3);
+		len = LEN_S(term3);
 	else
 		return 0;
 
@@ -1138,17 +1138,17 @@ static int bif_sys_right_3(tpl_query *q)
 	node *term3 = get_atom_or_var(term3);
 	int len;
 
-	if (is_integer(term2) && (term2->val_i > LEN(term1)))
+	if (is_integer(term2) && (term2->val_i > LEN_S(term1)))
 		return 0;
 
 	if (is_integer(term2))
 		len = term2->val_i;
 	else if (is_atom(term3))
-		len = LEN(term3);
+		len = LEN_S(term3);
 	else
 		return 0;
 
-	const char *src = VAL_S(term1) + LEN(term1) - len;
+	const char *src = VAL_S(term1) + LEN_S(term1) - len;
 
 	if (is_var(term2))
 		put_int(q, q->c.curr_frame + term2->slot, len);
@@ -1181,7 +1181,7 @@ static int bif_sys_munge_2(tpl_query *q)
 	}
 
 	const char *src = VAL_S(term1);
-	size_t len = LEN(term1);
+	size_t len = LEN_S(term1);
 	char *tmpbuf = (char *)malloc(len + 1);
 	char *dst = tmpbuf;
 
@@ -1231,7 +1231,7 @@ static int bif_sys_sha1_2(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
 	unsigned char digest[SHA_DIGEST_LENGTH];
-	SHA1((unsigned char *)VAL_S(term1), LEN(term1), digest);
+	SHA1((unsigned char *)VAL_S(term1), LEN_S(term1), digest);
 	char tmpbuf[512];
 	char *dst = tmpbuf;
 	size_t buflen = sizeof(tmpbuf);
@@ -1252,7 +1252,7 @@ static int bif_sys_sha256_2(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
 	unsigned char digest[SHA256_DIGEST_LENGTH];
-	SHA256((unsigned char *)VAL_S(term1), LEN(term1), digest);
+	SHA256((unsigned char *)VAL_S(term1), LEN_S(term1), digest);
 	char tmpbuf[512];
 	char *dst = tmpbuf;
 	size_t buflen = sizeof(tmpbuf);
@@ -1273,7 +1273,7 @@ static int bif_sys_sha512_2(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
 	unsigned char digest[SHA512_DIGEST_LENGTH];
-	SHA512((unsigned char *)VAL_S(term1), LEN(term1), digest);
+	SHA512((unsigned char *)VAL_S(term1), LEN_S(term1), digest);
 	char tmpbuf[512];
 	char *dst = tmpbuf;
 	size_t buflen = sizeof(tmpbuf);
@@ -1335,7 +1335,7 @@ static int bif_sys_url_encode_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
-	size_t len = LEN(term1);
+	size_t len = LEN_S(term1);
 	char *dstbuf = (char *)malloc((len * 3) + 1);
 	url_encode(VAL_S(term1), len, dstbuf);
 	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf));
@@ -1348,7 +1348,7 @@ static int bif_sys_url_decode_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
-	size_t len = LEN(term1);
+	size_t len = LEN_S(term1);
 	char *dstbuf = (char *)malloc(len + 1);
 	url_decode(VAL_S(term1), dstbuf);
 	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf));
@@ -1361,7 +1361,7 @@ static int bif_sys_b64_encode_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
-	size_t len = LEN(term1);
+	size_t len = LEN_S(term1);
 	char *dstbuf = (char *)malloc((len * 3) + 1);
 	b64_encode(VAL_S(term1), len, &dstbuf, 0, 0);
 	put_atom(q, q->c.curr_frame + term2->slot, strdup(dstbuf));
@@ -1374,7 +1374,7 @@ static int bif_sys_b64_decode_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
-	size_t len = LEN(term1);
+	size_t len = LEN_S(term1);
 	char *dstbuf = (char *)malloc(len + 1);
 	size_t nbytes = b64_decode(VAL_S(term1), len, &dstbuf);
 	node *n = make_blob(dstbuf, nbytes);
@@ -1391,7 +1391,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 	const char *src = VAL_S(term1);
 	node *l = make_list();
 	node *save_l = l;
-	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	char *dst = dstbuf;
 	int quoted = 0, was_quoted = 0;
 
@@ -1489,7 +1489,7 @@ static int bif_sys_parse_tab_2(tpl_query *q)
 	const char *src = VAL_S(term1);
 	node *l = make_list();
 	node *save_l = l;
-	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	char *dst = dstbuf;
 	int quoted = 0, was_quoted = 0;
 

@@ -827,14 +827,14 @@ static int bif_iso_atom_concat(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
-	size_t len = LEN(term1) + LEN(term2);
+	size_t len = LEN_S(term1) + LEN_S(term2);
 	char *tmp = (char *)malloc(len + 1);
 
-	if (LEN(term1) > 0)
-		memcpy(tmp, VAL_S(term1), LEN(term1));
+	if (LEN_S(term1) > 0)
+		memcpy(tmp, VAL_S(term1), LEN_S(term1));
 
-	if (LEN(term2) > 0)
-		memcpy(tmp + LEN(term1), VAL_S(term2), LEN(term2));
+	if (LEN_S(term2) > 0)
+		memcpy(tmp + LEN_S(term1), VAL_S(term2), LEN_S(term2));
 
 	tmp[len] = '\0';
 	node *n;
@@ -1384,7 +1384,7 @@ static int bif_iso_write_2(tpl_query *q)
 
 	if (is_atom(term2)) {
 		tmpbuf = VAL_S(term2);
-		len = LEN(term2);
+		len = LEN_S(term2);
 	}
 	else {
 		size_t max_len = PRINTBUF_SIZE;
@@ -1424,7 +1424,7 @@ static int bif_iso_write(tpl_query *q)
 
 	if (is_atom(term1)) {
 		tmpbuf = VAL_S(term1);
-		len = LEN(term1);
+		len = LEN_S(term1);
 	}
 	else {
 		size_t max_len = PRINTBUF_SIZE;
@@ -2339,7 +2339,7 @@ static int bif_iso_atom_chars(tpl_query *q)
 			}
 
 			size_t save_len = dst - dstbuf;
-			size_t len2 = LEN(n) + 1;
+			size_t len2 = LEN_S(n) + 1;
 
 			if ((buflen - save_len) < len2) {
 				buflen *= 2;
@@ -5913,7 +5913,7 @@ static int bif_xtra_split_string_4(tpl_query *q)
 
 	node *l = make_list();
 	node *save_l = l;
-	char *dstbuf = (char *)malloc(LEN(term1) + 1);
+	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	const char *src_sep = VAL_S(term2);
 	int seps[256];
 
@@ -7482,8 +7482,8 @@ static int bif_xtra_name_2(tpl_query *q)
 	else if (is_atom(term1) || is_number(term1)) {
 		size_t buflen = FUNCTOR_SIZE;
 
-		if (is_atom(term1) && (LEN(term1) > FUNCTOR_SIZE))
-			buflen = LEN(term1) + 1;
+		if (is_atom(term1) && (LEN_S(term1) > FUNCTOR_SIZE))
+			buflen = LEN_S(term1) + 1;
 
 		char *dstbuf = malloc(buflen);
 

@@ -18,7 +18,7 @@ static int bif_posix_format_time_3(tpl_query *q)
 	}
 
 	const char *format = VAL_S(term1);
-	size_t length = LEN(term1);
+	size_t length = LEN_S(term1);
 
 	// XXX: Is this check reasonable? May strftime() return non-empty
 	// result for empty format?
