@@ -354,9 +354,8 @@ int throw_term(tpl_query *q, node *term)
 	q->exception = clone_term(q, term);
 	int ok = 0;
 
-	// Walk back along choices testing every catch-handler,
-	// keep going until we find one that matches. Then retry
-	// that choice.
+	// TODO: walk back along choices testing every catch-handler, keep
+	// going until we find one that matches. Then retry that choice.
 	// ...
 
 	term_heapcheck(q->exception);
