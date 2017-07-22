@@ -389,7 +389,6 @@ LOOP:
 	if (!c->catchme)
 		goto LOOP;
 
-	// TODO: try catch-handler
 	q->retry = 1;
 
 	if (!bif_iso_catch(q))

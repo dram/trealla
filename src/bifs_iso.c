@@ -593,8 +593,10 @@ static int bif_iso_throw(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 
-	if (!throw_term(q, term1))
+	if (!throw_term(q, term1)) {
 		QABORT(ABORT_UNCAUGHTEXCEPTION);
+		return 0;
+	}
 
 	return bif_iso_catch(q);
 }
