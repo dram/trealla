@@ -572,12 +572,14 @@ static int bif_iso_catch(tpl_query *q)
 		return unify(q, term2, term2_ctx, q->exception, q->latest_context);
 
 	if (q->retry) {
+		q->retry = 0;
+		try_me_nochoice(q);
 		begin_query(q, term3);
 		return call(q);
 	}
 
 	term1->flags |= FLAG_NOFOLLOW | FLAG_CATCH;
-	try_me_nochoice(q);
+	try_me(q);
 
 	if (term1_ctx != -1)
 		q->c.curr_frame = term1_ctx;

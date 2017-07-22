@@ -360,6 +360,7 @@ int throw_term(tpl_query *q, node *term)
 	// ...
 
 	term_heapcheck(q->exception);
+	q->exception = NULL;
 	return ok;
 }
 
