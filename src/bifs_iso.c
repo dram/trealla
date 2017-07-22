@@ -3794,7 +3794,7 @@ static int bif_iso_univ(tpl_query *q)
 		return 0;
 	}
 
-	if (is_compound(term1)) {
+	if (is_compound(term1) && is_var(term2)) {
 		q->latest_context = term1_ctx;
 		node *new_term1 = copy_term(q, term1);
 
@@ -3819,7 +3819,31 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]"));
-		int ok = unify(q, term2, term2_ctx, save_l, q->c.curr_frame);
+		put_env(q, term2_ctx + term2->slot, save_l, q->c.curr_frame);
+		term_heapcheck(new_term1);
+		term_heapcheck(save_l);
+		return 1;
+	}
+	else if (is_compound(term1)) {
+		q->latest_context = term1_ctx;
+		node *new_term1 = clone_term(q, term1);
+		node *l = make_list();
+		node *save_l = l;
+		node *n = term_first(new_term1);
+
+		while (n) {
+			node *next = term_remove(new_term1, n);
+			term_append(l, n);
+
+			if (!next)
+				break;
+
+			n = next;
+			l = term_append(l, make_list());
+		}
+
+		term_append(l, make_const_atom("[]"));
+		int ok = unify(q, term2, term2_ctx, save_l, term1_ctx);
 		term_heapcheck(new_term1);
 		term_heapcheck(save_l);
 		return ok;
