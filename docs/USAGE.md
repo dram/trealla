@@ -26,7 +26,6 @@ Missing / Limitations
 Current ISO predicates that are (known) not yet implemented:
 
 	sub_atom
-	*exceptions*
 
 Unbounded integers (bigints or bignums) are considered experimental at this stage. To introduce
 a bignum use the 'B' suffix e.g: *X is 1B*, or *unbounded/1* function e.g: *X is unbounded(1)*.
