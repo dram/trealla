@@ -571,12 +571,15 @@ int bif_iso_catch(tpl_query *q)
 	if (q->retry && q->exception)
 		return unify(q, term2, term2_ctx, q->exception, q->latest_context);
 
-	if (q->retry) {
+	if (q->retry == 2) {
 		q->retry = 0;
 		try_me_nochoice(q);
 		begin_query(q, term3);
 		return call(q);
 	}
+
+	if (q->retry)
+		return 0;
 
 	term1->flags |= FLAG_NOFOLLOW | FLAG_CATCH;
 	try_me_catch(q);

@@ -389,7 +389,7 @@ LOOP:
 	if (!c->catchme)
 		goto LOOP;
 
-	q->retry = 1;
+	q->retry = 2;
 
 	if (!bif_iso_catch(q))
 		goto LOOP;
