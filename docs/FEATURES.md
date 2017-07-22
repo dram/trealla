@@ -7,7 +7,7 @@ Trealla Prolog
 Pair operator
 -------------
 
-Trealla supports as built-in the :/2 operator. It's main use is with modules where it distinguishes
+Trealla supports as built-in the (:)/2 operator. It's main use is with modules where it distinguishes
 the module namespace from the functor, but more generally it allows JSON-like syntax with tuples:
 
   Item =
