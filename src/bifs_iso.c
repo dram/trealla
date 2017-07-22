@@ -461,6 +461,9 @@ int bif_iso_and(tpl_query *q)
 		try_me_nochoice(q);
 	}
 
+	if (term1_ctx != -1)
+		q->c.curr_frame = term1_ctx;
+
 	begin_query(q, term1);
 	return call(q);
 }
@@ -470,6 +473,10 @@ static int bif_iso_do(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_list_or_callable(term1);
 	trust_me(q);
+
+	if (term1_ctx != -1)
+		q->c.curr_frame = term1_ctx;
+
 	begin_query(q, term1);
 	return call(q);
 }
@@ -558,7 +565,7 @@ static int bif_iso_catch(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
-	node *term2 = get_term(term2);
+	node *term2 = get_structure(term2);
 	node *term3 = get_callable(term3);
 
 	if (q->retry) {
@@ -581,7 +588,7 @@ static int bif_iso_catch(tpl_query *q)
 static int bif_iso_throw(tpl_query *q)
 {
 	node *args = get_args(q);
-	node *term1 = get_term(term1);
+	node *term1 = get_structure(term1);
 	printf("TODO: THROW '"); term_print(q->pl, q, term1, 0); printf("'\n");
 	q->halt_code = 0;
 	q->halt = ABORT_HALT;
