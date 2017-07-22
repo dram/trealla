@@ -270,7 +270,7 @@ static int follow(tpl_query *q)
 	return 1;
 }
 
-void try_me2(tpl_query *q, int nofollow, int nochoice, int transparent)
+void try_me2(tpl_query *q, int nofollow, int nochoice, int transparent, int catchme)
 {
 	TRACE("try_me");
 	choice *c = &q->choices[q->choice_point];
@@ -278,6 +278,7 @@ void try_me2(tpl_query *q, int nofollow, int nochoice, int transparent)
 	c->nofollow = nofollow;
 	c->transparent = transparent;
 	c->cut = nochoice;
+	c->catchme = catchme;
 	q->c.prev_choice = q->choice_point++;
 
 #ifdef DEBUG
@@ -356,9 +357,40 @@ int throw_term(tpl_query *q, node *term)
 	q->exception = clone_term(q, term);
 	int ok = 0;
 
-	// TODO: walk back along choices testing every catch-handler, keep
+	// Walk back along choices testing every catch-handler, keep
 	// going until we find one that matches. Then retry that choice.
 	// ...
+
+LOOP:
+
+	if (!q->choice_point) {
+		if (q->exception) {
+			term_heapcheck(q->exception);
+			q->exception = NULL;
+		}
+
+		return 0;
+	}
+
+	reclaim_trail(q);
+	choice *c = &q->choices[--q->choice_point];
+
+	if (c->curr_match != NULL)
+		if (term_next(c->curr_match) != NULL)
+			q->envs[c->curr_frame].choices--;
+
+	q->c = *c;
+	q->curr_context = q->c.curr_frame;
+	reallocate_frame(q);
+
+#ifdef DEBUG
+	g_backtracks++;
+#endif
+
+	if (!c->catchme)
+		goto LOOP;
+
+	// TODO: try catch-handler
 
 	term_heapcheck(q->exception);
 	q->exception = NULL;

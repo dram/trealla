@@ -262,7 +262,7 @@ typedef struct {
 	mask_t mask1[NBR_MASKS], mask2[NBR_MASKS];
 	uint32_t env_point, trail_point, prev_choice, curr_frame;
 	uint8_t frame_size, trail_size;
-	uint8_t cut, nofollow, transparent;
+	uint8_t cut, nofollow, transparent, catchme;	// TODO: make these bits
 } choice;
 
 typedef uint32_t trail;

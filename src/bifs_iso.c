@@ -579,7 +579,7 @@ static int bif_iso_catch(tpl_query *q)
 	}
 
 	term1->flags |= FLAG_NOFOLLOW | FLAG_CATCH;
-	try_me(q);
+	try_me_catch(q);
 
 	if (term1_ctx != -1)
 		q->c.curr_frame = term1_ctx;
