@@ -286,6 +286,7 @@ struct tpl_query_ {
 	stream *curr_stdin_stream, *curr_stdout_stream;
 	char *curr_stdin_name, *curr_stdout_name;
 	const op *optr;
+	node *exception;
 	node nv;
 
 	union {
@@ -437,6 +438,7 @@ enum {
 	ABORT_INVALIDARGNOTBLOB,
 	ABORT_INVALIDARGNOTPID,
 	ABORT_INVALIDARGOUTOFRANGE,
+	ABORT_UNCAUGHTEXCEPTION,
 	ABORT_END
 };
 

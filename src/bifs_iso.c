@@ -568,15 +568,17 @@ static int bif_iso_catch(tpl_query *q)
 	node *term2 = get_term(term2);
 	node *term3 = get_callable(term3);
 
-	if (q->retry) {
-		// Unify term2 with exception.
-		// If ok call term3
-		return 0;
+	if (q->retry && q->exception) {
+		return unify(q, term2, term2_ctx, q->exception, q->c.env_point);
 	}
 
-	printf("TODO: CATCH '"); term_print(q->pl, q, term1, 0); printf("'\n");
-	term1->flags |= FLAG_NOFOLLOW;
-	try_me(q);
+	if (q->retry) {
+		begin_query(q, term3);
+		return call(q);
+	}
+
+	term1->flags |= FLAG_NOFOLLOW | FLAG_CATCH;
+	try_me_nochoice(q);
 
 	if (term1_ctx != -1)
 		q->c.curr_frame = term1_ctx;
@@ -589,10 +591,12 @@ static int bif_iso_throw(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
-	printf("TODO: THROW '"); term_print(q->pl, q, term1, 0); printf("'\n");
-	q->halt_code = 0;
-	q->halt = ABORT_HALT;
-	q->did_halt = 1;
+
+	if (!throw_term(q, term1)) {
+		QABORT(ABORT_UNCAUGHTEXCEPTION);
+		return 0;
+	}
+
 	return 0;
 }
 

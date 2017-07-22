@@ -337,7 +337,6 @@ void trust_me(tpl_query *q)
 	q->envs[c->curr_frame].choices = 0;
 
 	if (c->transparent) {
-		//printf("*** transparent: %u/%u\n", q->c.prev_choice, c->prev_choice);
 		c = &q->choices[c->prev_choice];
 		c->cut = 1;
 		unsigned prev_choice = c->prev_choice;
@@ -348,6 +347,20 @@ void trust_me(tpl_query *q)
 #ifdef DEBUG
 	g_cuts++;
 #endif
+}
+
+int throw_term(tpl_query *q, node *term)
+{
+	q->exception = clone_term(q, term);
+	int ok = 0;
+
+	// Walk back along choices testing every catch-handler,
+	// keep going until we find one that matches. Then retry
+	// that choice.
+	// ...
+
+	term_heapcheck(q->exception);
+	return ok;
 }
 
 static void execute_term(tpl_query *q, node *term, unsigned frame_size, unsigned alloc_size)
