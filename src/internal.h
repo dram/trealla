@@ -86,6 +86,7 @@ typedef uint64_t mask_t;
 #define FLAG_NOOP (1ULL << 43)
 #define FLAG_SMALL (1ULL << 44)
 #define FLAG_EXPANDABLE (1ULL << 45)
+#define FLAG_CATCH (1ULL << 46)
 
 #define FLAG_DBS_STORAGE (1ULL << 50)
 #define FLAG_DBS_ASSERTA (1ULL << 51)
