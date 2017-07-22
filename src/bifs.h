@@ -608,6 +608,7 @@ extern int bif_xtra_enter(tpl_query *q);
 extern int bif_iso_retract(tpl_query *q);
 extern int bif_iso_asserta(tpl_query *q);
 extern int bif_iso_assertz(tpl_query *q);
+extern int bif_iso_catch(tpl_query *q);
 
 enum { NUM_NONE, NUM_REAL, NUM_RATIONAL, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
 

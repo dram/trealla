@@ -355,7 +355,6 @@ LOOP:
 int throw_term(tpl_query *q, node *term)
 {
 	q->exception = clone_term(q, term);
-	int ok = 0;
 
 	// Walk back along choices testing every catch-handler, keep
 	// going until we find one that matches. Then retry that choice.
@@ -391,10 +390,14 @@ LOOP:
 		goto LOOP;
 
 	// TODO: try catch-handler
+	q->retry = 1;
+
+	if (!bif_iso_catch(q))
+		goto LOOP;
 
 	term_heapcheck(q->exception);
 	q->exception = NULL;
-	return ok;
+	return 1;
 }
 
 static void execute_term(tpl_query *q, node *term, unsigned frame_size, unsigned alloc_size)

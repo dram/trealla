@@ -561,7 +561,7 @@ static int bif_iso_calln(tpl_query *q)
 	return call(q);
 }
 
-static int bif_iso_catch(tpl_query *q)
+int bif_iso_catch(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_callable(term1);
@@ -596,7 +596,7 @@ static int bif_iso_throw(tpl_query *q)
 	if (!throw_term(q, term1))
 		QABORT(ABORT_UNCAUGHTEXCEPTION);
 
-	return 0;
+	return bif_iso_catch(q);
 }
 
 static int check_vars(tpl_query *q, node *n);
