@@ -568,9 +568,8 @@ static int bif_iso_catch(tpl_query *q)
 	node *term2 = get_term(term2);
 	node *term3 = get_callable(term3);
 
-	if (q->retry && q->exception) {
+	if (q->retry && q->exception)
 		return unify(q, term2, term2_ctx, q->exception, q->latest_context);
-	}
 
 	if (q->retry) {
 		begin_query(q, term3);
@@ -592,10 +591,8 @@ static int bif_iso_throw(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_term(term1);
 
-	if (!throw_term(q, term1)) {
+	if (!throw_term(q, term1))
 		QABORT(ABORT_UNCAUGHTEXCEPTION);
-		return 0;
-	}
 
 	return 0;
 }
