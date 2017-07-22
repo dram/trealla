@@ -325,6 +325,8 @@ int retry_me(tpl_query *q)
 {
 	TRACE("retry_me");
 
+LOOP:
+
 	if (!q->choice_point)
 		return 0;
 
@@ -344,7 +346,7 @@ int retry_me(tpl_query *q)
 #endif
 
 	if (c->cut)
-		return retry_me(q);
+		goto LOOP;
 
 	return q->retry = 1;
 }
