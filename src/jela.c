@@ -300,6 +300,27 @@ void try_me2(tpl_query *q, int nofollow, int nochoice, int transparent)
 	q->choices_used = q->choice_point;
 }
 
+void trust_me(tpl_query *q)
+{
+	TRACE("trust_me");
+	q->choice_point = q->c.prev_choice + 1;		// prune
+	choice *c = &q->choices[q->c.prev_choice];
+	c->cut = 1;
+	q->envs[c->curr_frame].choices = 0;
+
+	if (c->transparent) {
+		c = &q->choices[c->prev_choice];
+		c->cut = 1;
+		unsigned prev_choice = c->prev_choice;
+		c = &q->choices[prev_choice];
+		c->cut = 1;
+	}
+
+#ifdef DEBUG
+	g_cuts++;
+#endif
+}
+
 int retry_me(tpl_query *q)
 {
 	TRACE("retry_me");
@@ -326,27 +347,6 @@ int retry_me(tpl_query *q)
 		return retry_me(q);
 
 	return q->retry = 1;
-}
-
-void trust_me(tpl_query *q)
-{
-	TRACE("trust_me");
-	q->choice_point = q->c.prev_choice + 1;		// prune
-	choice *c = &q->choices[q->c.prev_choice];
-	c->cut = 1;
-	q->envs[c->curr_frame].choices = 0;
-
-	if (c->transparent) {
-		c = &q->choices[c->prev_choice];
-		c->cut = 1;
-		unsigned prev_choice = c->prev_choice;
-		c = &q->choices[prev_choice];
-		c->cut = 1;
-	}
-
-#ifdef DEBUG
-	g_cuts++;
-#endif
 }
 
 int throw_term(tpl_query *q, node *term)
