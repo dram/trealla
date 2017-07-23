@@ -236,17 +236,17 @@ static int proceed(tpl_query *q)
 			q->c.mask2[i] = c->mask2[i];
 		}
 
-		q->c.curr_match = c->curr_match;
 		q->curr_context = c->curr_frame;
+		q->c.curr_match = c->curr_match;
 		q->c.idx_iter = c->idx_iter;
 		q->c.curr_db = c->curr_db;
 		q->c.curr_frame = c->curr_frame;
 		q->c.frame_size = c->frame_size;
-		TRACE("proceed");
 
 		if (!q->c.curr_term)
 			continue;
 
+		TRACE("proceed");
 		break;
 	}
 
@@ -331,7 +331,7 @@ LOOP:
 	if (!q->choice_point)
 		return 0;
 
-	reclaim_trail(q);
+	//reclaim_trail(q);
 	choice *c = &q->choices[--q->choice_point];
 
 	if (c->curr_match != NULL)
