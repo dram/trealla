@@ -1586,6 +1586,7 @@ trealla *trealla_create(const char *name)
 #ifndef ISO_ONLY
 	sl_init(&pl->idle, &tmocmp, NULL);
 	sl_init(&pl->names, &strcmp, &free);
+
 	sl_set(&pl->mods, strdup("sys"), NULL);
 	sl_set(&pl->mods, strdup("proc"), NULL);
 	sl_set(&pl->mods, strdup("dbs"), NULL);
