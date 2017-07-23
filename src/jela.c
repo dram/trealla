@@ -166,14 +166,14 @@ void allocate_frame(tpl_query *q)
 	for (int i = 0; i < NBR_MASKS; i++)
 		q->c.mask1[i] = q->c.mask2[i] = 0;
 
-	env *e = &q->envs[q->c.curr_frame];
+	const env *e = &q->envs[q->c.curr_frame];
 	mask_t bit = 1;
 
 	for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++, e++) {
 		if (!e->context)
 			q->c.mask1[j] |= bit;
 		else if (!e->term) {
-			env *e2 = e - e->binding;
+			const env *e2 = e - e->binding;
 
 			if (!e2->context)
 				q->c.mask2[j] |= bit;
@@ -202,10 +202,10 @@ void reallocate_frame(tpl_query *q)
 			e->context = 0;
 		}
 		else if ((q->c.mask2[j] & bit) && !(q->pins[j] & bit)) {
-			env *e = get_env(q, q->c.curr_frame + k);
-			term_heapcheck(e->term);
-			e->term = NULL;
-			e->context = 0;
+			env *e2 = get_env(q, q->c.curr_frame + k);
+			term_heapcheck(e2->term);
+			e2->term = NULL;
+			e2->context = 0;
 		}
 
 		if (++i == MAX_MASK_SIZE) {
@@ -373,7 +373,7 @@ LOOP:
 	}
 
 	reclaim_trail(q);
-	choice *c = &q->choices[--q->choice_point];
+	const choice *c = &q->choices[--q->choice_point];
 
 	if (c->curr_match != NULL)
 		if (term_next(c->curr_match) != NULL)
