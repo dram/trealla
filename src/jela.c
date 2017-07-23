@@ -358,7 +358,6 @@ int throw_term(tpl_query *q, node *term)
 	q->exception = clone_term(q, term);
 
 	while (q->choice_point) {
-		reclaim_trail(q);
 		const choice *c = &q->choices[--q->choice_point];
 
 		if (c->curr_match != NULL)
