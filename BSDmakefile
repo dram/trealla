@@ -8,7 +8,7 @@ OBJECTS_ISO = src/trealla.o src/parser.o src/bifs_iso.o src/jela.o \
 
 OBJECTS_ALL = $(OBJECTS_ISO) src/base64.o src/bifs_sys.o src/bifs_http.o \
 			src/jsonq.o src/bifs_net.o src/bifs_proc.o \
-			src/bifs_posix.o \
+			src/bifs_edin.o src/bifs_posix.o \
 			src/network.o src/thread.o src/uncle.o \
 			src/uuid.o src/xmlq.o src/bifs_dbs.o src/library.o \
 			src/auth.o src/blog.o src/dict.o src/lists.o \
@@ -96,6 +96,8 @@ src/base64.o: src/base64.c src/base64.h
 src/bifs_dbs.o: src/bifs_dbs.c src/trealla.h src/bifs.h src/internal.h \
  src/skiplist.h src/skipbuck.h src/list.h src/network.h src/thread.h \
  src/utf8.h src/jela.h
+src/bifs_edin.o: src/bifs_edin.c src/trealla.h src/bifs.h src/internal.h \
+ src/skiplist.h src/skipbuck.h src/list.h src/utf8.h src/jela.h
 src/bifs_http.o: src/bifs_http.c src/trealla.h src/base64.h src/bifs.h \
  src/internal.h src/skiplist.h src/skipbuck.h src/list.h src/network.h \
  src/thread.h src/utf8.h src/jela.h

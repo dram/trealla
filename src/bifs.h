@@ -587,6 +587,7 @@ extern int bif_assertz(tpl_query *q, node *n, int *persist);
 extern int bif_retract(tpl_query *q, node *n, node *n2, int *persist);
 
 #ifndef ISO_ONLY
+extern void bifs_load_edin(void);
 extern void bifs_load_sys(void);
 extern void bifs_load_net(void);
 extern void bifs_load_proc(void);
@@ -609,6 +610,10 @@ extern int bif_iso_retract(tpl_query *q);
 extern int bif_iso_asserta(tpl_query *q);
 extern int bif_iso_assertz(tpl_query *q);
 extern int bif_iso_catch(tpl_query *q);
+extern int bif_iso_get_code(tpl_query *q);
+
+extern FILE *get_output_stream(node *n);
+extern FILE *get_input_stream(node *n);
 
 enum { NUM_NONE, NUM_REAL, NUM_RATIONAL, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
 
