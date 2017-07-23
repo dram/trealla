@@ -113,9 +113,10 @@ static int grow_trail(tpl_query *q)
 static void reclaim_trail(tpl_query *q)
 {
 	TRACE("reclaim_trail");
+	const trail *t = &q->trails[q->c.curr_trail];
 
 	for (unsigned i = 0; i < q->c.trail_size; i++) {
-		env *e = &q->envs[q->trails[q->c.curr_trail + i]];
+		env *e = &q->envs[*t++];
 		term_heapcheck(e->term);
 		e->term = NULL;
 		e->context = 0;
