@@ -26,7 +26,7 @@
 		printf("###[ %s ] ==> frame=%d, size=%u, choice=%u, prev=%u, "                                                         \
 		       "env=%u, "                                                                                                      \
 		       "trail=%u, size=%u\n",                                                                                          \
-		       s, q->c.curr_frame, q->c.frame_size, q->choice_point, q->c.prev_choice, q->c.env_point, q->c.trail_point,       \
+		       s, q->c.curr_frame, q->c.frame_size, q->choice_point, q->c.prev_choice, q->c.env_point, q->c.curr_trail,       \
 		       q->c.trail_size);                                                                                               \
 	}
 
@@ -115,7 +115,7 @@ static void reclaim_trail(tpl_query *q)
 	TRACE("reclaim_trail");
 
 	for (unsigned i = 0; i < q->c.trail_size; i++) {
-		env *e = &q->envs[q->trails[q->c.trail_point + i]];
+		env *e = &q->envs[q->trails[q->c.curr_trail + i]];
 		term_heapcheck(e->term);
 		e->term = NULL;
 		e->context = 0;
@@ -153,10 +153,10 @@ void allocate_frame(tpl_query *q)
 	TRACE("allocate_frame");
 	q->c.trail_size = 0;
 
-	if ((q->c.trail_point + MAX_FRAME_SIZE) >= q->trails_used) {
-		q->trails_used = q->c.trail_point + MAX_FRAME_SIZE;
+	if ((q->c.curr_trail + MAX_FRAME_SIZE) >= q->trails_used) {
+		q->trails_used = q->c.curr_trail + MAX_FRAME_SIZE;
 
-		while ((q->c.trail_point + MAX_FRAME_SIZE) >= q->trails_possible) {
+		while ((q->c.curr_trail + MAX_FRAME_SIZE) >= q->trails_possible) {
 			if (!grow_trail(q))
 				return;
 		}
@@ -285,7 +285,7 @@ void try_me2(tpl_query *q, int nofollow, int nochoice, int transparent, int catc
 	g_choicepoints++;
 #endif
 
-	q->c.trail_point += q->c.trail_size;
+	q->c.curr_trail += q->c.trail_size;
 	q->c.trail_size = 0;
 
 	if (q->c.curr_match != NULL)
@@ -613,7 +613,7 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 		q->envs[point2].binding = (signed)point2 - (signed)point1;
 
 		if ((point2 < q->c.curr_frame) || (point2 >= (q->c.curr_frame + q->c.frame_size))) {
-			q->trails[q->c.trail_point + q->c.trail_size++] = point2;
+			q->trails[q->c.curr_trail + q->c.trail_size++] = point2;
 			q->is_det = 0;
 		}
 	}
@@ -621,7 +621,7 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 		q->envs[point1].binding = (signed)point1 - (signed)point2;
 
 		if ((point1 < q->c.curr_frame) || (point1 >= (q->c.curr_frame + q->c.frame_size))) {
-			q->trails[q->c.trail_point + q->c.trail_size++] = point1;
+			q->trails[q->c.curr_trail + q->c.trail_size++] = point1;
 			q->is_det = 0;
 		}
 	}

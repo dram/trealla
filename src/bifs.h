@@ -360,7 +360,7 @@ inline static void put_env(tpl_query *q, unsigned point, node *term, signed fram
 	e -= e->binding;
 
 	if ((point < q->c.curr_frame) || (point >= (q->c.curr_frame + q->c.frame_size)))
-		q->trails[q->c.trail_point + q->c.trail_size++] = point;
+		q->trails[q->c.curr_trail + q->c.trail_size++] = point;
 
 	e->binding = frame;
 	e->term = term;
