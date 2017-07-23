@@ -46,13 +46,11 @@ static int bif_edin_display_2(tpl_query *q)
 
 	int ok;
 
-#ifndef ISO_ONLY
 	stream *sp = term1->val_str;
 
 	if (is_socket(term1))
 		ok = session_write((session *)sp->sptr, tmpbuf, len);
 	else
-#endif
 		ok = fwrite(tmpbuf, 1, len, get_output_stream(term1));
 
 	free(tmpbuf);
@@ -373,11 +371,9 @@ static int bif_edin_tab_2(tpl_query *q)
 	int ok = 1;
 
 	for (int i = 0; ok && (i < n); i++) {
-#ifndef ISO_ONLY
 		if (is_socket(term1))
 			ok = session_write((session *)sp->sptr, "\n", 1);
 		else
-#endif
 			ok = fwrite(" ", 1, 1, get_output_stream(term1));
 	}
 
