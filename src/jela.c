@@ -357,47 +357,38 @@ int throw_term(tpl_query *q, node *term)
 {
 	q->exception = clone_term(q, term);
 
-	// Walk back along choices testing every catch-handler, keep
-	// going until we find one that matches. Then retry that choice.
-	// ...
+	while (q->choice_point) {
+		reclaim_trail(q);
+		const choice *c = &q->choices[--q->choice_point];
 
-LOOP:
+		if (c->curr_match != NULL)
+			if (term_next(c->curr_match) != NULL)
+				q->envs[c->curr_frame].choices--;
 
-	if (!q->choice_point) {
-		if (q->exception) {
-			term_heapcheck(q->exception);
-			q->exception = NULL;
-		}
+		q->c = *c;
+		q->curr_context = q->c.curr_frame;
+		reallocate_frame(q);
 
-		return 0;
-	}
+		if (!c->catchme)
+			continue;
 
-	reclaim_trail(q);
-	const choice *c = &q->choices[--q->choice_point];
+		q->retry = 2;
 
-	if (c->curr_match != NULL)
-		if (term_next(c->curr_match) != NULL)
-			q->envs[c->curr_frame].choices--;
-
-	q->c = *c;
-	q->curr_context = q->c.curr_frame;
-	reallocate_frame(q);
+		if (!bif_iso_catch(q))
+			continue;
 
 #ifdef DEBUG
-	g_backtracks++;
+		g_backtracks++;
 #endif
 
-	if (!c->catchme)
-		goto LOOP;
-
-	q->retry = 2;
-
-	if (!bif_iso_catch(q))
-		goto LOOP;
+		term_heapcheck(q->exception);
+		q->exception = NULL;
+		return 1;
+	}
 
 	term_heapcheck(q->exception);
 	q->exception = NULL;
-	return 1;
+	return 0;
 }
 
 static void execute_term(tpl_query *q, node *term, unsigned frame_size, unsigned alloc_size)
