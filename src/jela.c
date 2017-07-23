@@ -727,10 +727,10 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned term1_ctx, node *ter
 
 #ifndef ISO_ONLY
 	if (is_blob(term1) && is_blob(term2)) {
-		if (term1->val_len != term2->val_len)
+		if (LEN_S(term1) != LEN_S(term2))
 			return 0;
 
-		return !memcmp(term1->val_s, term2->val_s, term2->val_len);
+		return !memcmp(term1->val_s, term2->val_s, LEN_S(term2));
 	}
 #endif
 
@@ -897,9 +897,8 @@ int match(tpl_query *q)
 		const unsigned frame_size = q->c.curr_match->frame_size;
 		unsigned alloc_size;
 
-		if (q->c.curr_match->flags & FLAG_EXPANDABLE) {
+		if (q->c.curr_match->flags & FLAG_EXPANDABLE)
 			alloc_size = MAX_FRAME_SIZE;				// HACK
-		}
 		else
 			alloc_size = frame_size;
 
