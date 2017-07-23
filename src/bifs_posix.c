@@ -249,7 +249,7 @@ static int bif_posix_wait_3(tpl_query *q)
 	node *term3 = get_atom_or_list(term3);
 
 	idtype_t type;
-	id_t id;
+	id_t id = 0;
 
 	if (is_compound(term1) && !strcmp(term_functor(term1), "process")) {
 		type = P_PID;
