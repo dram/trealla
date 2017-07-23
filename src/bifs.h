@@ -364,7 +364,9 @@ inline static void put_env(tpl_query *q, unsigned point, node *term, signed fram
 
 	e->binding = frame;
 	e->term = term;
-	term->refcnt++;
+
+	if (is_heap(term))
+		term->refcnt++;
 }
 
 inline static void put_ptr(tpl_query *q, unsigned point, void *v)
