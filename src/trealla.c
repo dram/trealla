@@ -1560,6 +1560,7 @@ trealla *trealla_create(const char *name)
 		bifs_load_iso();
 
 #ifndef ISO_ONLY
+		bifs_load_xtra();
 		bifs_load_edin();
 		bifs_load_sys();
 		bifs_load_proc();

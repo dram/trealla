@@ -588,6 +588,7 @@ extern int bif_retract(tpl_query *q, node *n, node *n2, int *persist);
 
 #ifndef ISO_ONLY
 extern void bifs_load_edin(void);
+extern void bifs_load_xtra(void);
 extern void bifs_load_sys(void);
 extern void bifs_load_net(void);
 extern void bifs_load_proc(void);
@@ -611,9 +612,17 @@ extern int bif_iso_asserta(tpl_query *q);
 extern int bif_iso_assertz(tpl_query *q);
 extern int bif_iso_catch(tpl_query *q);
 extern int bif_iso_get_code(tpl_query *q);
+extern int bif_iso_clause(tpl_query *q);
 
 extern FILE *get_output_stream(node *n);
 extern FILE *get_input_stream(node *n);
+extern int bif_retract2(tpl_query *q, int wait);
+extern void rebase_clause(tpl_query *q, node *n);
+extern void eval(tpl_query *q, node **args);
+extern int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, node *term2, FILE *fp);
+extern int check_builtin(trealla *pl, const char *functarity);
+extern int check_dynamic(module *db, const char *functarity);
+extern int check_static(module *db, const char *functarity);
 
 enum { NUM_NONE, NUM_REAL, NUM_RATIONAL, NUM_BIGNUM, NUM_INT, NUM_BINARY, NUM_OCTAL, NUM_HEX };
 
