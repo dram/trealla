@@ -25,13 +25,9 @@
 #include "bifs.h"
 #include "jela.h"
 
-#define END_OF_FILE "end_of_file"
-
 #ifndef ISO_ONLY
 static int bif_xtra_retractw(tpl_query *q) { return bif_retract2(q, 1); }
-#endif
 
-#ifndef ISO_ONLY
 static int bif_xtra_asserta_2(tpl_query *q)
 {
 	node *args = get_args(q);
