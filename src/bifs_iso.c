@@ -7451,22 +7451,24 @@ void bifs_load_iso(void)
 	DEFINE_BIF("set_prolog_flag", 2, bif_iso_set_prolog_flag);
 	DEFINE_BIF("current_prolog_flag", 2, bif_iso_current_prolog_flag);
 	DEFINE_BIF("findall", 3, bif_iso_findall);
-	DEFINE_BIF("bagof", 3 + 1, bif_iso_bagof);
-	DEFINE_BIF("setof", 3 + 1, bif_iso_setof);
+	DEFINE_BIF("bagof", 1 + 3, bif_iso_bagof);
+	DEFINE_BIF("setof", 1 + 3, bif_iso_setof);
 	DEFINE_BIF("compare", 3, bif_iso_compare);
-
 	DEFINE_BIF("catch", 3, bif_iso_catch);
 	DEFINE_BIF("throw", 1, bif_iso_throw);
-
 	DEFINE_BIF("dynamic", 1, bif_iso_dynamic);
 	DEFINE_BIF("op", 3, bif_iso_op);
-
 	DEFINE_BIF("call_transparent", 1, bif_call_transparent);
 	DEFINE_BIF("call_opaque", 1, bif_call_opaque);
 	DEFINE_BIF("$call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("$calln", -1, bif_iso_calln);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
+
+	// These are not ISO-Prolog but are common...
+
+	DEFINE_BIF("div", 2, bif_iso_divint);
+	DEFINE_BIF("assert", 1, bif_iso_assertz);
 
 #ifndef ISO_ONLY
 	DEFINE_BIF("unload_file", 1, bif_xtra_unload_file);
@@ -7480,23 +7482,14 @@ void bifs_load_iso(void)
 	DEFINE_BIF("listing_canonical", 1, bif_xtra_listing_canonical);
 	DEFINE_BIF("term_to_blob", 2, bif_xtra_term_to_blob_2);
 	DEFINE_BIF("enter", 1, bif_xtra_enter);
-#endif
 
 	// These are used in the database log...
 
-#ifndef ISO_ONLY
 	DEFINE_BIF("a_", 1, bif_iso_asserta);
 	DEFINE_BIF("z_", 1, bif_iso_assertz);
 	DEFINE_BIF("r_", 1, bif_iso_retract);
 	DEFINE_BIF("t_", 0, bif_iso_true);
-#endif
 
-	// These are not ISO-Prolog but are common...
-
-	DEFINE_BIF("div", 2, bif_iso_divint);
-	DEFINE_BIF("assert", 1, bif_iso_assertz);
-
-#ifndef ISO_ONLY
 	DEFINE_BIF("consult", 1, bif_xtra_consult_1);
 	DEFINE_BIF("deconsult", 1, bif_xtra_deconsult_1);
 	DEFINE_BIF("reconsult", 1, bif_xtra_reconsult_1);
@@ -7549,9 +7542,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("predicate_property", 2, bif_xtra_predicate_property_2);
 	DEFINE_BIF("garbage_collect", 0, bif_iso_true);
 	DEFINE_BIF("split_string", 4, bif_xtra_split_string_4);
-#endif
 
-#ifndef ISO_ONLY
 	DEFINE_BIF("linda:out", 1, bif_linda_out);
 	DEFINE_BIF("linda:in", 1, bif_xtra_retractw);
 	DEFINE_BIF("linda:inp", 1, bif_iso_retract);
