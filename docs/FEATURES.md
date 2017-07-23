@@ -277,8 +277,8 @@ enclosed characters are output base64-encoded in canonical form, eg.
 Note: *atom_length/2* returns the number of UTF-8 characters in an atom while for BLOBs it's the
 stored length. Atoms are assumed UTF-8.
 
-Posix date-time: namespace 'posix'
-----------------------------------
+Posix interfaces: namespace 'posix'
+-----------------------------------
 
 	format_time(+Atom,+Term,-Var)
 	gmt_time/(+Secs,-Term)
@@ -286,6 +286,9 @@ Posix date-time: namespace 'posix'
 	make_time(+Term,-Secs)
 	parse_time(+Atom,+Atom,-Term)
 	time(-Secs)
+
+	wait(+Id, -Info, +Options)
+	spawn(+File, +Arguments, -Pid)
 
 More to come.
 

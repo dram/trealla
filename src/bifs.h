@@ -181,6 +181,14 @@
 		QABORT(ABORT_INVALIDARGNOTCOMPOUND);                                                                                   \
 		return 0;                                                                                                              \
 	}
+#define get_compound_or_var(t)                                                                                                 \
+	get_next_arg(q, &args);                                                                                                    \
+	unsigned t ## _ctx = q->latest_context;                                                                                    \
+	q->latest_context = t ## _ctx;                                                                                             \
+	if (!is_compound(t) && !is_var(t)) {                                                                                       \
+		QABORT(ABORT_INVALIDARGNOTCOMPOUNDORVAR);                                                                              \
+		return 0;                                                                                                              \
+	}
 #define get_callable(t)                                                                                                        \
 	get_next_arg(q, &args);                                                                                                    \
 	unsigned t ## _ctx = q->latest_context;                                                                                    \

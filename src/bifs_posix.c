@@ -1,10 +1,14 @@
 #define _XOPEN_SOURCE
+#include <sys/wait.h>
+#include <spawn.h>
 #include <time.h>
 
 #include "trealla.h"
 
 #include "bifs.h"
 #include "jela.h"
+
+extern char **environ;
 
 static int bif_posix_format_time_3(tpl_query *q)
 {
@@ -198,6 +202,120 @@ static int bif_posix_time_1(tpl_query *q)
 	}
 }
 
+static int bif_posix_spawn_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_list(term2);
+	node *term3 = get_var(term3);
+
+	int i = 0;
+	int size = 128;
+	const char **arguments = malloc(size);
+	node *l = term2;
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		node *n = subst(q, head, term2_ctx);
+
+		if (i + 1 >= size) {
+			size *= 2;
+			arguments = realloc(arguments, size);
+		}
+
+		arguments[i++] = VAL_S(n);
+
+		node *tail = term_next(head);
+		l = subst(q, tail, term2_ctx);
+	}
+	arguments[i] = NULL;
+
+	pid_t pid;
+	if (posix_spawnp(&pid, VAL_S(term1), NULL, NULL, (char * const*)arguments, environ) == 0) {
+		unify_int(q, term3, term3_ctx, pid);
+		free(arguments);
+		return 1;
+	} else {
+		// FIXME: raise error
+		free(arguments);
+		return 0;
+	}
+}
+
+static int bif_posix_wait_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_term(term1);
+	node *term2 = get_compound_or_var(term2);
+	node *term3 = get_atom_or_list(term3);
+
+	idtype_t type;
+	id_t id;
+
+	if (is_compound(term1) && !strcmp(term_functor(term1), "process")) {
+		type = P_PID;
+		node *n = term_firstarg(term1);
+		id = VAL_INT(subst(q, n, term1_ctx));
+	} else if (is_compound(term1) && !strcmp(term_functor(term1), "process_group")) {
+		type = P_PGID;
+		node *n = term_firstarg(term1);
+		id = VAL_INT(subst(q, n, term1_ctx));
+	} else if (is_atom(term1) && !strcmp(VAL_S(term1), "all")) {
+		type = P_ALL;
+	} else {
+		// FIXME: Maybe raise an error?
+		return 0;
+	}
+
+	int options = 0;
+	node *l = term3;
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		node *n = subst(q, head, term3_ctx);
+
+		if (is_atom(n) && !strcmp(VAL_S(n), "continued")) {
+			options |= WCONTINUED;
+		} else if (is_atom(n) && !strcmp(VAL_S(n), "exited")) {
+			options |= WEXITED;
+		} else if (is_atom(n) && !strcmp(VAL_S(n), "stopped")) {
+			options |= WSTOPPED;
+		} else if (is_atom(n) && !strcmp(VAL_S(n), "no_hang")) {
+			options |= WNOHANG;
+		} else if (is_atom(n) && !strcmp(VAL_S(n), "no_wait")) {
+			options |= WNOWAIT;
+		} else {
+			// FIXME: Maybe raise an error?
+			return 0;
+		}
+
+		node *tail = term_next(head);
+		l = subst(q, tail, term3_ctx);
+	}
+
+	siginfo_t info;
+	memset(&info, 0, sizeof(siginfo_t));
+	if (waitid(type, id, &info, options) == 0) {
+		node *tmp = make_compound();
+
+		term_append(tmp, make_const_atom("wait"));
+
+		node *process = make_compound();
+		term_append(process, make_const_atom("process"));
+		term_append(process, make_int(info.si_pid));
+		term_append(tmp, process);
+
+		node *status = make_compound();
+		term_append(status, make_const_atom("status"));
+		term_append(status, make_int(info.si_status));
+		term_append(tmp, status);
+
+		unify(q, term2, term2_ctx, tmp, -1);
+		return 1;
+	} else {
+		// FIXME: raise an error
+		return 0;
+	}
+}
+
 void bifs_load_posix(void)
 {
 	DEFINE_BIF("posix:format_time", 3, bif_posix_format_time_3);
@@ -206,4 +324,10 @@ void bifs_load_posix(void)
 	DEFINE_BIF("posix:make_time", 2, bif_posix_make_time_2);
 	DEFINE_BIF("posix:parse_time", 3, bif_posix_parse_time_3);
 	DEFINE_BIF("posix:time", 1, bif_posix_time_1);
+
+	DEFINE_BIF("posix:spawn", 3, bif_posix_spawn_3);
+	// TODO DEFINE_BIF("posix:spawn", 4, bif_posix_spawn_4);
+
+	// TODO Maybe add wait/2 with `options` defaults to `[exited]`?
+	DEFINE_BIF("posix:wait", 3, bif_posix_wait_3);
 }
