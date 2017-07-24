@@ -1,5 +1,6 @@
 #define _XOPEN_SOURCE
 #include <sys/wait.h>
+#include <dirent.h>
 #include <spawn.h>
 #include <time.h>
 
@@ -316,6 +317,48 @@ static int bif_posix_wait_3(tpl_query *q)
 	}
 }
 
+static int bif_posix_scan_directory_2(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_var(term2);
+
+	const char *directory = VAL_S(term1);
+
+	struct dirent **names;
+
+	int n = scandir(directory, &names, NULL, NULL);
+
+	if (n == -1) {
+		// FIXME: raise an error
+		return 0;
+	} else {
+		node *save_l = make_list();
+
+		node *l = save_l;
+		for (int i = 0; i < n; ++i) {
+			node *entry = make_compound();
+			term_append(entry, make_const_atom("file"));
+			term_append(entry, make_int(names[i]->d_ino));
+			term_append(entry, make_atom(strdup(names[i]->d_name)));
+			term_append(l, entry);
+			free(names[i]);
+
+			if (i + 1 == n) {
+				term_append(l, make_const_atom("[]"));
+			} else {
+				l = term_append(l, make_list());
+			}
+		}
+
+		free(names);
+
+		unify(q, term2, term2_ctx, save_l, -1);
+
+		return 1;
+	}
+}
+
 void bifs_load_posix(void)
 {
 	DEFINE_BIF("posix:format_time", 3, bif_posix_format_time_3);
@@ -330,4 +373,7 @@ void bifs_load_posix(void)
 
 	// TODO Maybe add wait/2 with `options` defaults to `[exited]`?
 	DEFINE_BIF("posix:wait", 3, bif_posix_wait_3);
+
+	// TODO How to pass `select` and `compare` functions to `scandir`?
+	DEFINE_BIF("posix:scan_directory", 2, bif_posix_scan_directory_2);
 }
