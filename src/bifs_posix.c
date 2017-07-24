@@ -2,7 +2,9 @@
 #include <sys/wait.h>
 #include <dirent.h>
 #include <spawn.h>
+#include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "trealla.h"
 
@@ -359,6 +361,60 @@ static int bif_posix_scan_directory_2(tpl_query *q)
 	}
 }
 
+static int bif_posix_open_file_descriptor_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_var(term3);
+	int fd = VAL_INT(term1);
+	const char *mode = VAL_S(term2);
+	const char *type = "text";
+	char tmpbuf[40];
+	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w" : "r");
+
+	FILE *fp = fdopen(fd, tmpbuf);
+
+	if (!fp) {
+		QABORT(ABORT_NOTEXISTFILE);
+		return 0;
+	}
+
+	stream *sp = calloc(1, sizeof(stream));
+	sp->fptr = fp;
+	const int max_name_length = 32;
+	char *name = malloc(max_name_length);
+	snprintf(name, max_name_length, "fd(%d)", fd);
+	sp->filename = name;
+	sp->mode = strdup(mode);
+	sp->type = strdup(type);
+	node *n = make_stream(sp);
+	n->flags |= FLAG_FILE;
+	put_env(q, q->c.curr_frame + term3->slot, n, -1);
+	term_heapcheck(n);
+	return 1;
+}
+
+static int bif_posix_pipe_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_compound_or_var(term1);
+
+	int fd[2];
+
+	if (pipe(fd) == -1) {
+		return 0;
+	} else {
+		node *tmp = make_compound();
+
+		term_append(tmp, make_const_atom("-"));
+		term_append(tmp, make_int(fd[0]));
+		term_append(tmp, make_int(fd[1]));
+
+		return unify(q, term1, term1_ctx, tmp, -1);
+	}
+}
+
 void bifs_load_posix(void)
 {
 	DEFINE_BIF("posix:format_time", 3, bif_posix_format_time_3);
@@ -376,4 +432,7 @@ void bifs_load_posix(void)
 
 	// TODO How to pass `select` and `compare` functions to `scandir`?
 	DEFINE_BIF("posix:scan_directory", 2, bif_posix_scan_directory_2);
+
+	DEFINE_BIF("posix:open_file_descriptor", 3, bif_posix_open_file_descriptor_3);
+	DEFINE_BIF("posix:pipe", 1, bif_posix_pipe_1);
 }
