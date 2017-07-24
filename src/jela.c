@@ -248,6 +248,7 @@ static int proceed(tpl_query *q)
 			continue;
 
 		TRACE("proceed");
+		allocate_frame(q);
 		break;
 	}
 
@@ -332,6 +333,7 @@ LOOP:
 	if (!q->choice_point)
 		return 0;
 
+	reallocate_frame(q);
 	//reclaim_trail(q);
 	choice *c = &q->choices[--q->choice_point];
 
@@ -672,9 +674,9 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned term1_ctx, node *ter
 	DEBUGPRINT
 	{
 		printf("### unify : ");
-		term_print(q->pl, NULL, term1, 1);
+		term_print(q->pl, q, term1, 1);
 		printf(" (%d) <==> (%d) ", term1_ctx, term2_ctx);
-		term_print(q->pl, NULL, term2, 1);
+		term_print(q->pl, q, term2, 1);
 		printf("\n");
 	}
 

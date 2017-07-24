@@ -262,7 +262,13 @@ typedef struct {
 	mask_t mask1[NBR_MASKS], mask2[NBR_MASKS];
 	uint32_t env_point, curr_trail, prev_choice, curr_frame;
 	uint8_t frame_size, trail_size;
-	uint8_t cut, nofollow, transparent, catchme;	// TODO: make these bits
+
+	struct {
+		unsigned cut : 1;
+		unsigned nofollow : 1;
+		unsigned transparent : 1;
+		unsigned catchme : 1;
+	};
 } choice;
 
 typedef uint32_t trail;
@@ -303,12 +309,35 @@ struct tpl_query_ {
 	uint32_t curr_context, latest_context;
 	FILE *curr_stdin, *curr_stdout;
 	unsigned int seed;
-	uint16_t unify_depth;
-	uint8_t fail_arg;
-	uint8_t halt_code, halt, is_running, did_halt;
-	uint8_t is_yielded, retry, ok, def_choice, def_env, def_trail;
-	uint8_t is_det, timed_out, trace, optimize, uops;
-	uint8_t eval, did_getc, in_tran, ignore_ops;
+	uint16_t unify_depth, optimize, uops, retry;
+	uint8_t fail_arg, halt_code, halt;
+
+	struct {
+		unsigned is_running : 1;
+		unsigned did_halt : 1;
+		unsigned is_yielded : 1;
+		unsigned ok : 1;
+		unsigned def_choice : 1;
+		unsigned def_env : 1;
+		unsigned def_trail : 1;
+		unsigned is_det : 1;
+		unsigned timed_out : 1;
+		unsigned trace : 1;
+		unsigned eval : 1;
+		unsigned did_getc : 1;
+		unsigned in_tran : 1;
+		unsigned ignore_ops : 1;
+		unsigned is_matching : 1;
+
+#ifndef ISO_ONLY
+		unsigned linked : 1;
+		unsigned is_forked : 1;
+		unsigned is_proc: 1;
+		unsigned is_dead : 1;
+		unsigned is_busy : 1;
+		unsigned is_idle : 1;
+#endif
+	};
 
 #ifndef ISO_ONLY
 	list queue; // process queue
@@ -316,7 +345,6 @@ struct tpl_query_ {
 	skiplist *kvs;
 	char *name;
 	int tmo_msecs;
-	uint8_t linked, is_forked, is_proc, is_dead, is_busy, is_idle;
 	atomic uint32_t refcnt;
 #endif
 
