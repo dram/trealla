@@ -250,7 +250,7 @@ static int bif_posix_spawn_3(tpl_query *q)
 	posix_spawn_file_actions_init(&file_actions);
 
 	l = term4;
-	while (is_list(l)) {
+	while (l && is_list(l)) {
 		node *head = term_firstarg(l);
 		node *option = subst(q, head, term4_ctx);
 
