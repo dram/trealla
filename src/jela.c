@@ -807,6 +807,9 @@ int match(tpl_query *q)
 	else
 		save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 
+	if (!q->retry)
+		allocate_frame(q);
+
 	while ((q->c.curr_match != NULL) && !q->halt) {
 		if (is_deleted(q->c.curr_match)) {
 			if (use_iter) {
@@ -859,7 +862,6 @@ int match(tpl_query *q)
 			printf(" (size %u)\n", frame_size);
 		}
 
-		allocate_frame(q);
 		int ok = unify(q, q->c.curr_term, q->c.curr_frame, head, q->c.env_point);
 
 #ifndef ISO_ONLY
