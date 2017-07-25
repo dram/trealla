@@ -93,6 +93,7 @@ static int bif_posix_gmt_time_2(tpl_query *q)
 		term_append(tmp, make_int(tm.tm_isdst));
 
 		unify(q, term2, term2_ctx, tmp, -1);
+		term_heapcheck(tmp);
 		return 1;
 	}
 }
@@ -123,6 +124,7 @@ static int bif_posix_local_time_2(tpl_query *q)
 		term_append(tmp, make_int(tm.tm_isdst));
 
 		unify(q, term2, term2_ctx, tmp, -1);
+		term_heapcheck(tmp);
 		return 1;
 	}
 }
@@ -187,6 +189,7 @@ static int bif_posix_parse_time_3(tpl_query *q)
 		term_append(tmp, make_int(tm.tm_isdst));
 
 		unify(q, term3, term3_ctx, tmp, -1);
+		term_heapcheck(tmp);
 		return 1;
 	}
 }
@@ -311,8 +314,9 @@ static int bif_posix_wait_3(tpl_query *q)
 		term_append(status, make_int(info.si_status));
 		term_append(tmp, status);
 
-		unify(q, term2, term2_ctx, tmp, -1);
-		return 1;
+		int ok = unify(q, term2, term2_ctx, tmp, -1);
+		term_heapcheck(tmp);
+		return ok;
 	} else {
 		// FIXME: raise an error
 		return 0;
@@ -354,9 +358,8 @@ static int bif_posix_scan_directory_2(tpl_query *q)
 		}
 
 		free(names);
-
 		unify(q, term2, term2_ctx, save_l, -1);
-
+		term_heapcheck(save_l);
 		return 1;
 	}
 }
@@ -390,7 +393,7 @@ static int bif_posix_open_file_descriptor_3(tpl_query *q)
 	sp->type = strdup(type);
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
-	put_env(q, q->c.curr_frame + term3->slot, n, -1);
+	unify(q, term3, term3_ctx, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -411,7 +414,9 @@ static int bif_posix_pipe_1(tpl_query *q)
 		term_append(tmp, make_int(fd[0]));
 		term_append(tmp, make_int(fd[1]));
 
-		return unify(q, term1, term1_ctx, tmp, -1);
+		int ok = unify(q, term1, term1_ctx, tmp, -1);
+		term_heapcheck(tmp);
+		return ok;
 	}
 }
 
