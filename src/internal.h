@@ -259,7 +259,8 @@ typedef struct {
 	module *curr_db;
 	node *curr_term, *curr_match;
 	uint32_t env_point, curr_trail, prev_choice, curr_frame;
-	uint8_t frame_size, trail_size;
+	uint16_t frame_size;
+	uint8_t trail_size;
 
 	struct {
 		unsigned cut : 1;
