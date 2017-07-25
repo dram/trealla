@@ -110,9 +110,10 @@ implementations:
 	writeln(+S,+Term1)          - does buffered write/2 + nl/1 to stream
 	random(-Float)              - random float value >= 0.0 and <= 1.0
 	term_hash(+Term,-Int)		- 32-bit non-crypto hash
-	atomic_concat(+S1,+S2,-S)
 	tab(+Spaces)
 	tab(+Stream,+Spaces)
+	blob_concat(+S1,+S2,-S)
+	atomic_concat(+S1,+S2,-S)
 	atomic_list_concat(+L,-S)
 	atomic_list_concat(+L,+Sep,-S)
 	getenv(+Atom,?Term)         - get environment variable
@@ -280,11 +281,11 @@ stored length. Atoms are assumed UTF-8.
 Posix interfaces: namespace 'posix'
 -----------------------------------
 
-	format_time(+Atom,+Term,-Var)
-	gmt_time/(+Secs,-Term)
-	local_time(+Secs,-Term)
-	make_time(+Term,-Secs)
-	parse_time(+Atom,+Atom,-Term)
+	format_time(+Atom, +Term, -Var)
+	gmt_time(+Secs, -Term)
+	local_time(+Secs, -Term)
+	make_time(+Term, -Secs)
+	parse_time(+Atom, +Atom, -Term)
 	time(-Secs)
 
 	wait(+Id, -Info, +Options)

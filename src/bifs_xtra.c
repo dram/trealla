@@ -1627,6 +1627,36 @@ static int bif_xtra_atomic_concat_3(tpl_query *q)
 	return 1;
 }
 
+static int bif_xtra_blob_concat_3(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom(term1);
+	node *term2 = get_atom(term2);
+	node *term3 = get_atom_or_var(term3);
+	size_t len = LEN_S(term1) + LEN_S(term2);
+	char *tmp = (char *)malloc(len + 1);
+
+	if (LEN_S(term1) > 0)
+		memcpy(tmp, VAL_S(term1), LEN_S(term1));
+
+	if (LEN_S(term2) > 0)
+		memcpy(tmp + LEN_S(term1), VAL_S(term2), LEN_S(term2));
+
+	tmp[len] = '\0';
+	node *n;
+
+#ifndef ISO_ONLY
+	if (is_blob(term1) || is_blob(term2))
+		n = make_blob(tmp, len);
+	else
+#endif
+		n = make_atom(tmp);
+
+	int ok = unify(q, term3, term3_ctx, n, -1);
+	term_heapcheck(n);
+	return ok;
+}
+
 static int bif_xtra_atomic_list_concat_2(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -1766,6 +1796,7 @@ void bifs_load_xtra(void)
 	DEFINE_BIF("make_directory", 1, bif_xtra_make_directory_1);
 	DEFINE_BIF("name", 2, bif_xtra_name_2);
 	DEFINE_BIF("atomic_concat", 3, bif_xtra_atomic_concat_3);
+	DEFINE_BIF("blob_concat", 3, bif_xtra_blob_concat_3);
 	DEFINE_BIF("atomic_list_concat", 2, bif_xtra_atomic_list_concat_2);
 	DEFINE_BIF("atomic_list_concat", 3, bif_xtra_atomic_list_concat_3);
 	DEFINE_BIF("fixed", 4, bif_xtra_fixed_4);

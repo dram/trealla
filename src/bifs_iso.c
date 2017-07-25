@@ -865,36 +865,6 @@ static int bif_iso_atom_length(tpl_query *q)
 	return unify_int(q, term2, q->latest_context, UTF8LEN_S(term1));
 }
 
-static int bif_iso_atom_concat(tpl_query *q)
-{
-	node *args = get_args(q);
-	node *term1 = get_atom(term1);
-	node *term2 = get_atom(term2);
-	node *term3 = get_var(term3);
-	size_t len = LEN_S(term1) + LEN_S(term2);
-	char *tmp = (char *)malloc(len + 1);
-
-	if (LEN_S(term1) > 0)
-		memcpy(tmp, VAL_S(term1), LEN_S(term1));
-
-	if (LEN_S(term2) > 0)
-		memcpy(tmp + LEN_S(term1), VAL_S(term2), LEN_S(term2));
-
-	tmp[len] = '\0';
-	node *n;
-
-#ifndef ISO_ONLY
-	if (is_blob(term1) || is_blob(term2))
-		n = make_blob(tmp, len);
-	else
-#endif
-		n = make_atom(tmp);
-
-	put_env(q, term3, q->c.curr_frame, n, -1);
-	term_heapcheck(n);
-	return 1;
-}
-
 static int bif_iso_set_prolog_flag(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -5893,7 +5863,6 @@ void bifs_load_iso(void)
 	DEFINE_BIF("clause", 2, bif_iso_clause);
 	DEFINE_BIF("unify_with_occurs_check", 2, bif_iso_unify);
 	DEFINE_BIF("atom_length", 2, bif_iso_atom_length);
-	DEFINE_BIF("atom_concat", 3, bif_iso_atom_concat);
 	DEFINE_BIF("sub_atom", 5, bif_iso_sub_atom);
 	DEFINE_BIF("atom_chars", 2, bif_iso_atom_chars);
 	DEFINE_BIF("atom_codes", 2, bif_iso_atom_codes);

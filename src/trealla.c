@@ -1636,6 +1636,13 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11).");
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12).");
 
+	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(X), !, name(Y, YL), atom_codes(Z, ZL), append(XL, YL, ZL), name(X, XL).");
+	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(Y), !, name(X, XL), atom_codes(Z, ZL), append(XL, YL, ZL), name(Y, YL).");
+	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- name(X, XL), name(Y, YL), append(XL, YL, ZL), atom_codes(Z, ZL).");
+
+	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
+	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
+
 #ifndef ISO_ONLY
 	trealla_make_rule(pl, "not(G) :- '$call'(G), !, fail.");
 	trealla_make_rule(pl, "not(_G).");
