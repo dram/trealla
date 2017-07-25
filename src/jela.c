@@ -275,6 +275,11 @@ void trust_me(tpl_query *q)
 int retry_me(tpl_query *q)
 {
 	TRACE("retry_me");
+
+#ifdef DEBUG
+	g_backtracks++;
+#endif
+
 	unsigned save_end = (q->c.curr_trail + q->c.trail_size);
 
 LOOP:
@@ -295,11 +300,6 @@ LOOP:
 	q->curr_context = q->c.curr_frame;
 	q->c.trail_size = save_end - q->c.curr_trail;
 	reallocate_frame(q);
-
-#ifdef DEBUG
-	g_backtracks++;
-#endif
-
 	return q->retry = 1;
 }
 
