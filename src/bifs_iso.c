@@ -45,14 +45,14 @@ static char *strndup(const char *s, size_t n)
 #endif
 
 #if USE_SSL
-static void put_bignum(tpl_query *q, unsigned point, node *v)
+static void put_bignum(tpl_query *q, node *var, unsigned ctx, node *v)
 {
 	node *n = term_make();
 	n->flags |= TYPE_BIGNUM;
 	n->val_bn = v->val_bn;
 	v->flags = 0;
 	v->val_bn = NULL;
-	put_env(q, point, n, -1);
+	put_env(q, var, ctx, n, -1);
 	n->refcnt--;
 }
 #endif
@@ -441,9 +441,7 @@ int bif_iso_cut(tpl_query *q)
 
 static int bif_iso_repeat(tpl_query *q)
 {
-	if (!q->retry)
-		allocate_frame(q);
-
+	allocate_frame(q);
 	try_me_nofollow(q);
 	return 1;
 }
@@ -554,7 +552,7 @@ static int bif_iso_calln(tpl_query *q)
 	else
 		s->flags |= FLAG_BUILTIN;
 
-	put_env(q, q->c.curr_frame + var->slot, s, term1_ctx);
+	put_env(q, var, q->c.curr_frame, s, term1_ctx);
 	term_heapcheck(s);
 	try_me_nochoice(q);
 	begin_query(q, s);
@@ -892,7 +890,7 @@ static int bif_iso_atom_concat(tpl_query *q)
 #endif
 		n = make_atom(tmp);
 
-	put_env(q, q->c.curr_frame + term3->slot, n, -1);
+	put_env(q, term3, q->c.curr_frame, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -943,7 +941,7 @@ static int bif_iso_current_prolog_flag(tpl_query *q)
 	else if (!strcmp(flag, "min_integer"))
 		return unify_int(q, term2, q->latest_context, LONG_MIN);
 	else if (!strcmp(flag, "max_arity"))
-		return unify_int(q, term2, q->latest_context, MAX_FRAME_SIZE - 1);
+		return unify_int(q, term2, q->latest_context, MAX_ARITY);
 	else if (!strcmp(flag, "char_conversion"))
 		return
 			unify_const_atom(q, term2, q->latest_context, q->lex->flag_char_conversion ? "true" : "false") ||
@@ -1099,7 +1097,7 @@ static int bif_iso_open_3(tpl_query *q)
 	const char *mode = VAL_S(term2);
 	const char *type = "text";
 	char tmpbuf[40];
-	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w+" : "r");
+	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "w+" : !strcmp(mode, "write") ? "w" : "r");
 
 	FILE *fp = fopen(filename, tmpbuf);
 
@@ -1115,7 +1113,7 @@ static int bif_iso_open_3(tpl_query *q)
 	sp->type = strdup(type);
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
-	put_env(q, q->c.curr_frame + term3->slot, n, -1);
+	put_env(q, term3, q->c.curr_frame, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -1161,7 +1159,7 @@ static int bif_iso_open_4(tpl_query *q)
 	sp->type = strdup(type);
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
-	put_env(q, q->c.curr_frame + term3->slot, n, -1);
+	put_env(q, term3, q->c.curr_frame, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -1614,7 +1612,7 @@ int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, node *t
 		else
 			save_l = make_const_atom("[]");
 
-		put_env(q, q->c.curr_frame + varlist->slot, save_l, q->c.curr_frame);
+		put_env(q, varlist, q->c.curr_frame, save_l, q->c.curr_frame);
 		save_l->refcnt--;
 	}
 
@@ -1756,7 +1754,7 @@ static int bif_iso_stream_property_position(tpl_query *q)
 	else
 		sp = term1->val_str;
 
-	put_int(q, q->c.curr_frame + term2->slot, sp ? ftello(sp->fptr) : 0);
+	put_int(q, term2, q->c.curr_frame, sp ? ftello(sp->fptr) : 0);
 	return 1;
 }
 
@@ -1783,7 +1781,7 @@ static int bif_iso_stream_property_file_name(tpl_query *q)
 	else
 		sp = term1->val_str;
 
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp ? sp->filename : filename));
+	put_atom(q, term2, q->c.curr_frame, strdup(sp ? sp->filename : filename));
 	return 1;
 }
 
@@ -1811,7 +1809,7 @@ static int bif_iso_stream_property_file_no(tpl_query *q)
 		sp = term1->val_str;
 
 	int file_no = sp ? fileno(sp->fptr) : no;
-	put_int(q, q->c.curr_frame + term2->slot, file_no);
+	put_int(q, term2, q->c.curr_frame, file_no);
 	return 1;
 }
 
@@ -1834,7 +1832,7 @@ static int bif_iso_stream_property_file_tty(tpl_query *q)
 		fptr = term1->val_str->fptr;
 
 	int tty = isatty(fileno(fptr));
-	put_int(q, q->c.curr_frame + term2->slot, tty);
+	put_int(q, term2, q->c.curr_frame, tty);
 	return 1;
 }
 
@@ -1861,7 +1859,7 @@ static int bif_iso_stream_property_mode(tpl_query *q)
 	else
 		sp = term1->val_str;
 
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp ? sp->mode : mode));
+	put_atom(q, term2, q->c.curr_frame, strdup(sp ? sp->mode : mode));
 	return 1;
 }
 
@@ -1883,7 +1881,7 @@ static int bif_iso_stream_property_type(tpl_query *q)
 	else
 		sp = term1->val_str;
 
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(sp ? sp->type : "text"));
+	put_atom(q, term2, q->c.curr_frame, strdup(sp ? sp->type : "text"));
 	return 1;
 }
 
@@ -2557,7 +2555,7 @@ static int bif_iso_current_input(tpl_query *q)
 	sp->type = strdup("text");
 	node *tmp = make_stream(sp);
 	tmp->flags |= FLAG_FILE;
-	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
+	put_env(q, term1, q->c.curr_frame, tmp, -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -2573,7 +2571,7 @@ static int bif_iso_current_output(tpl_query *q)
 	sp->type = strdup("text");
 	node *tmp = make_stream(sp);
 	tmp->flags |= FLAG_FILE;
-	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
+	put_env(q, term1, q->c.curr_frame, tmp, -1);
 	term_heapcheck(tmp);
 	return 1;
 }
@@ -2853,7 +2851,7 @@ int bif_retract2(tpl_query *q, int wait)
 	else
 		match = NLIST_FRONT(&r->val_l);
 
-	if (!q->retry)
+	//if (!q->retry)
 		allocate_frame(q);
 
 	while (match) {
@@ -3332,7 +3330,6 @@ static int bif_clause(tpl_query *q, int wait)
 			if (did_lock)
 				DBUNLOCK(q->c.curr_db);
 
-			allocate_frame(q);
 			q->curr_rule = r;
 		}
 	}
@@ -3348,6 +3345,8 @@ static int bif_clause(tpl_query *q, int wait)
 			q->c.curr_match = term_next(q->c.curr_match);
 		}
 	}
+
+	allocate_frame(q);
 
 	while (q->c.curr_match) {
 		if (is_hidden(q->c.curr_match) || is_deleted(q->c.curr_match)) {
@@ -3444,7 +3443,7 @@ static int bif_clause(tpl_query *q, int wait)
 	}
 
 	if (term3 && is_var(term3))
-		put_ptr(q, q->c.curr_frame + term3->slot, q->c.curr_match);
+		put_ptr(q, term3, q->c.curr_frame, q->c.curr_match);
 
 	node *body = term_next(head);
 	return unify(q, term2, term2_ctx, body, q->c.env_point);
@@ -3680,13 +3679,14 @@ static int bif_iso_arg(tpl_query *q)
 
 	if (is_var(term1)) {
 		idx = 1;
-		put_int(q, q->c.curr_frame + orig_term1->slot, idx);
+		put_int(q, orig_term1, q->c.curr_frame, idx);
 		allocate_frame(q);
 	}
 	else if (q->retry) {
 		idx = VAL_INT(term1) + 1;
 		reset_arg(q, orig_term1, q->c.curr_frame);
-		put_int(q, q->c.curr_frame + orig_term1->slot, idx);
+		put_int(q, orig_term1, q->c.curr_frame, idx);
+		allocate_frame(q);
 	}
 	else
 		idx = VAL_INT(term1);
@@ -3743,7 +3743,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		term_append(l, make_const_atom("[]"));
-		put_env(q, term2_ctx + term2->slot, save_l, q->c.curr_frame);
+		put_env(q, term2, term2_ctx, save_l, q->c.curr_frame);
 		term_heapcheck(new_term1);
 		term_heapcheck(save_l);
 		return 1;
@@ -3814,7 +3814,7 @@ static int bif_iso_univ(tpl_query *q)
 		}
 
 		if (is_atomic(tail)) {
-			put_env(q, q->c.curr_frame + term1->slot, head, -1);
+			put_env(q, term1, q->c.curr_frame, head, -1);
 			term_heapcheck(new_term2);
 			return 1;
 		}
@@ -3833,7 +3833,7 @@ static int bif_iso_univ(tpl_query *q)
 
 		node *term = !term_arity(s) ? term_first(s) : s;
 		xref_clause(q->lex, term);
-		put_env(q, q->c.curr_frame + term1->slot, term, q->c.curr_frame);
+		put_env(q, term1, q->c.curr_frame, term, q->c.curr_frame);
 		term_heapcheck(new_term2);
 		term_heapcheck(s);
 		return 1;
@@ -3862,7 +3862,7 @@ static int bif_iso_functor(tpl_query *q)
 				for (int i = 0; i < v; i++)
 					term_append(s, make_var(q));
 
-				put_env(q, q->c.curr_frame+term1->slot, s, q->c.curr_frame);
+				put_env(q, term1, q->c.curr_frame, s, q->c.curr_frame);
 				term_heapcheck(s);
 				return 1;
 			}
@@ -3927,7 +3927,7 @@ static int bif_iso_length(tpl_query *q)
 		}
 
 		if (is_var(term2))
-			put_int(q, q->c.curr_frame + term2->slot, cnt);
+			put_int(q, term2, q->c.curr_frame, cnt);
 		else
 			return term2->val_i == cnt;
 
@@ -3941,11 +3941,11 @@ static int bif_iso_length(tpl_query *q)
 		return 0;
 
 	if (is_var(term2)) {
-		put_int(q, q->c.curr_frame + orig_term2->slot, 0);
+		put_int(q, orig_term2, q->c.curr_frame, 0);
 		allocate_frame(q);
 		try_me_nofollow(q);
 		node *tmp = make_const_atom("[]");
-		put_env(q, q->c.curr_frame + orig_term1->slot, tmp, -1);
+		put_env(q, orig_term1, q->c.curr_frame, tmp, -1);
 		term_heapcheck(tmp);
 		return 1;
 	}
@@ -3954,13 +3954,14 @@ static int bif_iso_length(tpl_query *q)
 
 	if (q->retry) {
 		reset_arg(q, orig_term2, q->c.curr_frame);
-		put_int(q, q->c.curr_frame + orig_term2->slot, ++cnt);
-		try_me_nofollow(q);
+		put_int(q, orig_term2, q->c.curr_frame, ++cnt);
 	}
+
+	try_me_nofollow(q);
 
 	if (cnt == 0) {
 		node *tmp = make_const_atom("[]");
-		put_env(q, q->c.curr_frame + orig_term1->slot, tmp, -1);
+		put_env(q, orig_term1, q->c.curr_frame, tmp, -1);
 		term_heapcheck(tmp);
 		return 1;
 	}
@@ -3978,7 +3979,7 @@ static int bif_iso_length(tpl_query *q)
 	}
 
 	term_append(l, make_const_atom("[]"));
-	put_env(q, q->c.curr_frame + orig_term1->slot, save_l, q->c.curr_frame);
+	put_env(q, orig_term1, q->c.curr_frame, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -4115,9 +4116,8 @@ static int bif_iso_bagof(tpl_query *q)
 		sp->kvs = malloc(sizeof(skiplist));
 		sl_init(sp->kvs, NULL, NULL);
 		node *n = make_stream(sp);
-		put_env(q, q->c.curr_frame + var->slot, n, -1);
+		put_env(q, var, q->c.curr_frame, n, -1);
 		term_heapcheck(n);
-		allocate_frame(q);
 	}
 	else
 		sp = var->val_str;
@@ -4129,6 +4129,7 @@ static int bif_iso_bagof(tpl_query *q)
 		return 0;
 	}
 
+	allocate_frame(q);
 	node *subqgoal, *term = term2;
 
 	while (!strcmp(term_functor(term), "^")) {
@@ -4182,14 +4183,9 @@ static int bif_iso_bagof(tpl_query *q)
 			l = tmp;
 		}
 
-		for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++) {
-			if (!isfree[k])
-				subq->pins[j] |= 1 << i;
-
-			if (++i == MAX_MASK_SIZE) {
-				j++;
-				i = 0;
-			}
+		for (unsigned i = 0; i < q->c.frame_size; i++) {
+			if (!isfree[i])
+				subq->pins |= 1 << i;
 		}
 
 		ok = query_continue(subq);
@@ -4251,9 +4247,8 @@ static int bif_iso_setof(tpl_query *q)
 		sp->kvs = malloc(sizeof(skiplist));
 		sl_init(sp->kvs, NULL, NULL);
 		node *n = make_stream(sp);
-		put_env(q, q->c.curr_frame + var->slot, n, -1);
+		put_env(q, var, q->c.curr_frame, n, -1);
 		term_heapcheck(n);
-		allocate_frame(q);
 	}
 	else
 		sp = var->val_str;
@@ -4265,6 +4260,7 @@ static int bif_iso_setof(tpl_query *q)
 		return 0;
 	}
 
+	allocate_frame(q);
 	node *subqgoal, *term = term2;
 
 	while (!strcmp(term_functor(term), "^")) {
@@ -4318,14 +4314,9 @@ static int bif_iso_setof(tpl_query *q)
 			l = tmp;
 		}
 
-		for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++) {
-			if (!isfree[k])
-				subq->pins[j] |= 1 << i;
-
-			if (++i == MAX_MASK_SIZE) {
-				j++;
-				i = 0;
-			}
+		for (unsigned i = 0; i < q->c.frame_size; i++) {
+			if (!isfree[i])
+				subq->pins |= 1 << i;
 		}
 
 		ok = query_continue(subq);
@@ -4440,14 +4431,14 @@ static int bif_iso_is(tpl_query *q)
 
 	if (is_var(term1)) {
 		if (is_integer(&q->nv))
-			put_int(q, q->c.curr_frame + term1->slot, q->nv.val_i);
+			put_int(q, term1, q->c.curr_frame, q->nv.val_i);
 		else if (is_float(&q->nv))
-			put_float(q, q->c.curr_frame + term1->slot, q->nv.val_f);
+			put_float(q, term1, q->c.curr_frame, q->nv.val_f);
 		else if (is_rational(&q->nv))
-			put_rational(q, q->c.curr_frame + term1->slot, q->nv.val_num, q->nv.val_den);
+			put_rational(q, term1, q->c.curr_frame, q->nv.val_num, q->nv.val_den);
 #if USE_SSL
 		else if (is_bignum(&q->nv)) {
-			put_bignum(q, q->c.curr_frame + term1->slot, &q->nv);
+			put_bignum(q, term1, q->c.curr_frame, &q->nv);
 		}
 #endif
 		else {

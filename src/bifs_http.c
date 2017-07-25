@@ -103,7 +103,7 @@ static int bif_http_query_3(tpl_query *q)
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, KEY_SIZE - 20, "QUERY:%s", VAL_S(term2));
 	const char *src = session_get_stash(s, tmpbuf);
-	put_atom(q, q->c.curr_frame + term3->slot, strdup(src));
+	put_atom(q, term3, term3_ctx, strdup(src));
 	return 1;
 }
 
@@ -118,7 +118,7 @@ static int bif_http_form_3(tpl_query *q)
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, KEY_SIZE - 20, "FORM:%s", VAL_S(term2));
 	const char *src = session_get_stash(s, tmpbuf);
-	put_atom(q, q->c.curr_frame + term3->slot, strdup(src));
+	put_atom(q, term3, term3_ctx, strdup(src));
 	return 1;
 }
 
@@ -133,7 +133,7 @@ static int bif_http_cookie_3(tpl_query *q)
 	char tmpbuf[KEY_SIZE];
 	snprintf(tmpbuf, KEY_SIZE - 20, "COOKIE:%s", VAL_S(term2));
 	const char *src = session_get_stash(s, tmpbuf);
-	put_atom(q, q->c.curr_frame + term3->slot, strdup(src));
+	put_atom(q, term3, term3_ctx, strdup(src));
 	return 1;
 }
 
@@ -168,7 +168,7 @@ static int bif_http_query_list_3(tpl_query *q)
 	else
 		save_l = make_const_atom("[]");
 
-	put_env(q, q->c.curr_frame + term3->slot, save_l, -1);
+	put_env(q, term3, term3_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -204,7 +204,7 @@ static int bif_http_form_list_3(tpl_query *q)
 	else
 		save_l = make_const_atom("[]");
 
-	put_env(q, q->c.curr_frame + term3->slot, save_l, -1);
+	put_env(q, term3, term3_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -240,7 +240,7 @@ static int bif_http_cookie_list_3(tpl_query *q)
 	else
 		save_l = make_const_atom("[]");
 
-	put_env(q, q->c.curr_frame + term3->slot, save_l, -1);
+	put_env(q, term3, term3_ctx, save_l, -1);
 	term_heapcheck(save_l);
 	return 1;
 }
@@ -647,9 +647,9 @@ static int bif_http_parse_4(tpl_query *q)
 			if (strlen(session_get_stash(s, "Content-Type")))
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 
-			put_float(q, q->c.curr_frame + term2->slot, (double)atof(session_get_stash(s, "HTTP")));
-			put_atom(q, q->c.curr_frame + term3->slot, strdup(session_get_stash(s, "REQUEST_METHOD")));
-			put_atom(q, q->c.curr_frame + term4->slot, strdup(session_get_stash(s, "PATH_INFO")));
+			put_float(q, term2, term2_ctx, (double)atof(session_get_stash(s, "HTTP")));
+			put_atom(q, term3, term3_ctx, strdup(session_get_stash(s, "REQUEST_METHOD")));
+			put_atom(q, term4, term4_ctx, strdup(session_get_stash(s, "PATH_INFO")));
 			return 1;
 		}
 
@@ -806,6 +806,7 @@ static int bif_http_parse_3(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_var(term2);
 	node *term3 = get_next_arg(q, &args);
+	unsigned term3_ctx = q->c.curr_frame;
 	stream *sp = term1->val_str;
 	session *s = sp->sptr;
 	int debug = session_get_stash_int(s, "DEBUG");
@@ -836,7 +837,7 @@ static int bif_http_parse_3(tpl_query *q)
 			sscanf(bufptr, "HTTP/%19s %d", ver, &status);
 			free(bufptr);
 			ver[sizeof(ver) - 1] = '\0';
-			put_int(q, q->c.curr_frame + term2->slot, status);
+			put_int(q, term2, term2_ctx, status);
 			char tmpbuf[20];
 			snprintf(tmpbuf, sizeof(tmpbuf), "%d", status);
 			session_set_stash(s, "X_STATUS", tmpbuf);
@@ -856,7 +857,7 @@ static int bif_http_parse_3(tpl_query *q)
 
 			if (term3 && is_var(term3)) {
 				node *l = make_options_list(s);
-				put_env(q, q->c.curr_frame + term3->slot, l, -1);
+				put_env(q, term3, term3_ctx, l, -1);
 				term_heapcheck(l);
 			}
 
@@ -1484,7 +1485,7 @@ static int bif_http_get_chunk_3(tpl_query *q)
 		return 0;
 	}
 
-	put_int(q, q->c.curr_frame + term3->slot, len);
+	put_int(q, term3, term3_ctx, len);
 	int save_len = len;
 
 	// Read for specified length
@@ -1512,7 +1513,7 @@ static int bif_http_get_chunk_3(tpl_query *q)
 
 	*dst = '\0';
 	node *tmp = make_blob(bufptr, save_len);
-	put_env(q, q->c.curr_frame + term2->slot, tmp, -1);
+	put_env(q, term2, term2_ctx, tmp, -1);
 	tmp->refcnt--;
 	line = NULL;
 
@@ -1591,7 +1592,7 @@ static int bif_http_put_file_2(tpl_query *q)
 		sp2 = calloc(1, sizeof(stream));
 		sp2->fptr = fp;
 		node *n = make_stream(sp2);
-		put_env(q, q->c.curr_frame + var->slot, n, -1);
+		put_env(q, var, var_ctx, n, -1);
 		n->refcnt--;
 		allocate_frame(q);
 	}
@@ -1835,10 +1836,10 @@ static int bif_ws_request_5(tpl_query *q)
 	int status;
 
 	int ok = ws_request(s, path, prots, &status);
-	put_int(q, q->c.curr_frame + term3->slot, status);
+	put_int(q, term3, term3_ctx, status);
 
 	if (ok)
-		put_atom(q, q->c.curr_frame + term5->slot, strdup(session_get_stash(s, "Sec-WebSocket-Protocol")));
+		put_atom(q, term5, term5_ctx, strdup(session_get_stash(s, "Sec-WebSocket-Protocol")));
 
 	return 1;
 }
@@ -1855,7 +1856,7 @@ static int bif_ws_request_3(tpl_query *q)
 	int status;
 
 	ws_request(s, path, NULL, &status);
-	put_int(q, q->c.curr_frame + term3->slot, status);
+	put_int(q, term3, term3_ctx, status);
 	return 1;
 }
 
@@ -1922,8 +1923,8 @@ static int bif_ws_parse_3(tpl_query *q)
 	else
 		op = "more";
 
-	put_const_atom(q, q->c.curr_frame + term2->slot, op);
-	put_env(q, q->c.curr_frame + term3->slot, n, -1);
+	put_const_atom(q, term2, term2_ctx, op);
+	put_env(q, term3, term3_ctx, n, -1);
 	n->refcnt--;
 	return 1;
 }
@@ -1986,7 +1987,7 @@ static int bif_h2_request_3(tpl_query *q)
 			sscanf(bufptr, "HTTP/%19s %d", ver, &status);
 			free(bufptr);
 			ver[sizeof(ver) - 1] = '\0';
-			put_int(q, q->c.curr_frame + term3->slot, status);
+			put_int(q, term3, term3_ctx, status);
 			continue;
 		}
 
@@ -2169,7 +2170,7 @@ static int bif_stomp_parse_3(tpl_query *q)
 			sscanf(bufptr, "%255s", cmd);
 			free(bufptr);
 			cmd[sizeof(cmd) - 1] = '\0';
-			put_atom(q, q->c.curr_frame + term3->slot, strdup(cmd));
+			put_atom(q, term3, term3_ctx, strdup(cmd));
 			session_set_stash(s, "REQUEST_METHOD", cmd);
 
 			if (session_is_ipv6(s)) {
@@ -2265,7 +2266,7 @@ static int bif_stomp_parse_3(tpl_query *q)
 				session_set_stash(s, "CONTENT_TYPE", session_get_stash(s, "Content-Type"));
 
 			if (strlen(session_get_stash(s, "Version"))) {
-				put_float(q, q->c.curr_frame + term2->slot, atof(session_get_stash(s, "Version")));
+				put_float(q, term2, term2_ctx, atof(session_get_stash(s, "Version")));
 				session_set_stash(s, "STOMP", session_get_stash(s, "Version"));
 			}
 			else if (strlen(session_get_stash(s, "Accept-Version"))) {
@@ -2273,11 +2274,11 @@ static int bif_stomp_parse_3(tpl_query *q)
 				double ver;
 
 				if (strstr(verstr, "1.2"))
-					put_float(q, q->c.curr_frame + term2->slot, ver = 1.2);
+					put_float(q, term2, term2_ctx, ver = 1.2);
 				else if (strstr(verstr, "1.1"))
-					put_float(q, q->c.curr_frame + term2->slot, ver = 1.1);
+					put_float(q, term2, term2_ctx, ver = 1.1);
 				else
-					put_float(q, q->c.curr_frame + term2->slot, ver = 1.0);
+					put_float(q, term2, term2_ctx, ver = 1.0);
 
 				char tmpbuf[256];
 				snprintf(tmpbuf, sizeof(tmpbuf), "%.1f", ver);

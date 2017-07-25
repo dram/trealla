@@ -353,65 +353,69 @@ extern node *make_rational(const char *s);
 extern node *make_bignum(const char *s);
 #endif
 
-inline static void put_env(tpl_query *q, unsigned point, node *term, signed frame)
+inline static void put_env(tpl_query *q, node *var, unsigned ctx, node *term, signed frame)
 {
+	unsigned point = ctx + var->slot;
 	env *e = &q->envs[point];
 	point -= e->binding;
 	e -= e->binding;
-
-	if ((point < q->c.curr_frame) || (point >= (q->c.curr_frame + q->c.frame_size)))
-		q->trails[q->c.curr_trail + q->c.trail_size++] = point;
-
 	e->binding = frame;
 	e->term = term;
+
+	if (q->pins) {
+		if (!(q->pins & (1 << var->slot)))
+			q->trails[q->c.curr_trail + q->c.trail_size++] = point;
+	}
+	else
+		q->trails[q->c.curr_trail + q->c.trail_size++] = point;
 
 	if (is_heap(term))
 		term->refcnt++;
 }
 
-inline static void put_ptr(tpl_query *q, unsigned point, void *v)
+inline static void put_ptr(tpl_query *q, node *var, unsigned ctx, void *v)
 {
 	node *n = make_ptr(v);
-	put_env(q, point, n, -1);
+	put_env(q, var, ctx, n, -1);
 	n->refcnt--;
 }
 
-inline static void put_int(tpl_query *q, unsigned point, nbr_t v)
+inline static void put_int(tpl_query *q, node *var, unsigned ctx, nbr_t v)
 {
 	node *n = make_quick_int(v);
-	put_env(q, point, n, -1);
+	put_env(q, var, ctx, n, -1);
 	n->refcnt--;
 }
 
-inline static void put_float(tpl_query *q, unsigned point, flt_t v)
+inline static void put_float(tpl_query *q, node *var, unsigned ctx, flt_t v)
 {
 	node *n = make_float(v);
-	put_env(q, point, n, -1);
+	put_env(q, var, ctx, n, -1);
 	n->refcnt--;
 }
 
-inline static void put_rational(tpl_query *q, unsigned point, nbr_t num, nbr_t den)
+inline static void put_rational(tpl_query *q, node *var, unsigned ctx, nbr_t num, nbr_t den)
 {
 	node *n = make_int(0);
 	n->flags &= ~TYPE_INTEGER;
 	n->flags |= TYPE_RATIONAL;
 	n->val_num = num;
 	n->val_den = den;
-	put_env(q, point, n, -1);
+	put_env(q, var, ctx, n, -1);
 	n->refcnt--;
 }
 
-inline static void put_atom(tpl_query *q, unsigned point, char *s)
+inline static void put_atom(tpl_query *q, node *var, unsigned ctx, char *s)
 {
 	node *n = make_atom(s);
-	put_env(q, point, n, -1);
+	put_env(q, var, ctx, n, -1);
 	n->refcnt--;
 }
 
-inline static void put_const_atom(tpl_query *q, unsigned point, const char *s)
+inline static void put_const_atom(tpl_query *q, node *var, unsigned ctx, const char *s)
 {
 	node *n = make_const_atom(s);
-	put_env(q, point, n, -1);
+	put_env(q, var, ctx, n, -1);
 	n->refcnt--;
 }
 

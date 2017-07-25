@@ -152,71 +152,22 @@ void prepare_frame(tpl_query *q, unsigned frame_size)
 void allocate_frame(tpl_query *q)
 {
 	TRACE("allocate_frame");
+	q->c.curr_trail += q->c.trail_size;
 	q->c.trail_size = 0;
 
-	if ((q->c.curr_trail + MAX_FRAME_SIZE) >= q->trails_used) {
-		q->trails_used = q->c.curr_trail + MAX_FRAME_SIZE;
+	if ((q->c.curr_trail + MAX_ARITY) >= q->trails_used) {
+		q->trails_used = q->c.curr_trail + MAX_ARITY;
 
-		while ((q->c.curr_trail + MAX_FRAME_SIZE) >= q->trails_possible) {
+		while ((q->c.curr_trail + MAX_ARITY) >= q->trails_possible) {
 			if (!grow_trail(q))
 				return;
 		}
-	}
-
-	for (int i = 0; i < NBR_MASKS; i++)
-		q->c.mask1[i] = q->c.mask2[i] = 0;
-
-	const env *e = &q->envs[q->c.curr_frame];
-	mask_t bit = 1;
-
-	for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++, e++) {
-		if (!e->context)
-			q->c.mask1[j] |= bit;
-		else if (!e->term) {
-			const env *e2 = e - e->binding;
-
-			if (!e2->context)
-				q->c.mask2[j] |= bit;
-		}
-
-		if (++i == MAX_MASK_SIZE) {
-			j++;
-			i = 0;
-			bit = 1;
-		}
-		else
-			bit <<= 1;
 	}
 }
 
 void reallocate_frame(tpl_query *q)
 {
 	TRACE("reallocate_frame");
-	env *e = &q->envs[q->c.curr_frame];
-	mask_t bit = 1;
-
-	for (unsigned i = 0, j = 0, k = 0; k < q->c.frame_size; k++, e++) {
-		if ((q->c.mask1[j] & bit) && !(q->pins[j] & bit)) {
-			term_heapcheck(e->term);
-			e->term = NULL;
-			e->context = 0;
-		}
-		else if ((q->c.mask2[j] & bit) && !(q->pins[j] & bit)) {
-			env *e2 = get_env(q, q->c.curr_frame + k);
-			term_heapcheck(e2->term);
-			e2->term = NULL;
-			e2->context = 0;
-		}
-
-		if (++i == MAX_MASK_SIZE) {
-			j++;
-			i = 0;
-			bit = 1;
-		}
-		else
-			bit <<= 1;
-	}
-
 	reclaim_trail(q);
 }
 
@@ -232,11 +183,6 @@ static int proceed(tpl_query *q)
 		if (!c->nofollow)
 			q->c.curr_term = term_next(c->curr_term);
 
-		for (int i = 0; i < NBR_MASKS; i++) {
-			q->c.mask1[i] = c->mask1[i];
-			q->c.mask2[i] = c->mask2[i];
-		}
-
 		q->curr_context = c->curr_frame;
 		q->c.curr_match = c->curr_match;
 		q->c.idx_iter = c->idx_iter;
@@ -248,7 +194,6 @@ static int proceed(tpl_query *q)
 			continue;
 
 		TRACE("proceed");
-		allocate_frame(q);
 		break;
 	}
 
@@ -311,6 +256,9 @@ void trust_me(tpl_query *q)
 	c->cut = 1;
 	q->envs[c->curr_frame].choices = 0;
 
+	q->c.curr_trail += q->c.trail_size;
+	q->c.trail_size = 0;
+
 	if (c->transparent) {
 		c = &q->choices[c->prev_choice];
 		c->cut = 1;
@@ -333,8 +281,7 @@ LOOP:
 	if (!q->choice_point)
 		return 0;
 
-	reallocate_frame(q);
-	//reclaim_trail(q);
+	reclaim_trail(q);
 	choice *c = &q->choices[--q->choice_point];
 
 	if (c->curr_match != NULL)
@@ -589,9 +536,12 @@ void run_me(tpl_query *q)
 	q->is_running--;
 }
 
-void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
+static void bind_vars(tpl_query *q, node *term1, unsigned term1_ctx, node *term2, unsigned term2_ctx)
 {
+	unsigned point1 = term1_ctx + term1->slot;
 	point1 -= q->envs[point1].binding;
+
+	unsigned point2 = term2_ctx + term2->slot;
 	point2 -= q->envs[point2].binding;
 
 	// This makes sure we don't rebind any vars...
@@ -604,19 +554,13 @@ void bind_vars(tpl_query *q, unsigned point1, unsigned point2)
 
 	if (point2 > point1) {
 		q->envs[point2].binding = (signed)point2 - (signed)point1;
-
-		if ((point2 < q->c.curr_frame) || (point2 >= (q->c.curr_frame + q->c.frame_size))) {
-			q->trails[q->c.curr_trail + q->c.trail_size++] = point2;
-			q->is_det = 0;
-		}
+		q->trails[q->c.curr_trail + q->c.trail_size++] = point2;
+		q->is_det = 0;
 	}
 	else {
 		q->envs[point1].binding = (signed)point1 - (signed)point2;
-
-		if ((point1 < q->c.curr_frame) || (point1 >= (q->c.curr_frame + q->c.frame_size))) {
-			q->trails[q->c.curr_trail + q->c.trail_size++] = point1;
-			q->is_det = 0;
-		}
+		q->trails[q->c.curr_trail + q->c.trail_size++] = point1;
+		q->is_det = 0;
 	}
 }
 
@@ -682,14 +626,14 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned term1_ctx, node *ter
 
 	if (is_var(term1)) {
 		if (is_var(term2)) {
-			bind_vars(q, term1_ctx + term1->slot, term2_ctx + term2->slot);
+			bind_vars(q, term1, term1_ctx, term2, term2_ctx);
 			return 1;
 		}
 
 		if (is_compound(term2))
 			q->is_det = 0;
 
-		put_env(q, term1_ctx + term1->slot, term2, is_compound(term2) ? term2_ctx : -1);
+		put_env(q, term1, term1_ctx, term2, is_compound(term2) ? term2_ctx : -1);
 		return 1;
 	}
 
@@ -697,7 +641,7 @@ static int unify_atomic(tpl_query *q, node *term1, unsigned term1_ctx, node *ter
 		if (is_compound(term1))
 			q->is_det = 0;
 
-		put_env(q, term2_ctx + term2->slot, term1, is_compound(term1) ? term1_ctx : -1);
+		put_env(q, term2, term2_ctx, term1, is_compound(term1) ? term1_ctx : -1);
 		return 1;
 	}
 
@@ -851,7 +795,7 @@ int match(tpl_query *q)
 	else
 		save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 
-	if (!q->retry)
+	//if (!q->retry)
 		allocate_frame(q);
 
 	while ((q->c.curr_match != NULL) && !q->halt) {
@@ -891,7 +835,7 @@ int match(tpl_query *q)
 		unsigned alloc_size;
 
 		if (q->c.curr_match->flags & FLAG_EXPANDABLE)
-			alloc_size = MAX_FRAME_SIZE;				// HACK
+			alloc_size = MAX_ARITY;				// HACK
 		else
 			alloc_size = frame_size;
 

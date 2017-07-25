@@ -13,7 +13,6 @@ extern void trust_me(tpl_query *q);
 extern int query_inline(tpl_query *q);
 extern void query_reset(tpl_query *q);
 extern int unify(tpl_query *q, node *term1, unsigned context1, node *term2, unsigned context2);
-extern void bind_vars(tpl_query *q, unsigned point1, unsigned point2);
 extern int throw_term(tpl_query *q, node *term);
 
 extern void try_me2(tpl_query *q, int nofollow, int nochoice, int transparent, int catchme);

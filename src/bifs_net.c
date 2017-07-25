@@ -180,7 +180,7 @@ static int net_callback(session *s, void *data)
 		stream *sp = calloc(1, sizeof(stream));
 		sp->sptr = s;
 		node *n = make_socket(sp);
-		put_env(who, who->c.curr_frame + term2->slot, n, -1);
+		put_env(who, term2, who->c.curr_frame, n, -1);
 		n->refcnt--;
 		session_set_udata_ptr(s, who);
 		process_start_handler(who);
@@ -435,7 +435,7 @@ static int bif_net_client_2(tpl_query *q)
 	session_set_stash(s, "PASS", passwd);
 	node *n = make_socket(sp);
 	n->pid = q;
-	put_env(q, q->c.curr_frame + term2->slot, n, -1);
+	put_env(q, term2, term2_ctx, n, -1);
 	n->refcnt--;
 	return 1;
 }
@@ -447,7 +447,7 @@ static int bif_net_service_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_name((session *)sp->sptr);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
+	put_atom(q, term2, term2_ctx, strdup(name));
 	return 1;
 }
 
@@ -458,7 +458,7 @@ static int bif_net_local_port_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	unsigned port = session_get_local_port((session *)sp->sptr);
-	put_int(q, q->c.curr_frame + term2->slot, port);
+	put_int(q, term2, term2_ctx, port);
 	return 1;
 }
 
@@ -469,7 +469,7 @@ static int bif_net_remote_port_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	unsigned port = session_get_remote_port((session *)sp->sptr);
-	put_int(q, q->c.curr_frame + term2->slot, port);
+	put_int(q, term2, term2_ctx, port);
 	return 1;
 }
 
@@ -480,7 +480,7 @@ static int bif_net_local_addr_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_local_addr((session *)sp->sptr, 0);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
+	put_atom(q, term2, term2_ctx, strdup(name));
 	return 1;
 }
 
@@ -491,7 +491,7 @@ static int bif_net_remote_addr_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_remote_addr((session *)sp->sptr, 0);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
+	put_atom(q, term2, term2_ctx, strdup(name));
 	return 1;
 }
 
@@ -502,7 +502,7 @@ static int bif_net_local_host_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_local_addr((session *)sp->sptr, 1);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
+	put_atom(q, term2, term2_ctx, strdup(name));
 	return 1;
 }
 
@@ -513,7 +513,7 @@ static int bif_net_remote_host_2(tpl_query *q)
 	node *term2 = get_var(term2);
 	stream *sp = term1->val_str;
 	const char *name = session_get_remote_addr((session *)sp->sptr, 1);
-	put_atom(q, q->c.curr_frame + term2->slot, strdup(name));
+	put_atom(q, term2, term2_ctx, strdup(name));
 	return 1;
 }
 
@@ -692,7 +692,7 @@ int bif_net_readmsg_2(tpl_query *q)
 	if (session_on_disconnect((session *)sp->sptr))
 		return 0;
 
-	put_atom(q, q->c.curr_frame + term2->slot, line);
+	put_atom(q, term2, term2_ctx, line);
 	return 1;
 }
 

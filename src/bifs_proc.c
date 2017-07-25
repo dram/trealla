@@ -291,7 +291,7 @@ static int bif_proc_procinfo_2(tpl_query *q)
 	else if (!strcmp(VAL_S(term1), "msgs"))
 		cnt = NLIST_COUNT(&q->queue);
 
-	put_int(q, q->c.curr_frame + term2->slot, cnt);
+	put_int(q, term2, term2_ctx, cnt);
 	return 1;
 }
 
@@ -313,7 +313,7 @@ static int bif_proc_procinfo_3(tpl_query *q)
 			cnt = NLIST_COUNT(&who->queue);
 	}
 
-	put_int(q, q->c.curr_frame + term3->slot, cnt);
+	put_int(q, term3, term3_ctx, cnt);
 	return 1;
 }
 
@@ -483,7 +483,7 @@ static int proc_callback(tpl_query *q, session *s, node *goal, node *var)
 		sp->subqptr = q;
 		node *n = make_socket(sp);
 		n->flags |= FLAG_PID;
-		put_env(who, var->slot, n, -1);
+		put_env(who, var, 0, n, -1);
 		term_heapcheck(n);
 		session_set_udata_int(s, (size_t)(void *)who);
 		who->is_forked = 1;
@@ -801,7 +801,7 @@ static int bif_proc_pid_2(tpl_query *q)
 		sp->subqptr = pid;
 		node *tmp = make_stream(sp);
 		tmp->flags |= FLAG_PID;
-		put_env(q, q->c.curr_frame + term2->slot, tmp, -1);
+		put_env(q, term2, term2_ctx, tmp, -1);
 		term_heapcheck(tmp);
 		return 1;
 	}
@@ -921,7 +921,7 @@ static int bif_proc_pid_2(tpl_query *q)
 	n->flags |= FLAG_PID;
 	n->pid = q;
 	handler_add_client(q->pl->h, &client_callback, q, s);
-	put_env(q, q->c.curr_frame + term2->slot, n, -1);
+	put_env(q, term2, term2_ctx, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -940,7 +940,7 @@ static int bif_proc_pid_1(tpl_query *q)
 	sp->subqptr = q->curr_pid;
 	node *tmp = make_stream(sp);
 	tmp->flags |= FLAG_PID;
-	put_env(q, q->c.curr_frame + term1->slot, tmp, -1);
+	put_env(q, term1, term1_ctx, tmp, -1);
 	term_heapcheck(tmp);
 	return 1;
 }
