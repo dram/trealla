@@ -155,10 +155,10 @@ void allocate_frame(tpl_query *q)
 	q->c.curr_trail += q->c.trail_size;
 	q->c.trail_size = 0;
 
-	if ((q->c.curr_trail + MAX_ARITY) >= q->trails_used) {
-		q->trails_used = q->c.curr_trail + MAX_ARITY;
+	if ((q->c.curr_trail + q->c.frame_size) >= q->trails_used) {
+		q->trails_used = q->c.curr_trail + q->c.frame_size;
 
-		while ((q->c.curr_trail + MAX_ARITY) >= q->trails_possible) {
+		while ((q->c.curr_trail + q->c.frame_size) >= q->trails_possible) {
 			if (!grow_trail(q))
 				return;
 		}
@@ -549,19 +549,31 @@ static void bind_vars(tpl_query *q, node *term1, unsigned term1_ctx, node *term2
 	point1 -= q->envs[point1].binding;
 	point2 -= q->envs[point2].binding;
 
-	if (point1 == point2)
-		return;
+	//if (point1 == point2)
+	//	return;
 
 	if (point2 > point1) {
 		q->envs[point2].binding = (signed)point2 - (signed)point1;
-		q->trails[q->c.curr_trail + q->c.trail_size++] = point2;
-		q->is_det = 0;
+
+		if (q->pins) {
+			if (!(q->pins & (1 << term2->slot)))
+				q->trails[q->c.curr_trail + q->c.trail_size++] = point2;
+		}
+		else
+			q->trails[q->c.curr_trail + q->c.trail_size++] = point2;
 	}
 	else {
 		q->envs[point1].binding = (signed)point1 - (signed)point2;
-		q->trails[q->c.curr_trail + q->c.trail_size++] = point1;
-		q->is_det = 0;
+
+		if (q->pins) {
+			if (!(q->pins & (1 << term1->slot)))
+				q->trails[q->c.curr_trail + q->c.trail_size++] = point1;
+		}
+		else
+			q->trails[q->c.curr_trail + q->c.trail_size++] = point1;
 	}
+
+	q->is_det = 0;
 }
 
 int unify_int(tpl_query *q, node *term, unsigned term_ctx, nbr_t v)
@@ -795,9 +807,6 @@ int match(tpl_query *q)
 	else
 		save_match = q->c.curr_match = NLIST_FRONT(&r->val_l);
 
-	//if (!q->retry)
-		allocate_frame(q);
-
 	while ((q->c.curr_match != NULL) && !q->halt) {
 		if (is_deleted(q->c.curr_match)) {
 			if (use_iter) {
@@ -850,6 +859,7 @@ int match(tpl_query *q)
 			printf(" (size %u)\n", frame_size);
 		}
 
+		allocate_frame(q);
 		int ok = unify(q, q->c.curr_term, q->c.curr_frame, head, q->c.env_point);
 
 #ifndef ISO_ONLY
