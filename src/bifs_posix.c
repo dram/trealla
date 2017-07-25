@@ -1,6 +1,7 @@
 #define _XOPEN_SOURCE
 #include <sys/wait.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <time.h>
@@ -211,6 +212,16 @@ static int bif_posix_spawn_3(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_list(term2);
 	node *term3 = get_var(term3);
+	node *term4 = get_next_arg(q, &args);
+	unsigned term4_ctx = q->latest_context;
+
+	if (term4 != NULL) {
+		if (!is_list(term4)
+			&& !(is_atom(term4) && strcmp(VAL_S(term4), "[]"))) {
+				QABORT(ABORT_INVALIDARGNOTLIST);
+				return 0;
+		}
+	}
 
 	int i = 0;
 	int size = 128;
@@ -232,14 +243,98 @@ static int bif_posix_spawn_3(tpl_query *q)
 	}
 	arguments[i] = NULL;
 
+	posix_spawn_file_actions_t file_actions;
+	posix_spawn_file_actions_init(&file_actions);
+
+	l = term4;
+	while (is_list(l)) {
+		node *head = term_firstarg(l);
+		node *option = subst(q, head, term4_ctx);
+
+		if (!is_compound(option)) {
+			// FIXME: raise error?
+			continue;
+		}
+
+		// TODO: add `attributes` and `environment` option
+		if (!strcmp(term_functor(option), "file_actions")) {
+			node *l = subst(q, term_firstarg(option), term4_ctx);
+			while (is_list(l)) {
+				node *head = term_firstarg(l);
+				node *action = subst(q, head, term4_ctx);
+
+				if (!strcmp(term_functor(action), "close")) {
+					node *n = term_firstarg(action);
+					int fd = VAL_INT(subst(q, n, term4_ctx));
+					posix_spawn_file_actions_addclose(&file_actions, fd);
+				} else if (!strcmp(term_functor(action), "duplicate")) {
+					node *n = term_firstarg(action);
+					int fd1 = VAL_INT(subst(q, n, term4_ctx));
+					n = term_next(n);
+					int fd2 = VAL_INT(subst(q, n, term4_ctx));
+					posix_spawn_file_actions_adddup2(&file_actions, fd1, fd2);
+				} else if (!strcmp(term_functor(action), "open")) {
+					node *n = term_firstarg(action);
+					int fd = VAL_INT(subst(q, n, term4_ctx));
+					n = term_next(n);
+					n = subst(q, n, term4_ctx);
+					const char *path = VAL_S(n);
+
+					int flag = 0;
+					n = term_next(n);
+					node *l = subst(q, n, term4_ctx);
+					while (is_list(l)) {
+						node *head = term_firstarg(l);
+						node *n = subst(q, head, term4_ctx);
+
+						if (!is_atom(n)) {
+							// FIXME: raise error
+							continue;
+						}
+
+						// FIXME: incomplete
+						if (!strcmp(VAL_S(n), "read_only")) {
+							flag |= O_RDONLY;
+						} else if (!strcmp(VAL_S(n), "write_only")) {
+							flag |= O_WRONLY;
+						} else if (!strcmp(VAL_S(n), "read_write")) {
+							flag |= O_RDWR;
+						} else if (!strcmp(VAL_S(n), "append")) {
+							flag |= O_APPEND;
+						} else if (!strcmp(VAL_S(n), "create")) {
+							flag |= O_CREAT;
+						} else if (!strcmp(VAL_S(n), "exclusive")) {
+							flag |= O_EXCL;
+						} else if (!strcmp(VAL_S(n), "truncate")) {
+							flag |= O_TRUNC;
+						}
+
+						node *tail = term_next(head);
+						l = subst(q, tail, term4_ctx);
+					}
+
+					n = term_next(n);
+					int mode = VAL_INT(subst(q, n, term4_ctx));
+					posix_spawn_file_actions_addopen(&file_actions, fd, path, flag, mode);
+				}
+
+				node *tail = term_next(head);
+				l = subst(q, tail, term4_ctx);
+			}
+		}
+
+		node *tail = term_next(head);
+		l = subst(q, tail, term4_ctx);
+	}
+
 	pid_t pid;
-	if (posix_spawnp(&pid, VAL_S(term1), NULL, NULL, (char * const*)arguments, environ) == 0) {
-		unify_int(q, term3, term3_ctx, pid);
-		free(arguments);
-		return 1;
+	int r = posix_spawnp(&pid, VAL_S(term1), &file_actions, NULL, (char * const*)arguments, environ);
+	posix_spawn_file_actions_destroy(&file_actions);
+	free(arguments);
+	if (r == 0) {
+		return unify_int(q, term3, term3_ctx, pid);
 	} else {
 		// FIXME: raise error
-		free(arguments);
 		return 0;
 	}
 }
@@ -361,6 +456,20 @@ static int bif_posix_scan_directory_2(tpl_query *q)
 	}
 }
 
+static int bif_posix_close_1(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_int(term1);
+
+	int fd = VAL_INT(subst(q, term1, term1_ctx));
+
+	if (close(fd) == -1) {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
 static int bif_posix_open_file_descriptor_3(tpl_query *q)
 {
 	node *args = get_args(q);
@@ -425,7 +534,7 @@ void bifs_load_posix(void)
 	DEFINE_BIF("posix:time", 1, bif_posix_time_1);
 
 	DEFINE_BIF("posix:spawn", 3, bif_posix_spawn_3);
-	// TODO DEFINE_BIF("posix:spawn", 4, bif_posix_spawn_4);
+	DEFINE_BIF("posix:spawn", 4, bif_posix_spawn_3);
 
 	// TODO Maybe add wait/2 with `options` defaults to `[exited]`?
 	DEFINE_BIF("posix:wait", 3, bif_posix_wait_3);
@@ -433,6 +542,7 @@ void bifs_load_posix(void)
 	// TODO How to pass `select` and `compare` functions to `scandir`?
 	DEFINE_BIF("posix:scan_directory", 2, bif_posix_scan_directory_2);
 
+	DEFINE_BIF("posix:close", 1, bif_posix_close_1);
 	DEFINE_BIF("posix:open_file_descriptor", 3, bif_posix_open_file_descriptor_3);
 	DEFINE_BIF("posix:pipe", 1, bif_posix_pipe_1);
 }
