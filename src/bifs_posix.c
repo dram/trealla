@@ -72,6 +72,7 @@ static int bif_posix_gmt_time_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
 	node *term2 = get_var(term2);
+
 	time_t t = (time_t)term1->val_i;
 	struct tm tm;
 
@@ -102,6 +103,7 @@ static int bif_posix_local_time_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_int(term1);
 	node *term2 = get_var(term2);
+
 	time_t t = (time_t)term1->val_i;
 	struct tm tm;
 
@@ -166,6 +168,7 @@ static int bif_posix_parse_time_3(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_atom(term2);
 	node *term3 = get_var(term3);
+
 	struct tm tm;
 	memset(&tm, 0, sizeof(struct tm));
 
@@ -195,6 +198,7 @@ static int bif_posix_time_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_var(term1);
+
 	time_t t = time(NULL);
 
 	if (t == -1) {
@@ -210,11 +214,11 @@ static int bif_posix_spawn_3(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_list(term2);
 	node *term3 = get_var(term3);
+
 	int i = 0;
 	int size = 128;
 	const char **arguments = malloc(size);
 	node *l = term2;
-
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
 		node *n = subst(q, head, term2_ctx);
@@ -229,10 +233,9 @@ static int bif_posix_spawn_3(tpl_query *q)
 		node *tail = term_next(head);
 		l = subst(q, tail, term2_ctx);
 	}
-
 	arguments[i] = NULL;
-	pid_t pid;
 
+	pid_t pid;
 	if (posix_spawnp(&pid, VAL_S(term1), NULL, NULL, (char * const*)arguments, environ) == 0) {
 		unify_int(q, term3, term3_ctx, pid);
 		free(arguments);
@@ -250,6 +253,7 @@ static int bif_posix_wait_3(tpl_query *q)
 	node *term1 = get_term(term1);
 	node *term2 = get_compound_or_var(term2);
 	node *term3 = get_atom_or_list(term3);
+
 	idtype_t type;
 	id_t id = 0;
 
@@ -270,7 +274,6 @@ static int bif_posix_wait_3(tpl_query *q)
 
 	int options = 0;
 	node *l = term3;
-
 	while (is_list(l)) {
 		node *head = term_firstarg(l);
 		node *n = subst(q, head, term3_ctx);
@@ -296,7 +299,6 @@ static int bif_posix_wait_3(tpl_query *q)
 
 	siginfo_t info;
 	memset(&info, 0, sizeof(siginfo_t));
-
 	if (waitid(type, id, &info, options) == 0) {
 		node *tmp = make_compound();
 
@@ -326,8 +328,11 @@ static int bif_posix_scan_directory_2(tpl_query *q)
 	node *args = get_args(q);
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
+
 	const char *directory = VAL_S(term1);
+
 	struct dirent **names;
+
 	int n = scandir(directory, &names, NULL, NULL);
 
 	if (n == -1) {
@@ -335,6 +340,7 @@ static int bif_posix_scan_directory_2(tpl_query *q)
 		return 0;
 	} else {
 		node *save_l = make_list();
+
 		node *l = save_l;
 		for (int i = 0; i < n; ++i) {
 			node *entry = make_compound();
@@ -396,6 +402,7 @@ static int bif_posix_pipe_1(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *term1 = get_compound_or_var(term1);
+
 	int fd[2];
 
 	if (pipe(fd) == -1) {
