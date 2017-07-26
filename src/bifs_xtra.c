@@ -442,6 +442,7 @@ static int bif_xtra_split_string_4(tpl_query *q)
 
 		*dst = '\0';
 		node *tmp = make_atom(strdup(dstbuf));
+		dstbuf[0] = '\0';
 		term_append(l, tmp);
 
 		const char *save_src = src;
@@ -468,6 +469,12 @@ static int bif_xtra_split_string_4(tpl_query *q)
 			break;
 
 		l = term_append(l, make_list());
+	}
+
+	if (!*dstbuf) {
+		l = term_append(l, make_list());
+		node *tmp = make_const_atom("");
+		term_append(l, tmp);
 	}
 
 	free(dstbuf);

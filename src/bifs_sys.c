@@ -894,12 +894,19 @@ static int bif_sys_split_all_3(tpl_query *q)
 
 		*dst = '\0';
 		node *tmp = make_atom(strdup(dstbuf));
+		dstbuf[0] = '\0';
 		term_append(l, tmp);
 
 		if (!*src)
 			break;
 
 		l = term_append(l, make_list());
+	}
+
+	if (!*dstbuf) {
+		l = term_append(l, make_list());
+		node *tmp = make_const_atom("");
+		term_append(l, tmp);
 	}
 
 	free(dstbuf);
