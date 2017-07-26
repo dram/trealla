@@ -230,6 +230,7 @@ static int bif_posix_spawn_3(tpl_query *q)
 	int size = 128;
 	const char **arguments = malloc(size);
 	node *l = term2;
+
 	while (is_list(l)) {
 		unsigned this_context = q->latest_context;
 		node *head = term_firstarg(l);
