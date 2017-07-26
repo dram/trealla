@@ -2297,10 +2297,17 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 
 		if (!l->quoted && (!strcmp(l->tok, "]") || !strcmp(l->tok, ")"))) {
 			if (is_consing(term)) {
+				if (l->comma) {
+					printf("ERROR: syntax error, term expected\n");
+					l->error = 1;
+					return NULL;
+				}
+
 				node *tmp = term_make();
 				tmp->flags |= TYPE_ATOM | FLAG_CONST;
 				tmp->val_s = (char *)"[]";
 				term_append(term, tmp);
+				l->comma = 0;
 			}
 
 			free(l->tok);
@@ -2321,6 +2328,8 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			l->was_atomic = 0;
 			return src;
 		}
+
+		l->comma = 0;
 
 		if (l->dcg && !l->quoted && !strcmp(l->tok, "|") && !l->dcg_passthru) {
 			free(l->tok);
@@ -2359,6 +2368,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 
 			if (is_consing(term)) {
 				free(l->tok);
+				l->comma = 1;
 				node *tmp = make_list();
 				tmp->flags |= FLAG_CONSING;
 				term_append(term, tmp);
@@ -2382,6 +2392,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			free(l->tok);
 			term->flags &= ~FLAG_CONSING;
 			l->was_atomic = 0;
+			l->comma = 0;
 			continue;
 		}
 
