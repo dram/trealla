@@ -890,7 +890,7 @@ static int bif_sys_split_all_3(tpl_query *q)
 		while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 			*dst++ = *src++;
 
-		if (!strncmp(src, VAL_S(term2), LEN_S(term2)) && !src[1])
+		if (!strncmp(src, VAL_S(term2), LEN_S(term2)) && !src[LEN_S(term2)])
 			eol = 1;
 
 		if (*src)
