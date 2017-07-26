@@ -5776,6 +5776,41 @@ static int bif_iso_dynamic(tpl_query *q)
 	return dir_dynamic(q->lex, term1);
 }
 
+static int bif_iso_atom_concat(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *orig_term1 = term_next(args);
+	node *term1 = get_term(term1);
+	node *term2 = get_var(term2);
+	node *term3 = get_atom(term3);
+	int done = 0;
+
+	if (!q->retry) {
+		put_const_atom(q, term1, term1_ctx, "");
+		allocate_frame(q);
+		put_env(q, term2, term2_ctx, term3, term3_ctx);
+	}
+	else {
+		const char *src = VAL_S(term3);
+		size_t len = LEN_S(term1) + 1;
+		char *dst1 = strndup(src, len);
+		char *dst2 = strdup(src + len);
+
+		if (!*dst2)
+			done = 1;
+
+		reset_arg(q, orig_term1, q->c.curr_frame);
+		put_atom(q, term1, q->c.curr_frame, dst1);
+		allocate_frame(q);
+		put_atom(q, term2, term2_ctx, dst2);
+	}
+
+	if (!done)
+		try_me_nofollow(q);
+
+	return 1;
+}
+
 void bifs_load_iso(void)
 {
 	DEFINE_BIF("true", 0, bif_iso_true);
@@ -5938,6 +5973,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("call_opaque", 1, bif_call_opaque);
 	DEFINE_BIF("$call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("$calln", -1, bif_iso_calln);
+	DEFINE_BIF("$atom_concat", 3, bif_iso_atom_concat);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
 

@@ -1559,7 +1559,7 @@ static int bif_xtra_name_2(tpl_query *q)
 
 	node *n;
 
-	if (is_atom(term1) && !VAL_S(term1)) {
+	if (is_atom(term1) && !*VAL_S(term1)) {
 		n = make_const_atom("[]");
 	}
 	else if (is_atom(term1) || is_number(term1)) {
