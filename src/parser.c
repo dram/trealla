@@ -2296,17 +2296,17 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 		}
 
 		if (!l->quoted && (!strcmp(l->tok, "]") || !strcmp(l->tok, ")"))) {
-			if (!strcmp(l->tok, "]") && (term_count(term) == 1)) {
-				free(l->tok);
-				l->depth--;
-				return src;
-			}
-
 			if (is_consing(term)) {
 				if (l->comma) {
 					printf("ERROR: syntax error, term expected\n");
 					l->error = 1;
 					return NULL;
+				}
+
+				if (!strcmp(l->tok, "]") && (term_count(term) == 1)) {
+					free(l->tok);
+					l->depth--;
+					return src;
 				}
 
 				node *tmp = term_make();
