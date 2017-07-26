@@ -2296,6 +2296,12 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 		}
 
 		if (!l->quoted && (!strcmp(l->tok, "]") || !strcmp(l->tok, ")"))) {
+			if (!strcmp(l->tok, "]") && (term_count(term) == 1)) {
+				free(l->tok);
+				l->depth--;
+				return src;
+			}
+
 			if (is_consing(term)) {
 				if (l->comma) {
 					printf("ERROR: syntax error, term expected\n");
@@ -2427,6 +2433,12 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 			if (l->error) {
 				term_heapcheck(n);
 				return src;
+			}
+
+			if (term_count(n) == 1) {
+				term_heapcheck(n);
+				n = make_const_atom("[]");
+				l->was_atomic = 0;
 			}
 		}
 		else if (!l->quoted && !strcmp(l->tok, "{")) {

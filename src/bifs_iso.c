@@ -1083,7 +1083,7 @@ static int bif_iso_open_3(tpl_query *q)
 	sp->type = strdup(type);
 	node *n = make_stream(sp);
 	n->flags |= FLAG_FILE;
-	put_env(q, term3, q->c.curr_frame, n, -1);
+	put_env(q, term3, term3_ctx, n, -1);
 	term_heapcheck(n);
 	return 1;
 }
@@ -1545,7 +1545,9 @@ int read_term(tpl_query *q, char *line, node *term1, unsigned term1_ctx, node *t
 
 	lexer_parse(&l, l.r, tmpbuf, &tmpbuf);
 	save_term = term = NLIST_FRONT(&l.val_l);
-	free(tmpbuf);
+
+	if (tmpbuf)
+		free(tmpbuf);
 
 	if (l.error) {
 		printf("ERROR: error make_rule: %s\n", line);
