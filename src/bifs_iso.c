@@ -5782,7 +5782,7 @@ static int bif_iso_atom_concat(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *orig_term1 = term_next(args);
-	node *term1 = get_term(term1);
+	node *term1 = get_atom_or_var(term1);
 	node *term2 = get_var(term2);
 	node *term3 = get_atom(term3);
 	int done = 0;
