@@ -1638,6 +1638,7 @@ trealla *trealla_create(const char *name)
 
 	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(X), var(Y), !, '$atom_concat'(X, Y, Z).");
 
+	// TODO: absorb the following 3 lines into '$atom_concat' ...
 	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(X), !, name(Y, YL), atom_codes(Z, ZL), append(XL, YL, ZL), name(X, XL).");
 	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(Y), !, name(X, XL), atom_codes(Z, ZL), append(XL, YL, ZL), name(Y, YL).");
 	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- name(X, XL), name(Y, YL), append(XL, YL, ZL), atom_codes(Z, ZL).");
