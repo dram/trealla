@@ -5776,6 +5776,8 @@ static int bif_iso_dynamic(tpl_query *q)
 	return dir_dynamic(q->lex, term1);
 }
 
+// NOTE: this just handles the mode(-,-,+) case...
+
 static int bif_iso_atom_concat(tpl_query *q)
 {
 	node *args = get_args(q);
