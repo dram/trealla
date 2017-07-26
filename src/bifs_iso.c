@@ -5808,7 +5808,7 @@ static int bif_iso_atom_concat(tpl_query *q)
 	}
 
 	if (!done)
-		try_me_nofollow(q);
+		try_me(q);
 
 	return 1;
 }
