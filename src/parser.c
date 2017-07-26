@@ -2444,6 +2444,7 @@ const char *lexer_parse(lexer *l, node *term, const char *src, char **line)
 				if (is_atom(tmp) && l->was_atom) {
 					const char *functor = VAL_S(tmp);
 					const op *optr = get_op(&l->pl->db, functor, 0);
+
 					int doit = !l->was_spaced &&
 						(islower(functor[0]) && strcmp(functor, "is"));
 

@@ -872,9 +872,6 @@ static int bif_sys_split_all_3(tpl_query *q)
 	node *term3 = get_var(term3);
 	const char *src = VAL_S(term1);
 
-	while (isspace(*src))
-		src++;
-
 	if (!*src) {
 		node *tmp = make_const_atom("[]");
 		put_env(q, term3, term3_ctx, tmp, q->c.curr_frame);
@@ -892,12 +889,8 @@ static int bif_sys_split_all_3(tpl_query *q)
 		while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 			*dst++ = *src++;
 
-		if (*src) {
+		if (*src)
 			src += LEN_S(term2);
-
-			while (isspace(*src))
-				src++;
-		}
 
 		*dst = '\0';
 		node *tmp = make_atom(strdup(dstbuf));
