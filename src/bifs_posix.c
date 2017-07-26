@@ -231,8 +231,9 @@ static int bif_posix_spawn_3(tpl_query *q)
 	const char **arguments = malloc(size);
 	node *l = term2;
 	while (is_list(l)) {
+		unsigned this_context = q->latest_context;
 		node *head = term_firstarg(l);
-		node *n = subst(q, head, term2_ctx);
+		node *n = subst(q, head, this_context);
 
 		if (i + 1 >= size) {
 			size *= 2;
@@ -240,9 +241,8 @@ static int bif_posix_spawn_3(tpl_query *q)
 		}
 
 		arguments[i++] = VAL_S(n);
-
 		node *tail = term_next(head);
-		l = subst(q, tail, term2_ctx);
+		l = subst(q, tail, this_context);
 	}
 	arguments[i] = NULL;
 
