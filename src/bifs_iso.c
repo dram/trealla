@@ -5778,7 +5778,7 @@ static int bif_iso_dynamic(tpl_query *q)
 
 // NOTE: this just handles the mode(-,-,+) case...
 
-static int bif_iso_atom_concat(tpl_query *q)
+static int bif_atom_concat(tpl_query *q)
 {
 	node *args = get_args(q);
 	node *orig_term1 = term_next(args);
@@ -5809,6 +5809,48 @@ static int bif_iso_atom_concat(tpl_query *q)
 
 	if (!done)
 		try_me(q);
+
+	return 1;
+}
+
+static int bif_iso_atom_concat(tpl_query *q)
+{
+	node *args = get_args(q);
+	node *term1 = get_atom_or_var(term1);
+	node *term2 = get_atom_or_var(term2);
+	node *term3 = get_atom_or_var(term3);
+
+	if ((is_var(term1) && is_var(term2)) || q->retry)
+		return bif_atom_concat(q);
+
+	if (is_var(term3)) {
+		char *dst = (char *)malloc(LEN_S(term1) + LEN_S(term2) + 1);
+		sprintf(dst, "%s%s", VAL_S(term1), VAL_S(term2));
+		put_atom(q, term3, term3_ctx, dst);
+		return 1;
+	}
+
+	if (is_var(term1)) {
+		if (strncmp(VAL_S(term3)+(LEN_S(term3)-LEN_S(term2)), VAL_S(term2), LEN_S(term2)))
+			return 0;
+
+		char *dst = strndup(VAL_S(term3), LEN_S(term3)-LEN_S(term2));
+		return unify_atom(q, term1, term1_ctx, dst);
+	}
+
+	if (is_var(term2)) {
+		if (strncmp(VAL_S(term3), VAL_S(term1), LEN_S(term1)))
+			return 0;
+
+		char *dst = strdup(VAL_S(term3)+LEN_S(term1));
+		return unify_atom(q, term2, term2_ctx, dst);
+	}
+
+	if (strncmp(VAL_S(term3), VAL_S(term1), LEN_S(term1)))
+		return 0;
+
+	if (strcmp(VAL_S(term3)+LEN_S(term1), VAL_S(term2)))
+		return 0;
 
 	return 1;
 }
@@ -5975,7 +6017,7 @@ void bifs_load_iso(void)
 	DEFINE_BIF("call_opaque", 1, bif_call_opaque);
 	DEFINE_BIF("$call", 1 + 1, bif_iso_call);
 	DEFINE_BIF("$calln", -1, bif_iso_calln);
-	DEFINE_BIF("$atom_concat", 3, bif_iso_atom_concat);
+	DEFINE_BIF("atom_concat", 3, bif_iso_atom_concat);
 
 // DEFINE_BIF("stream_property", 2, bif_iso_stream_property);
 

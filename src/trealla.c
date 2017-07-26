@@ -832,7 +832,7 @@ static int trealla_make_rule(trealla *pl, const char *src)
 {
 	lexer l;
 	lexer_init(&l, pl);
-	l.internal = 0;//1;
+	l.internal = 1;
 	l.consult = 1;
 	lexer_parse(&l, l.r, src, NULL);
 	int ok = !l.error;
@@ -1635,13 +1635,6 @@ trealla *trealla_create(const char *name)
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10).");
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11).");
 	trealla_make_rule(pl, "call(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12) :- '$calln'(G,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12).");
-
-	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(X), var(Y), !, '$atom_concat'(X, Y, Z).");
-
-	// TODO: absorb the following 3 lines into '$atom_concat' ...
-	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(X), !, name(Y, YL), atom_codes(Z, ZL), append(XL, YL, ZL), name(X, XL).");
-	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- var(Y), !, name(X, XL), atom_codes(Z, ZL), append(XL, YL, ZL), name(Y, YL).");
-	trealla_make_rule(pl, "atom_concat(X, Y, Z) :- name(X, XL), name(Y, YL), append(XL, YL, ZL), atom_codes(Z, ZL).");
 
 	trealla_make_rule(pl, "put(C) :- integer(C) -> put_code(C) ; put_char(C).");
 	trealla_make_rule(pl, "put(S,C) :- integer(C) -> put_code(S,C) ; put_char(S,C).");
