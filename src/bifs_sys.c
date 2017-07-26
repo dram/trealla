@@ -920,9 +920,6 @@ static int bif_sys_split_last_4(tpl_query *q)
 	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	char *dst = dstbuf;
 
-	while (isspace(*src))
-		src++;
-
 	for (;;) {
 		while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 			*dst++ = *src++;
@@ -935,7 +932,7 @@ static int bif_sys_split_last_4(tpl_query *q)
 		src += LEN_S(term2);
 	}
 
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
+	while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 		src++;
 
 	*dst = '\0';
@@ -954,10 +951,7 @@ static int bif_sys_split_last_4(tpl_query *q)
 	src += LEN_S(term2);
 	dst = dstbuf;
 
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
-		src++;
-
-	while (*src && (*src != '\r') && (*src != '\n'))
+	while (*src)
 		*dst++ = *src++;
 
 	*dst = '\0';
@@ -977,14 +971,8 @@ static int bif_sys_split_4(tpl_query *q)
 	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	char *dst = dstbuf;
 
-	while (isspace(*src))
-		src++;
-
 	while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 		*dst++ = *src++;
-
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
-		src++;
 
 	*dst = '\0';
 	int ok = unify_atom(q, term3, term3_ctx, strdup(dstbuf));
@@ -1002,10 +990,7 @@ static int bif_sys_split_4(tpl_query *q)
 	src += LEN_S(term2);
 	dst = dstbuf;
 
-	while (isspace(*src) && strncmp(src, VAL_S(term2), LEN_S(term2)))
-		src++;
-
-	while (*src && (*src != '\r') && (*src != '\n'))
+	while (*src)
 		*dst++ = *src++;
 
 	*dst = '\0';
