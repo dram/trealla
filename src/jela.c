@@ -155,10 +155,10 @@ void allocate_frame(tpl_query *q)
 	q->c.curr_trail += q->c.trail_size;
 	q->c.trail_size = 0;
 
-	if ((q->c.curr_trail + q->c.frame_size) >= q->trails_used) {
-		q->trails_used = q->c.curr_trail + q->c.frame_size;
+	if ((q->c.curr_trail + MAX_FRAME_SIZE) >= q->trails_used) {
+		q->trails_used = q->c.curr_trail + MAX_FRAME_SIZE;
 
-		while ((q->c.curr_trail + q->c.frame_size) >= q->trails_possible) {
+		while ((q->c.curr_trail + MAX_FRAME_SIZE) >= q->trails_possible) {
 			if (!grow_trail(q))
 				return;
 		}

@@ -272,9 +272,9 @@ typedef struct {
 
 typedef uint32_t trail;
 
-#define DEF_TRAILS_BYTES 512
+#define DEF_TRAILS_BYTES 1024
 #define DEF_ENVS_BYTES 512
-#define DEF_CHOICES_BYTES 256
+#define DEF_CHOICES_BYTES 512
 
 struct tpl_query_ {
 	choice choice_stack[DEF_CHOICES_BYTES / sizeof(choice)];
