@@ -10,7 +10,8 @@ main :-
 	print(List),
 	halt.
 
-print([]).
+print([]) :- !.
+print([''|T]) :- !.
 print([H|T]) :-
 	sys:parse_csv(H,Data),
 	writeln(Data),

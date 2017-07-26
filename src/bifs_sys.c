@@ -1373,7 +1373,7 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 	node *term1 = get_atom(term1);
 	node *term2 = get_var(term2);
 	const char *src = VAL_S(term1);
-	node *l = make_list();
+	node *l = NULL;
 	node *save_l = l;
 	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	char *dst = dstbuf;
@@ -1444,6 +1444,9 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 				tmp = make_float(strtod(dstbuf, NULL));
 		}
 
+		if (!l)
+			save_l = l = make_list();
+
 		term_append(l, tmp);
 
 		if (!*src)
@@ -1459,7 +1462,12 @@ static int bif_sys_parse_csv_2(tpl_query *q)
 	}
 
 	free(dstbuf);
-	term_append(l, make_const_atom("[]"));
+
+	if (save_l)
+		term_append(l, make_const_atom("[]"));
+	else
+		save_l = make_const_atom("[]");
+
 	put_env(q, term2, term2_ctx, save_l, q->c.curr_frame);
 	term_heapcheck(save_l);
 	return 1;

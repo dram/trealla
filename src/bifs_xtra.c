@@ -419,10 +419,10 @@ static int bif_xtra_split_string_4(tpl_query *q)
 	while (*src) {
 		char *dst = dstbuf;
 		int ch = get_char_utf8(&src), found = 0;
-
+		int i;
 
 		while (!found) {
-			for (int i = 0; seps[i] && !found && (i < 255); i++) {
+			for (i = 0; seps[i] && !found && (i < 255); i++) {
 				if (ch == seps[i]) {
 					found = 1;
 					break;
