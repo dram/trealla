@@ -408,7 +408,7 @@ static int bif_xtra_split_string_4(tpl_query *q)
 	node *save_l = l;
 	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
 	const char *src_sep = VAL_S(term2);
-	int seps[256];
+	int seps[256], eol = 0;
 
 	for (int i = 0; *src_sep && (i < 255); i++) {
 		int ch = get_char_utf8(&src_sep);
@@ -439,6 +439,9 @@ static int bif_xtra_split_string_4(tpl_query *q)
 
 			ch = get_char_utf8(&src);
 		}
+
+		if (found && !*src)
+			eol = 1;
 
 		*dst = '\0';
 		node *tmp = make_atom(strdup(dstbuf));
@@ -471,7 +474,7 @@ static int bif_xtra_split_string_4(tpl_query *q)
 		l = term_append(l, make_list());
 	}
 
-	if (!*dstbuf) {
+	if (eol) {
 		l = term_append(l, make_list());
 		node *tmp = make_const_atom("");
 		term_append(l, tmp);

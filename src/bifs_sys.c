@@ -882,6 +882,7 @@ static int bif_sys_split_all_3(tpl_query *q)
 	node *l = make_list();
 	node *save_l = l;
 	char *dstbuf = (char *)malloc(LEN_S(term1) + 1);
+	int eol = 0;
 
 	while (*src) {
 		char *dst = dstbuf;
@@ -889,12 +890,14 @@ static int bif_sys_split_all_3(tpl_query *q)
 		while (*src && strncmp(src, VAL_S(term2), LEN_S(term2)))
 			*dst++ = *src++;
 
+		if (!strncmp(src, VAL_S(term2), LEN_S(term2)) && !src[1])
+			eol = 1;
+
 		if (*src)
 			src += LEN_S(term2);
 
 		*dst = '\0';
 		node *tmp = make_atom(strdup(dstbuf));
-		dstbuf[0] = '\0';
 		term_append(l, tmp);
 
 		if (!*src)
@@ -903,7 +906,7 @@ static int bif_sys_split_all_3(tpl_query *q)
 		l = term_append(l, make_list());
 	}
 
-	if (!*dstbuf) {
+	if (eol) {
 		l = term_append(l, make_list());
 		node *tmp = make_const_atom("");
 		term_append(l, tmp);
