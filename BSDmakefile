@@ -1,6 +1,6 @@
 CFLAGS = -Isrc -O3 $(OPT) -Wall -D_DEFAULT_SOURCE -D_BSD_SOURCE
 CFLAGS += -I/usr/local/include
-LDFLAGS = -lm
+LDFLAGS = -L/usr/local/lib -lm
 
 OBJECTS_ISO = src/trealla.o src/parser.o src/bifs_iso.o src/jela.o \
 			src/list.o src/print.o src/skiplist.o src/skipbuck.o \

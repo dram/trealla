@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <time.h>
