@@ -485,7 +485,7 @@ static int bif_posix_open_file_descriptor_3(tpl_query *q)
 	const char *mode = VAL_S(term2);
 	const char *type = "text";
 	char tmpbuf[40];
-	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "r+" : !strcmp(mode, "write") ? "w" : "r");
+	strcpy(tmpbuf, !strcmp(mode, "append") ? "a" : !strcmp(mode, "update") ? "w+" : !strcmp(mode, "write") ? "w" : "r");
 
 	FILE *fp = fdopen(fd, tmpbuf);
 
